@@ -22,7 +22,7 @@ namespace blunted {
       bool success;
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         success = static_cast<AudioRenderer*>(caller)->CreateContext();
         return true;
       }
@@ -38,7 +38,7 @@ namespace blunted {
       bool success;
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<AudioRenderer*>(caller)->Exit();
         return true;
       }
@@ -53,7 +53,7 @@ namespace blunted {
       int audioSoundBufferID;
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
       const WavData *wavData;
 
@@ -65,7 +65,7 @@ namespace blunted {
       AudioRendererMessage_DeleteAudioSoundBuffer(int audioSoundBufferID) : Command("audiomsg_DeleteAudioSoundBuffer"), audioSoundBufferID(audioSoundBufferID) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
       int audioSoundBufferID;
 
@@ -77,7 +77,7 @@ namespace blunted {
       AudioRendererMessage_PlayAudioSoundBuffer(int audioSoundBufferID) : Command("audiomsg_PlayAudioSoundBuffer"), audioSoundBufferID(audioSoundBufferID) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
       int audioSoundBufferID;
 
@@ -89,7 +89,7 @@ namespace blunted {
       AudioRendererMessage_ConfigAudioSoundBuffer(int audioSoundBufferID, float gain = 0.1, float pitch = 1.0, bool loop = false) : Command("audiomsg_ConfigAudioSoundBuffer"), audioSoundBufferID(audioSoundBufferID), gain(gain), pitch(pitch), loop(loop) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
       int audioSoundBufferID;
       float gain;

@@ -22,18 +22,20 @@
 #include <vector>
 #include <map>
 #include <deque>
+#include <memory>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <filesystem>
+#include <chrono>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/intrusive_ptr.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
 #include <boost/signals2.hpp>
 #include <boost/signals2/slot.hpp>
 #include <boost/bind.hpp>
 
 namespace blunted {
 
-  using namespace boost;
   typedef float real;
 
 }

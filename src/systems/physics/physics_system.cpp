@@ -16,7 +16,7 @@
 namespace blunted {
 
   PhysicsSystem::PhysicsSystem() : systemType(e_SystemType_Physics) {
-    task = NULL;
+    task = nullptr;
   }
 
   PhysicsSystem::~PhysicsSystem() {
@@ -36,23 +36,23 @@ namespace blunted {
 
     task->Join();
     delete task;
-    task = NULL;
+    task = nullptr;
 
     delete physicsWrapper;
-    physicsWrapper = NULL;
+    physicsWrapper = nullptr;
   }
 
   e_SystemType PhysicsSystem::GetSystemType() const {
     return systemType;
   }
 
-  ISystemScene *PhysicsSystem::CreateSystemScene(boost::shared_ptr<IScene> scene) {
+  ISystemScene *PhysicsSystem::CreateSystemScene(std::shared_ptr<IScene> scene) {
     if (scene->GetSceneType() == e_SceneType_Scene3D) {
       PhysicsScene *physicsScene = new PhysicsScene(this);
       scene->Attach(physicsScene->GetInterpreter(e_SceneType_Scene3D));
       return physicsScene;
     }
-    return NULL;
+    return nullptr;
   }
 
   ISystemTask *PhysicsSystem::GetTask() {

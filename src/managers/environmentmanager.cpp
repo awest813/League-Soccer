@@ -5,28 +5,28 @@
 #include "environmentmanager.hpp"
 
 #include <SDL2/SDL.h>
-#include <boost/thread.hpp>
+#include <chrono>
+#include <thread>
 
 namespace blunted {
 
-  template<> EnvironmentManager* Singleton<EnvironmentManager>::singleton = 0;
+  template<> EnvironmentManager* Singleton<EnvironmentManager>::singleton = nullptr;
 
   EnvironmentManager::EnvironmentManager() {
     quit.SetData(false);
-    startTime = boost::posix_time::microsec_clock::local_time();
+    startTime = std::chrono::steady_clock::now();
   };
 
   EnvironmentManager::~EnvironmentManager() {
   };
 
   unsigned long EnvironmentManager::GetTime_ms() {
-    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-    boost::posix_time::time_duration msdiff = now - startTime;
-    return msdiff.total_milliseconds();
+    auto now = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count();
   }
 
   void EnvironmentManager::Pause_ms(int duration) {
-    boost::this_thread::sleep(boost::posix_time::milliseconds(duration));
+    std::this_thread::sleep_for(std::chrono::milliseconds(duration));
   }
 
   void EnvironmentManager::SignalQuit() {

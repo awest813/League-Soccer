@@ -35,13 +35,13 @@ namespace blunted {
 
       e_SystemType GetSystemType() const;
 
-      virtual ISystemScene *CreateSystemScene(boost::shared_ptr<IScene> scene);
+      virtual ISystemScene *CreateSystemScene(std::shared_ptr<IScene> scene);
 
       virtual ISystemTask *GetTask();
       virtual Renderer3D *GetRenderer3D();
 
-      boost::shared_ptr < ResourceManager<Texture> > GetTextureResourceManager();
-      boost::shared_ptr < ResourceManager<VertexBuffer> > GetVertexBufferResourceManager();
+      std::shared_ptr < ResourceManager<Texture> > GetTextureResourceManager();
+      std::shared_ptr < ResourceManager<VertexBuffer> > GetVertexBufferResourceManager();
 
       MessageQueue<Overlay2DQueueEntry> &GetOverlay2DQueue();
 
@@ -54,7 +54,7 @@ namespace blunted {
 
       virtual std::string GetName() const { return "graphics"; }
 
-      boost::mutex getPhaseMutex;
+      std::mutex getPhaseMutex;
 
     protected:
       const e_SystemType systemType;
@@ -63,8 +63,8 @@ namespace blunted {
 
       GraphicsTask *task;
 
-      boost::shared_ptr < ResourceManager<Texture> > textureResourceManager;
-      boost::shared_ptr < ResourceManager<VertexBuffer> > vertexBufferResourceManager;
+      std::shared_ptr < ResourceManager<Texture> > textureResourceManager;
+      std::shared_ptr < ResourceManager<VertexBuffer> > vertexBufferResourceManager;
 
       MessageQueue<Overlay2DQueueEntry> overlay2DQueue;
 

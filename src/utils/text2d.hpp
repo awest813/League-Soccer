@@ -21,7 +21,7 @@ namespace blunted {
   class Text2D {
 
     public:
-      Text2D(boost::shared_ptr<Scene2D> scene2D, const std::string &fontFile = "c:/windows/fonts/cour.ttf", int pts = 14);
+      Text2D(std::shared_ptr<Scene2D> scene2D, const std::string &fontFile = "c:/windows/fonts/cour.ttf", int pts = 14);
       ~Text2D();
 
       boost::intrusive_ptr<Image2D> Create(int width);
@@ -33,7 +33,7 @@ namespace blunted {
       TTF_Font *font;
       mutable int count;
 
-      boost::shared_ptr<Scene2D> scene2D;
+      std::shared_ptr<Scene2D> scene2D;
 
   };
 

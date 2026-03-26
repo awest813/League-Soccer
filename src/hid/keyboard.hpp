@@ -31,12 +31,12 @@ class HIDKeyboard : public IHIDevice {
     virtual Vector3 GetDirection();
 
     void SetFunctionMapping(int index, SDL_Keycode key) {
-      boost::mutex::scoped_lock blah(mutex);
+      std::unique_lock<std::mutex> blah(mutex);
       functionMapping[index] = key;
     }
 
     SDL_Keycode GetFunctionMapping(e_ButtonFunction buttonFunction) {
-      boost::mutex::scoped_lock blah(mutex);
+      std::unique_lock<std::mutex> blah(mutex);
       return functionMapping[buttonFunction];
     }
 

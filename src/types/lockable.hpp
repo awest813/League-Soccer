@@ -53,7 +53,7 @@ namespace blunted {
 
       T data;
 
-      mutable boost::mutex mutex;
+      mutable std::mutex mutex;
 
     protected:
 

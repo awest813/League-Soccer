@@ -20,11 +20,11 @@ int CreateNewLeagueSave(const std::string &srcDbName, const std::string &saveNam
   // 3 == could not open copied database
   // 4 == could not copy file
 
-  boost::filesystem::path source("databases");
+  std::filesystem::path source("databases");
   source /= srcDbName;
   source /= "database.sqlite";
 
-  boost::filesystem::path dest("saves");
+  std::filesystem::path dest("saves");
   dest /= saveName;
 
   if (!CreateDirectory(dest)) {
@@ -36,8 +36,8 @@ int CreateNewLeagueSave(const std::string &srcDbName, const std::string &saveNam
 
   // copy league db to tmp db
 
-  boost::system::error_code error;
-  namespace fs = boost::filesystem;
+  std::error_code error;
+  namespace fs = std::filesystem;
   fs::copy_file(dest / "database.sqlite", dest / "autosave.sqlite", error);
 
 
@@ -74,24 +74,24 @@ int CreateNewLeagueSave(const std::string &srcDbName, const std::string &saveNam
       std::vector<std::string> tokens;
       tokenize(imageList.at(i), tokens, "/\\");
 
-      boost::filesystem::path newdir = dest;
+      std::filesystem::path newdir = dest;
       for (unsigned int x = 0; x < tokens.size() - 1; x++) {
         // does directory exist?
         newdir /= tokens.at(x);
-        if (!boost::filesystem::exists(newdir)) {
-          boost::filesystem::create_directory(newdir);
+        if (!std::filesystem::exists(newdir)) {
+          std::filesystem::create_directory(newdir);
           //printf("created dir: %s\n", newdir.string().c_str());
         }
         //printf("%s ", tokens.at(x).c_str());
       }
       //printf("\n");
-      boost::filesystem::path destfile = newdir / tokens.at(tokens.size() - 1);
-      boost::filesystem::path sourcefile("databases");
+      std::filesystem::path destfile = newdir / tokens.at(tokens.size() - 1);
+      std::filesystem::path sourcefile("databases");
       sourcefile /= srcDbName;
       sourcefile /= imageList.at(i);
-      boost::system::error_code error;
+      std::error_code error;
       //printf("copying from %s to %s\n", sourcefile.string().c_str(), destfile.string().c_str());
-      if (!boost::filesystem::exists(destfile)) boost::filesystem::copy_file(sourcefile, destfile, error);
+      if (!std::filesystem::exists(destfile)) std::filesystem::copy_file(sourcefile, destfile, error);
       if (error) errorCode = 4;
       //if (error) printf("file %s could not be copied\n", imageList.at(i).c_str());
       //printf("\n");
@@ -156,11 +156,11 @@ bool PrepareDatabaseForLeague() {
 
 bool SaveAutosaveToDatabase() {
 
-  namespace fs = boost::filesystem;
+  namespace fs = std::filesystem;
   fs::path dest("saves");
   dest /= GetActiveSaveDirectory();
 
-  boost::system::error_code error;
+  std::error_code error;
 
   // remove previous database
   if (fs::exists(dest / "database.sqlite")) fs::remove(dest / "database.sqlite");
@@ -173,11 +173,11 @@ bool SaveAutosaveToDatabase() {
 
 bool SaveDatabaseToAutosave() {
 
-  namespace fs = boost::filesystem;
+  namespace fs = std::filesystem;
   fs::path dest("saves");
   dest /= GetActiveSaveDirectory();
 
-  boost::system::error_code error;
+  std::error_code error;
 
   // remove previous autosave
   if (fs::exists(dest / "autosave.sqlite")) fs::remove(dest / "autosave.sqlite");

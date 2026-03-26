@@ -86,14 +86,14 @@ namespace blunted {
 
       Spatial *parent;
 
-      mutable boost::mutex spatialMutex;
+      mutable std::mutex spatialMutex;
 
       Vector3 position;
       Quaternion rotation;
       Vector3 scale;
 
       // cache
-      mutable boost::mutex cacheMutex;
+      mutable std::mutex cacheMutex;
       mutable bool _dirty_DerivedPosition;
       mutable bool _dirty_DerivedRotation;
       mutable bool _dirty_DerivedScale;

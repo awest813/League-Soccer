@@ -32,12 +32,12 @@ namespace blunted {
 
       e_SystemType GetSystemType() const;
 
-      virtual ISystemScene *CreateSystemScene(boost::shared_ptr<IScene> scene);
+      virtual ISystemScene *CreateSystemScene(std::shared_ptr<IScene> scene);
 
       virtual ISystemTask *GetTask();
       virtual AudioRenderer *GetAudioRenderer();
 
-      boost::shared_ptr < ResourceManager<AudioSoundBuffer> > GetAudioSoundBufferResourceManager();
+      std::shared_ptr < ResourceManager<AudioSoundBuffer> > GetAudioSoundBufferResourceManager();
 
       virtual std::string GetName() const { return "audio"; }
 
@@ -46,7 +46,7 @@ namespace blunted {
 
       AudioRenderer *rendererTask;
 
-      boost::shared_ptr < ResourceManager<AudioSoundBuffer> > audioSoundBufferResourceManager;
+      std::shared_ptr < ResourceManager<AudioSoundBuffer> > audioSoundBufferResourceManager;
 
   };
 

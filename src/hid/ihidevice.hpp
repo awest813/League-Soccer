@@ -77,7 +77,7 @@ class IHIDevice {
     e_HIDeviceType deviceType;
     std::string identifier;
 
-    boost::mutex mutex;
+    std::mutex mutex;
 
 };
 

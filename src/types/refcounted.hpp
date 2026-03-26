@@ -7,10 +7,7 @@
 
 #include "defines.hpp"
 
-#include <boost/detail/atomic_count.hpp>
-#ifdef WIN32
-#include <boost/detail/interlocked.hpp>
-#endif
+#include <atomic>
 
 namespace blunted {
 
@@ -28,11 +25,7 @@ namespace blunted {
     protected:
 
     private:
-      volatile long refCount;
-
-#ifndef WIN32
-      boost::mutex refCountMutex;
-#endif
+      std::atomic<long> refCount;
 
       friend void intrusive_ptr_add_ref(RefCounted *p);
       friend void intrusive_ptr_release(RefCounted *p);

@@ -55,7 +55,7 @@ namespace blunted {
     for (int r = 0; r < rows; r++) {
       std::vector<std::string> tmpRow;
       for (int c = 0; c < columns; c++) {
-        if (result[(r + 1) * columns + c] == NULL) {
+        if (result[(r + 1) * columns + c] == nullptr) {
           tmpRow.push_back("");
         } else {
           //printf("data: %s\n", result[(r + 1) * columns + c]);

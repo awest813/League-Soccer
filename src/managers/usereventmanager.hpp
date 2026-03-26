@@ -83,9 +83,9 @@ namespace blunted {
       float joyAxis[_JOYSTICK_MAX][_JOYSTICK_MAXAXES];
       float joyAxisCalibration[_JOYSTICK_MAX][_JOYSTICK_MAXAXES][3]; // min, max, rest
 
-      mutable boost::mutex keyPressedMutex;
-      mutable boost::mutex mousePressedMutex;
-      mutable boost::mutex joyButtonPressedMutex;
+      mutable std::mutex keyPressedMutex;
+      mutable std::mutex mousePressedMutex;
+      mutable std::mutex joyButtonPressedMutex;
 
   };
 

@@ -16,7 +16,7 @@
 
 namespace blunted {
 
-  Text2D::Text2D(boost::shared_ptr<Scene2D> scene2D, const std::string &fontFile, int pts) : count(0), scene2D(scene2D) {
+  Text2D::Text2D(std::shared_ptr<Scene2D> scene2D, const std::string &fontFile, int pts) : count(0), scene2D(scene2D) {
     assert(1 == 2); // todo: error, this file is deprecated, can't do ttf_init for one, already done that. check if this file/this whole old 2d/gui system is used anyway, and if not, remove from project
     TTF_Init();
     font = TTF_OpenFont(fontFile.c_str(), pts);
@@ -52,7 +52,7 @@ namespace blunted {
     surface->GetResource()->SetData(sdlTextPow2);
 
 // todo: unique name?
-    boost::intrusive_ptr<Image2D> image = static_pointer_cast<Image2D>(ObjectFactory::GetInstance().CreateObject("text2D #" + int_to_str(count), e_ObjectType_Image2D));
+    boost::intrusive_ptr<Image2D> image = boost::static_pointer_cast<Image2D>(ObjectFactory::GetInstance().CreateObject("text2D #" + int_to_str(count), e_ObjectType_Image2D));
     scene2D->CreateSystemObjects(image);
 
     image->SetImage(surface);

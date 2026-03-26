@@ -176,11 +176,11 @@ class AnimCollection {
 
   public:
     // scene3D for debugging pilon
-    AnimCollection(boost::shared_ptr<Scene3D> scene3D);
+    AnimCollection(std::shared_ptr<Scene3D> scene3D);
     virtual ~AnimCollection();
 
     void Clear();
-    void Load(boost::filesystem::path directory);
+    void Load(std::filesystem::path directory);
 
     const std::vector < Animation* > &GetAnimations() const;
 
@@ -202,7 +202,7 @@ class AnimCollection {
 
     bool _CheckFunctionType(const std::string &functionType, e_FunctionType queryFunctionType) const;
 
-    boost::shared_ptr<Scene3D> scene3D;
+    std::shared_ptr<Scene3D> scene3D;
 
     std::vector<Animation*> animations;
     std::vector<Quadrant> quadrants;

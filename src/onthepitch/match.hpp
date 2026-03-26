@@ -120,7 +120,7 @@ class Match {
     void GetActiveTeamPlayers(int teamID, std::vector<Player*> &players);
     void GetOfficialPlayers(std::vector<PlayerBase*> &players);
 
-    boost::shared_ptr<AnimCollection> GetAnimCollection() { return anims; }
+    std::shared_ptr<AnimCollection> GetAnimCollection() { return anims; }
 
     const MentalImage *GetMentalImage(int history_ms);
     void UpdateLatestMentalImageBallPredictions();
@@ -175,7 +175,7 @@ class Match {
     void UpdateIngameCamera();
 
     boost::intrusive_ptr<Camera> GetCamera() { return camera; }
-    boost::shared_ptr<AnimCollection> GetAnims() { return anims; }
+    std::shared_ptr<AnimCollection> GetAnims() { return anims; }
 
     void Get();
     void Process();
@@ -265,7 +265,7 @@ class Match {
     float cameraUserFOV;
     float cameraUserAngleFactor;
 
-    boost::shared_ptr<AnimCollection> anims;
+    std::shared_ptr<AnimCollection> anims;
 
     const std::vector<IHIDevice*> &controllers;
 
@@ -341,9 +341,9 @@ class Match {
 
     Referee *referee;
 
-    boost::shared_ptr<MenuTask> menuTask;
+    std::shared_ptr<MenuTask> menuTask;
 
-    boost::shared_ptr<Scene3D> scene3D;
+    std::shared_ptr<Scene3D> scene3D;
 
     boost::intrusive_ptr<Sound> crowd01;
     boost::intrusive_ptr<Sound> crowd02;

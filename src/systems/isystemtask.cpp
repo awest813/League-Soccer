@@ -11,21 +11,21 @@ namespace blunted {
 
   bool SystemTaskMessage_GetPhase::Execute(void *caller) {
     task->GetPhase();
-    boost::mutex::scoped_lock lock(GetScheduler()->somethingIsDoneMutex);
+    std::unique_lock<std::mutex> lock(GetScheduler()->somethingIsDoneMutex);
     GetScheduler()->somethingIsDone.notify_one();
     return true;
   }
 
   bool SystemTaskMessage_ProcessPhase::Execute(void *caller) {
     task->ProcessPhase();
-    boost::mutex::scoped_lock lock(GetScheduler()->somethingIsDoneMutex);
+    std::unique_lock<std::mutex> lock(GetScheduler()->somethingIsDoneMutex);
     GetScheduler()->somethingIsDone.notify_one();
     return true;
   }
 
   bool SystemTaskMessage_PutPhase::Execute(void *caller) {
     task->PutPhase();
-    boost::mutex::scoped_lock lock(GetScheduler()->somethingIsDoneMutex);
+    std::unique_lock<std::mutex> lock(GetScheduler()->somethingIsDoneMutex);
     GetScheduler()->somethingIsDone.notify_one();
     return true;
   }

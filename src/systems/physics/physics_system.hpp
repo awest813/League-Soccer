@@ -30,7 +30,7 @@ namespace blunted {
 
       virtual e_SystemType GetSystemType() const;
 
-      virtual ISystemScene *CreateSystemScene(boost::shared_ptr<IScene> scene);
+      virtual ISystemScene *CreateSystemScene(std::shared_ptr<IScene> scene);
 
       virtual ISystemTask *GetTask();
       virtual IPhysicsWrapper *GetPhysicsWrapper();

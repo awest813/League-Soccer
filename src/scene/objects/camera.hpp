@@ -30,9 +30,9 @@ namespace blunted {
       virtual void Exit();
 
       virtual void SetFOV(float fov);
-      virtual float GetFOV() const { boost::mutex::scoped_lock blah(subjectMutex); return fov; }
+      virtual float GetFOV() const { std::unique_lock<std::mutex> blah(subjectMutex); return fov; }
       virtual void SetCapping(float nearCap, float farCap);
-      virtual void GetCapping(float &nearCap, float &farCap) const { boost::mutex::scoped_lock blah(subjectMutex); nearCap = this->nearCap; farCap = this->farCap; }
+      virtual void GetCapping(float &nearCap, float &farCap) const { std::unique_lock<std::mutex> blah(subjectMutex); nearCap = this->nearCap; farCap = this->farCap; }
 
       // todo: const lists?
       virtual void EnqueueView(std::deque < boost::intrusive_ptr<Geometry> > &visibleGeometry, std::deque < boost::intrusive_ptr<Light> > &visibleLights, std::deque < boost::intrusive_ptr<Skybox> > &skyboxes);

@@ -7,10 +7,6 @@
 
 #include "defines.hpp"
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#include "boost/filesystem.hpp"
-
 namespace blunted {
 
   class Vector3;
@@ -26,7 +22,7 @@ namespace blunted {
     s_tree *subtree;
 
     s_treeentry() {
-      subtree = NULL;
+      subtree = nullptr;
     }
 
     ~s_treeentry();
@@ -70,9 +66,9 @@ namespace blunted {
   Vector3 GetVectorFromString(const std::string &vecString);
   Quaternion GetQuaternionFromString(const std::string &quatString);
 
-  int CopyDirectory(boost::filesystem::path const &source, boost::filesystem::path const &destination);
-  bool CreateDirectory(boost::filesystem::path const &dir);
-  bool CopyFile(boost::filesystem::path const &source, boost::filesystem::path const &destinationDir);
+  int CopyDirectory(std::filesystem::path const &source, std::filesystem::path const &destination);
+  bool CreateDirectory(std::filesystem::path const &dir);
+  bool CopyFile(std::filesystem::path const &source, std::filesystem::path const &destinationDir);
 
   unsigned long GetHashFromCharString(const char *str);
 

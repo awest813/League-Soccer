@@ -28,10 +28,10 @@ class HIDGamepad : public IHIDevice {
     virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction);
     virtual Vector3 GetDirection();
 
-    e_ControllerButton GetFunctionMapping(e_ButtonFunction buttonFunction) { boost::mutex::scoped_lock blah(mutex); return functionMapping[buttonFunction]; }
-    void SetFunctionMapping(e_ButtonFunction buttonFunction, e_ControllerButton controllerButton) { boost::mutex::scoped_lock blah(mutex); functionMapping[buttonFunction] = controllerButton; }
-    signed int GetControllerMapping(e_ControllerButton controllerButton) { boost::mutex::scoped_lock blah(mutex); return controllerMapping[controllerButton]; }
-    void SetControllerMapping(e_ControllerButton controllerButton, signed int id) { boost::mutex::scoped_lock blah(mutex); controllerMapping[controllerButton] = id; }
+    e_ControllerButton GetFunctionMapping(e_ButtonFunction buttonFunction) { std::unique_lock<std::mutex> blah(mutex); return functionMapping[buttonFunction]; }
+    void SetFunctionMapping(e_ButtonFunction buttonFunction, e_ControllerButton controllerButton) { std::unique_lock<std::mutex> blah(mutex); functionMapping[buttonFunction] = controllerButton; }
+    signed int GetControllerMapping(e_ControllerButton controllerButton) { std::unique_lock<std::mutex> blah(mutex); return controllerMapping[controllerButton]; }
+    void SetControllerMapping(e_ControllerButton controllerButton, signed int id) { std::unique_lock<std::mutex> blah(mutex); controllerMapping[controllerButton] = id; }
 
     int GetGamepadID() { return gamepadID; }
 

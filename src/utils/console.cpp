@@ -10,7 +10,7 @@
 
 namespace blunted {
 
-  Console::Console(boost::shared_ptr<Scene2D> scene2D, int numlines) : scene2D(scene2D), numlines(numlines) {
+  Console::Console(std::shared_ptr<Scene2D> scene2D, int numlines) : scene2D(scene2D), numlines(numlines) {
     text2D = new Text2D(scene2D);
 
     lineheight = 20;

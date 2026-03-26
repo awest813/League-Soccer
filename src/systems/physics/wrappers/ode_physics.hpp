@@ -89,7 +89,7 @@ namespace blunted {
       dWorldID GetOdeWorldID(int worldID);
 
     protected:
-      boost::mutex mutex;
+      std::mutex mutex;
 
       std::map <int, dWorldID> worldMap;
       std::map <int, dSpaceID> spaceMap;

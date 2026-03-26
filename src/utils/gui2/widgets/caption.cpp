@@ -103,10 +103,10 @@ namespace blunted {
     dstRect.y = 0;
     dstRect.w = 10000;
     dstRect.h = 10000;
-    SDL_BlitSurface(textOutlineSurf, NULL, surface, &dstRect);
+    SDL_BlitSurface(textOutlineSurf, nullptr, surface, &dstRect);
     dstRect.x = round(outlineWidth * zoomy);
     dstRect.y = round(outlineWidth * zoomy);
-    SDL_BlitSurface(textSurf, NULL, surface, &dstRect);
+    SDL_BlitSurface(textSurf, nullptr, surface, &dstRect);
     if (transparency > 0.0f) {
       sdl_setsurfacealpha(surface, (1.0f - transparency) * 255);
     }

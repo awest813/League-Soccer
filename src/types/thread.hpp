@@ -10,8 +10,6 @@
 #include "types/messagequeue.hpp"
 #include "types/lockable.hpp"
 
-#include "boost/thread.hpp"
-
 namespace blunted {
 
   enum e_ThreadState {
@@ -66,7 +64,7 @@ namespace blunted {
 
 
       void Run() {
-        thread = boost::thread(boost::ref( *this ));
+        thread = std::thread(std::ref( *this ));
       }
 
       void Join() {
@@ -78,7 +76,7 @@ namespace blunted {
 
       MessageQueue < boost::intrusive_ptr<Command> > messageQueue;
 
-      boost::thread thread;
+      std::thread thread;
 
     protected:
       Lockable<e_ThreadState> state;
@@ -94,7 +92,7 @@ namespace blunted {
       Message_Shutdown() : Command("shutdown") {};
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         return false;
       }
 

@@ -70,7 +70,7 @@ namespace blunted {
   Gui2Page *Gui2PageFactory::CreatePage(int pageID, const Properties &properties, void *data) {
     Gui2PageData pageData;
     pageData.pageID = pageID;
-    pageData.properties = boost::shared_ptr<Properties>(new Properties(properties));
+    pageData.properties = std::shared_ptr<Properties>(new Properties(properties));
     pageData.data = data;
     Gui2Page *page = CreatePage(pageData);
     mostRecentlyCreatedPage = page;

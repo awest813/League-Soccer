@@ -17,7 +17,7 @@
 
 #include "../main.hpp"
 
-Officials::Officials(Match *match, boost::intrusive_ptr<Node> fullbodySourceNode, std::map<Vector3, Vector3> &colorCoords, boost::intrusive_ptr < Resource<Surface> > kit, boost::shared_ptr<AnimCollection> animCollection) : match(match) {
+Officials::Officials(Match *match, boost::intrusive_ptr<Node> fullbodySourceNode, std::map<Vector3, Vector3> &colorCoords, boost::intrusive_ptr < Resource<Surface> > kit, std::shared_ptr<AnimCollection> animCollection) : match(match) {
   ObjectLoader loader;
   boost::intrusive_ptr<Node> playerNode = loader.LoadObject(GetScene3D(), "media/objects/players/player.object");
   playerNode->SetName("player");
@@ -39,14 +39,14 @@ Officials::Officials(Match *match, boost::intrusive_ptr<Node> fullbodySourceNode
   linesmen[1]->CastHumanoid()->ResetPosition(Vector3(-25, 36.5, 0), Vector3(0));
 
   boost::intrusive_ptr < Resource<GeometryData> > geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/officials/yellowcard.ase", true);
-  yellowCard = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("yellowcard", e_ObjectType_Geometry));
+  yellowCard = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("yellowcard", e_ObjectType_Geometry));
   GetScene3D()->CreateSystemObjects(yellowCard);
   yellowCard->SetGeometryData(geometry);
   yellowCard->SetLocalMode(e_LocalMode_Absolute);
   yellowCard->SetPosition(Vector3(0, 0, -10));
 
   geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/officials/redcard.ase", true);
-  redCard = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("redcard", e_ObjectType_Geometry));
+  redCard = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("redcard", e_ObjectType_Geometry));
   GetScene3D()->CreateSystemObjects(redCard);
   redCard->SetGeometryData(geometry);
   redCard->SetLocalMode(e_LocalMode_Absolute);

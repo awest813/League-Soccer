@@ -25,7 +25,7 @@ namespace blunted {
   class ThreadHud {
 
     public:
-      ThreadHud(boost::shared_ptr<Scene2D> scene2D);
+      ThreadHud(std::shared_ptr<Scene2D> scene2D);
       virtual ~ThreadHud();
 
       void Execute();
@@ -33,7 +33,7 @@ namespace blunted {
       void Redraw(bool forceRedraw = false);
 
     protected:
-      boost::shared_ptr<Scene2D> scene2D;
+      std::shared_ptr<Scene2D> scene2D;
 
       std::vector < std::vector<WorkerThreadItem> > workerThreadHistory; // vector content is guaranteed to be chronologic
       boost::intrusive_ptr<Image2D> graph;

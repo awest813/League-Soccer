@@ -16,8 +16,8 @@
 namespace blunted {
 
   GraphicsSystem::GraphicsSystem() : systemType(e_SystemType_Graphics) {
-    renderer3DTask = NULL;
-    task = NULL;
+    renderer3DTask = nullptr;
+    task = nullptr;
   }
 
   GraphicsSystem::~GraphicsSystem() {
@@ -25,8 +25,8 @@ namespace blunted {
 
   void GraphicsSystem::Initialize(const Properties &config) {
 
-    textureResourceManager = boost::shared_ptr < ResourceManager<Texture> > (new ResourceManager<Texture>("texture"));
-    vertexBufferResourceManager = boost::shared_ptr < ResourceManager<VertexBuffer> > (new ResourceManager<VertexBuffer>("vertexbuffer"));
+    textureResourceManager = std::shared_ptr < ResourceManager<Texture> > (new ResourceManager<Texture>("texture"));
+    vertexBufferResourceManager = std::shared_ptr < ResourceManager<VertexBuffer> > (new ResourceManager<VertexBuffer>("vertexbuffer"));
     ResourceManagerPool::GetInstance().RegisterManager(e_ResourceType_Texture, textureResourceManager);
     ResourceManagerPool::GetInstance().RegisterManager(e_ResourceType_VertexBuffer, vertexBufferResourceManager);
 
@@ -60,7 +60,7 @@ namespace blunted {
 
     task->Join();
     delete task;
-    task = NULL;
+    task = nullptr;
 
     textureResourceManager.reset();
     vertexBufferResourceManager.reset();
@@ -72,14 +72,14 @@ namespace blunted {
 
     renderer3DTask->Join();
     delete renderer3DTask;
-    renderer3DTask = NULL;
+    renderer3DTask = nullptr;
   }
 
   e_SystemType GraphicsSystem::GetSystemType() const {
     return systemType;
   }
 
-  ISystemScene *GraphicsSystem::CreateSystemScene(boost::shared_ptr<IScene> scene) {
+  ISystemScene *GraphicsSystem::CreateSystemScene(std::shared_ptr<IScene> scene) {
     if (scene->GetSceneType() == e_SceneType_Scene2D) {
       GraphicsScene *graphicsScene = new GraphicsScene(this);
       scene->Attach(graphicsScene->GetInterpreter(e_SceneType_Scene2D));
@@ -90,7 +90,7 @@ namespace blunted {
       scene->Attach(graphicsScene->GetInterpreter(e_SceneType_Scene3D));
       return graphicsScene;
     }
-    return NULL;
+    return nullptr;
   }
 
   ISystemTask *GraphicsSystem::GetTask() {

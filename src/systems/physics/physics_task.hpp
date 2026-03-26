@@ -47,7 +47,7 @@ namespace blunted {
       int remainder_ms;
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
       IPhysicsWrapper *physics;
       int timediff_ms, resolution_ms;
@@ -60,7 +60,7 @@ namespace blunted {
       PhysicsTaskCommand_UpdateGeometry() : Command("UpdateGeometry") {}
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 

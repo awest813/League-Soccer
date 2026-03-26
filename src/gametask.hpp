@@ -32,7 +32,7 @@ class UpdateFullbodyModel : public Command {
       }
     }
 
-    virtual bool Execute(void *caller = NULL) {
+    virtual bool Execute(void *caller = nullptr) {
       Update();
       return true;
     }
@@ -50,7 +50,7 @@ class UploadFullbodyModel : public Command {
   protected:
     void Update();
 
-    virtual bool Execute(void *caller = NULL) {
+    virtual bool Execute(void *caller = nullptr) {
       Update();
       return true;
     }
@@ -88,16 +88,16 @@ class GameTask : public IUserTask {
 
     virtual std::string GetName() const { return "game"; }
 
-    boost::mutex matchLifetimeMutex;
+    std::mutex matchLifetimeMutex;
 
   protected:
     Match *match;
     MenuScene *menuScene;
 
-    boost::timed_mutex matchPutBufferMutex;
-    boost::mutex menuSceneLifetimeMutex;
+    std::timed_mutex matchPutBufferMutex;
+    std::mutex menuSceneLifetimeMutex;
 
-    boost::shared_ptr<Scene3D> scene3D;
+    std::shared_ptr<Scene3D> scene3D;
 
 };
 

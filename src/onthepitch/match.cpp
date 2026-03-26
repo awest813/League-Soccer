@@ -79,7 +79,7 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
 
   Log(e_Notice, "Match", "Match", "Loading player animations");
 
-  anims = boost::shared_ptr<AnimCollection>(new AnimCollection(GetScene3D()));
+  anims = std::shared_ptr<AnimCollection>(new AnimCollection(GetScene3D()));
   anims->Load("media/animations");
 
 
@@ -154,7 +154,7 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
 
   Log(e_Notice, "Match", "Match", "Creating camera objects");
 
-  camera = static_pointer_cast<Camera>(ObjectFactory::GetInstance().CreateObject("camera", e_ObjectType_Camera));
+  camera = boost::static_pointer_cast<Camera>(ObjectFactory::GetInstance().CreateObject("camera", e_ObjectType_Camera));
   GetScene3D()->CreateSystemObjects(camera);
   camera->Init();
 
@@ -378,7 +378,7 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
   if (maxTestLights > 0) {
     boost::intrusive_ptr<Light> lightTest[maxTestLights];
     for (int li = 0; li < maxTestLights; li++) {
-      lightTest[li] = static_pointer_cast<Light>(ObjectFactory::GetInstance().CreateObject("testLight #" + int_to_str(li), e_ObjectType_Light));
+      lightTest[li] = boost::static_pointer_cast<Light>(ObjectFactory::GetInstance().CreateObject("testLight #" + int_to_str(li), e_ObjectType_Light));
       scene3D->CreateSystemObjects(lightTest[li]);
       lightTest[li]->SetShadow(false);
       lightTest[li]->SetType(e_LightType_Point);
@@ -505,7 +505,7 @@ void Match::SetRandomSunParams() {
 
   float defaultRadius = 1000000.0f;
   float sunRadius = defaultRadius;
-  static_pointer_cast<Light>(sunNode->GetObject("sun"))->SetRadius(sunRadius);
+  boost::static_pointer_cast<Light>(sunNode->GetObject("sun"))->SetRadius(sunRadius);
 
   Vector3 sunColorNoon(0.9, 0.8, 1.0); sunColorNoon *= 1.4f;
   Vector3 sunColorDusk(1.4, 0.9, 0.7); sunColorDusk *= 1.2f;
@@ -520,7 +520,7 @@ void Match::SetRandomSunParams() {
   if (Verbose()) printf("sunlight noonbias: %f, random addition: ", noonBias);
   if (Verbose()) randomAddition.Print();
 
-  static_pointer_cast<Light>(sunNode->GetObject("sun"))->SetColor(sunColor * brightness);
+  boost::static_pointer_cast<Light>(sunNode->GetObject("sun"))->SetColor(sunColor * brightness);
 }
 
 void Match::RandomizeAdboards(boost::intrusive_ptr<Node> stadiumNode) {

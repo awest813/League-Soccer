@@ -21,7 +21,7 @@
 
 namespace blunted {
 
-  Gui2Task::Gui2Task(boost::shared_ptr<Scene2D> scene2D, float aspectRatio, float margin) : scene2D(scene2D) {
+  Gui2Task::Gui2Task(std::shared_ptr<Scene2D> scene2D, float aspectRatio, float margin) : scene2D(scene2D) {
     windowManager = new Gui2WindowManager(scene2D, aspectRatio, margin);
     for (int j = 0; j < _JOYSTICK_MAX; j++) {
       for (int i = 0; i < _JOYSTICK_MAXBUTTONS; i++) {

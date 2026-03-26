@@ -46,7 +46,7 @@ namespace blunted {
 
       virtual void OnLoad(boost::intrusive_ptr<Joint> joint, boost::intrusive_ptr<Geometry> object1, boost::intrusive_ptr<Geometry> object2, const Vector3 &anchor, const Vector3 &axis1, const Vector3 &axis2);
       virtual void OnUnload();
-      //virtual void OnChange(boost::shared_ptr < Resource<TriangleMesh> > surface);
+      //virtual void OnChange(std::shared_ptr < Resource<TriangleMesh> > surface);
       //inline virtual void OnMove(const Vector3 &position);
       //inline virtual void OnRotate(const Quaternion &rotation);
 

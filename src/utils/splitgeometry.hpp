@@ -14,7 +14,7 @@
 
 namespace blunted {
 
-  boost::intrusive_ptr<Node> SplitGeometry(boost::shared_ptr<Scene3D> scene3D, boost::intrusive_ptr<Geometry> source, float gridSize = 1.0);
+  boost::intrusive_ptr<Node> SplitGeometry(std::shared_ptr<Scene3D> scene3D, boost::intrusive_ptr<Geometry> source, float gridSize = 1.0);
 
 }
 

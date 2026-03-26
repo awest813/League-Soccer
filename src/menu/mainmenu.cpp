@@ -14,7 +14,8 @@
 #include "blunted.hpp"
 
 #include <set>
-#include <boost/algorithm/string.hpp>
+#include <algorithm>
+#include <cctype>
 
 using namespace blunted;
 
@@ -263,7 +264,8 @@ ClubData GetClubData(Database *namedb, const std::string &name) {
     data.tactics_xml = "";
     data.shortName = name;
     data.shortName.erase(remove_if(data.shortName.begin(), data.shortName.end(), isspace), data.shortName.end());
-    data.shortName = boost::to_upper_copy(data.shortName.substr(0, 3));
+    data.shortName = data.shortName.substr(0, 3);
+    std::transform(data.shortName.begin(), data.shortName.end(), data.shortName.begin(), ::toupper);
     data.color1 = "40, 40, 40";
     data.color2 = "200, 200, 200";
   }
@@ -1062,7 +1064,7 @@ void MainMenuPage::Import_ProcessAgeValueStats() {
         amount++;
         tmpIter++;
       }
-      if (boost::next(tmpIter) != tempAverageStatPerAge.end()) { // add next
+      if (std::next(tmpIter) != tempAverageStatPerAge.end()) { // add next
         tmpIter++;
         average += tmpIter->second;
         amount++;

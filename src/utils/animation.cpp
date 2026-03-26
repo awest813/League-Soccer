@@ -43,7 +43,7 @@ namespace blunted {
     // attention! shallow copy!
     extensions = src.extensions;
 
-    boost::shared_ptr<XMLTree> tmpCustomData(new XMLTree(*src.customData));
+    std::shared_ptr<XMLTree> tmpCustomData(new XMLTree(*src.customData));
     customData = tmpCustomData;
 
     std::map<const char*, std::string>::const_iterator varCacheIter = src.variableCache.begin();
@@ -324,7 +324,7 @@ namespace blunted {
       animIter++;
     }
 
-    std::map < std::string, boost::shared_ptr<AnimationExtension> >::iterator extensionIter = extensions.begin();
+    std::map < std::string, std::shared_ptr<AnimationExtension> >::iterator extensionIter = extensions.begin();
     while (extensionIter != extensions.end()) {
       extensionIter->second->Rotate2D(-incomingBodyAngle);
       extensionIter++;
@@ -367,7 +367,7 @@ namespace blunted {
     }
   }
 
-  void Animation::Apply(const std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap, int frame, int timeOffset_ms, bool smooth, float smoothFactor, /*const boost::shared_ptr<Animation> previousAnimation, int smoothFrames, */const Vector3 &basePos, radian baseRot, std::map < std::string, BiasedOffset > &offsets, MovementHistory *movementHistory, int timeDiff_ms, bool noPos, bool updateSpatial) {
+  void Animation::Apply(const std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap, int frame, int timeOffset_ms, bool smooth, float smoothFactor, /*const std::shared_ptr<Animation> previousAnimation, int smoothFrames, */const Vector3 &basePos, radian baseRot, std::map < std::string, BiasedOffset > &offsets, MovementHistory *movementHistory, int timeDiff_ms, bool noPos, bool updateSpatial) {
 
     // simple keyframe-to-keyframe version
 
@@ -779,7 +779,7 @@ namespace blunted {
       }
     }
 
-    std::map < std::string, boost::shared_ptr<AnimationExtension> >::iterator extensionIter = extensions.begin();
+    std::map < std::string, std::shared_ptr<AnimationExtension> >::iterator extensionIter = extensions.begin();
     while (extensionIter != extensions.end()) {
       extensionIter->second->Shift(fromFrame, offset);
       extensionIter++;
@@ -1130,7 +1130,7 @@ namespace blunted {
     for (unsigned int i = lastLine; i < file.size(); i++) {
       std::vector<std::string> tokenizedLine;
       tokenize(file.at(i), tokenizedLine, ",");
-      std::map < std::string, boost::shared_ptr<AnimationExtension> >::iterator extensionIter;
+      std::map < std::string, std::shared_ptr<AnimationExtension> >::iterator extensionIter;
       if (tokenizedLine.at(0) == "extension") {
         tokenizedLines.push_back(tokenizedLine);
       } else {
@@ -1145,11 +1145,11 @@ namespace blunted {
       xmlData.append(file.at(i));
     }
     XMLLoader xmlLoader;
-    customData = boost::shared_ptr<XMLTree>(new XMLTree(xmlLoader.Load(xmlData)));
+    customData = std::shared_ptr<XMLTree>(new XMLTree(xmlLoader.Load(xmlData)));
 
     // load extension data
     for (unsigned int i = 0; i < tokenizedLines.size(); i++) {
-      std::map < std::string, boost::shared_ptr<AnimationExtension> >::iterator extensionIter;
+      std::map < std::string, std::shared_ptr<AnimationExtension> >::iterator extensionIter;
       extensionIter = extensions.find(tokenizedLines.at(i).at(1));
       if (extensionIter != extensions.end()) (*extensionIter).second->Load(tokenizedLines.at(i));
     }
@@ -1231,7 +1231,7 @@ namespace blunted {
       fprintf(file, "%s\n", fileData.at(i).c_str());
     }
 
-    std::map < std::string, boost::shared_ptr<AnimationExtension> >::iterator extensionIter = extensions.begin();
+    std::map < std::string, std::shared_ptr<AnimationExtension> >::iterator extensionIter = extensions.begin();
     while (extensionIter != extensions.end()) {
       (*extensionIter).second->Save(file);
       extensionIter++;
@@ -1284,7 +1284,7 @@ namespace blunted {
     }
 
     // extensions!
-    std::map < std::string, boost::shared_ptr<AnimationExtension> >::iterator extensionIter = extensions.begin();
+    std::map < std::string, std::shared_ptr<AnimationExtension> >::iterator extensionIter = extensions.begin();
     while (extensionIter != extensions.end()) {
       extensionIter->second->Mirror();
       extensionIter++;
@@ -1316,11 +1316,11 @@ namespace blunted {
     return name;
   }
 
-  void Animation::AddExtension(const std::string &name, boost::shared_ptr<AnimationExtension> extension) {
-    extensions.insert(std::pair < std::string, boost::shared_ptr<AnimationExtension> >(name, extension));
+  void Animation::AddExtension(const std::string &name, std::shared_ptr<AnimationExtension> extension) {
+    extensions.insert(std::pair < std::string, std::shared_ptr<AnimationExtension> >(name, extension));
   }
 
-  boost::shared_ptr<AnimationExtension> Animation::GetExtension(const std::string &name) {
+  std::shared_ptr<AnimationExtension> Animation::GetExtension(const std::string &name) {
     return extensions.find(name)->second;
   }
 
@@ -1355,7 +1355,7 @@ namespace blunted {
     }
   }
 
-  boost::shared_ptr<XMLTree> Animation::GetCustomData() {
+  std::shared_ptr<XMLTree> Animation::GetCustomData() {
     return customData;
   }
 
@@ -1364,7 +1364,7 @@ namespace blunted {
     // outgoing ball angle == outgoing player angle
     Vector3 position;
     int frame;
-    bool touch = boost::static_pointer_cast<FootballAnimationExtension>(GetExtension("football"))->GetFirstTouch(position, frame);
+    bool touch = std::static_pointer_cast<FootballAnimationExtension>(GetExtension("football"))->GetFirstTouch(position, frame);
     if (touch) {
       Vector3 angles, position;
       float power;

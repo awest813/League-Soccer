@@ -43,14 +43,14 @@ using namespace blunted;
 GraphicsSystem *graphicsSystem;
 AudioSystem *audioSystem;
 
-boost::shared_ptr<Scene2D> scene2D;
-boost::shared_ptr<Scene3D> scene3D;
+std::shared_ptr<Scene2D> scene2D;
+std::shared_ptr<Scene3D> scene3D;
 
-boost::shared_ptr<TaskSequence> graphicsSequence;
-boost::shared_ptr<TaskSequence> gameSequence;
+std::shared_ptr<TaskSequence> graphicsSequence;
+std::shared_ptr<TaskSequence> gameSequence;
 
-boost::shared_ptr<GameTask> gameTask;
-boost::shared_ptr<MenuTask> menuTask;
+std::shared_ptr<GameTask> gameTask;
+std::shared_ptr<MenuTask> menuTask;
 
 boost::intrusive_ptr<Geometry> greenPilon;
 boost::intrusive_ptr<Geometry> bluePilon;
@@ -98,11 +98,11 @@ std::string GetConfigFilename() {
   return configFile;
 }
 
-boost::shared_ptr<Scene2D> GetScene2D() {
+std::shared_ptr<Scene2D> GetScene2D() {
   return scene2D;
 }
 
-boost::shared_ptr<Scene3D> GetScene3D() {
+std::shared_ptr<Scene3D> GetScene3D() {
   return scene3D;
 }
 
@@ -110,11 +110,11 @@ GraphicsSystem *GetGraphicsSystem() {
   return graphicsSystem;
 }
 
-boost::shared_ptr<GameTask> GetGameTask() {
+std::shared_ptr<GameTask> GetGameTask() {
   return gameTask;
 }
 
-boost::shared_ptr<MenuTask> GetMenuTask() {
+std::shared_ptr<MenuTask> GetMenuTask() {
   return menuTask;
 }
 
@@ -259,7 +259,7 @@ class ThreadHudThread : public Thread {
 
         SetState(e_ThreadState_Idle);
 
-        boost::this_thread::yield();
+        std::this_thread::yield();
       }
     }
 
@@ -277,7 +277,7 @@ int main(int argc, const char** argv) {
 
   Initialize(*config);
 
-  srand(time(NULL));
+  srand(time(nullptr));
   rand(); // mingw32? buggy compiler? first value seems bogus
   randomseed(); // for the boost random
   fastrandomseed();
@@ -311,10 +311,10 @@ int main(int argc, const char** argv) {
 
   // init scenes
 
-  scene2D = boost::shared_ptr<Scene2D>(new Scene2D("scene2D", *config));
+  scene2D = std::shared_ptr<Scene2D>(new Scene2D("scene2D", *config));
   SceneManager::GetInstance().RegisterScene(scene2D);
 
-  scene3D = boost::shared_ptr<Scene3D>(new Scene3D("scene3D"));
+  scene3D = std::shared_ptr<Scene3D>(new Scene3D("scene3D"));
   SceneManager::GetInstance().RegisterScene(scene3D);
 
   if (SuperDebug()) InitDebugImage();
@@ -332,7 +332,7 @@ int main(int argc, const char** argv) {
   // debug pilons
 
   boost::intrusive_ptr < Resource<GeometryData> > geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/helpers/green.ase", true);
-  greenPilon = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("greenPilon", e_ObjectType_Geometry));
+  greenPilon = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("greenPilon", e_ObjectType_Geometry));
   scene3D->CreateSystemObjects(greenPilon);
   greenPilon->SetGeometryData(geometry);
   greenPilon->SetLocalMode(e_LocalMode_Absolute);
@@ -340,7 +340,7 @@ int main(int argc, const char** argv) {
   //greenPilon->Disable();
 
   geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/helpers/blue.ase", true);
-  bluePilon = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("bluePilon", e_ObjectType_Geometry));
+  bluePilon = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("bluePilon", e_ObjectType_Geometry));
   scene3D->CreateSystemObjects(bluePilon);
   bluePilon->SetGeometryData(geometry);
   bluePilon->SetLocalMode(e_LocalMode_Absolute);
@@ -348,7 +348,7 @@ int main(int argc, const char** argv) {
   //bluePilon->Disable();
 
   geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/helpers/yellow.ase", true);
-  yellowPilon = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("yellowPilon", e_ObjectType_Geometry));
+  yellowPilon = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("yellowPilon", e_ObjectType_Geometry));
   scene3D->CreateSystemObjects(yellowPilon);
   yellowPilon->SetGeometryData(geometry);
   yellowPilon->SetLocalMode(e_LocalMode_Absolute);
@@ -356,7 +356,7 @@ int main(int argc, const char** argv) {
   //yellowPilon->Disable();
 
   geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/helpers/red.ase", true);
-  redPilon = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("redPilon", e_ObjectType_Geometry));
+  redPilon = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("redPilon", e_ObjectType_Geometry));
   scene3D->CreateSystemObjects(redPilon);
   redPilon->SetGeometryData(geometry);
   redPilon->SetLocalMode(e_LocalMode_Absolute);
@@ -364,7 +364,7 @@ int main(int argc, const char** argv) {
   //redPilon->Disable();
 
   geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/helpers/smalldebugcircle.ase", true);
-  smallDebugCircle1 = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("smallDebugCircle1", e_ObjectType_Geometry));
+  smallDebugCircle1 = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("smallDebugCircle1", e_ObjectType_Geometry));
   scene3D->CreateSystemObjects(smallDebugCircle1);
   smallDebugCircle1->SetGeometryData(geometry);
   smallDebugCircle1->SetLocalMode(e_LocalMode_Absolute);
@@ -372,7 +372,7 @@ int main(int argc, const char** argv) {
 //  smallDebugCircle1->Disable();
 
   geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/helpers/smalldebugcircle.ase", true);
-  smallDebugCircle2 = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("smallDebugCircle2", e_ObjectType_Geometry));
+  smallDebugCircle2 = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("smallDebugCircle2", e_ObjectType_Geometry));
   scene3D->CreateSystemObjects(smallDebugCircle2);
   smallDebugCircle2->SetGeometryData(geometry);
   smallDebugCircle2->SetLocalMode(e_LocalMode_Absolute);
@@ -380,7 +380,7 @@ int main(int argc, const char** argv) {
 //  smallDebugCircle2->Disable();
 
   geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/helpers/largedebugcircle.ase", true);
-  largeDebugCircle = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("largeDebugCircle", e_ObjectType_Geometry));
+  largeDebugCircle = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("largeDebugCircle", e_ObjectType_Geometry));
   scene3D->CreateSystemObjects(largeDebugCircle);
   largeDebugCircle->SetGeometryData(geometry);
   largeDebugCircle->SetLocalMode(e_LocalMode_Absolute);
@@ -402,9 +402,9 @@ int main(int argc, const char** argv) {
 
   // sequences
 
-  boost::mutex graphicsGameMutex; // todo: this mutex seems necessary for visual fluency, doesn't this imply that i'm setting positional stuff during something else than gametask put? (or reading during something else than graphics get)
+  std::mutex graphicsGameMutex; // todo: this mutex seems necessary for visual fluency, doesn't this imply that i'm setting positional stuff during something else than gametask put? (or reading during something else than graphics get)
 
-  gameTask = boost::shared_ptr<GameTask>(new GameTask());
+  gameTask = std::shared_ptr<GameTask>(new GameTask());
 
   // TTF_Font *defaultFont = TTF_OpenFont("media/fonts/archivonarrow/ArchivoNarrow-Regular.ttf", 28);
   // TTF_Font *defaultOutlineFont = TTF_OpenFont("media/fonts/archivonarrow/ArchivoNarrow-Regular.ttf", 28);
@@ -413,11 +413,11 @@ int main(int argc, const char** argv) {
   if (!defaultFont) Log(e_FatalError, "football", "main", "Could not load font " + fontfilename);
   TTF_Font *defaultOutlineFont = TTF_OpenFont(fontfilename.c_str(), 32);
   TTF_SetFontOutline(defaultOutlineFont, 2);
-  menuTask = boost::shared_ptr<MenuTask>(new MenuTask(5.0f / 4.0f, 0, defaultFont, defaultOutlineFont));
+  menuTask = std::shared_ptr<MenuTask>(new MenuTask(5.0f / 4.0f, 0, defaultFont, defaultOutlineFont));
   if (controllers.size() > 1) menuTask->SetEventJoyButtons(static_cast<HIDGamepad*>(controllers.at(1))->GetControllerMapping(e_ControllerButton_A), static_cast<HIDGamepad*>(controllers.at(1))->GetControllerMapping(e_ControllerButton_B));
 
 
-  gameSequence = boost::shared_ptr<TaskSequence>(new TaskSequence("game", timeStep_ms, false));
+  gameSequence = std::shared_ptr<TaskSequence>(new TaskSequence("game", timeStep_ms, false));
 
   // note: the whole locking stuff is now happening from within some of the code, iirc, 't is all very ugly and unclear. sorry
 
@@ -438,7 +438,7 @@ int main(int argc, const char** argv) {
 
 
 
-  graphicsSequence = boost::shared_ptr<TaskSequence>(new TaskSequence("graphics", config->GetInt("graphics3d_frametime_ms", 0), true));
+  graphicsSequence = std::shared_ptr<TaskSequence>(new TaskSequence("graphics", config->GetInt("graphics3d_frametime_ms", 0), true));
 
   graphicsSequence->AddUserTaskEntry(gameTask, e_TaskPhase_Put);
 

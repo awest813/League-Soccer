@@ -48,7 +48,7 @@ namespace blunted {
   }
 
   const std::string Spatial::GetName() const {
-    boost::mutex::scoped_lock blah(spatialMutex);
+    std::unique_lock<std::mutex> blah(spatialMutex);
     return name.c_str();
   }
 
@@ -104,7 +104,7 @@ namespace blunted {
   }
 
   Vector3 Spatial::GetDerivedPosition() const {
-    boost::mutex::scoped_lock cachelock(cacheMutex);
+    std::unique_lock<std::mutex> cachelock(cacheMutex);
     if (_dirty_DerivedPosition) {
       if (localMode == e_LocalMode_Relative) {
         if (parent) {
@@ -126,7 +126,7 @@ namespace blunted {
   }
 
   Quaternion Spatial::GetDerivedRotation() const {
-    boost::mutex::scoped_lock cachelock(cacheMutex);
+    std::unique_lock<std::mutex> cachelock(cacheMutex);
     if (_dirty_DerivedRotation) {
       if (localMode == e_LocalMode_Relative) {
         if (parent) {
@@ -143,7 +143,7 @@ namespace blunted {
   }
 
   Vector3 Spatial::GetDerivedScale() const {
-    boost::mutex::scoped_lock cachelock(cacheMutex);
+    std::unique_lock<std::mutex> cachelock(cacheMutex);
     if (_dirty_DerivedScale) {
       if (localMode == e_LocalMode_Relative) {
         if (parent) {

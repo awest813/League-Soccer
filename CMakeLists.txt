@@ -13,7 +13,7 @@ endif(${VERSION_PATCH})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules")
 
-project(GameplayFootball VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH} LANGUAGES CXX)
+project(GameplayFootball VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH} LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,7 +35,7 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(SDL2_gfx REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system thread filesystem)
+find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenAL REQUIRED)
 find_package(SQLite3 REQUIRED)
 
@@ -130,7 +130,7 @@ add_library(datalib ${DATA_SOURCES} ${DATA_HEADERS})
 gf_target_includes(datalib)
 
 set(LIBRARIES gamelib hidlib menulib datalib leaguelib blunted2
-   Boost::filesystem Boost::system Boost::thread SQLite::SQLite3
+   Boost::system SQLite::SQLite3
    ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${SDL2_GFX_LIBRARIES}
    ${SDL2_LIBRARIES} ${OPENAL_LIBRARY} dl m ${OPENGL_LIBRARIES})
 

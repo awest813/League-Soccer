@@ -28,7 +28,7 @@ namespace blunted {
   }
 
   GraphicsTask::~GraphicsTask() {
-    graphicsSystem = NULL;
+    graphicsSystem = nullptr;
     // if a previous swapbuffer is still busy, wait
     if (swapBuffers != boost::intrusive_ptr<Renderer3DMessage_SwapBuffers>()) {
       swapBuffers->Wait();
@@ -89,7 +89,7 @@ namespace blunted {
 
   void GraphicsTask::GetPhase() {
 
-    boost::mutex::scoped_lock getPhaseLock(graphicsSystem->getPhaseMutex);
+    std::unique_lock<std::mutex> getPhaseLock(graphicsSystem->getPhaseMutex);
 
     TaskManager *taskManager = TaskManager::GetInstancePtr();
     Renderer3D *renderer3D = graphicsSystem->GetRenderer3D();
@@ -105,10 +105,10 @@ namespace blunted {
     // collect visibles
 
     bool success;
-    boost::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
+    std::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
     if (success) {
       std::list < boost::intrusive_ptr<Camera> > cameras;
-      boost::static_pointer_cast<Scene3D>(scene)->GetObjects<Camera>(e_ObjectType_Camera, cameras);
+      std::static_pointer_cast<Scene3D>(scene)->GetObjects<Camera>(e_ObjectType_Camera, cameras);
       //printf("cameras.size: %i\n", (signed int)cameras.size());
 
       std::vector < boost::intrusive_ptr<GraphicsTaskCommand_EnqueueView> > enqueueView; // [cameras.size()]
@@ -207,7 +207,7 @@ namespace blunted {
 
   bool GraphicsTaskCommand_RenderCamera::Execute(void *caller) {
     bool success;
-    boost::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
+    std::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
     if (success) scene->PokeObjects(e_ObjectType_Camera, e_SystemType_Graphics);
 
     return true;
@@ -215,7 +215,7 @@ namespace blunted {
 
   bool GraphicsTaskCommand_EnqueueView::Execute(void *caller) {
     bool success;
-    boost::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
+    std::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
 
     if (success) {
       // test camera->SetPosition(Vector3(sin((float)EnvironmentManager::GetInstance().GetTime_ms() * 0.001f) * 60, 0, 0), true);
@@ -246,15 +246,15 @@ namespace blunted {
       /* per-objecttype version
 
       std::list < boost::intrusive_ptr<Geometry> > visibleGeometry;
-      boost::static_pointer_cast<Scene3D>(scene)->GetObjects<Geometry>(e_ObjectType_Geometry, visibleGeometry, bounding);
+      std::static_pointer_cast<Scene3D>(scene)->GetObjects<Geometry>(e_ObjectType_Geometry, visibleGeometry, bounding);
       //printf("geometry.size: %i\n", visibleGeometry.size());
 
       std::list < boost::intrusive_ptr<Light> > visibleLights;
-      boost::static_pointer_cast<Scene3D>(scene)->GetObjects<Light>(e_ObjectType_Light, visibleLights, bounding);
+      std::static_pointer_cast<Scene3D>(scene)->GetObjects<Light>(e_ObjectType_Light, visibleLights, bounding);
       //printf("lights.size: %i\n", visibleLights.size());
 
       std::list < boost::intrusive_ptr<Skybox> > skyboxes;
-      boost::static_pointer_cast<Scene3D>(scene)->GetObjects<Skybox>(e_ObjectType_Skybox, skyboxes);
+      std::static_pointer_cast<Scene3D>(scene)->GetObjects<Skybox>(e_ObjectType_Skybox, skyboxes);
       //printf("skyboxes.size: %i\n", skyboxes.size());
 
       */
@@ -264,7 +264,7 @@ namespace blunted {
 
       std::deque < boost::intrusive_ptr<Object> > visibleObjects;
       //std::list < boost::intrusive_ptr<Object> > visibleObjects;
-      boost::static_pointer_cast<Scene3D>(scene)->GetObjects(visibleObjects, bounding);
+      std::static_pointer_cast<Scene3D>(scene)->GetObjects(visibleObjects, bounding);
 
       std::deque < boost::intrusive_ptr<Geometry> > visibleGeometry;
       std::deque < boost::intrusive_ptr<Light> > visibleLights;
@@ -308,7 +308,7 @@ namespace blunted {
   void GraphicsTaskCommand_EnqueueView::EnqueueShadowMap(boost::intrusive_ptr<Light> light) {
     // todo: bounding box (this is a hax)
     bool success;
-    boost::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
+    std::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
     if (success) {
       std::deque < boost::intrusive_ptr<Geometry> > visibleGeometry;
       vector_Planes bounding;
@@ -320,15 +320,15 @@ namespace blunted {
       bounding.push_back(plane);
       plane.Set(Vector3(60, 0, 0), Vector3(-1, 0, 0.3).GetNormalized());
       bounding.push_back(plane);
-      boost::static_pointer_cast<Scene3D>(scene)->GetObjects<Geometry>(e_ObjectType_Geometry, visibleGeometry, bounding);
-      //boost::static_pointer_cast<Scene3D>(scene)->GetObjects<Geometry>(e_ObjectType_Geometry, visibleGeometry);
+      std::static_pointer_cast<Scene3D>(scene)->GetObjects<Geometry>(e_ObjectType_Geometry, visibleGeometry, bounding);
+      //std::static_pointer_cast<Scene3D>(scene)->GetObjects<Geometry>(e_ObjectType_Geometry, visibleGeometry);
       light->EnqueueShadowMap(camera, visibleGeometry);
     }
   }
 
   bool GraphicsTaskCommand_RenderImage2D::Execute(void *caller) {
     bool success;
-    boost::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene2D", success);
+    std::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene2D", success);
     if (success) {
       scene->PokeObjects(e_ObjectType_Image2D, e_SystemType_Graphics);
     }
@@ -338,7 +338,7 @@ namespace blunted {
 
   bool GraphicsTaskCommand_RenderShadowMaps::Execute(void *caller) {
     bool success;
-    boost::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
+    std::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene("scene3D", success);
     if (success) {
       scene->PokeObjects(e_ObjectType_Light, e_SystemType_Graphics);
     }

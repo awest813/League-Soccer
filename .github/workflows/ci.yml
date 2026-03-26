@@ -26,7 +26,7 @@ jobs:
             libgl1-mesa-dev \
             libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
             libopenal-dev \
-            libboost-system-dev libboost-thread-dev libboost-filesystem-dev \
+            libboost-system-dev \
             libsqlite3-dev \
             xvfb
 

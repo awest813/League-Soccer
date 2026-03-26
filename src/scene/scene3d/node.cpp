@@ -15,7 +15,7 @@ namespace blunted {
     aabb.data.dirty = false;
   }
 
-  Node::Node(const Node &source, const std::string &postfix, boost::shared_ptr<Scene3D> scene3D) : Spatial(source) {
+  Node::Node(const Node &source, const std::string &postfix, std::shared_ptr<Scene3D> scene3D) : Spatial(source) {
     SetName(source.GetName() + postfix);
     std::vector < boost::intrusive_ptr<Node> > gatherNodes;
     source.GetNodes(gatherNodes);
@@ -96,7 +96,7 @@ namespace blunted {
   }
 
   boost::intrusive_ptr<Node> Node::GetNode(const std::string &name) {
-    boost::mutex::scoped_lock blah(nodes.mutex);
+    std::unique_lock<std::mutex> blah(nodes.mutex);
     std::vector < boost::intrusive_ptr<Node> >::iterator nodeIter = nodes.data.begin();
     while (nodeIter != nodes.data.end()) {
       if ((*nodeIter)->GetName() == name) {
@@ -123,7 +123,7 @@ namespace blunted {
   }
 
   boost::intrusive_ptr<Object> Node::GetObject(const std::string &name) {
-    boost::mutex::scoped_lock blah(objects.mutex);
+    std::unique_lock<std::mutex> blah(objects.mutex);
     std::vector < boost::intrusive_ptr<Object> >::iterator objIter = objects.data.begin();
     while (objIter != objects.data.end()) {
       if ((*objIter)->GetName() == name) {

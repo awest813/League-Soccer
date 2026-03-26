@@ -28,8 +28,8 @@ namespace blunted {
       virtual void SetRotation(const Quaternion &newRotation);
       Quaternion GetRotation() const;
 
-      //std::vector < boost::shared_ptr<VertexBufferIndex> > vertexBufferIndices;
-      //boost::shared_ptr < Resource<VertexBuffer> > vertexBuffer;
+      //std::vector < std::shared_ptr<VertexBufferIndex> > vertexBufferIndices;
+      //std::shared_ptr < Resource<VertexBuffer> > vertexBuffer;
 
       IPhysicsActor *actor;
       IPhysicsCollisionMesh *mesh;

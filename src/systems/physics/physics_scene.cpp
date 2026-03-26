@@ -45,7 +45,7 @@ namespace blunted {
       return physicsObject;
     }
 
-    return NULL;
+    return nullptr;
   }
 
   boost::intrusive_ptr<ISceneInterpreter> PhysicsScene::GetInterpreter(e_SceneType sceneType) {

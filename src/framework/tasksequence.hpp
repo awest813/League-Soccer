@@ -63,13 +63,13 @@ namespace blunted {
   class TaskSequenceEntryLockThread {
 
     public:
-      TaskSequenceEntryLockThread(boost::mutex &sequenceLock);
+      TaskSequenceEntryLockThread(std::mutex &sequenceLock);
       void operator()();
       void Reset();
       bool IsReady();
 
     protected:
-      boost::mutex &sequenceLock;
+      std::mutex &sequenceLock;
       Lockable<bool> isReady;
 
   };
@@ -77,7 +77,7 @@ namespace blunted {
   class TaskSequenceEntry_Lock : public ITaskSequenceEntry {
 
     public:
-      TaskSequenceEntry_Lock(boost::mutex &sequenceLock);
+      TaskSequenceEntry_Lock(std::mutex &sequenceLock);
       virtual ~TaskSequenceEntry_Lock();
 
       virtual bool Execute();
@@ -85,8 +85,8 @@ namespace blunted {
       virtual bool Reset();
 
     protected:
-      boost::mutex &sequenceLock;
-      boost::thread lockThread;
+      std::mutex &sequenceLock;
+      std::thread lockThread;
       TaskSequenceEntryLockThread *lockThreadObject;
 
   };
@@ -94,14 +94,14 @@ namespace blunted {
   class TaskSequenceEntry_Unlock : public ITaskSequenceEntry {
 
     public:
-      TaskSequenceEntry_Unlock(boost::mutex &sequenceLock);
+      TaskSequenceEntry_Unlock(std::mutex &sequenceLock);
       virtual ~TaskSequenceEntry_Unlock();
 
       virtual bool Execute();
       virtual bool IsReady();
 
     protected:
-      boost::mutex &sequenceLock;
+      std::mutex &sequenceLock;
 
   };
 
@@ -133,14 +133,14 @@ namespace blunted {
       TaskSequence(const std::string &name, int sequenceTime_ms, bool skipOnTooLate = true);
       virtual ~TaskSequence();
 
-      void AddEntry(boost::shared_ptr<ITaskSequenceEntry> entry);
+      void AddEntry(std::shared_ptr<ITaskSequenceEntry> entry);
       void AddSystemTaskEntry(ISystem *system, e_TaskPhase taskPhase);
-      void AddUserTaskEntry(boost::shared_ptr<IUserTask> userTask, e_TaskPhase taskPhase);
-      void AddLockEntry(boost::mutex &theLock, e_LockAction lockAction);
+      void AddUserTaskEntry(std::shared_ptr<IUserTask> userTask, e_TaskPhase taskPhase);
+      void AddLockEntry(std::mutex &theLock, e_LockAction lockAction);
       void AddTerminator();
 
       int GetEntryCount() const;
-      boost::shared_ptr<ITaskSequenceEntry> GetEntry(int num);
+      std::shared_ptr<ITaskSequenceEntry> GetEntry(int num);
       int GetSequenceTime() const;
       void SetSequenceTime(int value);
       const std::string GetName() const;
@@ -149,7 +149,7 @@ namespace blunted {
     protected:
       std::string name;
 
-      std::vector < boost::shared_ptr<ITaskSequenceEntry> > entries;
+      std::vector < std::shared_ptr<ITaskSequenceEntry> > entries;
 
       // time assigned for 1 run of this sequence
       // if 0, run continuously

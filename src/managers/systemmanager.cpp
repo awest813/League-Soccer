@@ -41,7 +41,7 @@ namespace blunted {
     return true;
   }
 
-  void SystemManager::CreateSystemScenes(boost::shared_ptr<IScene> scene) {
+  void SystemManager::CreateSystemScenes(std::shared_ptr<IScene> scene) {
     map_Systems::iterator s_iter = systems.begin();
     while (s_iter != systems.end()) {
       ISystem *system = s_iter->second;

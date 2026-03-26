@@ -30,40 +30,40 @@ namespace blunted {
   class IUserTaskMessage : public Command {
 
     public:
-      IUserTaskMessage(const std::string &name, boost::shared_ptr<IUserTask> task) : Command(name), task(task) {};
+      IUserTaskMessage(const std::string &name, std::shared_ptr<IUserTask> task) : Command(name), task(task) {};
 
     protected:
-      boost::shared_ptr<IUserTask> task;
+      std::shared_ptr<IUserTask> task;
 
   };
 
   class UserTaskMessage_GetPhase : public IUserTaskMessage {
 
     public:
-      UserTaskMessage_GetPhase(const std::string &name, boost::shared_ptr<IUserTask> task) : IUserTaskMessage(name, task) {};
+      UserTaskMessage_GetPhase(const std::string &name, std::shared_ptr<IUserTask> task) : IUserTaskMessage(name, task) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 
   class UserTaskMessage_ProcessPhase : public IUserTaskMessage {
 
     public:
-      UserTaskMessage_ProcessPhase(const std::string &name, boost::shared_ptr<IUserTask> task) : IUserTaskMessage(name, task) {};
+      UserTaskMessage_ProcessPhase(const std::string &name, std::shared_ptr<IUserTask> task) : IUserTaskMessage(name, task) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 
   class UserTaskMessage_PutPhase : public IUserTaskMessage {
 
     public:
-      UserTaskMessage_PutPhase(const std::string &name, boost::shared_ptr<IUserTask> task) : IUserTaskMessage(name, task) {};
+      UserTaskMessage_PutPhase(const std::string &name, std::shared_ptr<IUserTask> task) : IUserTaskMessage(name, task) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 

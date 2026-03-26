@@ -103,9 +103,9 @@ namespace blunted {
 
     // initialize resource managers
 
-    boost::shared_ptr < ResourceManager<GeometryData> > geometryDataResourceManager(new ResourceManager<GeometryData>("geometrydata"));
-    boost::shared_ptr < ResourceManager<Surface> > surfaceResourceManager(new ResourceManager<Surface>("surface"));
-    boost::shared_ptr < ResourceManager<SoundBuffer> > soundBufferResourceManager(new ResourceManager<SoundBuffer>("soundbuffer"));
+    std::shared_ptr < ResourceManager<GeometryData> > geometryDataResourceManager(new ResourceManager<GeometryData>("geometrydata"));
+    std::shared_ptr < ResourceManager<Surface> > surfaceResourceManager(new ResourceManager<Surface>("surface"));
+    std::shared_ptr < ResourceManager<SoundBuffer> > soundBufferResourceManager(new ResourceManager<SoundBuffer>("soundbuffer"));
 
     ResourceManagerPool::GetInstance().RegisterManager(e_ResourceType_GeometryData, geometryDataResourceManager);
     ResourceManagerPool::GetInstance().RegisterManager(e_ResourceType_Surface, surfaceResourceManager);

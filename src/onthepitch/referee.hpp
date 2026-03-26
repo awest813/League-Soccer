@@ -61,7 +61,7 @@ class Referee {
   protected:
     Match *match;
 
-    boost::shared_ptr<Scene3D> scene3D;
+    std::shared_ptr<Scene3D> scene3D;
 
     RefereeBuffer buffer;
 

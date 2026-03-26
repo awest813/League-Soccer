@@ -7,9 +7,6 @@
 
 #include "defines.hpp"
 
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
-
 #include "types/refcounted.hpp"
 #include "types/lockable.hpp"
 
@@ -23,17 +20,17 @@ namespace blunted {
 
       bool IsReady();
       void Reset();
-      bool Handle(void *caller = NULL);
+      bool Handle(void *caller = nullptr);
       void Wait();
 
       std::string GetName() const { return name.GetData(); }
 
     protected:
-      virtual bool Execute(void *caller = NULL) = 0;
+      virtual bool Execute(void *caller = nullptr) = 0;
 
-      boost::mutex mutex; // locks 'handled & processed'
+      std::mutex mutex; // locks 'handled & processed'
       bool handled;
-      boost::condition processed;
+      std::condition_variable processed;
 
       Lockable<std::string> name;
 

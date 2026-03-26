@@ -131,7 +131,7 @@ Gui2Image::Gui2Image(Gui2WindowManager *windowManager, const std::string &name,
       SDL_Rect rect;
       rect.x = w * 0.5 - imageSurf->w * 0.5;
       rect.y = h * 0.5 - imageSurf->h * 0.5;
-      SDL_BlitSurface(imageSurf, NULL, surface, &rect);
+      SDL_BlitSurface(imageSurf, nullptr, surface, &rect);
 
       surfaceRes->resourceMutex.unlock();
 

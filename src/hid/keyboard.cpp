@@ -20,7 +20,7 @@ HIDKeyboard::~HIDKeyboard() {
 }
 
 void HIDKeyboard::LoadConfig() {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   for (int i = 0; i < e_ButtonFunction_Size; i++) {
     functionButtonState[i] = false;
     previousFunctionButtonState[i] = false;
@@ -30,7 +30,7 @@ void HIDKeyboard::LoadConfig() {
 }
 
 void HIDKeyboard::SaveConfig() {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   for (int i = 0; i < e_ButtonFunction_Size; i++) {
     GetConfiguration()->SetInt(("input_keyboard_" + int_to_str(i)).c_str(), functionMapping[i]);
   }
@@ -38,7 +38,7 @@ void HIDKeyboard::SaveConfig() {
 }
 
 void HIDKeyboard::Process() {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   for (int i = 0; i < e_ButtonFunction_Size; i++) {
     previousFunctionButtonState[i] = functionButtonState[i];
     functionButtonState[i] = UserEventManager::GetInstance().GetKeyboardState(functionMapping[i]);
@@ -46,22 +46,22 @@ void HIDKeyboard::Process() {
 }
 
 bool HIDKeyboard::GetButton(e_ButtonFunction buttonFunction) {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   return functionButtonState[buttonFunction];
 }
 
 float HIDKeyboard::GetButtonValue(e_ButtonFunction buttonFunction) {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   if (functionButtonState[buttonFunction]) return 1.0; else return 0.0;
 }
 
 void HIDKeyboard::SetButton(e_ButtonFunction buttonFunction, bool state) {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   functionButtonState[buttonFunction] = state;
 }
 
 bool HIDKeyboard::GetPreviousButtonState(e_ButtonFunction buttonFunction) {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   return previousFunctionButtonState[buttonFunction];
 }
 

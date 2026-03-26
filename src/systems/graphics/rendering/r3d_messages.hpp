@@ -35,7 +35,7 @@ namespace blunted {
       bool success;
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         success = static_cast<Renderer3D*>(caller)->CreateContext(width, height, bpp, fullscreen);
         return true;
       }
@@ -54,7 +54,7 @@ namespace blunted {
       unsigned long GetReadyTime_ms() { return readyTime_ms; }
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->SwapBuffers();
         readyTime_ms = EnvironmentManager::GetInstance().GetTime_ms();
         return true;
@@ -72,7 +72,7 @@ namespace blunted {
       int textureID;
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         textureID = static_cast<Renderer3D*>(caller)->CreateTexture(internalPixelFormat, pixelFormat, width, height, alpha, repeat, mipmaps, filter, false, compareDepth); // false == multisample
 
         return true;
@@ -96,7 +96,7 @@ namespace blunted {
       Renderer3DMessage_DeleteTexture(int textureID) : Command("r3dmsg_DeleteTexture"), textureID(textureID) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->DeleteTexture(textureID);
 
         return true;
@@ -119,7 +119,7 @@ namespace blunted {
       }
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->ResizeTexture(textureID, source, internalPixelFormat, pixelFormat, alpha, mipmaps);
 
         SDL_FreeSurface(source);
@@ -148,7 +148,7 @@ namespace blunted {
       }
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->UpdateTexture(textureID, source, alpha, mipmaps);
 
         SDL_FreeSurface(this->source);
@@ -170,7 +170,7 @@ namespace blunted {
       VertexBufferID vertexBufferID;
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         vertexBufferID = static_cast<Renderer3D*>(caller)->CreateVertexBuffer(vertices, verticesDataSize, indices, usage);
 
         return true;
@@ -194,7 +194,7 @@ namespace blunted {
       }
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->UpdateVertexBuffer(vertexBufferID, vertices, verticesDataSize);
 
         return true;
@@ -213,7 +213,7 @@ namespace blunted {
       Renderer3DMessage_DeleteVertexBuffer(VertexBufferID vertexBufferID) : Command("r3dmsg_DeleteVertexBuffer"), vertexBufferID(vertexBufferID) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->DeleteVertexBuffer(vertexBufferID);
 
         return true;
@@ -235,7 +235,7 @@ namespace blunted {
       };
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->RenderOverlay2D(overlay2DQueue);
 
         return true;
@@ -252,7 +252,7 @@ namespace blunted {
       Renderer3DMessage_GetContextSize() : Command("r3dmsg_GetContextSize") {};
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->GetContextSize(width, height, bpp);
 
         return true;
@@ -270,7 +270,7 @@ namespace blunted {
       Renderer3DMessage_SetFOV(float angle) : Command("r3dmsg_SetFOV"), angle(angle) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->SetFOV(angle);
 
         return true;
@@ -288,7 +288,7 @@ namespace blunted {
       int viewID;
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         viewID = static_cast<Renderer3D*>(caller)->CreateView(x_percent, y_percent, width_percent, height_percent);
 
         return true;
@@ -310,7 +310,7 @@ namespace blunted {
       Renderer3DMessage_RenderView(int viewID, ViewBuffer &buffer) : Command("r3dmsg_RenderView"), viewID(viewID), buffer(buffer) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
       int viewID;
       ViewBuffer &buffer;
@@ -323,7 +323,7 @@ namespace blunted {
       Renderer3DMessage_DeleteView(int viewID) : Command("r3dmsg_DeleteView"), viewID(viewID) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL) {
+      virtual bool Execute(void *caller = nullptr) {
         static_cast<Renderer3D*>(caller)->DeleteView(viewID);
 
         return true;
@@ -339,7 +339,7 @@ namespace blunted {
       Renderer3DMessage_RenderShadowMap(const ShadowMap &map) : Command("r3dmsg_RenderShadowMap"), map(map) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
       const ShadowMap &map;
 
@@ -362,7 +362,7 @@ namespace blunted {
       int frameBufferID;
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
       e_TargetAttachment target1;
       int texID1;
@@ -393,7 +393,7 @@ namespace blunted {
                                           target5(target5) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
       int frameBufferID;
       e_TargetAttachment target1, target2, target3, target4, target5;

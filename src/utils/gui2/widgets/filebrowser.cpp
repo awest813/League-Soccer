@@ -4,11 +4,11 @@
 
 #include "filebrowser.hpp"
 
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#define BOOST_FILESYSTEM_VERSION 3
-#include "boost/filesystem.hpp"
 
-namespace fs = boost::filesystem;
+
+
+
+namespace fs = std::filesystem;
 
 namespace blunted {
 
@@ -82,7 +82,7 @@ namespace blunted {
       dirContents.push_back(entry);
     }
 
-    fs::path path = fs::system_complete(fs::path(directory.c_str()));
+    fs::path path = fs::absolute(fs::path(directory.c_str()));
     if (!fs::exists(path) || !fs::is_directory(path)) Log(e_Error, "GuiFileBrowser", "GetDirectoryContents", "Could not open directory " + directory + " for reading");
 
     fs::directory_iterator dirIter(path);

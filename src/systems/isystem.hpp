@@ -36,7 +36,7 @@ namespace blunted {
 
       virtual e_SystemType GetSystemType() const = 0;
 
-      virtual ISystemScene *CreateSystemScene(boost::shared_ptr<IScene> scene) = 0;
+      virtual ISystemScene *CreateSystemScene(std::shared_ptr<IScene> scene) = 0;
 
       /// returns the systemtask belonging to this system
       virtual ISystemTask *GetTask() = 0;

@@ -45,11 +45,11 @@ boost::intrusive_ptr<Geometry> GetSmallDebugCircle2();
 boost::intrusive_ptr<Geometry> GetLargeDebugCircle();
 
 std::string GetConfigFilename();
-boost::shared_ptr<Scene2D> GetScene2D();
-boost::shared_ptr<Scene3D> GetScene3D();
+std::shared_ptr<Scene2D> GetScene2D();
+std::shared_ptr<Scene3D> GetScene3D();
 GraphicsSystem *GetGraphicsSystem();
-boost::shared_ptr<GameTask> GetGameTask();
-boost::shared_ptr<MenuTask> GetMenuTask();
+std::shared_ptr<GameTask> GetGameTask();
+std::shared_ptr<MenuTask> GetMenuTask();
 
 bool IsReleaseVersion();
 bool Verbose();

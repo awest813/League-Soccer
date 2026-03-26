@@ -88,7 +88,7 @@ namespace blunted {
       void GetInterpolatedValues(const std::map<int, KeyFrame> &animation, int frame, Quaternion &orientation, Vector3 &position, bool getOrientation = true, bool getPosition = true) const;
       void ConvertToStartFacingForwardIfIdle();
       void Invert();
-      void Apply(const std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap, int frame, int timeOffset_ms = 0, bool smooth = true, float smoothFactor = 1.0f, /*const boost::shared_ptr<Animation> previousAnimation, int smoothFrames, */const Vector3 &basePos = Vector3(0), radian baseRot = 0, std::map < std::string, BiasedOffset > &offsets = emptyOffsets, MovementHistory *movementHistory = 0, int timeDiff_ms = 10, bool noPos = false, bool updateSpatial = true);
+      void Apply(const std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap, int frame, int timeOffset_ms = 0, bool smooth = true, float smoothFactor = 1.0f, /*const std::shared_ptr<Animation> previousAnimation, int smoothFrames, */const Vector3 &basePos = Vector3(0), radian baseRot = 0, std::map < std::string, BiasedOffset > &offsets = emptyOffsets, MovementHistory *movementHistory = 0, int timeDiff_ms = 10, bool noPos = false, bool updateSpatial = true);
       void Shift(int fromFrame, int offset);
 
       // returns end position - start position
@@ -115,28 +115,28 @@ namespace blunted {
       std::string GetName() const;
       void SetName(const std::string &name) { this->name = name; }
 
-      void AddExtension(const std::string &name, boost::shared_ptr<AnimationExtension> extension);
-      boost::shared_ptr<AnimationExtension> GetExtension(const std::string &name);
+      void AddExtension(const std::string &name, std::shared_ptr<AnimationExtension> extension);
+      std::shared_ptr<AnimationExtension> GetExtension(const std::string &name);
 
       const std::string &GetVariable(const char *name) const;
       void SetVariable(const std::string &name, const std::string &value);
       const std::string &GetAnimType() const { return cache_AnimType; }
-      boost::shared_ptr<XMLTree> GetCustomData();
+      std::shared_ptr<XMLTree> GetCustomData();
 
       // quick edit hax
       void Hax();
 
       std::vector<NodeAnimation*> &GetNodeAnimations() { return nodeAnimations; }
-      std::map < std::string, boost::shared_ptr<AnimationExtension> > &GetExtensions() { return extensions; }
+      std::map < std::string, std::shared_ptr<AnimationExtension> > &GetExtensions() { return extensions; }
 
     protected:
       std::vector<NodeAnimation*> nodeAnimations;
       int frameCount;
       std::string name;
 
-      std::map < std::string, boost::shared_ptr<AnimationExtension> > extensions;
+      std::map < std::string, std::shared_ptr<AnimationExtension> > extensions;
 
-      boost::shared_ptr<XMLTree> customData;
+      std::shared_ptr<XMLTree> customData;
       std::map<const char*, std::string, CompareCharacterStrings> variableCache;
 
       // this hack only applies to humanoids
