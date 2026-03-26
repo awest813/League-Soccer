@@ -165,7 +165,7 @@ void LeagueStartLoadPage::GoLoadSave() {
   std::string saveName = browser->GetClickedEntry().name;
   SetActiveSaveDirectory(saveName);
 
-  boost::filesystem::path saveLoc("saves");
+  std::filesystem::path saveLoc("saves");
   saveLoc /= saveName;
 
   SaveDatabaseToAutosave();
@@ -405,7 +405,7 @@ void LeagueStartNewPage::CloseCreateSaveDialog() {
 
   SetActiveSaveDirectory(saveNameInput->GetText());
 
-  boost::filesystem::path saveLoc("saves");
+  std::filesystem::path saveLoc("saves");
   saveLoc /= GetActiveSaveDirectory();
   GetDB()->Load(saveLoc.string() + "/autosave.sqlite");
 

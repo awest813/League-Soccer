@@ -57,7 +57,7 @@ namespace blunted {
         return observers;
       }
 
-      mutable boost::mutex subjectMutex;
+      mutable std::mutex subjectMutex;
 
     protected:
       std::vector < boost::intrusive_ptr<T> > observers;

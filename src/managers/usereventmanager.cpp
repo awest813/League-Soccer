@@ -114,17 +114,17 @@ namespace blunted {
   }
 
   bool UserEventManager::GetKeyboardState(SDL_Keycode code) const {
-    boost::mutex::scoped_lock lock(keyPressedMutex);
+    std::unique_lock<std::mutex> lock(keyPressedMutex);
     return keyPressed.count(code) > 0;
   }
 
   std::map<SDL_Keycode, TimedKeyPress> UserEventManager::GetKeyboardState() const {
-    boost::mutex::scoped_lock lock(keyPressedMutex);
+    std::unique_lock<std::mutex> lock(keyPressedMutex);
     return keyPressed;
   }
 
   void UserEventManager::SetKeyboardState(SDL_Keycode key, bool newState) {
-      boost::mutex::scoped_lock lock(keyPressedMutex);
+      std::unique_lock<std::mutex> lock(keyPressedMutex);
       if (!newState) {
           keyPressed.erase(key);
       } else {
@@ -133,17 +133,17 @@ namespace blunted {
   }
 
   unsigned long UserEventManager::GetLastKeyPressDiff_ms() {
-    boost::mutex::scoped_lock lock(keyPressedMutex);
+    std::unique_lock<std::mutex> lock(keyPressedMutex);
     return EnvironmentManager::GetInstance().GetTime_ms() - lastKeyTime_ms;
   }
 
   unsigned long UserEventManager::GetLastKeyPressDiff_ms(SDL_Keycode key) {
-    boost::mutex::scoped_lock lock(keyPressedMutex);
+    std::unique_lock<std::mutex> lock(keyPressedMutex);
     return EnvironmentManager::GetInstance().GetTime_ms() - keyPressed[key].pressTime_ms;
   }
 
   bool UserEventManager::GetMouseButtonState(int sdlButtonID) const {
-    boost::mutex::scoped_lock lock(mousePressedMutex);
+    std::unique_lock<std::mutex> lock(mousePressedMutex);
     return mousePressed[sdlButtonID];
   }
 
@@ -159,17 +159,17 @@ namespace blunted {
 
 
   bool UserEventManager::GetJoyButtonState(int joyID, int sdlJoyButtonID) const {
-    boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+    std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
     return joyButtonPressed[joyID][sdlJoyButtonID];
   }
 
   void UserEventManager::SetJoyButtonState(int joyID, int sdlJoyButtonID, bool newState) {
-    boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+    std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
     joyButtonPressed[joyID][sdlJoyButtonID] = newState;
   }
 
   float UserEventManager::GetJoystickAxis(int joyID, int axisID, bool deadzone) const {
-    boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+    std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
 
     float min = joyAxisCalibration[joyID][axisID][0];
     float max = joyAxisCalibration[joyID][axisID][1];
@@ -211,27 +211,27 @@ namespace blunted {
   }
 
   float UserEventManager::GetJoystickAxisRaw(int joyID, int axisID) const {
-    boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+    std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
     return joyAxis[joyID][axisID];
   }
 
   float UserEventManager::GetJoystickAxisCalibrationMin(int joyID, int axisID) {
-    boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+    std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
     return joyAxisCalibration[joyID][axisID][0];
   }
 
   float UserEventManager::GetJoystickAxisCalibrationMax(int joyID, int axisID) {
-    boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+    std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
     return joyAxisCalibration[joyID][axisID][1];
   }
 
   float UserEventManager::GetJoystickAxisCalibrationRest(int joyID, int axisID) {
-    boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+    std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
     return joyAxisCalibration[joyID][axisID][2];
   }
 
   void UserEventManager::SetJoystickAxisCalibration(int joyID, int axisID, float min, float max, float rest) {
-    boost::mutex::scoped_lock lock(joyButtonPressedMutex);
+    std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
     joyAxisCalibration[joyID][axisID][0] = min;
     joyAxisCalibration[joyID][axisID][1] = max;
     joyAxisCalibration[joyID][axisID][2] = rest;

@@ -20,7 +20,7 @@ namespace blunted {
 
   void TaskManager::Initialize() {
 
-    int numthreads = boost::thread::hardware_concurrency();
+    int numthreads = std::thread::hardware_concurrency();
     if (numthreads < 3) numthreads = 3; // todo: make minimum configurable
     for (int i = 0; i < numthreads; i++) {
       WorkerThread *worker = new WorkerThread(i);

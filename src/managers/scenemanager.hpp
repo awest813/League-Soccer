@@ -9,7 +9,7 @@
 
 namespace blunted {
 
-  typedef Lockable < std::vector < boost::shared_ptr<IScene> > > vector_Scenes;
+  typedef Lockable < std::vector < std::shared_ptr<IScene> > > vector_Scenes;
 
   class SceneManager : public Singleton<SceneManager> {
 
@@ -21,10 +21,10 @@ namespace blunted {
       
       virtual void Exit();
 
-      void RegisterScene(boost::shared_ptr<IScene> scene);
+      void RegisterScene(std::shared_ptr<IScene> scene);
       int GetNumScenes();
-      boost::shared_ptr<IScene> GetScene(int index, bool &success); // ATOMIC
-      boost::shared_ptr<IScene> GetScene(const std::string &name, bool &success); // ATOMIC
+      std::shared_ptr<IScene> GetScene(int index, bool &success); // ATOMIC
+      std::shared_ptr<IScene> GetScene(const std::string &name, bool &success); // ATOMIC
       
     protected:
       vector_Scenes scenes;

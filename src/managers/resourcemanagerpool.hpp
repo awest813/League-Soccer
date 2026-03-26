@@ -22,29 +22,29 @@ namespace blunted {
       }
 
       void CleanUp() {
-        std::map < e_ResourceType, boost::shared_ptr<void> >::iterator resmanIter = resourceManagers.begin();
+        std::map < e_ResourceType, std::shared_ptr<void> >::iterator resmanIter = resourceManagers.begin();
         while (resmanIter != resourceManagers.end()) {
-          boost::static_pointer_cast < ResourceManager<void> > ((*resmanIter).second)->RemoveUnused();
+          std::static_pointer_cast < ResourceManager<void> > ((*resmanIter).second)->RemoveUnused();
           resmanIter++;
         }
       }
 
-      template <typename T> void RegisterManager(e_ResourceType resourceType, boost::shared_ptr < ResourceManager<T> > resourceManager) {
+      template <typename T> void RegisterManager(e_ResourceType resourceType, std::shared_ptr < ResourceManager<T> > resourceManager) {
         resourceManagers.insert(std::make_pair(resourceType, resourceManager));
       }
 
-      template <typename T> boost::shared_ptr < ResourceManager<T> > GetManager(e_ResourceType resourceType) {
-        typename std::map < e_ResourceType, boost::shared_ptr<void> >::iterator iter = resourceManagers.find(resourceType);
+      template <typename T> std::shared_ptr < ResourceManager<T> > GetManager(e_ResourceType resourceType) {
+        typename std::map < e_ResourceType, std::shared_ptr<void> >::iterator iter = resourceManagers.find(resourceType);
         if (iter != resourceManagers.end()) {
-          return boost::static_pointer_cast < ResourceManager<T> > ((*iter).second);
+          return std::static_pointer_cast < ResourceManager<T> > ((*iter).second);
         } else {
           Log(e_FatalError, "ResourceManagerPool", "GetManager", "Could not find manager for type " + resourceType);
-          return boost::shared_ptr < ResourceManager<T> >();
+          return std::shared_ptr < ResourceManager<T> >();
         }
       }
 
     protected:
-      std::map < e_ResourceType, boost::shared_ptr<void> > resourceManagers;
+      std::map < e_ResourceType, std::shared_ptr<void> > resourceManagers;
 
   };
 

@@ -9,7 +9,8 @@
 #include "systems/graphics/resources/texture.hpp"
 #include "managers/resourcemanagerpool.hpp"
 
-#include <boost/algorithm/string.hpp>
+#include <algorithm>
+#include <cctype>
 
 float GetQuantizedDirectionBias() {
   return GetConfiguration()->GetReal("gameplay_quantizeddirectionbias", _default_QuantizedDirectionBias);
@@ -125,7 +126,7 @@ void GetWeightedPositions(const std::string &positionString, std::vector<Weighte
   tokenize(positionString, positions, ",");
   for (unsigned int i = 0; i < positions.size(); i++) {
     // trim leading/trailing space
-    boost::algorithm::trim(positions.at(i));
+    { std::string &s = positions.at(i); s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char c){ return !std::isspace(c); })); s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char c){ return !std::isspace(c); }).base(), s.end()); }
     // remove L/C/R notice (after space)
     std::size_t firstspace = positions.at(i).find_first_of(" ");
     if (firstspace != std::string::npos) positions.at(i) = positions.at(i).substr(0, firstspace);

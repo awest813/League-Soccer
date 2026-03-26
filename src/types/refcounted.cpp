@@ -26,31 +26,12 @@ namespace blunted {
 
   void intrusive_ptr_add_ref(RefCounted *p) {
     assert(p);
-#ifdef WIN32
-    InterlockedIncrement(&(p->refCount));
-#else
-    p->refCountMutex.lock();
     ++(p->refCount);
-    p->refCountMutex.unlock();
-#endif
-
   }
 
   void intrusive_ptr_release(RefCounted *p) {
     assert(p);
-
-#ifdef WIN32
-    if (InterlockedDecrement(&(p->refCount)) == 0) delete p;
-#else
-    p->refCountMutex.lock();
-    if (--(p->refCount) == 0) {
-      p->refCountMutex.unlock();
-      delete p;
-    } else {
-      p->refCountMutex.unlock();
-    }
-#endif
-
+    if (--(p->refCount) == 0) delete p;
   }
 
 }

@@ -11,7 +11,7 @@
 
 namespace blunted {
 
-  Gui2WindowManager::Gui2WindowManager(boost::shared_ptr<Scene2D> scene2D, float aspectRatio, float margin) : scene2D(scene2D), aspectRatio(aspectRatio), margin(margin), pageFactory(0) {
+  Gui2WindowManager::Gui2WindowManager(std::shared_ptr<Scene2D> scene2D, float aspectRatio, float margin) : scene2D(scene2D), aspectRatio(aspectRatio), margin(margin), pageFactory(0) {
     root = new Gui2Root(this, "root", 0, 0, 100, 100);
     timeStep_ms = 10;
 

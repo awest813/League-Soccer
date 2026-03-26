@@ -27,7 +27,7 @@ MenuScene::MenuScene() {
 
   Log(e_Notice, "MenuScene", "MenuScene", "Creating camera object");
 
-  camera = static_pointer_cast<Camera>(ObjectFactory::GetInstance().CreateObject("camera_MenuScene", e_ObjectType_Camera));
+  camera = boost::static_pointer_cast<Camera>(ObjectFactory::GetInstance().CreateObject("camera_MenuScene", e_ObjectType_Camera));
   GetScene3D()->CreateSystemObjects(camera);
   camera->Init();
   camera->SetFOV(90);
@@ -47,7 +47,7 @@ MenuScene::MenuScene() {
   float hoverLightBrightness = 2.0f;
 
   for (int i = 0; i < 3; i++) {
-    hoverLights[i] = static_pointer_cast<Light>(ObjectFactory::GetInstance().CreateObject("light_MenuScene_hover" + int_to_str(i), e_ObjectType_Light));
+    hoverLights[i] = boost::static_pointer_cast<Light>(ObjectFactory::GetInstance().CreateObject("light_MenuScene_hover" + int_to_str(i), e_ObjectType_Light));
     GetScene3D()->CreateSystemObjects(hoverLights[i]);
     hoverLights[i]->SetShadow(false);
     hoverLights[i]->SetType(e_LightType_Point);
@@ -65,7 +65,7 @@ MenuScene::MenuScene() {
   Log(e_Notice, "MenuScene", "MenuScene", "Creating geometry");
 
   boost::intrusive_ptr < Resource<GeometryData> > geometryData = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/menu/background01.ase", true);
-  geom = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("geometry_menuscene", e_ObjectType_Geometry));
+  geom = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("geometry_menuscene", e_ObjectType_Geometry));
   GetScene3D()->CreateSystemObjects(geom);
   geom->SetGeometryData(geometryData);
   geom->SetPosition(Vector3(0.0f, 0.0f, 0.0f));

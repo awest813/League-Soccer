@@ -27,7 +27,7 @@ namespace blunted {
 
       virtual void Exit();
       bool RegisterSystem(const std::string systemName, ISystem *system);
-      void CreateSystemScenes(boost::shared_ptr<IScene> scene);
+      void CreateSystemScenes(std::shared_ptr<IScene> scene);
       const map_Systems &GetSystems() const;
       ISystem *GetSystem(const std::string &name) const;
 

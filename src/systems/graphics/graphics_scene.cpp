@@ -76,7 +76,7 @@ namespace blunted {
       return graphicsLight;
     }
 
-    return NULL;
+    return nullptr;
   }
 
 

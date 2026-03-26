@@ -63,7 +63,7 @@ namespace blunted {
 
   boost::intrusive_ptr < Resource<Surface> > Image2D::GetImage() {
     // todo: this mutex lock makes little sense or so it seems. will have to force users to lock from outside this function
-    boost::mutex::scoped_lock blah(subjectMutex);
+    std::unique_lock<std::mutex> blah(subjectMutex);
     return image;
   }
 
@@ -296,7 +296,7 @@ namespace blunted {
     dstRect.y = y;
     dstRect.w = surface->w - x;
     dstRect.h = surface->h - y;
-    sdl_alphablit(sdlText, NULL, surface, &dstRect);
+    sdl_alphablit(sdlText, nullptr, surface, &dstRect);
 
     SDL_UnlockSurface(surface);
 

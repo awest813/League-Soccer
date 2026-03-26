@@ -21,7 +21,7 @@ HIDGamepad::~HIDGamepad() {
 }
 
 void HIDGamepad::LoadConfig() {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
 
   for (int i = 0; i < e_ControllerButton_Size; i++) {
     controllerButtonState[i] = false;
@@ -84,7 +84,7 @@ void HIDGamepad::LoadConfig() {
 }
 
 void HIDGamepad::SaveConfig() {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   for (int i = 0; i < e_ControllerButton_Size; i++) {
     GetConfiguration()->Set(("input_gamepad_" + GetIdentifier() + "_" + int_to_str(i)).c_str(), controllerMapping[i]);
   }
@@ -95,7 +95,7 @@ void HIDGamepad::SaveConfig() {
 }
 
 void HIDGamepad::Process() {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   //printf("gamepad ID #%i\n", gamepadID);
   for (int i = 0; i < e_ControllerButton_Size; i++) {
     previousControllerButtonState[i] = controllerButtonState[i];
@@ -117,22 +117,22 @@ void HIDGamepad::Process() {
 }
 
 bool HIDGamepad::GetButton(e_ButtonFunction buttonFunction) {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   return controllerButtonState[functionMapping[buttonFunction]] > 0.0f;
 }
 
 float HIDGamepad::GetButtonValue(e_ButtonFunction buttonFunction) {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   return controllerButtonState[functionMapping[buttonFunction]];
 }
 
 void HIDGamepad::SetButton(e_ButtonFunction buttonFunction, bool state) {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   controllerButtonState[functionMapping[buttonFunction]] = state;
 }
 
 bool HIDGamepad::GetPreviousButtonState(e_ButtonFunction buttonFunction) {
-  boost::mutex::scoped_lock blah(mutex);
+  std::unique_lock<std::mutex> blah(mutex);
   return previousControllerButtonState[functionMapping[buttonFunction]];
 }
 

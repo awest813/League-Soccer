@@ -12,7 +12,7 @@ namespace blunted {
   signal_LogCallback callback;
 
   std::ofstream logFile;
-  boost::mutex mutex;
+  std::mutex mutex;
 
   void LogOpen() {
     logFile.open("log.txt", std::ios::out);

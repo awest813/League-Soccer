@@ -19,14 +19,14 @@ namespace blunted {
   }
 
   void SceneManager::Exit() {
-    boost::mutex::scoped_lock blah(scenes.mutex);
+    std::unique_lock<std::mutex> blah(scenes.mutex);
     for (int i = 0; i < (signed int)scenes.data.size(); i++) {
       scenes.data.at(i)->Exit();
     }
     scenes.data.clear();
   }
 
-  void SceneManager::RegisterScene(boost::shared_ptr<IScene> scene) {
+  void SceneManager::RegisterScene(std::shared_ptr<IScene> scene) {
     scenes.Lock();
     scenes.data.push_back(scene);
     scenes.Unlock();
@@ -34,23 +34,23 @@ namespace blunted {
   }
 
   int SceneManager::GetNumScenes() {
-    boost::mutex::scoped_lock blah(scenes.mutex);
+    std::unique_lock<std::mutex> blah(scenes.mutex);
     return scenes.data.size();
   }
 
-  boost::shared_ptr<IScene> SceneManager::GetScene(int index, bool &success) {
-    boost::mutex::scoped_lock blah(scenes.mutex);
+  std::shared_ptr<IScene> SceneManager::GetScene(int index, bool &success) {
+    std::unique_lock<std::mutex> blah(scenes.mutex);
     if ((signed int)scenes.data.size() > index) {
       success = true;
       return scenes.data.at(index);
     } else {
       success = false;
-      return boost::shared_ptr<IScene>();
+      return std::shared_ptr<IScene>();
     }
   }
 
-  boost::shared_ptr<IScene> SceneManager::GetScene(const std::string &name, bool &success) {
-    boost::mutex::scoped_lock blah(scenes.mutex);
+  std::shared_ptr<IScene> SceneManager::GetScene(const std::string &name, bool &success) {
+    std::unique_lock<std::mutex> blah(scenes.mutex);
     for (int i = 0; i < (signed int)scenes.data.size(); i++) {
       if (scenes.data.at(i)->GetName() == name) {
         success = true;
@@ -58,7 +58,7 @@ namespace blunted {
       }
     }
     success = false;
-    return boost::shared_ptr<IScene>();
+    return std::shared_ptr<IScene>();
   }
 
 }

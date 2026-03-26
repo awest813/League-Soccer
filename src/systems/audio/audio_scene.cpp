@@ -53,7 +53,7 @@ namespace blunted {
       return audioObject;
     }
 
-    return NULL;
+    return nullptr;
   }
 
 

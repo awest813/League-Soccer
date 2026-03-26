@@ -96,10 +96,10 @@ namespace blunted {
 
   void Object::Synchronize() {
     subjectMutex.lock();
-    boost::shared_ptr<Interpreter> result;
+    std::shared_ptr<Interpreter> result;
     int observersSize = observers.size();
     for (int i = 0; i < observersSize; i++) {
-      boost::intrusive_ptr<Interpreter> interpreter = static_pointer_cast<Interpreter>(observers.at(i));
+      boost::intrusive_ptr<Interpreter> interpreter = boost::static_pointer_cast<Interpreter>(observers.at(i));
       interpreter->OnSynchronize();
     }
     subjectMutex.unlock();
@@ -116,7 +116,7 @@ namespace blunted {
     boost::intrusive_ptr<Interpreter> result;
     int observersSize = observers.size();
     for (int i = 0; i < observersSize; i++) {
-      boost::intrusive_ptr<Interpreter> interpreter = static_pointer_cast<Interpreter>(observers.at(i));
+      boost::intrusive_ptr<Interpreter> interpreter = boost::static_pointer_cast<Interpreter>(observers.at(i));
       if (interpreter->GetSystemType() == targetSystemType) result = interpreter;
     }
     subjectMutex.unlock();

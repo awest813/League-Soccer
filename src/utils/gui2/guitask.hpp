@@ -31,7 +31,7 @@ namespace blunted {
   class Gui2Task : public IUserTask {
 
     public:
-      Gui2Task(boost::shared_ptr<Scene2D> scene2D, float aspectRatio, float margin);
+      Gui2Task(std::shared_ptr<Scene2D> scene2D, float aspectRatio, float margin);
       virtual ~Gui2Task();
 
       virtual void GetPhase();
@@ -54,7 +54,7 @@ namespace blunted {
       virtual std::string GetName() const { return "gui2"; }
 
     protected:
-      boost::shared_ptr<Scene2D> scene2D;
+      std::shared_ptr<Scene2D> scene2D;
 
       Gui2WindowManager *windowManager;
 

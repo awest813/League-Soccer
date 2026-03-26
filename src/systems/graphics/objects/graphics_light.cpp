@@ -187,7 +187,7 @@ namespace blunted {
 
     std::deque < boost::intrusive_ptr<Geometry> >::iterator visibleGeometryIter = visibleGeometry.begin();
     while (visibleGeometryIter != visibleGeometry.end()) {
-      boost::intrusive_ptr<GraphicsGeometry_GeometryInterpreter> interpreter = static_pointer_cast<GraphicsGeometry_GeometryInterpreter>((*visibleGeometryIter)->GetInterpreter(e_SystemType_Graphics));
+      boost::intrusive_ptr<GraphicsGeometry_GeometryInterpreter> interpreter = boost::static_pointer_cast<GraphicsGeometry_GeometryInterpreter>((*visibleGeometryIter)->GetInterpreter(e_SystemType_Graphics));
 
       (*visibleGeometryIter)->LockSubject();
 

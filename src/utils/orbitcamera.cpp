@@ -16,7 +16,7 @@
 
 namespace blunted {
 
-  OrbitCamera::OrbitCamera(boost::shared_ptr<Scene3D> scene3D, const Vector3 &position) : time(0) {
+  OrbitCamera::OrbitCamera(std::shared_ptr<Scene3D> scene3D, const Vector3 &position) : time(0) {
 
     boost::intrusive_ptr<Camera> tmpOrbitCamera(new Camera("supervette cam"));
     orbitCamera = tmpOrbitCamera;

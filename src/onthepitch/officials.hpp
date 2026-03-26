@@ -14,7 +14,7 @@ class PlayerData;
 class Officials {
 
   public:
-    Officials(Match *match, boost::intrusive_ptr<Node> fullbodySourceNode, std::map<Vector3, Vector3> &colorCoords, boost::intrusive_ptr < Resource<Surface> > kit, boost::shared_ptr<AnimCollection> animCollection);
+    Officials(Match *match, boost::intrusive_ptr<Node> fullbodySourceNode, std::map<Vector3, Vector3> &colorCoords, boost::intrusive_ptr < Resource<Surface> > kit, std::shared_ptr<AnimCollection> animCollection);
     virtual ~Officials();
 
     void GetPlayers(std::vector<PlayerBase*> &players);

@@ -6,7 +6,7 @@
 
 #include "base/log.hpp"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace blunted {
 
@@ -16,7 +16,7 @@ namespace blunted {
   DirectoryParser::~DirectoryParser() {
   }
 
-  void DirectoryParser::Parse(boost::filesystem::path path, const std::string &extension, std::vector<std::string> &files, bool recurse) {
+  void DirectoryParser::Parse(std::filesystem::path path, const std::string &extension, std::vector<std::string> &files, bool recurse) {
 
     if (!fs::exists(path) || !fs::is_directory(path)) Log(e_Error, "DirectoryParser", "Parse", "Could not open directory " + path.string() + " for reading");
 
@@ -26,13 +26,13 @@ namespace blunted {
       if (is_directory(dirIter->status())) {
 
         if (recurse) {
-          boost::filesystem::path thePath(path);
+          std::filesystem::path thePath(path);
           thePath /= dirIter->path().filename();
           Parse(thePath, extension, files);
         }
 
       } else {
-        boost::filesystem::path thePath(path);
+        std::filesystem::path thePath(path);
         thePath /= dirIter->path().filename();
 
         if (thePath.extension() == "." + extension) {

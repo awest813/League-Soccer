@@ -51,7 +51,7 @@ namespace blunted {
         return identString;
       }
 
-      mutable boost::mutex resourceMutex;
+      mutable std::mutex resourceMutex;
 
       T *resource;
 

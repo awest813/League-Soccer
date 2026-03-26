@@ -198,7 +198,7 @@ static const Vector3 emptyVec(0);
 class HumanoidBase {
 
   public:
-    HumanoidBase(PlayerBase *player, Match *match, boost::intrusive_ptr<Node> humanoidSourceNode, boost::intrusive_ptr<Node> fullbodySourceNode, std::map<Vector3, Vector3> &colorCoords, boost::shared_ptr<AnimCollection> animCollection, boost::intrusive_ptr<Node> fullbodyTargetNode, boost::intrusive_ptr < Resource<Surface> > kit, int bodyUpdatePhaseOffset);
+    HumanoidBase(PlayerBase *player, Match *match, boost::intrusive_ptr<Node> humanoidSourceNode, boost::intrusive_ptr<Node> fullbodySourceNode, std::map<Vector3, Vector3> &colorCoords, std::shared_ptr<AnimCollection> animCollection, boost::intrusive_ptr<Node> fullbodyTargetNode, boost::intrusive_ptr < Resource<Surface> > kit, int bodyUpdatePhaseOffset);
     virtual ~HumanoidBase();
 
     void PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords);
@@ -306,7 +306,7 @@ class HumanoidBase {
     boost::intrusive_ptr<Node> fullbodyTargetNode;
 
     boost::intrusive_ptr<Node> humanoidNode;
-    boost::shared_ptr<Scene3D> scene3D;
+    std::shared_ptr<Scene3D> scene3D;
 
     boost::intrusive_ptr<Geometry> hairStyle;
 
@@ -315,7 +315,7 @@ class HumanoidBase {
     Match *match;
     PlayerBase *player;
 
-    boost::shared_ptr<AnimCollection> anims;
+    std::shared_ptr<AnimCollection> anims;
     NodeMap nodeMap;
 
     AnimApplyBuffer animApplyBuffer;

@@ -38,10 +38,10 @@ namespace blunted {
     return size;
   }
 
-  void Scheduler::RegisterTaskSequence(boost::shared_ptr<TaskSequence> sequence) {
+  void Scheduler::RegisterTaskSequence(std::shared_ptr<TaskSequence> sequence) {
     if (sequence->GetEntryCount() == 0) Log(e_FatalError, "Scheduler", "RegisterTaskSequence", "Trying to add a sequence without entries");
     sequence->AddTerminator();
-    boost::shared_ptr<TaskSequenceProgram> program(new TaskSequenceProgram());
+    std::shared_ptr<TaskSequenceProgram> program(new TaskSequenceProgram());
     unsigned long time_ms = EnvironmentManager::GetInstance().GetTime_ms();
     program->taskSequence = sequence;
     program->programCounter = 0;
@@ -58,14 +58,14 @@ namespace blunted {
     sequences.Unlock();
   }
 
-  void Scheduler::UnregisterTaskSequence(boost::shared_ptr<TaskSequence> sequence) {
+  void Scheduler::UnregisterTaskSequence(std::shared_ptr<TaskSequence> sequence) {
     // todo
   }
 
   void Scheduler::UnregisterTaskSequence(const std::string &name) {
     sequences.Lock();
     for (unsigned int i = 0; i < sequences.data.size(); i++) {
-      boost::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
+      std::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
       if (program->taskSequence->GetName() == name) {
         program->dueQuit = true;
         break;
@@ -77,7 +77,7 @@ namespace blunted {
   void Scheduler::PauseTaskSequence(const std::string &name) {
     sequences.Lock();
     for (unsigned int i = 0; i < sequences.data.size(); i++) {
-      boost::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
+      std::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
       if (program->taskSequence->GetName() == name) {
         program->paused = true;
         break;
@@ -89,7 +89,7 @@ namespace blunted {
   void Scheduler::UnpauseTaskSequence(const std::string &name) {
     sequences.Lock();
     for (unsigned int i = 0; i < sequences.data.size(); i++) {
-      boost::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
+      std::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
       if (program->taskSequence->GetName() == name) {
         program->paused = false;
         break;
@@ -101,7 +101,7 @@ namespace blunted {
   void Scheduler::ResetTaskSequenceTime(const std::string &name) {
     sequences.Lock();
     for (unsigned int i = 0; i < sequences.data.size(); i++) {
-      boost::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
+      std::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
       if (program->taskSequence->GetName() == name) {
         program->startTime = EnvironmentManager::GetInstance().GetTime_ms();// - startTime_ms;
         program->timesRan = 0;
@@ -115,7 +115,7 @@ namespace blunted {
     unsigned int resultTime_ms = 0;
     sequences.Lock();
     for (unsigned int i = 0; i < sequences.data.size(); i++) {
-      boost::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
+      std::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
       if (program->taskSequence->GetName() == name) {
 
         if (program->taskSequence->GetSkippable()) {
@@ -135,7 +135,7 @@ namespace blunted {
     TaskSequenceInfo info;
     sequences.Lock(); // todo: cache this to overcome threading traffic slowdowns?
     for (unsigned int i = 0; i < sequences.data.size(); i++) {
-      boost::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
+      std::shared_ptr<TaskSequenceProgram> program = sequences.data.at(i);
       if (program->taskSequence->GetName() == name) {
 
         info.sequenceStartTime_ms = program->sequenceStartTime;
@@ -158,7 +158,7 @@ namespace blunted {
     // sequenced version, the best yet!
     // thought up by Jurian Broertjes & Bastiaan Konings Schuiling
 
-    boost::mutex::scoped_lock lock(somethingIsDoneMutex);
+    std::unique_lock<std::mutex> lock(somethingIsDoneMutex);
 
     unsigned int firstSequence = 0;
     int quiterations = 0;
@@ -210,7 +210,7 @@ namespace blunted {
 
       for (unsigned int i = 0; i < sequences.data.size(); i++) {
         int programIndex = (i + firstSequence) % sequences.data.size();
-        boost::shared_ptr<TaskSequenceProgram> program = sequences.data.at(programIndex);
+        std::shared_ptr<TaskSequenceProgram> program = sequences.data.at(programIndex);
 
         if (verbose) printf("sequence %i, previous program counter %i, program counter %i\n", i, program->previousProgramCounter, program->programCounter);
 
@@ -267,7 +267,7 @@ namespace blunted {
 
           }
 
-          if (!program->readyToQuit && !program->paused && (timeUntilDueEntry_ms < dueEntry.timeUntilDueEntry_ms || dueEntry.program == boost::shared_ptr<TaskSequenceProgram>())) {
+          if (!program->readyToQuit && !program->paused && (timeUntilDueEntry_ms < dueEntry.timeUntilDueEntry_ms || dueEntry.program == std::shared_ptr<TaskSequenceProgram>())) {
             dueEntry.program = program;
             dueEntry.timeUntilDueEntry_ms = timeUntilDueEntry_ms;
           }
@@ -281,9 +281,9 @@ namespace blunted {
 
       if (someSequenceNeedsDeleting) {
 
-        std::vector < boost::shared_ptr<TaskSequenceProgram> >::iterator quiterator = sequences.data.begin();
+        std::vector < std::shared_ptr<TaskSequenceProgram> >::iterator quiterator = sequences.data.begin();
         while (quiterator != sequences.data.end()) {
-          boost::shared_ptr<TaskSequenceProgram> program = *quiterator;
+          std::shared_ptr<TaskSequenceProgram> program = *quiterator;
           if (program->readyToQuit == true) {
             quiterator = sequences.data.erase(quiterator);
           } else {
@@ -302,7 +302,7 @@ namespace blunted {
         if (firstSequence >= sequences.data.size()) firstSequence = 0;
 
         long timeout_ms = 0;
-        if (dueEntry.program != boost::shared_ptr<TaskSequenceProgram>()) {
+        if (dueEntry.program != std::shared_ptr<TaskSequenceProgram>()) {
           // wait until time for due sequence entry (even if that is <= 0, because we need to unlock the condition and sequences locks anyway)
           timeout_ms = dueEntry.timeUntilDueEntry_ms;
           timeout_ms = std::max(timeout_ms, (long)0);
@@ -311,11 +311,10 @@ namespace blunted {
         }
 
         sequences.Unlock();
-        boost::system_time tAbsoluteTime = boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);
-        bool isMessage = somethingIsDone.timed_wait(lock, tAbsoluteTime);
+        bool isMessage = somethingIsDone.wait_for(lock, std::chrono::milliseconds(timeout_ms)) != std::cv_status::timeout;
         sequences.Lock();
 
-        if (dueEntry.program != boost::shared_ptr<TaskSequenceProgram>()) {
+        if (dueEntry.program != std::shared_ptr<TaskSequenceProgram>()) {
 
           if (verbose) printf("time until due entry: %li\n", dueEntry.timeUntilDueEntry_ms);
 

@@ -15,7 +15,7 @@
 
 namespace blunted {
 
-  ThreadHud::ThreadHud(boost::shared_ptr<Scene2D> scene2D) : scene2D(scene2D) {
+  ThreadHud::ThreadHud(std::shared_ptr<Scene2D> scene2D) : scene2D(scene2D) {
 
     font = TTF_OpenFont("media/blunted/HUD/terminus.fon", 8);
     assert(font);

@@ -48,7 +48,7 @@ class MenuScene {
     boost::intrusive_ptr<Light> hoverLights[3];
     Vector3 hoverLightPosition;
 
-    boost::shared_ptr<Scene3D> scene3D;
+    std::shared_ptr<Scene3D> scene3D;
 
     MenuSceneLocation sourceLocation;
     MenuSceneLocation targetLocation;

@@ -8,14 +8,12 @@
 
 #include <boost/random.hpp>
 
-#include <boost/thread/mutex.hpp>
-
 namespace blunted {
 
   unsigned int fastrandseed;
   unsigned int max_uint;
 
-  boost::mutex randMutex;
+  std::mutex randMutex;
 
   typedef boost::mt19937 BaseGenerator;
   typedef boost::uniform_real<float> Distribution;

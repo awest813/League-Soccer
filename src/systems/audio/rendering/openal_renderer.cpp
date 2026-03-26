@@ -22,11 +22,11 @@ namespace blunted {
 
   bool OpenALRenderer::CreateContext() {
 
-    ALCdevice *device = alcOpenDevice(NULL);
+    ALCdevice *device = alcOpenDevice(nullptr);
 
     if (!device) return false;
 
-    context = alcCreateContext(device, NULL);
+    context = alcCreateContext(device, nullptr);
     alcMakeContextCurrent(context);
 
     SetListenerParameters(Vector3(0), Vector3(0), Quaternion(QUATERNION_IDENTITY));
@@ -37,7 +37,7 @@ namespace blunted {
   void OpenALRenderer::Exit() {
     //printf("exiting openALrenderer\n");
     ALCdevice *device = alcGetContextsDevice(context);
-    alcMakeContextCurrent(NULL);
+    alcMakeContextCurrent(nullptr);
     alcDestroyContext(context);
     alcCloseDevice(device);
   }

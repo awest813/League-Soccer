@@ -16,7 +16,7 @@
 namespace blunted {
 
   AudioSystem::AudioSystem() : systemType(e_SystemType_Audio) {
-    rendererTask = NULL;
+    rendererTask = nullptr;
   }
 
   AudioSystem::~AudioSystem() {
@@ -24,7 +24,7 @@ namespace blunted {
 
   void AudioSystem::Initialize(const Properties &config) {
 
-    audioSoundBufferResourceManager = boost::shared_ptr < ResourceManager<AudioSoundBuffer> > (new ResourceManager<AudioSoundBuffer>("audiosoundbuffer"));
+    audioSoundBufferResourceManager = std::shared_ptr < ResourceManager<AudioSoundBuffer> > (new ResourceManager<AudioSoundBuffer>("audiosoundbuffer"));
     ResourceManagerPool::GetInstance().RegisterManager(e_ResourceType_AudioSoundBuffer, audioSoundBufferResourceManager);
 
     // start thread for renderer
@@ -53,14 +53,14 @@ namespace blunted {
 
     rendererTask->Join();
     delete rendererTask;
-    rendererTask = NULL;
+    rendererTask = nullptr;
   }
 
   e_SystemType AudioSystem::GetSystemType() const {
     return systemType;
   }
 
-  ISystemScene *AudioSystem::CreateSystemScene(boost::shared_ptr<IScene> scene) {
+  ISystemScene *AudioSystem::CreateSystemScene(std::shared_ptr<IScene> scene) {
     if (scene->GetSceneType() == e_SceneType_Scene2D) {
       AudioScene *audioScene = new AudioScene(this);
       scene->Attach(audioScene->GetInterpreter(e_SceneType_Scene2D));
@@ -71,7 +71,7 @@ namespace blunted {
       scene->Attach(audioScene->GetInterpreter(e_SceneType_Scene3D));
       return audioScene;
     }
-    return NULL;
+    return nullptr;
   }
 
   ISystemTask *AudioSystem::GetTask() {

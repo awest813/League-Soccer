@@ -145,7 +145,7 @@ namespace blunted {
   }
 
   boost::intrusive_ptr < Resource<SoundBuffer> > Sound::GetSoundBuffer() {
-    boost::mutex::scoped_lock blah(subjectMutex);
+    std::unique_lock<std::mutex> blah(subjectMutex);
     return soundBuffer;
   }
 

@@ -23,21 +23,21 @@ namespace blunted {
       virtual ~MessageQueue() {}
 
       inline void PushMessage(T message, bool notify = true) {
-        boost::mutex::scoped_lock lock(queue.mutex);
+        std::unique_lock<std::mutex> lock(queue.mutex);
         queue.data.push_back(message);
         lock.unlock();
         if (notify) NotifyWaiting(e_NotificationSubject_One);
       }
 
       inline void NotifyWaiting(e_NotificationSubject notificationSubject = e_NotificationSubject_All) {
-        boost::mutex::scoped_lock lock(queue.mutex);
+        std::unique_lock<std::mutex> lock(queue.mutex);
         if (notificationSubject == e_NotificationSubject_One) messageNotification.notify_one();
         if (notificationSubject == e_NotificationSubject_All) messageNotification.notify_all();
       }
 
       inline T GetMessage(bool &MsgAvail) {
         T message;
-        boost::mutex::scoped_lock lock(queue.mutex);
+        std::unique_lock<std::mutex> lock(queue.mutex);
         if (queue.data.size() > 0) {
           message = *queue.data.begin();
           queue.data.pop_front();
@@ -49,7 +49,7 @@ namespace blunted {
       }
 
       inline void Purge() {
-        boost::mutex::scoped_lock lock(queue.mutex);
+        std::unique_lock<std::mutex> lock(queue.mutex);
         queue.data.clear();
       }
 
@@ -63,7 +63,7 @@ namespace blunted {
         isMessage = false;
         T message;
 
-        boost::mutex::scoped_lock lock(queue.mutex);
+        std::unique_lock<std::mutex> lock(queue.mutex);
         while (!isMessage) {
           // cannot use queue.WaitForNotification, because its scoped lock unlocks on return
           if (queue.data.size() == 0) {
@@ -71,8 +71,7 @@ namespace blunted {
             if (timeout_ms == -1) {
               messageNotification.wait(lock);
             } else {
-              boost::system_time tAbsoluteTime = boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);
-              bool received = messageNotification.timed_wait(lock, tAbsoluteTime);
+              bool received = messageNotification.wait_for(lock, std::chrono::milliseconds(timeout_ms)) != std::cv_status::timeout;
               if (!received) return message; // timeout
             }
 
@@ -95,7 +94,7 @@ namespace blunted {
 
     protected:
       Lockable < std::list < T > > queue;
-      boost::condition messageNotification;
+      std::condition_variable messageNotification;
 
   };
 

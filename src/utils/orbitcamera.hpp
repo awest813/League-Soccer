@@ -17,7 +17,7 @@ namespace blunted {
   class OrbitCamera : public IUserTask {
 
     public:
-      OrbitCamera(boost::shared_ptr<Scene3D> scene3D, const Vector3 &position);
+      OrbitCamera(std::shared_ptr<Scene3D> scene3D, const Vector3 &position);
       virtual ~OrbitCamera();
 
       boost::intrusive_ptr<Node> GetCameraNode();

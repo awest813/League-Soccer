@@ -126,7 +126,7 @@ namespace blunted {
     if (!entry_mesh_numfaces) Log(e_FatalError, "ASELoader", "BuildTriangleMesh", "tree entry MESH_NUMFACES not found");
     int numfaces = atoi(entry_mesh_numfaces->values.at(0).c_str());
 
-    const s_treeentry *entry_mesh_numtfaces = NULL;
+    const s_treeentry *entry_mesh_numtfaces = nullptr;
     int numtfaces = 0;
     if (numtvertex > 0) {
       entry_mesh_numtfaces = treeentry_find(tree_mesh, "MESH_NUMTVFACES"); // notice the 3ds .ase export typo ('v')
@@ -143,13 +143,13 @@ namespace blunted {
     const s_tree *tree_mesh_face_list = tree_find(tree_mesh, "MESH_FACE_LIST");
     if (!tree_mesh_face_list) Log(e_FatalError, "ASELoader", "BuildTriangleMesh", "subtree MESH_FACE_LIST not found");
 
-    const s_tree *tree_mesh_tvertex_list = NULL;
+    const s_tree *tree_mesh_tvertex_list = nullptr;
     if (numtvertex > 0) {
       tree_mesh_tvertex_list = tree_find(tree_mesh, "MESH_TVERTLIST");
       if (!tree_mesh_tvertex_list) Log(e_FatalError, "ASELoader", "BuildTriangleMesh", "subtree MESH_TVERTLIST not found");
     }
 
-    const s_tree *tree_mesh_tface_list = NULL;
+    const s_tree *tree_mesh_tface_list = nullptr;
     if (numtfaces > 0) {
       tree_mesh_tface_list = tree_find(tree_mesh, "MESH_TFACELIST");
       if (!tree_mesh_tface_list) Log(e_FatalError, "ASELoader", "BuildTriangleMesh", "subtree MESH_TFACELIST not found");

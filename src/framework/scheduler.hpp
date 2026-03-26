@@ -16,7 +16,7 @@ namespace blunted {
   class TaskManager;
 
   struct TaskSequenceProgram {
-    boost::shared_ptr<TaskSequence> taskSequence;
+    std::shared_ptr<TaskSequence> taskSequence;
     int programCounter;
     int previousProgramCounter;
     unsigned long sequenceStartTime; // todo: add _ms to varnames like this one
@@ -50,7 +50,7 @@ namespace blunted {
     TaskSequenceQueueEntry() {
       timeUntilDueEntry_ms = 0;
     }
-    boost::shared_ptr<TaskSequenceProgram> program;
+    std::shared_ptr<TaskSequenceProgram> program;
     long timeUntilDueEntry_ms;
 
     bool operator < (const TaskSequenceQueueEntry &other) const {
@@ -67,8 +67,8 @@ namespace blunted {
       void Exit();
 
       int GetSequenceCount();
-      void RegisterTaskSequence(boost::shared_ptr<TaskSequence> sequence);
-      void UnregisterTaskSequence(boost::shared_ptr<TaskSequence> sequence);
+      void RegisterTaskSequence(std::shared_ptr<TaskSequence> sequence);
+      void UnregisterTaskSequence(std::shared_ptr<TaskSequence> sequence);
       void UnregisterTaskSequence(const std::string &name);
       void PauseTaskSequence(const std::string &name);
       void UnpauseTaskSequence(const std::string &name);
@@ -80,15 +80,15 @@ namespace blunted {
       /// invoke due user tasks with an Execute() call
       bool Run();
 
-      boost::condition somethingIsDone;
-      boost::mutex somethingIsDoneMutex;
+      std::condition_variable somethingIsDone;
+      std::mutex somethingIsDoneMutex;
 
     protected:
       TaskManager *taskManager;
 
       unsigned long previousTime_ms;
 
-      Lockable < std::vector < boost::shared_ptr<TaskSequenceProgram> > > sequences;
+      Lockable < std::vector < std::shared_ptr<TaskSequenceProgram> > > sequences;
 
       unsigned long cleanUpTimeOffset;
 

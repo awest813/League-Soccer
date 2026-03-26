@@ -79,7 +79,7 @@ class Ball {
     void ResetSituation(const Vector3 &focusPos);
 
   protected:
-    boost::shared_ptr<Scene3D> scene3D;
+    std::shared_ptr<Scene3D> scene3D;
 
     boost::intrusive_ptr<Node> ballNode;
     boost::intrusive_ptr<Geometry> ball;

@@ -15,7 +15,7 @@ namespace blunted {
 
   struct Gui2PageData {
     int pageID;
-    boost::shared_ptr<Properties> properties;
+    std::shared_ptr<Properties> properties;
     void *data;
   };
 

@@ -53,7 +53,7 @@ namespace blunted {
       SystemTaskMessage_GetPhase(const std::string &name, ISystemTask *task) : ISystemTaskMessage(name, task) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 
@@ -63,7 +63,7 @@ namespace blunted {
       SystemTaskMessage_ProcessPhase(const std::string &name, ISystemTask *task) : ISystemTaskMessage(name, task) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 
@@ -73,7 +73,7 @@ namespace blunted {
       SystemTaskMessage_PutPhase(const std::string &name, ISystemTask *task) : ISystemTaskMessage(name, task) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 

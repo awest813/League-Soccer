@@ -64,7 +64,7 @@ const bool allowTrapReQueue = true;
 const bool allowPreTouchRotationSmuggle = false;
 const bool enableControlledBallCollisions = true;
 
-Humanoid::Humanoid(Player *player, boost::intrusive_ptr<Node> humanoidSourceNode, boost::intrusive_ptr<Node> fullbodySourceNode, std::map<Vector3, Vector3> &colorCoords, boost::shared_ptr<AnimCollection> animCollection, boost::intrusive_ptr<Node> fullbodyTargetNode, boost::intrusive_ptr < Resource<Surface> > kit, int bodyUpdatePhaseOffset) :
+Humanoid::Humanoid(Player *player, boost::intrusive_ptr<Node> humanoidSourceNode, boost::intrusive_ptr<Node> fullbodySourceNode, std::map<Vector3, Vector3> &colorCoords, std::shared_ptr<AnimCollection> animCollection, boost::intrusive_ptr<Node> fullbodyTargetNode, boost::intrusive_ptr < Resource<Surface> > kit, int bodyUpdatePhaseOffset) :
                   HumanoidBase(player, player->GetTeam()->GetMatch(), humanoidSourceNode, fullbodySourceNode, colorCoords, animCollection, fullbodyTargetNode, kit, bodyUpdatePhaseOffset) {
 
   team = CastPlayer()->GetTeam();
@@ -390,7 +390,7 @@ void Humanoid::Process() {
   if (currentAnim->touchFrame == currentAnim->frameNum) {
 
     Vector3 desiredBallPosition;
-    boost::static_pointer_cast<FootballAnimationExtension>(currentAnim->anim->GetExtension("football"))->GetTouchPos(currentAnim->touchFrame, desiredBallPosition);
+    std::static_pointer_cast<FootballAnimationExtension>(currentAnim->anim->GetExtension("football"))->GetTouchPos(currentAnim->touchFrame, desiredBallPosition);
     float desiredBallHeight = desiredBallPosition.coords[2];
 
     float touchableDistance = 0.4f;
@@ -2052,7 +2052,7 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
 
     int frameCount = anim->GetEffectiveFrameCount();
 
-    boost::shared_ptr<FootballAnimationExtension> footballExtension = boost::static_pointer_cast<FootballAnimationExtension>(anim->GetExtension("football"));
+    std::shared_ptr<FootballAnimationExtension> footballExtension = std::static_pointer_cast<FootballAnimationExtension>(anim->GetExtension("football"));
 
     int totalTouches = footballExtension->GetTouchCount();
     int touchIDs[totalTouches];

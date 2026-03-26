@@ -19,7 +19,7 @@ namespace blunted {
 
     public:
       Node(const std::string &name);
-      Node(const Node &source, const std::string &postfix, boost::shared_ptr<Scene3D> scene3D);
+      Node(const Node &source, const std::string &postfix, std::shared_ptr<Scene3D> scene3D);
       virtual ~Node();
 
       virtual void Exit();
@@ -51,7 +51,7 @@ namespace blunted {
         int objectsSize = objects.data.size();
         for (int i = 0; i < objectsSize; i++) {
           if (objects.data.at(i)->GetObjectType() == targetObjectType) {
-            gatherObjects.push_back(static_pointer_cast<T>(objects.data.at(i)));
+            gatherObjects.push_back(boost::static_pointer_cast<T>(objects.data.at(i)));
           }
         }
         objects.Unlock();
@@ -72,7 +72,7 @@ namespace blunted {
         int objectsSize = objects.data.size();
         for (int i = 0; i < objectsSize; i++) {
           if (objects.data.at(i)->GetObjectType() == targetObjectType) {
-            if (objects.data.at(i)->GetAABB().Intersects(bounding)) gatherObjects.push_back(static_pointer_cast<T>(objects.data.at(i)));
+            if (objects.data.at(i)->GetAABB().Intersects(bounding)) gatherObjects.push_back(boost::static_pointer_cast<T>(objects.data.at(i)));
           }
         }
         objects.Unlock();
@@ -93,7 +93,7 @@ namespace blunted {
         int objectsSize = objects.data.size();
         for (int i = 0; i < objectsSize; i++) {
           if (objects.data.at(i)->GetObjectType() == targetObjectType) {
-            gatherObjects.push_back(static_pointer_cast<T>(objects.data.at(i)));
+            gatherObjects.push_back(boost::static_pointer_cast<T>(objects.data.at(i)));
           }
         }
         objects.Unlock();
@@ -114,7 +114,7 @@ namespace blunted {
         int objectsSize = objects.data.size();
         for (int i = 0; i < objectsSize; i++) {
           if (objects.data.at(i)->GetObjectType() == targetObjectType) {
-            if (objects.data.at(i)->GetAABB().Intersects(bounding)) gatherObjects.push_back(static_pointer_cast<T>(objects.data.at(i)));
+            if (objects.data.at(i)->GetAABB().Intersects(bounding)) gatherObjects.push_back(boost::static_pointer_cast<T>(objects.data.at(i)));
           }
         }
         objects.Unlock();

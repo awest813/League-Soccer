@@ -52,14 +52,14 @@ namespace blunted {
 
   void PhysicsJoint_JointInterpreter::OnLoad(boost::intrusive_ptr<Joint> joint, boost::intrusive_ptr<Geometry> object1, boost::intrusive_ptr<Geometry> object2, const Vector3 &anchor, const Vector3 &axis1, const Vector3 &axis2) {
     // find actors
-    boost::intrusive_ptr<PhysicsGeometry_GeometryInterpreter> interpreter = static_pointer_cast<PhysicsGeometry_GeometryInterpreter>(object1->GetInterpreter(e_SystemType_Physics));
+    boost::intrusive_ptr<PhysicsGeometry_GeometryInterpreter> interpreter = boost::static_pointer_cast<PhysicsGeometry_GeometryInterpreter>(object1->GetInterpreter(e_SystemType_Physics));
     object1->LockSubject();
     IPhysicsActor *actor1 = interpreter->GetActor();
     object1->UnlockSubject();
     // todo: what if object1 is exited right now? wouldn't actor1 be invalidated?
     // hmm... well probably the game programmer is responsible for not deleting his objects while joint'ing them
 
-    interpreter = static_pointer_cast<PhysicsGeometry_GeometryInterpreter>(object2->GetInterpreter(e_SystemType_Physics));
+    interpreter = boost::static_pointer_cast<PhysicsGeometry_GeometryInterpreter>(object2->GetInterpreter(e_SystemType_Physics));
     object2->LockSubject();
     IPhysicsActor *actor2 = interpreter->GetActor();
     object2->UnlockSubject();

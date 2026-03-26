@@ -14,7 +14,7 @@ namespace blunted {
   s_treeentry::~s_treeentry() {
     if (subtree) {
       delete subtree;
-      subtree = NULL;
+      subtree = nullptr;
     }
   }
 
@@ -25,7 +25,7 @@ namespace blunted {
     std::ifstream datafile(asefile.c_str(), std::ios::in);
     if (datafile.fail()) {
       Log(e_FatalError, "tree_load", "", "could not open " + asefile);
-      return NULL;
+      return nullptr;
     }
 
     s_tree *tree = tree_readblock(datafile);
@@ -93,7 +93,7 @@ namespace blunted {
       assert(tree->entries.at(i));
       if (tree->entries.at(i)->name.compare(needle) == 0) return tree->entries.at(i);
     }
-    return NULL;
+    return nullptr;
   }
 
   const s_tree *tree_find(const s_tree *tree, const std::string needle) {
@@ -106,7 +106,7 @@ namespace blunted {
         return tree->entries.at(i)->subtree;
       }
     }
-    return NULL;
+    return nullptr;
   }
 
 
@@ -258,10 +258,10 @@ namespace blunted {
   // 2 == dest already exists
   // 3 == could not create dest
   // 4 == could not copy file (disk full?)
-  int CopyDirectory(boost::filesystem::path const &source, boost::filesystem::path const &destination) {
-    boost::system::error_code error;
+  int CopyDirectory(std::filesystem::path const &source, std::filesystem::path const &destination) {
+    std::error_code error;
 
-    namespace fs = boost::filesystem;
+    namespace fs = std::filesystem;
 
     if (!fs::exists(source) || !fs::is_directory(source, error)) return 1; // source dir not found
     if (fs::exists(destination)) return 2; // destination exists
@@ -282,14 +282,14 @@ namespace blunted {
     return 0;
   }
 
-  bool CreateDirectory(boost::filesystem::path const &dir) {
-    namespace fs = boost::filesystem;
+  bool CreateDirectory(std::filesystem::path const &dir) {
+    namespace fs = std::filesystem;
     return fs::create_directory(dir);
   }
 
-  bool CopyFile(boost::filesystem::path const &source, boost::filesystem::path const &destinationDir) {
-    boost::system::error_code error;
-    namespace fs = boost::filesystem;
+  bool CopyFile(std::filesystem::path const &source, std::filesystem::path const &destinationDir) {
+    std::error_code error;
+    namespace fs = std::filesystem;
     fs::copy_file(source, destinationDir / source.filename(), error);
     if (error.value() != 0) return false; else return true;
   }
@@ -308,8 +308,4 @@ namespace blunted {
 
   }
 
-}
-
-namespace boost { // filesystem functions need this for some reason
-  void assertion_failed_msg(char const *expr, char const *msg, char const *function, char const *file, long line) {}
 }

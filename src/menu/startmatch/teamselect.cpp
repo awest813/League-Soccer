@@ -30,7 +30,7 @@ void AddCompetitions(Gui2IconSelector *selector) {
     std::string logo_url = result->data.at(r).at(2).c_str();
 
     std::string logoPath = "databases/default/" + logo_url;
-    if (!boost::filesystem::exists(logoPath)) logoPath = "media/textures/orange.jpg";
+    if (!std::filesystem::exists(logoPath)) logoPath = "media/textures/orange.jpg";
     selector->AddEntry(int_to_str(id), name, logoPath);
   }
 
@@ -47,7 +47,7 @@ void AddTeams(Gui2IconSelector *selector, const std::string &competition_id) {
     std::string logo_url = result->data.at(r).at(2).c_str();
 
     std::string logoPath = "databases/default/" + logo_url;
-    if (!boost::filesystem::exists(logoPath)) logoPath = "media/textures/orange.jpg";
+    if (!std::filesystem::exists(logoPath)) logoPath = "media/textures/orange.jpg";
     selector->AddEntry(int_to_str(id), name, logoPath);
   }
 

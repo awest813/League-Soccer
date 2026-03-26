@@ -33,7 +33,7 @@ namespace blunted {
       bodies[0] = dGeomGetBody(o1);
       bodies[1] = dGeomGetBody(o2);
 
-      if (bodies[0] != NULL || bodies[1] != NULL) {
+      if (bodies[0] != nullptr || bodies[1] != nullptr) {
 
         // todo: find out what exactly these do
         if (bodies[0] && bodies[1] && dAreConnectedExcluding(bodies[0], bodies[1], dJointTypeContact)) return;
@@ -552,7 +552,7 @@ namespace blunted {
                                 indices, vertexCount, sizeof(unsigned int) * 3);
     */
 
-    dGeomID id = dCreateTriMesh(GetOdeSpaceID(spaceID), trimesh_id, NULL, NULL, NULL);
+    dGeomID id = dCreateTriMesh(GetOdeSpaceID(spaceID), trimesh_id, nullptr, nullptr, nullptr);
 
     OdePhysicsCollisionMesh *coll = new OdePhysicsCollisionMesh();
     coll->id = id;

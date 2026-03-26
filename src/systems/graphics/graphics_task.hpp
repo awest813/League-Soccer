@@ -52,7 +52,7 @@ namespace blunted {
       GraphicsTaskCommand_Dummy() : Command("Dummy") {}
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 
@@ -62,7 +62,7 @@ namespace blunted {
       GraphicsTaskCommand_RenderCamera() : Command("RenderCamera") {}
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 
@@ -72,7 +72,7 @@ namespace blunted {
       GraphicsTaskCommand_EnqueueView(boost::intrusive_ptr<Camera> camera, int shadowSkipFrameCounter) : Command("EnqueueView"), camera(camera), shadowSkipFrameCounter(shadowSkipFrameCounter) {};
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
       virtual void EnqueueShadowMap(boost::intrusive_ptr<Light> light);
 
       boost::intrusive_ptr<Camera> camera;
@@ -86,7 +86,7 @@ namespace blunted {
       GraphicsTaskCommand_RenderImage2D() : Command("RenderImage2D") {}
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 
@@ -96,7 +96,7 @@ namespace blunted {
       GraphicsTaskCommand_RenderShadowMaps() : Command("RenderShadowMaps") {}
 
     protected:
-      virtual bool Execute(void *caller = NULL);
+      virtual bool Execute(void *caller = nullptr);
 
   };
 

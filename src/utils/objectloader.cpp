@@ -21,7 +21,7 @@ namespace blunted {
   ObjectLoader::~ObjectLoader() {
   }
 
-  boost::intrusive_ptr<Node> ObjectLoader::LoadLevel(boost::shared_ptr<Scene3D> scene3D, const std::string &filename) const {
+  boost::intrusive_ptr<Node> ObjectLoader::LoadLevel(std::shared_ptr<Scene3D> scene3D, const std::string &filename) const {
 
     XMLLoader loader;
     XMLTree levelTree = loader.LoadFile(filename);
@@ -69,7 +69,7 @@ namespace blunted {
     return levelNode;
   }
 
-  boost::intrusive_ptr<Node> ObjectLoader::LoadObject(boost::shared_ptr<Scene3D> scene3D, const std::string &filename, const Vector3 &offset) const {
+  boost::intrusive_ptr<Node> ObjectLoader::LoadObject(std::shared_ptr<Scene3D> scene3D, const std::string &filename, const Vector3 &offset) const {
 
     XMLLoader loader;
     const XMLTree objectTree = loader.LoadFile(filename);
@@ -83,7 +83,7 @@ namespace blunted {
     return result;
   }
 
-  boost::intrusive_ptr<Node> ObjectLoader::LoadObjectImpl(boost::shared_ptr<Scene3D> scene3D, const std::string &nodename, const XMLTree &objectTree, const Vector3 &offset) const {
+  boost::intrusive_ptr<Node> ObjectLoader::LoadObjectImpl(std::shared_ptr<Scene3D> scene3D, const std::string &nodename, const XMLTree &objectTree, const Vector3 &offset) const {
 
     //printf("processing node: %s\n", nodename.c_str());
     boost::intrusive_ptr<Node> objNode(new Node("objectnode: " + nodename));
@@ -166,7 +166,7 @@ namespace blunted {
           iter++;
         }
         boost::intrusive_ptr < Resource<GeometryData> > geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch(dirpart + aseFilename, true);
-        boost::intrusive_ptr<Geometry> object = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject(objectName, objectType));
+        boost::intrusive_ptr<Geometry> object = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject(objectName, objectType));
         if (properties.GetBool("dynamic")) geometry->GetResource()->SetDynamic(true);
 
         object->SetProperties(properties);
@@ -207,7 +207,7 @@ namespace blunted {
           iter++;
         }
 
-        boost::intrusive_ptr<Light> object = static_pointer_cast<Light>(ObjectFactory::GetInstance().CreateObject(objectName, objectType));
+        boost::intrusive_ptr<Light> object = boost::static_pointer_cast<Light>(ObjectFactory::GetInstance().CreateObject(objectName, objectType));
 
         //object->SetProperties(properties);
         scene3D->CreateSystemObjects(object);
@@ -265,15 +265,15 @@ namespace blunted {
           iter++;
         }
 
-        boost::intrusive_ptr<Joint> object = static_pointer_cast<Joint>(ObjectFactory::GetInstance().CreateObject(objectName, objectType));
+        boost::intrusive_ptr<Joint> object = boost::static_pointer_cast<Joint>(ObjectFactory::GetInstance().CreateObject(objectName, objectType));
         object->SetProperties(properties);
         scene3D->CreateSystemObjects(object);
         objNode->AddObject(object);
 
         boost::intrusive_ptr<Geometry> target_1_object;
         boost::intrusive_ptr<Geometry> target_2_object;
-        if (target_1 != "") target_1_object = static_pointer_cast<Geometry>(objNode->GetObject(target_1));
-        if (target_2 != "") target_2_object = static_pointer_cast<Geometry>(objNode->GetObject(target_2));
+        if (target_1 != "") target_1_object = boost::static_pointer_cast<Geometry>(objNode->GetObject(target_1));
+        if (target_2 != "") target_2_object = boost::static_pointer_cast<Geometry>(objNode->GetObject(target_2));
         object->Connect(target_1_object, target_2_object, anchor, axis_1, axis_2);
       }
 

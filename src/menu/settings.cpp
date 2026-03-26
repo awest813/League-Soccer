@@ -1209,7 +1209,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager *windowManager, const Gui2PageData 
   DEVMODE dm;// = { 0 };
   ZeroMemory(&dm, sizeof(dm));
   dm.dmSize = sizeof(dm);
-  for (int iModeNum = 0; EnumDisplaySettings(NULL, iModeNum, &dm) != 0; iModeNum++) {
+  for (int iModeNum = 0; EnumDisplaySettings(nullptr, iModeNum, &dm) != 0; iModeNum++) {
     Resolution res;
     res.x = dm.dmPelsWidth;
     res.y = dm.dmPelsHeight;

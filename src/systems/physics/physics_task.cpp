@@ -25,7 +25,7 @@ namespace blunted {
   }
 
   PhysicsTask::~PhysicsTask() {
-    physicsSystem = NULL;
+    physicsSystem = nullptr;
   }
 
   void PhysicsTask::operator()() {
@@ -91,7 +91,7 @@ namespace blunted {
   bool PhysicsTaskCommand_UpdateGeometry::Execute(void *caller) {
     bool success;
     int i = 1;
-    boost::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene(i, success);
+    std::shared_ptr<IScene> scene = SceneManager::GetInstance().GetScene(i, success);
     while (success) {
       scene->PokeObjects(e_ObjectType_Geometry, e_SystemType_Physics);
       scene->PokeObjects(e_ObjectType_Joint, e_SystemType_Physics);

@@ -420,8 +420,8 @@ void GeneratePitch(int resX, int resY, int resSpecularX, int resSpecularY, int r
 
   float scale = 0.06f;
 
-  Perlin *perlin1 = new Perlin(4, 0.06 * scale, 0.5, time(NULL)); // low freq
-  Perlin *perlin2 = new Perlin(4, 0.14 * scale, 0.5, time(NULL) + 139882); // mid freq
+  Perlin *perlin1 = new Perlin(4, 0.06 * scale, 0.5, time(nullptr)); // low freq
+  Perlin *perlin2 = new Perlin(4, 0.14 * scale, 0.5, time(nullptr) + 139882); // mid freq
 //  Perlin *perlin3 = new Perlin(4, 25.4 / 20.0,   3, 423423); // high freq
   perlinTexW = 1600;
   perlinTexH = 1000;
@@ -451,10 +451,10 @@ void GeneratePitch(int resX, int resY, int resSpecularX, int resSpecularY, int r
     }
   }
 
-  boost::thread pitchThread[4];
+  std::thread pitchThread[4];
   float grassNormalRepeatMultiplier = (random(0, 1) > 0.5f) ? 1.0f : 0.5f;
   for (int i = 0; i < 4; i++) {
-    pitchThread[i] = boost::thread(&CreateChunk, i + 1, resX, resY, resSpecularX, resSpecularY, resNormalX, resNormalY, grassNormalRepeatMultiplier);
+    pitchThread[i] = std::thread(&CreateChunk, i + 1, resX, resY, resSpecularX, resSpecularY, resNormalX, resNormalY, grassNormalRepeatMultiplier);
   }
 
   for (int i = 0; i < 4; i++) {

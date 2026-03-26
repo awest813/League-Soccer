@@ -27,7 +27,7 @@ namespace blunted {
     protected:
       Lockable<bool> quit;
       unsigned long startTime_ms;
-      boost::posix_time::ptime startTime;
+      std::chrono::steady_clock::time_point startTime;
 
   };
 

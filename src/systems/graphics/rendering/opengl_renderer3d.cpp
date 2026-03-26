@@ -454,9 +454,9 @@ struct GLfunctions {
           yWin = std::max(yWin, 0);
           xWin -= 3; // window border size (educated guess - is a user setting, after all)
           yWin -= 12; // window border size + taskbar (educated guess - is a user setting, after all)
-          SetWindowPos(hWnd, NULL, xWin, yWin, 0, 0, SWP_NOSIZE);
+          SetWindowPos(hWnd, nullptr, xWin, yWin, 0, 0, SWP_NOSIZE);
         }
-        //SetWindowPos(hWnd, NULL, 976, 0, 0, 0, SWP_NOSIZE);
+        //SetWindowPos(hWnd, nullptr, 976, 0, 0, 0, SWP_NOSIZE);
       }
 
       //HDC hDC = GetDC(wmInfo.window);
@@ -908,7 +908,7 @@ struct GLfunctions {
         if (b == 0) firstBuffer_id = buffer_id;
         //printf("array size: %i\n", triangleCount * 3 * 3);
         mapping.glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
-        mapping.glBufferData(GL_ARRAY_BUFFER, verticesDataSize * sizeof(float), NULL, GetGLVertexBufferUsage(usage));
+        mapping.glBufferData(GL_ARRAY_BUFFER, verticesDataSize * sizeof(float), nullptr, GetGLVertexBufferUsage(usage));
         mapping.glBufferSubData(GL_ARRAY_BUFFER, 0, verticesDataSize * sizeof(float), vertices);
 
 
@@ -921,11 +921,11 @@ struct GLfunctions {
         }
         mapping.glGenBuffers(1, &iid);
         mapping.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iid);
-        mapping.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), NULL, GetGLVertexBufferUsage(usage));
+        mapping.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), nullptr, GetGLVertexBufferUsage(usage));
         mapping.glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(unsigned int), &indices[0]);
 
 
-        #define BUFFER_OFFSET( i ) ((char *)NULL + (i))
+        #define BUFFER_OFFSET( i ) ((char *)nullptr + (i))
         for (int i = 0; i < GetTriangleMeshElementCount(); i++) {
           mapping.glVertexAttribPointer((GLuint)i, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(verticesDataSize / GetTriangleMeshElementCount() * i * sizeof(float)));
           mapping.glEnableVertexAttribArray(i);
@@ -985,19 +985,19 @@ struct GLfunctions {
 
       //glBufferData(GL_ARRAY_BUFFER, verticesDataSize * sizeof(float), vertices, GL_DYNAMIC_DRAW);
 
-  //    glBufferData(GL_ARRAY_BUFFER, verticesDataSize * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+  //    glBufferData(GL_ARRAY_BUFFER, verticesDataSize * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 
   //    if (!pingPong) {
         // i don't think we can use glMapBufferRange with GL_MAP_UNSYNCHRONIZED_BIT in a non-pingponged situation, but may want to test this sometimes
   //      glBufferSubData(GL_ARRAY_BUFFER, 0, verticesDataSize * sizeof(float), vertices);
   //    } else {
-        //glBufferData(GL_ARRAY_BUFFER, verticesDataSize * sizeof(float), NULL, GL_STREAM_DRAW);
+        //glBufferData(GL_ARRAY_BUFFER, verticesDataSize * sizeof(float), nullptr, GL_STREAM_DRAW);
         //float *ptr = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
         // the next 2 statements, as well as the invalidate_bit stuff in the 3rd statement, should do the same thing: orphaning the vertexbuffer.
         // however, on my current AMD (HD 6850), only the first seems to actually work! is this an AMD driver bug? can't find anything about it on the interwebz..
 
-        mapping.glBufferData(GL_ARRAY_BUFFER, verticesDataSize * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+        mapping.glBufferData(GL_ARRAY_BUFFER, verticesDataSize * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
         //glInvalidateBufferData(vertexBufferID.bufferID);
         float *ptr = (float*)mapping.glMapBufferRange(GL_ARRAY_BUFFER, 0, verticesDataSize * sizeof(float), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT); // GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT |
         memcpy(ptr, vertices, verticesDataSize * sizeof(float));
@@ -1067,7 +1067,7 @@ struct GLfunctions {
   void DrawBufferChunk(int startIndex, int count) {
     // draw buffer
     if (count > 0) {
-      #define BUFFER_OFFSET( i ) ((char *)NULL + (i))
+      #define BUFFER_OFFSET( i ) ((char *)nullptr + (i))
       mapping.glDrawRangeElements(GL_TRIANGLES, startIndex, startIndex + count, count, GL_UNSIGNED_INT, BUFFER_OFFSET(startIndex * sizeof(unsigned int)));
     }
   }
@@ -1076,7 +1076,7 @@ struct GLfunctions {
 
     /*
     CPrecisionTimer myTimer;
-    boost::this_thread::yield();
+    std::this_thread::yield();
     myTimer.Start();
 
     printf("it took %f milliseconds\n", myTimer.Stop() * 1000.0);
@@ -1545,7 +1545,7 @@ struct GLfunctions {
     }
 
     if (!multisample) {
-      mapping.glTexImage2D(GL_TEXTURE_2D, 0, GetGLInternalPixelFormat(internalPixelFormat), width, height, 0, GetGLPixelFormat(pixelFormat), GL_UNSIGNED_BYTE, NULL);
+      mapping.glTexImage2D(GL_TEXTURE_2D, 0, GetGLInternalPixelFormat(internalPixelFormat), width, height, 0, GetGLPixelFormat(pixelFormat), GL_UNSIGNED_BYTE, nullptr);
     } else {
       // todo: needs opengl 3.2 libs!
       //glTexImage2DMultiSample(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, 5, GetGLInternalPixelFormat(internalPixelFormat), width, height, GL_TRUE);
@@ -1818,7 +1818,7 @@ struct GLfunctions {
     }
 
    	const char *sourceChar = source_flat.c_str();
-   	mapping.glShaderSource(shaderID, 1, &sourceChar, NULL);
+   	mapping.glShaderSource(shaderID, 1, &sourceChar, nullptr);
     mapping.glCompileShader(shaderID);
 
     GLint compiled;
