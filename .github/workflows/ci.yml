@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "copilot/**" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-linux:
+    name: Build (Ubuntu 22.04)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake build-essential \
+            libgl1-mesa-dev \
+            libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
+            libopenal-dev \
+            libboost-system-dev libboost-thread-dev libboost-filesystem-dev \
+            libsqlite3-dev \
+            xvfb
+
+      - name: Configure (Debug)
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Build (Debug)
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Configure (Release)
+        run: |
+          cmake -S . -B build-release \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build (Release)
+        run: cmake --build build-release --parallel $(nproc)
