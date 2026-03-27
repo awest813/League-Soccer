@@ -34,6 +34,36 @@ jobs:
           echo "Checking format of: $FILES"
           echo "$FILES" | xargs clang-format --dry-run --Werror
 
+  # Task 2.2: headless test job – builds and runs all tests with no SDL/OpenGL
+  # dependency, proving tests run without a display server.
+  test-headless:
+    name: Headless tests (no display required)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install minimal dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake build-essential \
+            libboost-dev
+
+      - name: Configure (tests only, no game build)
+        run: |
+          cmake -S . -B build-headless \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DGAMEPLAYFOOTBALL_BUILD_GAME=OFF \
+            -DBUILD_TESTING=ON
+
+      - name: Build tests
+        run: cmake --build build-headless --parallel $(nproc)
+
+      - name: Run tests (headless – no DISPLAY needed)
+        run: ctest --test-dir build-headless --output-on-failure
+
   clang-tidy:
     name: Static analysis (clang-tidy)
     runs-on: ubuntu-22.04

@@ -10,21 +10,11 @@
 
 #include "base/math/vector3.hpp"
 #include "defines.hpp"
+#include "onthepitch/velocitystate.hpp"
 
 using namespace blunted;
 
 extern unsigned long time_ms;
-
-const float idleVelocity = 0.0f;
-const float dribbleVelocity = 3.5f;
-const float walkVelocity = 5.0f;
-const float sprintVelocity = 8.0f;
-
-const float animSprintVelocity = 7.0f;
-
-const float idleDribbleSwitch = 1.8f;
-const float dribbleWalkSwitch = 4.2f;
-const float walkSprintSwitch = 6.0f;
 // PES6 digital control mode, quantizes some input to x degree angles
 const bool quantizeDirection = true;
 
@@ -83,8 +73,6 @@ const SDL_Keycode defaultKeyIDs[18] = {
 class Player;
 
 enum e_Side { e_Side_Left, e_Side_Right };
-
-enum e_Velocity { e_Velocity_Idle, e_Velocity_Dribble, e_Velocity_Walk, e_Velocity_Sprint };
 
 enum e_FunctionType {
   e_FunctionType_None,
