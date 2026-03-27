@@ -83,22 +83,24 @@ void OutroPage::ProcessKeyboardEvent(KeyboardEvent *event) {
 
 MainMenuPage::MainMenuPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData)
     : Gui2Page(windowManager, pageData) {
-  Gui2Image *title = new Gui2Image(windowManager, "image_main_title", 28, 32, 44, 20);
+  // Title positioned upper-left
+  Gui2Image *title = new Gui2Image(windowManager, "image_main_title", 4, 8, 38, 18);
   title->LoadImage("media/menu/main/title01.png");
 
   this->AddView(title);
   title->Show();
 
-  buttons.push_back(new Gui2Button(windowManager, "button_main_start", 0, 0, 20, 3, "Match"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_cup", 0, 0, 20, 3, "Cup"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_league", 0, 0, 20, 3, "League"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_edit", 0, 0, 20, 3, "Editor"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_settings", 0, 0, 20, 3, "Settings"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_credits", 0, 0, 20, 3, "Credits"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_quit", 0, 0, 20, 3, "Exit"));
+  // Wider, taller buttons for a modern vertical list layout
+  buttons.push_back(new Gui2Button(windowManager, "button_main_start", 0, 0, 26, 4, "Match"));
+  buttons.push_back(new Gui2Button(windowManager, "button_main_cup", 0, 0, 26, 4, "Cup"));
+  buttons.push_back(new Gui2Button(windowManager, "button_main_league", 0, 0, 26, 4, "League"));
+  buttons.push_back(new Gui2Button(windowManager, "button_main_edit", 0, 0, 26, 4, "Editor"));
+  buttons.push_back(new Gui2Button(windowManager, "button_main_settings", 0, 0, 26, 4, "Settings"));
+  buttons.push_back(new Gui2Button(windowManager, "button_main_credits", 0, 0, 26, 4, "Credits"));
+  buttons.push_back(new Gui2Button(windowManager, "button_main_quit", 0, 0, 26, 4, "Exit"));
   if (!IsReleaseVersion()) {
     buttons.push_back(
-        new Gui2Button(windowManager, "button_main_import", 0, 0, 20, 3, "Import FM"));
+        new Gui2Button(windowManager, "button_main_import", 0, 0, 26, 4, "Import FM"));
   }
 
   buttons.at(0)->sig_OnClick.connect([this](...) { GoControllerSelect(); });
@@ -118,19 +120,20 @@ MainMenuPage::MainMenuPage(Gui2WindowManager *windowManager, const Gui2PageData 
   buttons.at(2)->SetActive(false);
   buttons.at(3)->SetActive(false);
 
-  grid = new Gui2Grid(windowManager, "grid_main", 29.25, 52, 41.5, 40);
+  // Single-column vertical list on the left side
+  grid = new Gui2Grid(windowManager, "grid_main", 4, 30, 28, 60);
 
   grid->AddView(buttons.at(0), 0, 0);
   grid->AddView(buttons.at(1), 1, 0);
   grid->AddView(buttons.at(2), 2, 0);
   grid->AddView(buttons.at(3), 3, 0);
-  grid->AddView(buttons.at(4), 0, 1);
-  grid->AddView(buttons.at(5), 1, 1);
-  grid->AddView(buttons.at(6), 2, 1);
+  grid->AddView(buttons.at(4), 4, 0);
+  grid->AddView(buttons.at(5), 5, 0);
+  grid->AddView(buttons.at(6), 6, 0);
   if (!IsReleaseVersion())
-    grid->AddView(buttons.at(7), 3, 1);
+    grid->AddView(buttons.at(7), 7, 0);
 
-  grid->UpdateLayout(0.25, 0.25, 0.25, 0.25);
+  grid->UpdateLayout(0.25, 0.25, 0.4, 0.4);
 
   this->AddView(grid);
   grid->Show();
