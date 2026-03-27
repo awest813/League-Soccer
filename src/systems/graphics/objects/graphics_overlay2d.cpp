@@ -20,11 +20,16 @@
 
 #include "../graphics_scene.hpp"
 #include "../graphics_system.hpp"
+#include "base/log.hpp"
 #include "managers/resourcemanagerpool.hpp"
 
 namespace blunted {
 
 GraphicsOverlay2D::GraphicsOverlay2D(GraphicsScene* graphicsScene) : GraphicsObject(graphicsScene) {
+  position[0] = 0;
+  position[1] = 0;
+  size[0] = 0;
+  size[1] = 0;
   // printf("CREATING GFX OBJECT\n");
 }
 
@@ -46,14 +51,19 @@ GraphicsOverlay2D_Image2DInterpreter::GraphicsOverlay2D_Image2DInterpreter(
     : caller(caller) {}
 
 void GraphicsOverlay2D_Image2DInterpreter::OnLoad(boost::intrusive_ptr<Resource<Surface>> surface) {
+  SDL_Surface* image = surface->GetResource()->GetData();
+  if (!image) {
+    Log(e_Warning, "GraphicsOverlay2D_Image2DInterpreter", "OnLoad",
+        "Skipping overlay load because the source surface is null");
+    return;
+  }
+
   bool alreadyThere = false;
 
   caller->texture = ResourceManagerPool::GetInstance()
                         .GetManager<Texture>(e_ResourceType_Texture)
                         ->Fetch(surface->GetIdentString(), false, alreadyThere,
                                 true);  // false == don't try to use loader
-
-  SDL_Surface* image = surface->GetResource()->GetData();
 
   if (!alreadyThere) {
     Renderer3D* renderer3D = caller->GetGraphicsScene()->GetGraphicsSystem()->GetRenderer3D();
@@ -79,7 +89,7 @@ void GraphicsOverlay2D_Image2DInterpreter::OnUnload() {
   // printf("resetting link to texture.. ");
   caller->texture.reset();
   delete caller;
-  caller = 0;
+  caller = nullptr;
   // printf("[OK]\n");
 }
 
@@ -108,6 +118,10 @@ void GraphicsOverlay2D_Image2DInterpreter::OnMove(int x, int y) {
 }
 
 void GraphicsOverlay2D_Image2DInterpreter::OnPoke() {
+  if (!caller->texture) {
+    return;
+  }
+
   Overlay2DQueueEntry queueEntry;
   queueEntry.texture = caller->texture;
   queueEntry.position[0] = caller->position[0];

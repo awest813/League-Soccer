@@ -56,7 +56,28 @@ struct GLfunctions {
 
 GLfunctions mapping;
 
-OpenGLRenderer3D::OpenGLRenderer3D() : context(0), contextIsActive(true) {
+namespace {
+
+SDL_Surface* CreateFallbackNoiseSurface() {
+  SDL_Surface* surface = CreateSDLSurface(2, 2);
+  if (!surface) {
+    return nullptr;
+  }
+
+  SDL_LockSurface(surface);
+  sdl_putpixel(surface, 0, 0, SDL_MapRGB(surface->format, 96, 96, 96));
+  sdl_putpixel(surface, 1, 0, SDL_MapRGB(surface->format, 160, 160, 160));
+  sdl_putpixel(surface, 0, 1, SDL_MapRGB(surface->format, 192, 192, 192));
+  sdl_putpixel(surface, 1, 1, SDL_MapRGB(surface->format, 128, 128, 128));
+  SDL_UnlockSurface(surface);
+
+  return surface;
+}
+
+}  // namespace
+
+OpenGLRenderer3D::OpenGLRenderer3D()
+    : context(nullptr), window(nullptr), contextIsActive(true), noiseTexID(-1) {
   FOV = 45;
   overallBrightness = 128;
 
@@ -100,8 +121,10 @@ void OpenGLRenderer3D::RenderOverlay2D(const std::vector<Overlay2DQueueEntry>& o
   mapping.glBindVertexArray(overlayBuffer.vertexArrayID);
   SetTextureUnit(0);
 
-  for (unsigned int i = 0; i < overlay2DQueue.size(); i++) {
-    const Overlay2DQueueEntry& queueEntry = overlay2DQueue[i];
+  for (const auto& queueEntry : overlay2DQueue) {
+    if (!queueEntry.texture) {
+      continue;
+    }
 
     Matrix4 modelMatrix(MATRIX4_IDENTITY);
     modelMatrix.SetTranslation(Vector3(queueEntry.position[0], queueEntry.position[1], -1.0f));
@@ -301,6 +324,10 @@ VertexBufferID OpenGLRenderer3D::CreateSimpleVertexBuffer(GLfloat* vertices, uns
 }
 
 void OpenGLRenderer3D::DeleteSimpleVertexBuffer(VertexBufferID vertexBufferID) {
+  if (vertexBufferID.bufferID == -1) {
+    return;
+  }
+
   GLuint glVertexBufferID = vertexBufferID.bufferID;
   mapping.glDeleteBuffers(1, &glVertexBufferID);
 
@@ -372,7 +399,20 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
   window = SDL_CreateWindow(
       "Gameplay Football", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height,
       SDL_WINDOW_OPENGL /* | SDL_RESIZABLE*/ | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
+  if (!window) {
+    Log(e_FatalError, "OpenGLRenderer3D", "CreateContext",
+        "Failed to create SDL window: " + std::string(SDL_GetError()));
+    return false;
+  }
+
   context = SDL_GL_CreateContext(window);
+  if (!context) {
+    Log(e_FatalError, "OpenGLRenderer3D", "CreateContext",
+        "Failed to create SDL GL context: " + std::string(SDL_GetError()));
+    SDL_DestroyWindow(window);
+    window = nullptr;
+    return false;
+  }
 
   //    *reinterpret_cast<void**>(&(mapping.func)) =
   //    SDL_GL_GetProcAddress(#func); *reinterpret_cast<void**>(&(mapping.func))
@@ -381,9 +421,13 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
   do {                                                                           \
     *reinterpret_cast<void**>(&(mapping.func)) = SDL_GL_GetProcAddress(#func);   \
     if (!mapping.func) {                                                         \
-      printf("Couldn't load GL function %s: %s\n", #func, SDL_GetError());       \
-      SDL_SetError("Couldn't load GL function %s: %s\n", #func, SDL_GetError()); \
-      exit(1);                                                                   \
+      Log(e_FatalError, "OpenGLRenderer3D", "CreateContext",                     \
+          "Couldn't load GL function " #func ": " + std::string(SDL_GetError()));\
+      SDL_GL_DeleteContext(context);                                             \
+      context = nullptr;                                                         \
+      SDL_DestroyWindow(window);                                                 \
+      window = nullptr;                                                          \
+      return false;                                                              \
     }                                                                            \
   } while (0);
 #include "sdl_glfuncs.h"
@@ -398,11 +442,6 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
 
   Log(e_Notice, "OpenGLRenderer3D", "CreateContext",
       "OpenGL major/minor " + int_to_str(glVersion[0]) + "." + int_to_str(glVersion[1]));
-  if (!context) {
-    std::string errorString = SDL_GetError();
-    Log(e_FatalError, "OpenGLRenderer3D", "CreateContext", "Failed on SDL error: " + errorString);
-    return false;
-  }
   bool higherThan32 = false;
   if (glVersion[0] < 4) {
     if (glVersion[0] == 3 && glVersion[1] >= 2)
@@ -500,6 +539,21 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
   currentShader = shaders.begin();
 
   SDL_Surface* noise = IMG_Load("media/shaders/noise.png");
+  if (!noise) {
+    Log(e_Warning, "OpenGLRenderer3D", "CreateContext",
+        "Failed to load media/shaders/noise.png, using a generated fallback texture");
+    noise = CreateFallbackNoiseSurface();
+  }
+  if (!noise) {
+    Log(e_FatalError, "OpenGLRenderer3D", "CreateContext",
+        "Unable to create the post-process noise texture");
+    SDL_GL_DeleteContext(context);
+    context = nullptr;
+    SDL_DestroyWindow(window);
+    window = nullptr;
+    return false;
+  }
+
   noiseTexID = CreateTexture(e_InternalPixelFormat_RGB8, e_PixelFormat_RGB, noise->w, noise->h,
                              false, true, false, false, false);
   UpdateTexture(noiseTexID, noise, false, false);
@@ -518,7 +572,10 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
 }
 
 void OpenGLRenderer3D::Exit() {
-  DeleteTexture(noiseTexID);
+  if (noiseTexID != -1) {
+    DeleteTexture(noiseTexID);
+    noiseTexID = -1;
+  }
 
   std::map<std::string, Shader>::iterator shaderIter = shaders.begin();
   while (shaderIter != shaders.end()) {
@@ -531,6 +588,15 @@ void OpenGLRenderer3D::Exit() {
   currentShader = shaders.end();
   DeleteSimpleVertexBuffer(overlayBuffer);
   DeleteSimpleVertexBuffer(quadBuffer);
+
+  if (context) {
+    SDL_GL_DeleteContext(context);
+    context = nullptr;
+  }
+  if (window) {
+    SDL_DestroyWindow(window);
+    window = nullptr;
+  }
 
   // assert(views.size() == 0);
   // todo: make views erase-able, as for now a views vector index is used when requesting views,
