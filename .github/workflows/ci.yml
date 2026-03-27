@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "copilot/**" ]
+    branches: [ "main", "copilot/**", "claude/**" ]
   pull_request:
     branches: [ "main" ]
 
@@ -10,6 +10,70 @@ permissions:
   contents: read
 
 jobs:
+  format-check:
+    name: Check formatting (clang-format)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install clang-format
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends clang-format
+
+      - name: Check changed files
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || 'HEAD~1' }}"
+          FILES=$(git diff --name-only "$BASE"...HEAD -- '*.cpp' '*.hpp' 2>/dev/null || true)
+          if [ -z "$FILES" ]; then
+            echo "No C++ files changed – skipping format check."
+            exit 0
+          fi
+          echo "Checking format of: $FILES"
+          echo "$FILES" | xargs clang-format --dry-run --Werror
+
+  clang-tidy:
+    name: Static analysis (clang-tidy)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake build-essential clang-tidy \
+            libgl1-mesa-dev \
+            libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
+            libopenal-dev \
+            libboost-system-dev libboost-signals2-dev \
+            libsqlite3-dev
+
+      - name: Configure (generate compile_commands.json)
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Run clang-tidy on changed files
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || 'HEAD~1' }}"
+          FILES=$(git diff --name-only "$BASE"...HEAD -- 'src/*.cpp' 'src/**/*.cpp' 2>/dev/null || true)
+          if [ -z "$FILES" ]; then
+            echo "No C++ source files changed – skipping clang-tidy."
+            exit 0
+          fi
+          echo "Running clang-tidy on: $FILES"
+          echo "$FILES" | xargs -r clang-tidy -p build --warnings-as-errors='*' \
+            --header-filter='src/.*' 2>&1 | tee tidy-output.txt
+          grep -c "error:" tidy-output.txt && exit 1 || true
+
   build-linux:
     name: Build (Ubuntu 22.04)
     runs-on: ubuntu-22.04
@@ -26,7 +90,7 @@ jobs:
             libgl1-mesa-dev \
             libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
             libopenal-dev \
-            libboost-system-dev \
+            libboost-system-dev libboost-signals2-dev \
             libsqlite3-dev \
             xvfb
 

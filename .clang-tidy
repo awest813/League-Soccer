@@ -1,0 +1,28 @@
+---
+# Clang-tidy configuration for League-Soccer / Gameplay Football.
+# Focus on modernisation checks; suppress noisy legacy warnings.
+
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-using,
+  modernize-use-default-member-init,
+  modernize-make-shared,
+  modernize-make-unique,
+  modernize-loop-convert,
+  modernize-use-emplace,
+  performance-unnecessary-copy-initialization,
+  performance-move-const-arg,
+  readability-redundant-smartptr-get,
+  readability-redundant-string-cstr,
+  -clang-analyzer-alpha.*
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: 'src/.*'
+
+CheckOptions:
+  - key: modernize-use-using.IgnoreMacros
+    value: '1'

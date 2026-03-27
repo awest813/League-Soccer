@@ -9,7 +9,7 @@
 
 #include "scene/objects/camera.hpp"
 
-#include <boost/circular_buffer.hpp>
+#include "base/circular_buffer.hpp"
 
 using namespace blunted;
 
@@ -94,7 +94,7 @@ template <typename T> class TemporalSmoother {
   protected:
     T MixData(const T &data1, const T &data2, float bias = 0.0f) const;
 
-    boost::circular_buffer< TemporalValue<T> > values;
+    blunted::circular_buffer< TemporalValue<T> > values;
     unsigned int snapshotSize;
 
 };

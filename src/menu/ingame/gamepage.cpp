@@ -42,10 +42,10 @@ GamePage::~GamePage() {
 
       if (Verbose()) printf("disconnecting signals\n");
 
-      match->sig_OnMatchPhaseChange.disconnect(boost::bind(&GamePage::GoMatchPhasePage, this));
-      match->sig_OnShortReplayMoment.disconnect(boost::bind(&GamePage::GoShortReplayPage, this));
-      match->sig_OnExtendedReplayMoment.disconnect(boost::bind(&GamePage::GoExtendedReplayPage, this));
-      match->sig_OnGameOver.disconnect(boost::bind(&GamePage::GoGameOverPage, this));
+      match->sig_OnMatchPhaseChange.disconnect([this](...){ GoMatchPhasePage(); });
+      match->sig_OnShortReplayMoment.disconnect([this](...){ GoShortReplayPage(); });
+      match->sig_OnExtendedReplayMoment.disconnect([this](...){ GoExtendedReplayPage(); });
+      match->sig_OnGameOver.disconnect([this](...){ GoGameOverPage(); });
 
     //}
     //GetGameTask()->matchLifetimeMutex.unlock();
@@ -63,10 +63,10 @@ void GamePage::Process() {
 
       if (Verbose()) printf("connecting signals\n");
 
-      match->sig_OnMatchPhaseChange.connect(boost::bind(&GamePage::GoMatchPhasePage, this));
-      match->sig_OnShortReplayMoment.connect(boost::bind(&GamePage::GoShortReplayPage, this));
-      match->sig_OnExtendedReplayMoment.connect(boost::bind(&GamePage::GoExtendedReplayPage, this));
-      match->sig_OnGameOver.connect(boost::bind(&GamePage::GoGameOverPage, this));
+      match->sig_OnMatchPhaseChange.connect([this](...){ GoMatchPhasePage(); });
+      match->sig_OnShortReplayMoment.connect([this](...){ GoShortReplayPage(); });
+      match->sig_OnExtendedReplayMoment.connect([this](...){ GoExtendedReplayPage(); });
+      match->sig_OnGameOver.connect([this](...){ GoGameOverPage(); });
 
     }
     GetGameTask()->matchLifetimeMutex.unlock();

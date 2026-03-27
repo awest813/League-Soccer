@@ -359,7 +359,7 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice*> &controllers) :
     replay.push_back(spatial);
     spatialIter++;
   }
-  replayBallTouchesNetFrames = boost::circular_buffer<ReplayBallTouchesNetFrame>(GetReplaySize_ms() / 10);
+  replayBallTouchesNetFrames = blunted::circular_buffer<ReplayBallTouchesNetFrame>(GetReplaySize_ms() / 10);
 
   excitement = 0.0f;
 
@@ -1332,10 +1332,10 @@ void Match::ApplyReplayFrame(unsigned long replayTime_ms) {
     if (iter2 == replay.at(i).frames.end()) printf("FRAME NOT FOUND, SHOULD NOT HAPPEN AAARGHH\n");
     */
 
-    boost::circular_buffer<ReplaySpatialFrame>::iterator iter = replay.at(i)->frames.begin();
+    blunted::circular_buffer<ReplaySpatialFrame>::iterator iter = replay.at(i)->frames.begin();
     while (iter != replay.at(i)->frames.end()) {
       if (iter->frameTime_ms >= replayTime_ms) {
-        boost::circular_buffer<ReplaySpatialFrame>::iterator iterPrev = iter;
+        blunted::circular_buffer<ReplaySpatialFrame>::iterator iterPrev = iter;
         if (iterPrev != replay.at(i)->frames.begin()) iterPrev--;
         const ReplaySpatialFrame &frame1 = *iterPrev;//->frames.at(frame - 1);
         const ReplaySpatialFrame &frame2 = *iter;//->frames.at(frame);
@@ -1368,7 +1368,7 @@ void Match::ApplyReplayFrame(unsigned long replayTime_ms) {
     playerOfficials.at(i)->UpdateFullbodyNodes();
   }
 
-  boost::circular_buffer<ReplayBallTouchesNetFrame>::iterator iter = replayBallTouchesNetFrames.begin();
+  blunted::circular_buffer<ReplayBallTouchesNetFrame>::iterator iter = replayBallTouchesNetFrames.begin();
   while (iter != replayBallTouchesNetFrames.end()) {
     if (iter->frameTime_ms >= replayTime_ms) {
       bool ballTouchesNet = (*iter).ballTouchesNet;
