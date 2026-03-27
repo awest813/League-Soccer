@@ -30,7 +30,7 @@ ReplayPage::ReplayPage(Gui2WindowManager *windowManager, const Gui2PageData &pag
   autoRun = false;
   stayInReplay = true;
 
-  sig_OnClose.connect(boost::bind(&ReplayPage::OnClose, this));
+  sig_OnClose.connect([this](...){ OnClose(); });
 
   match->SetAutoUpdateIngameCamera(false);
 

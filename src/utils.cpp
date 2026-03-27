@@ -612,7 +612,7 @@ template <> TemporalValue<Quaternion>::TemporalValue() {
 template <typename T> TemporalSmoother<T>::TemporalSmoother() {
   //snapshotSize = 3;
   snapshotSize = 3 + int(ceil(temporalSmoother_history_ms / 10.0f)); // not sure how to calculate proper number?
-  values = boost::circular_buffer< TemporalValue<T> >(snapshotSize);
+  values = blunted::circular_buffer< TemporalValue<T> >(snapshotSize);
 }
 
 template <typename T> void TemporalSmoother<T>::SetValue(const T &data, unsigned long valueTime_ms) {

@@ -1,10 +1,13 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #include "gameplansubmenu.hpp"
 
-GamePlanSubMenu::GamePlanSubMenu(Gui2WindowManager *windowManager, Gui2View *parentFocus, Gui2Grid *mainGrid, const std::string &name) : Gui2View(windowManager, name, 0, 0, 100, 100), mainGrid(mainGrid), parentFocus(parentFocus) {
+GamePlanSubMenu::GamePlanSubMenu(Gui2WindowManager *windowManager, Gui2View *parentFocus,
+                                 Gui2Grid *mainGrid, const std::string &name)
+    : Gui2View(windowManager, name, 0, 0, 100, 100), mainGrid(mainGrid), parentFocus(parentFocus) {
   grid = new Gui2Grid(windowManager, "gameplan_grid_" + name, 0, 0, 0, 0);
   this->AddView(grid);
   mainGrid->AddView(this, 1, 0);
@@ -12,19 +15,21 @@ GamePlanSubMenu::GamePlanSubMenu(Gui2WindowManager *windowManager, Gui2View *par
   grid->SetQuickScroll(true);
   grid->Show();
 
-  sig_OnClose.connect(boost::bind(&GamePlanSubMenu::OnClose, this));
+  sig_OnClose.connect([this](...) { OnClose(); });
 }
 
-GamePlanSubMenu::~GamePlanSubMenu() {
-}
+GamePlanSubMenu::~GamePlanSubMenu() {}
 
+void GamePlanSubMenu::OnClose() {}
 
-void GamePlanSubMenu::OnClose() {
-}
-
-Gui2Button *GamePlanSubMenu::AddButton(const std::string &buttonName, const std::string &buttonCaption, int row, int column, Vector3 color = Vector3(-1)) {
-  if (color.coords[0] < 0) color = windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
-  Gui2Button *theButton = new Gui2Button(windowManager, "gameplan_button_submenu_" + name + "_" + buttonName, 0, 0, 34, 3, buttonCaption);
+Gui2Button *GamePlanSubMenu::AddButton(const std::string &buttonName,
+                                       const std::string &buttonCaption, int row, int column,
+                                       Vector3 color = Vector3(-1)) {
+  if (color.coords[0] < 0)
+    color = windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
+  Gui2Button *theButton =
+      new Gui2Button(windowManager, "gameplan_button_submenu_" + name + "_" + buttonName, 0, 0, 34,
+                     3, buttonCaption);
   theButton->SetColor(color);
   allButtons.push_back(theButton);
   grid->AddView(theButton, row, column);
@@ -34,8 +39,11 @@ Gui2Button *GamePlanSubMenu::AddButton(const std::string &buttonName, const std:
   return theButton;
 }
 
-Gui2Slider *GamePlanSubMenu::AddSlider(const std::string &sliderName, const std::string &sliderCaption, int row, int column) {
-  Gui2Slider *theSlider = new Gui2Slider(windowManager, "gameplan_slider_submenu_" + name + "_" + sliderName, 0, 0, 34, 6, sliderCaption);
+Gui2Slider *GamePlanSubMenu::AddSlider(const std::string &sliderName,
+                                       const std::string &sliderCaption, int row, int column) {
+  Gui2Slider *theSlider =
+      new Gui2Slider(windowManager, "gameplan_slider_submenu_" + name + "_" + sliderName, 0, 0, 34,
+                     6, sliderCaption);
   grid->AddView(theSlider, row, column);
   grid->SetMaxVisibleRows(6);
   grid->UpdateLayout(0.5);
@@ -45,18 +53,19 @@ Gui2Slider *GamePlanSubMenu::AddSlider(const std::string &sliderName, const std:
 
 Gui2Button *GamePlanSubMenu::GetToggledButton(Gui2Button *except) {
   for (int i = 0; i < (signed int)allButtons.size(); i++) {
-    if (allButtons.at(i) != except) if (allButtons.at(i)->IsToggled()) return allButtons.at(i);
+    if (allButtons.at(i) != except)
+      if (allButtons.at(i)->IsToggled())
+        return allButtons.at(i);
   }
   return 0;
 }
 
 void GamePlanSubMenu::ProcessWindowingEvent(WindowingEvent *event) {
   if (event->IsEscape()) {
-
-    mainGrid->RemoveView(1, 0); // removing self!
+    mainGrid->RemoveView(1, 0);  // removing self!
     parentFocus->SetFocus();
 
-    this->Exit(); // should send sig_OnClose
+    this->Exit();  // should send sig_OnClose
     delete this;
     return;
 

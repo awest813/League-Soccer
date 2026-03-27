@@ -31,7 +31,7 @@
 #include "types/command.hpp"
 #include "types/lockable.hpp"
 
-#include <boost/circular_buffer.hpp>
+#include "base/circular_buffer.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -49,10 +49,10 @@ struct ReplayBallTouchesNetFrame {
 
 struct ReplaySpatial {
   ReplaySpatial(int frameCount) {
-    frames = boost::circular_buffer<ReplaySpatialFrame>(frameCount);
+    frames = blunted::circular_buffer<ReplaySpatialFrame>(frameCount);
   }
   boost::intrusive_ptr<Spatial> spatial;
-  boost::circular_buffer<ReplaySpatialFrame> frames;
+  blunted::circular_buffer<ReplaySpatialFrame> frames;
 };
 
 struct PlayerBounce {
@@ -349,7 +349,7 @@ class Match {
     boost::intrusive_ptr<Sound> crowd02;
 
     std::vector<ReplaySpatial*> replay;
-    boost::circular_buffer<ReplayBallTouchesNetFrame> replayBallTouchesNetFrames;
+    blunted::circular_buffer<ReplayBallTouchesNetFrame> replayBallTouchesNetFrames;
     bool resetNetting;
     bool nettingHasChanged;
 

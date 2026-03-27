@@ -26,8 +26,8 @@ MatchPhasePage::MatchPhasePage(Gui2WindowManager *windowManager, const Gui2PageD
   buttonNext = new Gui2Button(windowManager, "button_next", 0, 0, 30, 3, "begin " + phaseName);
   Gui2Button *button1 = new Gui2Button(windowManager, "button1", 0, 0, 30, 3, "game plan");
 
-  buttonNext->sig_OnClick.connect(boost::bind(&MatchPhasePage::ContinueGame, this));
-  button1->sig_OnClick.connect(boost::bind(&MatchPhasePage::GoGamePlan, this));
+  buttonNext->sig_OnClick.connect([this](...){ ContinueGame(); });
+  button1->sig_OnClick.connect([this](...){ GoGamePlan(); });
 
   grid = new Gui2Grid(windowManager, "grid", 10, 10, 80, 80);
 

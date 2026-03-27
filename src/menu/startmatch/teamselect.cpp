@@ -86,15 +86,15 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager *windowManager, const Gui2PageD
   buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 29, 3, "Ready");
   buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 29, 3, "Ready");
 
-  competitionSelect1->sig_OnClick.connect(boost::bind(&TeamSelectPage::FocusTeamSelect1, this));
-  teamSelect1->sig_OnClick.connect(boost::bind(&TeamSelectPage::FocusStart1, this));
-  buttonStart1->sig_OnClick.connect(boost::bind(&TeamSelectPage::FocusCompetitionSelect2, this));
-  competitionSelect2->sig_OnClick.connect(boost::bind(&TeamSelectPage::FocusTeamSelect2, this));
-  teamSelect2->sig_OnClick.connect(boost::bind(&TeamSelectPage::FocusStart2, this));
-  buttonStart2->sig_OnClick.connect(boost::bind(&TeamSelectPage::GoOptionsMenu, this));
+  competitionSelect1->sig_OnClick.connect([this](...){ FocusTeamSelect1(); });
+  teamSelect1->sig_OnClick.connect([this](...){ FocusStart1(); });
+  buttonStart1->sig_OnClick.connect([this](...){ FocusCompetitionSelect2(); });
+  competitionSelect2->sig_OnClick.connect([this](...){ FocusTeamSelect2(); });
+  teamSelect2->sig_OnClick.connect([this](...){ FocusStart2(); });
+  buttonStart2->sig_OnClick.connect([this](...){ GoOptionsMenu(); });
 
-  competitionSelect1->sig_OnChange.connect(boost::bind(&TeamSelectPage::SetupTeamSelect1, this));
-  competitionSelect2->sig_OnChange.connect(boost::bind(&TeamSelectPage::SetupTeamSelect2, this));
+  competitionSelect1->sig_OnChange.connect([this](...){ SetupTeamSelect1(); });
+  competitionSelect2->sig_OnChange.connect([this](...){ SetupTeamSelect2(); });
 
   this->AddView(p1);
   p1->Show();

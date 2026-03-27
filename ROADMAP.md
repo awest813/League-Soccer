@@ -32,12 +32,12 @@ welcome – see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 | 1.6 | Add **GitHub Actions CI** workflow (Ubuntu build) | ✅ |
 | 1.7 | Add `CONTRIBUTING.md` | ✅ |
 | 1.8 | Update `README.md` (fix URLs, add developer section) | ✅ |
-| 1.9 | Replace `boost::shared_ptr` / `boost::intrusive_ptr` with `std::shared_ptr` where safe | 📋 |
-| 1.10 | Replace `boost::thread` with `std::thread` | 📋 |
+| 1.9 | Replace `boost::bind` → lambdas/`std::bind`; `boost::random` → `std::random`; `boost::circular_buffer` → custom std impl | ✅ |
+| 1.10 | Replace `boost::thread` with `std::thread` | ✅ |
 | 1.11 | Replace raw `new`/`delete` owners with `std::unique_ptr` | 📋 |
 | 1.12 | Address suppressed compiler warnings one module at a time | 📋 |
-| 1.13 | Enforce clang-format in CI | 📋 |
-| 1.14 | Add **clang-tidy** configuration and CI step | 📋 |
+| 1.13 | Enforce clang-format in CI (checks changed files per PR) | ✅ |
+| 1.14 | Add **clang-tidy** configuration and CI step | ✅ |
 | 1.15 | Windows CI (via MSVC / vcpkg) | 📋 |
 | 1.16 | macOS CI (fix main-thread rendering issue) | 📋 |
 

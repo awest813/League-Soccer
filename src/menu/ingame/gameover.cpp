@@ -29,7 +29,7 @@ GameOverPage::GameOverPage(Gui2WindowManager *windowManager, const Gui2PageData 
   buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 40, 82, 20, 3, "well then");
   this->AddView(buttonOkay);
   buttonOkay->Show();
-  buttonOkay->sig_OnClick.connect(boost::bind(&GameOverPage::GoMainMenu, this));
+  buttonOkay->sig_OnClick.connect([this](...){ GoMainMenu(); });
 
   float possession1 = match->GetMatchData()->GetPossessionTime_ms(0);
   float possession2 = match->GetMatchData()->GetPossessionTime_ms(1);

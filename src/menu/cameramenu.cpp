@@ -28,11 +28,11 @@ CameraPage::CameraPage(Gui2WindowManager *windowManager, const Gui2PageData &pag
 
   grid->UpdateLayout(0.5);
 
-  sliderZoom->sig_OnChange.connect(boost::bind(&CameraPage::UpdateCamera, this));
-  sliderHeight->sig_OnChange.connect(boost::bind(&CameraPage::UpdateCamera, this));
-  sliderFOV->sig_OnChange.connect(boost::bind(&CameraPage::UpdateCamera, this));
-  sliderAngleFactor->sig_OnChange.connect(boost::bind(&CameraPage::UpdateCamera, this));
-  this->sig_OnClose.connect(boost::bind(&CameraPage::OnClose, this));
+  sliderZoom->sig_OnChange.connect([this](...){ UpdateCamera(); });
+  sliderHeight->sig_OnChange.connect([this](...){ UpdateCamera(); });
+  sliderFOV->sig_OnChange.connect([this](...){ UpdateCamera(); });
+  sliderAngleFactor->sig_OnChange.connect([this](...){ UpdateCamera(); });
+  this->sig_OnClose.connect([this](...){ OnClose(); });
 
   this->AddView(grid);
   grid->Show();

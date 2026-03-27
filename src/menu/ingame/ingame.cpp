@@ -31,13 +31,13 @@ IngamePage::IngamePage(Gui2WindowManager *windowManager, const Gui2PageData &pag
   Gui2Button *buttonReplay = new Gui2Button(windowManager, "button_replay", 0, 0, 30, 3, "replay");
   Gui2Button *buttonPreQuit = new Gui2Button(windowManager, "button_quit", 0, 0, 30, 3, "forfeit match");
 
-  buttonGamePlan->sig_OnClick.connect(boost::bind(&IngamePage::GoGamePlan, this));
-  buttonControllerSelect->sig_OnClick.connect(boost::bind(&IngamePage::GoControllerSelect, this));
-  buttonCameraSettings->sig_OnClick.connect(boost::bind(&IngamePage::GoCameraSettings, this));
-  buttonVisualOptions->sig_OnClick.connect(boost::bind(&IngamePage::GoVisualOptions, this));
-  buttonSystemSettings->sig_OnClick.connect(boost::bind(&IngamePage::GoSystemSettings, this));
-  buttonReplay->sig_OnClick.connect(boost::bind(&IngamePage::GoReplay, this));
-  buttonPreQuit->sig_OnClick.connect(boost::bind(&IngamePage::GoPreQuit, this));
+  buttonGamePlan->sig_OnClick.connect([this](...){ GoGamePlan(); });
+  buttonControllerSelect->sig_OnClick.connect([this](...){ GoControllerSelect(); });
+  buttonCameraSettings->sig_OnClick.connect([this](...){ GoCameraSettings(); });
+  buttonVisualOptions->sig_OnClick.connect([this](...){ GoVisualOptions(); });
+  buttonSystemSettings->sig_OnClick.connect([this](...){ GoSystemSettings(); });
+  buttonReplay->sig_OnClick.connect([this](...){ GoReplay(); });
+  buttonPreQuit->sig_OnClick.connect([this](...){ GoPreQuit(); });
 
 
   Gui2Grid *grid = new Gui2Grid(windowManager, "grid", 10, 10, 80, 80);
@@ -115,8 +115,8 @@ PreQuitPage::PreQuitPage(Gui2WindowManager *windowManager, const Gui2PageData &p
   Gui2Caption *restartCaption = new Gui2Caption(windowManager, "caption_prequit_info", 0, 0, 100, 3, "are you sure you want to forfeit?");
   Gui2Button *okButton = new Gui2Button(windowManager, "button_prequit_ok", 10, 0, 30, 3, "OK, forfeit");
   Gui2Button *cancelButton = new Gui2Button(windowManager, "button_prequit_cancel", 10, 0, 30, 3, "Continue match");
-  okButton->sig_OnClick.connect(boost::bind(&PreQuitPage::GoMenu, this));
-  cancelButton->sig_OnClick.connect(boost::bind(&PreQuitPage::GoBack, this));
+  okButton->sig_OnClick.connect([this](...){ GoMenu(); });
+  cancelButton->sig_OnClick.connect([this](...){ GoBack(); });
 
   Gui2Grid *grid = new Gui2Grid(windowManager, "grid_prequit", 30, 42.5, 40, 15);
 
