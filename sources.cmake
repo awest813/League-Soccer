@@ -22,6 +22,14 @@ set(BASE_MATH_HEADERS
         src/base/math/bluntmath.hpp
         )
 
+set(BASE_MATH_SOURCES
+        src/base/math/vector3.cpp
+        src/base/math/matrix3.cpp
+        src/base/math/bluntmath.cpp
+        src/base/math/quaternion.cpp
+        src/base/math/matrix4.cpp
+        )
+
 set(BASE_SOURCES
         src/base/exception.cpp
         src/base/sdl_surface.cpp
@@ -33,11 +41,7 @@ set(BASE_SOURCES
         src/base/geometry/trianglemeshutils.cpp
         src/base/geometry/aabb.cpp
         src/base/geometry/plane.cpp
-        src/base/math/vector3.cpp
-        src/base/math/matrix3.cpp
-        src/base/math/bluntmath.cpp
-        src/base/math/quaternion.cpp
-        src/base/math/matrix4.cpp
+        ${BASE_MATH_SOURCES}
         )
 
 set(SYSTEMS_COMMON_HEADERS

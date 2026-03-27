@@ -125,6 +125,15 @@ Code style is enforced by [`.clang-format`](.clang-format):
 clang-format -i src/my_file.cpp
 ```
 
+Run the unit tests:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON \
+  -DGAMEPLAYFOOTBALL_BUILD_GAME=OFF
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+```
+
 ---
 
 ## Problems?
