@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -g -Wall -Wextra -Wl,--dependency-file=CMakeFiles/gameplayfootball_velocity_tests.dir/link.d CMakeFiles/gameplayfootball_velocity_tests.dir/onthepitch/velocity_state_test.cpp.o -o gameplayfootball_velocity_tests  ../lib/libgtest_main.a ../lib/libgtest.a

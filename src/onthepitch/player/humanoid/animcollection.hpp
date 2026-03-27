@@ -15,11 +15,6 @@
 using namespace blunted;
 
 inline radian FixAngle(radian angle);
-inline float RangeVelocity(float velocity);
-inline float ClampVelocity(float velocity);
-inline float FloorVelocity(float velocity);
-inline float EnumToFloatVelocity(e_Velocity velocity);
-inline e_Velocity FloatToEnumVelocity(float velocity);
 
 enum e_DefString {
   e_DefString_Empty = 0,
@@ -52,68 +47,6 @@ radian FixAngle(radian angle) {
   radian newAngle = angle;
   newAngle += 0.5f * pi;
   return ModulateIntoRange(-pi, pi, newAngle);
-}
-
-float RangeVelocity(float velocity) {
-  float retVelocity = idleVelocity;
-  if (velocity >= idleDribbleSwitch && velocity < dribbleWalkSwitch)
-    retVelocity = dribbleVelocity;
-  else if (velocity >= dribbleWalkSwitch && velocity < walkSprintSwitch)
-    retVelocity = walkVelocity;
-  else if (velocity >= walkSprintSwitch)
-    retVelocity = sprintVelocity;
-  return retVelocity;
-}
-
-float ClampVelocity(float velocity) {
-  if (velocity < 0)
-    return 0;
-  if (velocity > sprintVelocity)
-    return sprintVelocity;
-  return velocity;
-}
-
-float FloorVelocity(float velocity) {
-  float retVelocity = idleVelocity;
-  if (velocity > 0 && velocity < dribbleVelocity)
-    retVelocity = dribbleVelocity;
-  else if (velocity <= walkVelocity)
-    retVelocity = walkVelocity;
-  else
-    retVelocity = sprintVelocity;
-  return retVelocity;
-}
-
-float EnumToFloatVelocity(e_Velocity velocity) {
-  switch (velocity) {
-    case e_Velocity_Idle:
-      return idleVelocity;
-      break;
-    case e_Velocity_Dribble:
-      return dribbleVelocity;
-      break;
-    case e_Velocity_Walk:
-      return walkVelocity;
-      break;
-    case e_Velocity_Sprint:
-      return sprintVelocity;
-      break;
-  }
-  return 0;
-}
-
-e_Velocity FloatToEnumVelocity(float velocity) {
-  float rangedVelocity = RangeVelocity(velocity);
-  if (rangedVelocity == idleVelocity)
-    return e_Velocity_Idle;
-  else if (rangedVelocity == dribbleVelocity)
-    return e_Velocity_Dribble;
-  else if (rangedVelocity == walkVelocity)
-    return e_Velocity_Walk;
-  else if (rangedVelocity == sprintVelocity)
-    return e_Velocity_Sprint;
-  else
-    return e_Velocity_Idle;
 }
 
 struct CrudeSelectionQuery {

@@ -22,3 +22,33 @@ target_link_libraries(gameplayfootball_math_tests PRIVATE
 )
 
 gtest_discover_tests(gameplayfootball_math_tests)
+
+# Velocity state machine unit tests (task 2.5)
+add_executable(gameplayfootball_velocity_tests
+  onthepitch/velocity_state_test.cpp
+)
+
+target_include_directories(gameplayfootball_velocity_tests PRIVATE
+  ${PROJECT_SOURCE_DIR}/src
+)
+
+target_link_libraries(gameplayfootball_velocity_tests PRIVATE
+  GTest::gtest_main
+)
+
+gtest_discover_tests(gameplayfootball_velocity_tests)
+
+# Match simulation integration tests (task 2.6)
+add_executable(gameplayfootball_integration_tests
+  integration/match_simulation_test.cpp
+)
+
+target_include_directories(gameplayfootball_integration_tests PRIVATE
+  ${PROJECT_SOURCE_DIR}/src
+)
+
+target_link_libraries(gameplayfootball_integration_tests PRIVATE
+  GTest::gtest_main
+)
+
+gtest_discover_tests(gameplayfootball_integration_tests)
