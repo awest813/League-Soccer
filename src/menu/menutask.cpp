@@ -61,22 +61,12 @@ MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font *defaultFont, TTF_F
   style->SetFont(e_TextType_Title, defaultFont);
   style->SetFont(e_TextType_ToolTip, defaultFont);
 
-/* previous colorset
-  style->SetColor(e_DecorationType_Dark1, Vector3(0, 0, 0));
-  style->SetColor(e_DecorationType_Dark2, Vector3(63, 63, 63));
-  style->SetColor(e_DecorationType_Bright1, Vector3(240, 255, 210));
-  style->SetColor(e_DecorationType_Bright2, Vector3(214, 194, 154));
-  style->SetColor(e_DecorationType_Toggled, Vector3(255, 20, 70));
-*/
-
-  // huisstijl:
-  // blauw: 0, 100, 220
-  // orange: 240, 100, 0
-  style->SetColor(e_DecorationType_Dark1, Vector3(20, 35, 55));
-  style->SetColor(e_DecorationType_Dark2, Vector3(60, 35, 20));
-  style->SetColor(e_DecorationType_Bright1, Vector3(150, 180, 220));
-  style->SetColor(e_DecorationType_Bright2, Vector3(240, 150, 100));
-  style->SetColor(e_DecorationType_Toggled, Vector3(240, 60, 60));
+  // Modern dark sports theme
+  style->SetColor(e_DecorationType_Dark1, Vector3(8, 15, 28));       // deep navy (button bg)
+  style->SetColor(e_DecorationType_Dark2, Vector3(22, 32, 52));      // medium navy (inactive/disabled)
+  style->SetColor(e_DecorationType_Bright1, Vector3(200, 220, 250)); // icy blue-white (text)
+  style->SetColor(e_DecorationType_Bright2, Vector3(30, 200, 120));  // emerald green (hover/focus)
+  style->SetColor(e_DecorationType_Toggled, Vector3(255, 165, 30));  // warm amber (toggled)
 
   windowManager->SetTimeStep_ms(10);
 

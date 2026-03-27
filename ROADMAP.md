@@ -90,8 +90,9 @@ welcome – see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 | 4.4 | **Resolution selector** in the options menu | 📋 |
 | 4.5 | **Controller remapping** in-game menu | 📋 |
 | 4.6 | **Localisation / i18n** scaffolding | 💡 |
-| 4.7 | **Shader improvements** – normal mapping, ambient occlusion | 💡 |
+| 4.7 | **Shader improvements** – normal mapping, ambient occlusion | 🔄 |
 | 4.8 | **Widescreen camera** preset (16:9 / 21:9) | 📋 |
+| 4.9 | **UI/Menu modernisation** – dark sports theme, vertical main menu, centered HUD | ✅ |
 
 ---
 

@@ -61,37 +61,31 @@ namespace blunted {
   void Gui2Button::Redraw() {
     int x, y, w, h;
     windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
-    float x_ratio = w / width_percent; // 1% width
-    float y_ratio = h / height_percent; // 1% width
-    int x_margin = int(round(x_ratio * 0.5));
-    int y_margin = int(round(y_ratio * 0.5));
+    float y_ratio = h / height_percent; // pixels per 1%
+    int accentH = std::max(2, int(round(y_ratio * 0.3))); // bottom accent bar height
 
-    int alpha = 0;
-    Vector3 color1;
+    // Background fill
+    Vector3 bgColor = windowManager->GetStyle()->GetColor(e_DecorationType_Dark1);
+    if (!active) bgColor = windowManager->GetStyle()->GetColor(e_DecorationType_Dark2);
+    image->DrawRectangle(0, 0, w, h, bgColor, 200);
+
+    // Bottom accent bar (focus/hover indicator)
+    Vector3 accentColor;
+    int accentAlpha;
     if (IsFocussed()) {
-      alpha = 200;
-
-      color1 = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);
-      if (toggleable && toggled) color1 = windowManager->GetStyle()->GetColor(e_DecorationType_Toggled);
-
+      accentColor = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);
+      if (toggleable && toggled) accentColor = windowManager->GetStyle()->GetColor(e_DecorationType_Toggled);
+      accentAlpha = 255;
     } else {
-      alpha = int(floor(200 - (fadeOut_ms / (float)fadeOutTime_ms * 100)));
       float bias = fadeOut_ms / (float)fadeOutTime_ms;
-
       Vector3 dark1 = windowManager->GetStyle()->GetColor(e_DecorationType_Dark1);
       if (toggleable && toggled) dark1 = windowManager->GetStyle()->GetColor(e_DecorationType_Toggled);
-
       Vector3 selectedColor = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);
       if (toggleable && toggled) selectedColor = windowManager->GetStyle()->GetColor(e_DecorationType_Toggled);
-
-      color1 = selectedColor * (1 - bias) + dark1 * bias;
+      accentColor = selectedColor * (1.0f - bias) + dark1 * bias;
+      accentAlpha = int(floor(255.0f * (1.0f - bias)));
     }
-    Vector3 color2 = color;
-    if (!active) {
-      color2 = windowManager->GetStyle()->GetColor(e_DecorationType_Dark2);
-    }
-    image->DrawRectangle(0, 0, w, h, color2, alpha);
-    image->DrawRectangle(x_margin, 0, w - x_margin * 2, h, color1, alpha);
+    image->DrawRectangle(0, h - accentH, w, accentH, accentColor, accentAlpha);
 
     image->OnChange();
   }

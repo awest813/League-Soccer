@@ -26,24 +26,25 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager *windowManager, Match *match) :
   int x, y, w, h;
   windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
 
-  // percentages
+  // percentages – score panel centered around 50%
   float xOffset[9];
-  xOffset[0] = 1; // league logo
-  xOffset[1] = 5; // time
-  xOffset[2] = 15; // t1 logo
-  xOffset[3] = 19; // t1 name
-  xOffset[4] = 25; // t1 score
-  xOffset[5] = 29; // t2 logo
-  xOffset[6] = 33; // t2 name
-  xOffset[7] = 39; // t2 score
-  xOffset[8] = 43; // end
+  xOffset[0] = 1;  // league logo (far left)
+  xOffset[1] = 5;  // time (near left)
+  xOffset[2] = 33; // t1 logo
+  xOffset[3] = 37; // t1 name
+  xOffset[4] = 43; // t1 score
+  xOffset[5] = 47; // t2 logo
+  xOffset[6] = 51; // t2 name
+  xOffset[7] = 57; // t2 score
+  xOffset[8] = 61; // end
   float relToAbsMultiplier = w / (width_percent * 1.0f);
   content_yOffset = 0.2f;
   float content_xOffset = 0.2f;
 
   float bgAlpha = 100.0f;
 
-  Gui2Image *bg = new Gui2Image(windowManager, "image_scoreboard_bg", 0, 0, xOffset[8] + 1, height_percent);
+  // Background covers the centered score panel (from ~32% to ~62%)
+  Gui2Image *bg = new Gui2Image(windowManager, "image_scoreboard_bg", 32, 0, xOffset[8] - 31, height_percent);
   bg->LoadImage("media/menu/scoreboard_bg.png");
   this->AddView(bg);
   bg->Show();
