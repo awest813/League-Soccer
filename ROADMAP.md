@@ -53,7 +53,7 @@ welcome - see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 | 2.1 | Introduce **Google Test** (or Catch2) as a CMake `FetchContent` dependency | `DONE` |
 | 2.2 | Headless / mock rendering mode so tests can run without a display | `PLANNED` |
 | 2.3 | Unit tests for `base/math` (Vector3, Matrix3, Quaternion, bluntmath) | `DONE` |
-| 2.4 | Unit tests for ball-physics calculations | `PLANNED` |
+| 2.4 | Unit tests for ball-physics calculations | `DONE` |
 | 2.5 | Unit tests for player-velocity state machine | `PLANNED` |
 | 2.6 | Integration test: simulate a full 90-second match and assert score/state | `PLANNED` |
 | 2.7 | Run tests in GitHub Actions CI | `DONE` |

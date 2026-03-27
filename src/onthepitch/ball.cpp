@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "../main.hpp"
+#include "ballphysics.hpp"
 #include "managers/resourcemanagerpool.hpp"
 #include "managers/usereventmanager.hpp"
 #include "match.hpp"
@@ -147,8 +148,6 @@ BallSpatialInfo Ball::CalculatePrediction() {
 
   predictions[0] = nextPos;
 
-  bool drag_enabled = true;
-  bool groundFriction_enabled = true;
   bool woodwork_enabled = true;
   bool netting_enabled = true;
   bool groundRotationEffects_enabled = true;
@@ -160,76 +159,33 @@ BallSpatialInfo Ball::CalculatePrediction() {
   // printf("timestep: %i\n", int(timeStep * 1000.0f));
   bool firstTime = true;
 
+  BallPhysicsConfig physicsConfig;
+  physicsConfig.bounce = bounce;
+  physicsConfig.linearBounce = linearBounce;
+  physicsConfig.drag = drag;
+  physicsConfig.friction = friction;
+  physicsConfig.linearFriction = linearFriction;
+  physicsConfig.gravity = gravity;
+  physicsConfig.grassHeight = grassHeight;
+
   ballTouchesNet = false;
 
   for (unsigned int predictTime_ms = int(timeStep * 1000.0f);
        predictTime_ms < ballPredictionSize_ms; predictTime_ms += int(timeStep * 1000.0f)) {
-    float frictionFactor = 0.0f;
+    BallPhysicsState physicsState{nextPos, momentumPredict};
+    BallGroundInteraction groundInteraction =
+        ApplyBallMotionForces(physicsState, physicsConfig, timeStep);
+    nextPos = physicsState.position;
+    momentumPredict = physicsState.momentum;
 
-    // gravity
-
-    // vz = vz0 + g * t
-    momentumPredict.coords[2] = momentumPredict.coords[2] + gravity * timeStep;
-
-    // air resistance
-
-    float momentumVelo = momentumPredict.GetLength();
-    float momentumVeloDragged = momentumVelo - drag * std::pow(momentumVelo, 2.0f) * timeStep;
-    if (drag_enabled)
-      momentumPredict = momentumPredict.GetNormalized(0) * momentumVeloDragged;
-
-    float ballBottom = nextPos.coords[2] - 0.11f;
-    float grassInfluenceBias = clamp(1.0f - (ballBottom / grassHeight), 0.0f,
-                                     1.0f);  // 0 == no friction, 1 == all friction
-    // todo: seems to cause 'feedback' on multibump (1st bump: ball gets lots of rotation. second
-    // bump: rotation makes ball accelerate too much)
-    grassInfluenceBias =
-        std::pow(grassInfluenceBias, 0.7f);  // at half grass height, there's already a
-                                             // bigger amount of friction than 50%
-    // printf("%f\n", bias);
-
-    // bounce
-
-    if (nextPos.coords[2] < 0.11f) {
-      if (momentumPredict.coords[2] < 0.0f) {
-        frictionFactor = NormalizedClamp(
-            -momentumPredict.coords[2] - 0.5f, 0.0f,
-            12.0f);  // when the ball is slammed into the ground, there's gonna be more friction.
-                     // only set it here so it is only done once (on impact)
-        momentumPredict.coords[2] = -momentumPredict.coords[2] * bounce;
-        momentumPredict.coords[2] =
-            std::max(momentumPredict.coords[2] - linearBounce, 0.0f);  // linear bounce
-      }
-
-      nextPos.coords[2] = 0.11f;
-    }
-
-    // ground friction
-
-    if (nextPos.coords[2] < 0.11f + grassHeight && groundFriction_enabled) {
-      float adaptedFriction = (friction * grassInfluenceBias);
-
-      // v(t) = v(0) * (k ^ t)
-
-      Vector3 xy = momentumPredict.Get2D();
-      float velo = xy.GetLength();
-
-      float newVelo = velo - adaptedFriction * std::pow(velo, 2.0f) * timeStep;
-
-      // linear friction
-      newVelo = clamp(newVelo - (linearFriction * grassInfluenceBias * timeStep), 0.0f, 100000.0f);
-
-      xy.Normalize(Vector3(0));
-      xy *= newVelo;
-      momentumPredict.coords[0] = xy.coords[0];
-      momentumPredict.coords[1] = xy.coords[1];
-    }
+    float frictionFactor = groundInteraction.frictionFactor;
+    float grassInfluenceBias = groundInteraction.grassInfluenceBias;
 
     float netAbsorbInv = 0.95f;
     float powFactor = 2.6f;
     float powerFac = 1.8f;  // lol varnames
     float postAbsorbInv = 0.8f;
-    float ballRadius = 0.11f;
+    float ballRadius = physicsConfig.ballRadius;
     float postRadius = 0.07f;
 
     netAbsorbInv = std::pow(netAbsorbInv, timeStep * 100.0f);

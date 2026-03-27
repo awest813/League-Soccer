@@ -70,6 +70,14 @@ target_include_directories(gf_mathlib PUBLIC
   ${Boost_INCLUDE_DIR}
 )
 
+add_library(gf_ballphysicslib STATIC
+  src/onthepitch/ballphysics.cpp
+  src/onthepitch/ballphysics.hpp)
+target_link_libraries(gf_ballphysicslib PUBLIC gf_mathlib)
+target_include_directories(gf_ballphysicslib PUBLIC
+  ${PROJECT_SOURCE_DIR}/src
+)
+
 if(GAMEPLAYFOOTBALL_BUILD_GAME)
   # Compile it as multiple OBJECT libraries (note: not compiling physics,
   # as not used by gameplayfootball)
@@ -133,6 +141,7 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
 
   add_library(gamelib ${GAME_SOURCES} ${GAME_HEADERS})
   gf_target_includes(gamelib)
+  target_link_libraries(gamelib PRIVATE gf_ballphysicslib)
 
   add_library(hidlib ${HID_SOURCES} ${HID_HEADERS})
   gf_target_includes(hidlib)
