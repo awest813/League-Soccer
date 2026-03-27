@@ -62,20 +62,19 @@ GamePlanPage::GamePlanPage(Gui2WindowManager* windowManager, const Gui2PageData&
   this->Show();
 
   if (UpdateNonImportableDB()) {
-    namedb = new Database();
+    namedb = std::make_unique<Database>();
     bool dbSuccess = namedb->Load("databases/names.sqlite");
     if (!dbSuccess)
       Log(e_FatalError, "MainMenuPage", "GoImportDB", "Could not open database");
   } else {
-    namedb = 0;
+    namedb = nullptr;
   }
 }
 
 GamePlanPage::~GamePlanPage() {}
 
 void GamePlanPage::OnClose() {
-  if (namedb)
-    delete namedb;
+  namedb.reset();
 }
 
 void GamePlanPage::Deactivate() {
@@ -104,7 +103,7 @@ void GamePlanPage::GoLineupMenu() {
   lineupMenu->sig_OnClose.connect([this](...) { SaveLineup(); });
   lineupMenu->sig_OnClose.connect([this](...) { Reactivate(); });
 
-  const std::vector<PlayerData*>& playerData = teamData->GetPlayerData();
+  const auto& playerData = teamData->GetPlayerData();
   for (unsigned int i = 0; i < playerData.size(); i++) {
     Vector3 color = GetButtonColor(i);
     Gui2Button* button =
@@ -162,22 +161,19 @@ void GamePlanPage::SaveLineup() {
       unsigned int formationorder = i;
 
       // find player
-      DatabaseResult* result = namedb->Query(
+      auto result = namedb->Query(
           "select id from playernames where fakefirstname = \"" + playerData->GetFirstName() +
           "\" and fakelastname = \"" + playerData->GetLastName() + "\" limit 1;");
       int playerDatabaseID = -1;
       if (result->data.size() > 0) {
         playerDatabaseID = atoi(result->data.at(0).at(0).c_str());
-        delete result;
         result =
             namedb->Query("update playernames set formationorder = " + int_to_str(formationorder) +
                           " where id = " + int_to_str(playerDatabaseID) + ";");
-        delete result;
       } else {  // player does not yet exist in namedb
         if (Verbose())
           printf("WARNING: player does not exist in namedb: %s %s\n",
                  playerData->GetFirstName().c_str(), playerData->GetLastName().c_str());
-        delete result;
       }
     }
   }
@@ -243,19 +239,16 @@ void GamePlanPage::SaveTactics() {
     printf("tactics:\n%s\n", tactics_xml.c_str());
 
     // find club
-    DatabaseResult* result = namedb->Query("select id from clubnames where faketargetname = \"" +
+    auto result = namedb->Query("select id from clubnames where faketargetname = \"" +
                                            teamData->GetName() + "\" limit 1;");
     int teamDatabaseID = -1;
     if (result->data.size() > 0) {
       teamDatabaseID = atoi(result->data.at(0).at(0).c_str());
-      delete result;
       result = namedb->Query("update clubnames set tactics_xml = \"" + tactics_xml +
                              "\" where id = " + int_to_str(teamDatabaseID) + ";");
-      delete result;
     } else {  // team does not yet exist in namedb
       if (Verbose())
         printf("WARNING: team does not exist in namedb: %s\n", teamData->GetName().c_str());
-      delete result;
     }
   }
 

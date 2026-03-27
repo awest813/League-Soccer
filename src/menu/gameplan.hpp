@@ -6,6 +6,8 @@
 #ifndef _HPP_MENU_GAMEPLAN
 #define _HPP_MENU_GAMEPLAN
 
+#include <memory>
+
 #include "../data/teamdata.hpp"
 #include "../onthepitch/match.hpp"
 #include "utils/database.hpp"
@@ -63,7 +65,7 @@ protected:
 
   std::vector<TacticsSlider> tacticsSliders;
 
-  Database* namedb;
+  std::unique_ptr<Database> namedb;
 };
 
 #endif

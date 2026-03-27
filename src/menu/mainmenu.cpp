@@ -240,26 +240,24 @@ bool SortClubPlayersByRole(const PlayerImport& a, const PlayerImport& b) {
 std::string RenameLeague(Database* namedb, const std::string& name, const std::string& srcfield) {
   std::string query =
       "select " + srcfield + " from leaguenames where name = \"" + name + "\" limit 1;";
-  DatabaseResult* result = namedb->Query(query);
+  auto result = namedb->Query(query);
   std::string targetName;
   if (result->data.size() > 0) {
     targetName = result->data.at(0).at(0);
   } else
     targetName = name;
-  delete result;
   return targetName;
 }
 
 std::string RenameClub(Database* namedb, const std::string& name, const std::string& srcfield) {
   std::string query =
       "select " + srcfield + " from clubnames where name = \"" + name + "\" limit 1;";
-  DatabaseResult* result = namedb->Query(query);
+  auto result = namedb->Query(query);
   std::string targetName;
   if (result->data.size() > 0) {
     targetName = result->data.at(0).at(0);
   } else
     targetName = name;
-  delete result;
   return targetName;
 }
 
@@ -268,7 +266,7 @@ ClubData GetClubData(Database* namedb, const std::string& name) {
       "select formation_xml, tactics_xml, shortname, color1, color2 from clubnames where name = "
       "\"" +
       name + "\" limit 1;";
-  DatabaseResult* result = namedb->Query(query);
+  auto result = namedb->Query(query);
   ClubData data;
   if (result->data.size() > 0) {
     data.formation_xml = result->data.at(0).at(0);
@@ -287,7 +285,6 @@ ClubData GetClubData(Database* namedb, const std::string& name) {
     data.color1 = "40, 40, 40";
     data.color2 = "200, 200, 200";
   }
-  delete result;
   return data;
 }
 
@@ -306,7 +303,7 @@ void GetPlayerData(Database* namedb, const std::string& firstname, const std::st
       "select fakefirstname, fakelastname, skincolor, hairstyle, haircolor, height, weight, "
       "formationorder, base_stat_offset, profile_xml from playernames where firstname = \"" +
       firstname + "\" and lastname = \"" + lastname + "\" limit 1;";
-  DatabaseResult* result = namedb->Query(query);
+  auto result = namedb->Query(query);
   if (result->data.size() > 0 && atoi(result->data.at(0).at(2).c_str()) != 0) {
     fakefirstname_ret = result->data.at(0).at(0);
     fakelastname_ret = result->data.at(0).at(1);
@@ -337,7 +334,6 @@ void GetPlayerData(Database* namedb, const std::string& firstname, const std::st
   if (weight_ret == 0.0f)
     weight_ret = 80.0f;
 
-  delete result;
 }
 
 /* THIS CODE IMPORTS FM DATABASES, exported with some FM management tool, of which I forgot the
@@ -360,30 +356,25 @@ bool MainMenuPage::GoImportDB() {
   query += "drop table tournaments;";
   query += "drop table tournamentdata;";
   query += "commit;";
-  DatabaseResult* result = GetDB()->Query(query);
-  delete result;
+  auto result = GetDB()->Query(query);
 
   query = "vacuum;";  // *woooooshhh* http://www.sqlite.org/lang_vacuum.html
   result = GetDB()->Query(query);
-  delete result;
 
   result = GetDB()->Query(
       "CREATE TABLE regions(id INTEGER PRIMARY KEY AUTOINCREMENT, "
       "name VARCHAR(64));");
-  delete result;
 
   result = GetDB()->Query(
       "CREATE TABLE countries(id INTEGER PRIMARY KEY AUTOINCREMENT, "
       "region_id INTEGER, "
       "name VARCHAR(64));");
-  delete result;
 
   result = GetDB()->Query(
       "CREATE TABLE leagues(id INTEGER PRIMARY KEY AUTOINCREMENT, "
       "country_id INTEGER, "
       "name VARCHAR(64), "
       "logo_url VARCHAR(512));");
-  delete result;
 
   result = GetDB()->Query(
       "CREATE TABLE teams(id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -398,7 +389,6 @@ bool MainMenuPage::GoImportDB() {
       "shortname VARCHAR(3), "
       "color1 VARCHAR(16), "
       "color2 VARCHAR(16));");
-  delete result;
 
   result = GetDB()->Query(
       "CREATE TABLE players(id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -417,7 +407,6 @@ bool MainMenuPage::GoImportDB() {
       "weight FLOAT, "
       "formationorder INTEGER, "
       "nationalteamformationorder INTEGER);");
-  delete result;
 
   result = GetDB()->Query(
       "CREATE TABLE tournaments(id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -427,14 +416,12 @@ bool MainMenuPage::GoImportDB() {
       "has_knockoutphase INTEGER, "
       "has_groupphase INTEGER, "
       "prizemoney INTEGER);");
-  delete result;
 
   result = GetDB()->Query(
       "CREATE TABLE tournamentdata(id INTEGER PRIMARY KEY AUTOINCREMENT, "
       "tournament_id INTEGER, "
       "year INTEGER, "
       "xmldata TEXT);");
-  delete result;
 
   // std::string defaultStats =
   // "<defense>0.8</defense><bodybalance>0.8</bodybalance><acceleration>0.6</acceleration><velocity>0.6</velocity><agility>0.8</agility><reaction>1.0</reaction><ballcontrol>0.8</ballcontrol><dribblevelocity>0.6</dribblevelocity><shotpower>0.8</shotpower><passtechnique>1.0</passtechnique><tactics>1.0</tactics><condition>1.0</condition>";
@@ -725,7 +712,6 @@ bool MainMenuPage::GoImportDB() {
   query += "insert into regions (name) values (\"Europe\");";
   query += "commit;";
   result = GetDB()->Query(query);
-  delete result;
 
   // insert countries
 
@@ -744,7 +730,6 @@ bool MainMenuPage::GoImportDB() {
   }
   query += "commit;";
   result = GetDB()->Query(query);
-  delete result;
 
   // insert leagues
 
@@ -783,7 +768,6 @@ bool MainMenuPage::GoImportDB() {
   }
   query += "commit;";
   result = GetDB()->Query(query);
-  delete result;
 
   // insert clubs
 
@@ -832,7 +816,6 @@ bool MainMenuPage::GoImportDB() {
   }
   query += "commit;";
   result = GetDB()->Query(query);
-  delete result;
 
   // insert players
 
@@ -985,7 +968,6 @@ bool MainMenuPage::GoImportDB() {
   }
   query += "commit;";
   result = GetDB()->Query(query);
-  delete result;
 
   printf("WORST YOUNGSTERS HALL OF SHAME\n");
   std::map<float, int>::iterator bestYoungPlayersIter = bestYoungPlayersMap.begin();
@@ -1106,8 +1088,7 @@ bool MainMenuPage::GoImportDB() {
           firstname + "\" AND lastname = \"" + lastname + "\") OR (fakefirstname = \"" + firstname +
           "\" AND fakelastname = \"" + lastname + "\"));";
       printf("%s\n", namequery.c_str());
-      DatabaseResult* nameresult = namedb->Query(namequery);
-      delete nameresult;
+      auto nameresult = namedb->Query(namequery);
     }
 
     // delete the rest
@@ -1118,7 +1099,6 @@ bool MainMenuPage::GoImportDB() {
   }
   query += "commit;";
   result = GetDB()->Query(query);
-  delete result;
 
   delete namedb;
 

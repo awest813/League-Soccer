@@ -6,6 +6,9 @@
 #ifndef _HPP_MATCHDATA
 #define _HPP_MATCHDATA
 
+#include <array>
+#include <memory>
+
 #include "../gamedefines.hpp"
 #include "defines.hpp"
 #include "teamdata.hpp"
@@ -13,9 +16,9 @@
 class MatchData {
 public:
   MatchData(int team1DatabaseID, int team2DatabaseID);
-  virtual ~MatchData();
+  virtual ~MatchData() = default;
 
-  TeamData* GetTeamData(int id) { return teamData[id]; }
+  TeamData* GetTeamData(int id) { return teamData[id].get(); }
   int GetGoalCount(int id) { return goalCount[id]; }
   void SetGoalCount(int id, int amount) { goalCount[id] = amount; }
   void AddPossessionTime_10ms(int teamID);
@@ -28,7 +31,7 @@ public:
   int GetShots(int teamID) { return shots[teamID]; }
 
 protected:
-  TeamData* teamData[2];
+  std::array<std::unique_ptr<TeamData>, 2> teamData;
 
   int goalCount[2];
 

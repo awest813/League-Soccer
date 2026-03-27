@@ -53,17 +53,15 @@ int CreateNewLeagueSave(const std::string& srcDbName, const std::string& saveNam
 
   if (errorCode == 0) {
     std::vector<std::string> imageList;
-    DatabaseResult* result = database->Query("select logo_url, kit_url from teams");
+    auto result = database->Query("select logo_url, kit_url from teams");
     for (unsigned int r = 0; r < result->data.size(); r++) {
       imageList.push_back(result->data.at(r).at(0));
       imageList.push_back(result->data.at(r).at(1));
     }
-    delete result;
     result = database->Query("select logo_url from competitions");
     for (unsigned int r = 0; r < result->data.size(); r++) {
       imageList.push_back(result->data.at(r).at(0));
     }
-    delete result;
 
     // create directories, copy files
 
@@ -102,7 +100,7 @@ int CreateNewLeagueSave(const std::string& srcDbName, const std::string& saveNam
 }
 
 bool PrepareDatabaseForLeague() {
-  DatabaseResult* result = GetDB()->Query(
+  auto result = GetDB()->Query(
       "CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, "
       "managername VARCHAR(32), "
       "team_id INTEGER, "
@@ -110,7 +108,6 @@ bool PrepareDatabaseForLeague() {
       "difficulty FLOAT, "
       "seasonyear INTEGER, "
       "timestamp DATETIME)");
-  delete result;
 
   result = GetDB()->Query(
       "CREATE TABLE calendar(id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -120,10 +117,8 @@ bool PrepareDatabaseForLeague() {
       "competition_id INTEGER, "
       "tournament_id INTEGER, "
       "timestamp DATETIME)");
-  delete result;
 
   result = GetDB()->Query("ALTER TABLE players ADD COLUMN stats_temporal BLOB");
-  delete result;
 
   // copy stats XML tree into a new XML tree as subset 'current' (this tree is also going to contain
   // the archive per year)
@@ -148,11 +143,9 @@ bool PrepareDatabaseForLeague() {
                                 "' WHERE id = " + playerIDString + ";";
   }
 
-  delete result;
 
   insertTemporalStatsQuery += "commit;";
-  DatabaseResult* insertTemporalStats = GetDB()->Query(insertTemporalStatsQuery);
-  delete insertTemporalStats;
+  auto insertTemporalStats = GetDB()->Query(insertTemporalStatsQuery);
 
   return true;
 }
@@ -202,10 +195,9 @@ bool LoadLeague() {
 }
 
 void GenerateSeasonCalendars() {
-  DatabaseResult* result = GetDB()->Query(
+  auto result = GetDB()->Query(
       "SELECT strftime(\"%w\", timestamp) FROM settings LIMIT 1");  // day where season starts
   int dayOfWeek = atoi(result->data.at(0).at(0).c_str());
-  delete result;
 
   // we want to start on a saturday (day of week '6')
   int offset = 6 - dayOfWeek;

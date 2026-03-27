@@ -6,6 +6,8 @@
 #ifndef _HPP_DATABASE
 #define _HPP_DATABASE
 
+#include <memory>
+
 #include "defines.hpp"
 
 struct sqlite3;
@@ -20,7 +22,7 @@ public:
   virtual ~Database();
 
   bool Load(const std::string& filename);
-  DatabaseResult* Query(const std::string& query);
+  std::unique_ptr<DatabaseResult> Query(const std::string& query);
 
 protected:
   sqlite3* db;

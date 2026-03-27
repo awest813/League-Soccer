@@ -13,7 +13,7 @@ PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
   // std::string test = "select * from players where id = " + int_to_str(databaseID) + " limit 1";
   // printf("test: %s\n", test.c_str());
 
-  DatabaseResult* result = GetDB()->Query(
+  auto result = GetDB()->Query(
       "select firstname, lastname, role, base_stat, profile_xml, age, skincolor, hairstyle, "
       "haircolor, height from players where id = " +
       int_to_str(databaseID) + " limit 1");
@@ -51,7 +51,6 @@ PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
       height = atof(result->data.at(0).at(c).c_str());
   }
 
-  delete result;
 
   std::vector<std::string> roleStrings;
   tokenize(roleString, roleStrings);
