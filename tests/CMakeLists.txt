@@ -12,9 +12,11 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(gameplayfootball_math_tests
   base/math_test.cpp
+  onthepitch/ball_physics_test.cpp
 )
 
 target_link_libraries(gameplayfootball_math_tests PRIVATE
+  gf_ballphysicslib
   gf_mathlib
   GTest::gtest_main
 )
