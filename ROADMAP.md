@@ -107,6 +107,33 @@ welcome – see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 
+## Phase 6 – Advanced Gameplay Modes (myGM, myCoach, Career)
+
+> *Goal: introduce deep management and career modes that give players
+> long-term goals and immersion beyond single matches.*
+
+| # | Task | Status |
+|---|------|--------|
+| 6.1 | **myCoach Mode** – Create-a-coach, skill trees, training drills focus | 📋 |
+| 6.2 | **myGM Mode** – Full general manager controls (trades, contracts, draft, budget) | 📋 |
+| 6.3 | **Player Career Mode** – Control a single player, request transfers, grow attributes | 📋 |
+| 6.4 | **Manager Career Mode** – Handle tactics, lineups, press conferences, board objectives | 📋 |
+| 6.5 | **Dynamic transfer market** – AI teams make bids, negotiate, loan deals | 📋 |
+| 6.6 | **Contract negotiation system** – salary, bonuses, release clauses, contract length | 📋 |
+| 6.7 | **Draft system** – annual rookie draft with scouting reports and pick trading | 📋 |
+| 6.8 | **Scouting network** – hire scouts, discover hidden gems, attribute uncertainty | 📋 |
+| 6.9 | **Youth academy** – promote youth players, develop prospects over seasons | 📋 |
+| 6.10 | **Staff management** – hire/fire assistant coaches, fitness coaches, medical staff | 📋 |
+| 6.11 | **Facility upgrades** – improve training grounds, stadium, medical center | 📋 |
+| 6.12 | **Morale & chemistry system** – team cohesion affects on-pitch performance | 📋 |
+| 6.13 | **Press conference / media interactions** – dialogue choices impact reputation | 💡 |
+| 6.14 | **Achievement / milestone system** – personal and club records, hall of fame | 📋 |
+| 6.15 | **Multi-season persistence** – save career progress across multiple seasons | 📋 |
+| 6.16 | **League expansion/relegation** – dynamic league structure with promotion/demotion | 💡 |
+| 6.17 | **Custom league creation** – users define teams, divisions, rules | 💡 |
+
+---
+
 ## How to Contribute
 
 Pick any `📋` item, open an issue to discuss, then send a pull request.
