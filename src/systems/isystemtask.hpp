@@ -1,82 +1,72 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_SYSTEMS_IFACE_TASK
 #define _HPP_SYSTEMS_IFACE_TASK
 
-#include "types/thread.hpp"
-#include "types/command.hpp"
-#include "base/properties.hpp"
 #include "base/log.hpp"
+#include "base/properties.hpp"
+#include "types/command.hpp"
+#include "types/thread.hpp"
 
 namespace blunted {
 
-  class ISystemTask : public Thread {
+class ISystemTask : public Thread {
+public:
+  ISystemTask() {}
 
-    public:
-      ISystemTask() {
-      }
+  virtual ~ISystemTask() {}
 
-      virtual ~ISystemTask() {}
+  virtual void operator()() = 0;
 
-      virtual void operator()() = 0;
+  /// the actual per-frame system work
+  virtual void GetPhase() = 0;
+  virtual void ProcessPhase() = 0;
+  virtual void PutPhase() = 0;
 
-      /// the actual per-frame system work
-      virtual void GetPhase() = 0;
-      virtual void ProcessPhase() = 0;
-      virtual void PutPhase() = 0;
+protected:
+};
 
-    protected:
+// messages
 
-  };
+class ISystemTaskMessage : public Command {
+public:
+  ISystemTaskMessage(const std::string& name, ISystemTask* task) : Command(name), task(task) {};
+  ISystemTask* GetTask() { return task; }
 
+protected:
+  ISystemTask* task;
+};
 
-  // messages
+class SystemTaskMessage_GetPhase : public ISystemTaskMessage {
+public:
+  SystemTaskMessage_GetPhase(const std::string& name, ISystemTask* task)
+      : ISystemTaskMessage(name, task) {};
 
-  class ISystemTaskMessage : public Command {
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-    public:
-      ISystemTaskMessage(const std::string &name, ISystemTask *task) : Command(name), task(task) {};
-      ISystemTask *GetTask() {
-        return task;
-      }
+class SystemTaskMessage_ProcessPhase : public ISystemTaskMessage {
+public:
+  SystemTaskMessage_ProcessPhase(const std::string& name, ISystemTask* task)
+      : ISystemTaskMessage(name, task) {};
 
-    protected:
-      ISystemTask *task;
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-  };
+class SystemTaskMessage_PutPhase : public ISystemTaskMessage {
+public:
+  SystemTaskMessage_PutPhase(const std::string& name, ISystemTask* task)
+      : ISystemTaskMessage(name, task) {};
 
-  class SystemTaskMessage_GetPhase : public ISystemTaskMessage {
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-    public:
-      SystemTaskMessage_GetPhase(const std::string &name, ISystemTask *task) : ISystemTaskMessage(name, task) {};
-
-    protected:
-      virtual bool Execute(void *caller = nullptr);
-
-  };
-
-  class SystemTaskMessage_ProcessPhase : public ISystemTaskMessage {
-
-    public:
-      SystemTaskMessage_ProcessPhase(const std::string &name, ISystemTask *task) : ISystemTaskMessage(name, task) {};
-
-    protected:
-      virtual bool Execute(void *caller = nullptr);
-
-  };
-
-  class SystemTaskMessage_PutPhase : public ISystemTaskMessage {
-
-    public:
-      SystemTaskMessage_PutPhase(const std::string &name, ISystemTask *task) : ISystemTaskMessage(name, task) {};
-
-    protected:
-      virtual bool Execute(void *caller = nullptr);
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

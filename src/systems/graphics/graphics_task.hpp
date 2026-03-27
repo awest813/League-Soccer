@@ -1,105 +1,93 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_SYSTEMS_GRAPHICS_TASK
 #define _HPP_SYSTEMS_GRAPHICS_TASK
 
 #include "defines.hpp"
-
-#include "systems/isystemtask.hpp"
 #include "rendering/interface_renderer3d.hpp"
 #include "rendering/r3d_messages.hpp"
-
 #include "scene/objects/camera.hpp"
+#include "systems/isystemtask.hpp"
 
 namespace blunted {
 
-  class GraphicsSystem;
+class GraphicsSystem;
 
-  class GraphicsTask : public ISystemTask {
+class GraphicsTask : public ISystemTask {
+public:
+  GraphicsTask(GraphicsSystem* system);
+  virtual ~GraphicsTask();
 
-    public:
-      GraphicsTask(GraphicsSystem *system);
-      virtual ~GraphicsTask();
+  virtual void operator()();
 
-      virtual void operator()();
+  int GetAverageFrameTime_ms(unsigned int frameCount) const;
+  unsigned long GetLastSwapTime_ms() const { return lastSwapTime_ms.GetData(); }
+  int GetTimeSinceLastSwap_ms() const;
 
-      int GetAverageFrameTime_ms(unsigned int frameCount) const;
-      unsigned long GetLastSwapTime_ms() const { return lastSwapTime_ms.GetData(); }
-      int GetTimeSinceLastSwap_ms() const;
+protected:
+  void GetPhase();
+  void ProcessPhase();
+  void PutPhase();
 
-    protected:
-      void GetPhase();
-      void ProcessPhase();
-      void PutPhase();
+  bool quit;
+  GraphicsSystem* graphicsSystem;
 
-      bool quit;
-      GraphicsSystem *graphicsSystem;
+  int shadowSkipFrameCounter;
 
-      int shadowSkipFrameCounter;
+  boost::intrusive_ptr<Renderer3DMessage_SwapBuffers> swapBuffers;
 
-      boost::intrusive_ptr<Renderer3DMessage_SwapBuffers> swapBuffers;
+  mutable Lockable<unsigned long> lastSwapTime_ms;
+  mutable Lockable<std::list<int>> frameTimes_ms;
+};
 
-      mutable Lockable<unsigned long> lastSwapTime_ms;
-      mutable Lockable < std::list<int> > frameTimes_ms;
+class GraphicsTaskCommand_Dummy : public Command {
+public:
+  GraphicsTaskCommand_Dummy() : Command("Dummy") {}
 
-  };
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-  class GraphicsTaskCommand_Dummy : public Command {
+class GraphicsTaskCommand_RenderCamera : public Command {
+public:
+  GraphicsTaskCommand_RenderCamera() : Command("RenderCamera") {}
 
-    public:
-      GraphicsTaskCommand_Dummy() : Command("Dummy") {}
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-    protected:
-      virtual bool Execute(void *caller = nullptr);
+class GraphicsTaskCommand_EnqueueView : public Command {
+public:
+  GraphicsTaskCommand_EnqueueView(boost::intrusive_ptr<Camera> camera, int shadowSkipFrameCounter)
+      : Command("EnqueueView"), camera(camera), shadowSkipFrameCounter(shadowSkipFrameCounter) {};
 
-  };
+protected:
+  virtual bool Execute(void* caller = nullptr);
+  virtual void EnqueueShadowMap(boost::intrusive_ptr<Light> light);
 
-  class GraphicsTaskCommand_RenderCamera : public Command {
+  boost::intrusive_ptr<Camera> camera;
+  int shadowSkipFrameCounter;
+};
 
-    public:
-      GraphicsTaskCommand_RenderCamera() : Command("RenderCamera") {}
+class GraphicsTaskCommand_RenderImage2D : public Command {
+public:
+  GraphicsTaskCommand_RenderImage2D() : Command("RenderImage2D") {}
 
-    protected:
-      virtual bool Execute(void *caller = nullptr);
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-  };
+class GraphicsTaskCommand_RenderShadowMaps : public Command {
+public:
+  GraphicsTaskCommand_RenderShadowMaps() : Command("RenderShadowMaps") {}
 
-  class GraphicsTaskCommand_EnqueueView : public Command {
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-    public:
-      GraphicsTaskCommand_EnqueueView(boost::intrusive_ptr<Camera> camera, int shadowSkipFrameCounter) : Command("EnqueueView"), camera(camera), shadowSkipFrameCounter(shadowSkipFrameCounter) {};
-
-    protected:
-      virtual bool Execute(void *caller = nullptr);
-      virtual void EnqueueShadowMap(boost::intrusive_ptr<Light> light);
-
-      boost::intrusive_ptr<Camera> camera;
-      int shadowSkipFrameCounter;
-
-  };
-
-  class GraphicsTaskCommand_RenderImage2D : public Command {
-
-    public:
-      GraphicsTaskCommand_RenderImage2D() : Command("RenderImage2D") {}
-
-    protected:
-      virtual bool Execute(void *caller = nullptr);
-
-  };
-
-  class GraphicsTaskCommand_RenderShadowMaps : public Command {
-
-    public:
-      GraphicsTaskCommand_RenderShadowMaps() : Command("RenderShadowMaps") {}
-
-    protected:
-      virtual bool Execute(void *caller = nullptr);
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

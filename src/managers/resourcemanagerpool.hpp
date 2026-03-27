@@ -1,53 +1,55 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_RESOURCEMANAGERPOOL
 #define _HPP_RESOURCEMANAGERPOOL
 
 #include "managers/resourcemanager.hpp"
-#include "types/singleton.hpp"
 #include "types/resource.hpp"
+#include "types/singleton.hpp"
 
 namespace blunted {
 
-  class ResourceManagerPool : public Singleton<ResourceManagerPool> {
+class ResourceManagerPool : public Singleton<ResourceManagerPool> {
+public:
+  ResourceManagerPool() {};
+  virtual ~ResourceManagerPool() {};
 
-    public:
-      ResourceManagerPool() {};
-      virtual ~ResourceManagerPool() {};
+  virtual void Exit() { resourceManagers.clear(); }
 
-      virtual void Exit() {
-        resourceManagers.clear();
-      }
+  void CleanUp() {
+    std::map<e_ResourceType, std::shared_ptr<void>>::iterator resmanIter = resourceManagers.begin();
+    while (resmanIter != resourceManagers.end()) {
+      std::static_pointer_cast<ResourceManager<void>>((*resmanIter).second)->RemoveUnused();
+      resmanIter++;
+    }
+  }
 
-      void CleanUp() {
-        std::map < e_ResourceType, std::shared_ptr<void> >::iterator resmanIter = resourceManagers.begin();
-        while (resmanIter != resourceManagers.end()) {
-          std::static_pointer_cast < ResourceManager<void> > ((*resmanIter).second)->RemoveUnused();
-          resmanIter++;
-        }
-      }
+  template <typename T>
+  void RegisterManager(e_ResourceType resourceType,
+                       std::shared_ptr<ResourceManager<T>> resourceManager) {
+    resourceManagers.insert(std::make_pair(resourceType, resourceManager));
+  }
 
-      template <typename T> void RegisterManager(e_ResourceType resourceType, std::shared_ptr < ResourceManager<T> > resourceManager) {
-        resourceManagers.insert(std::make_pair(resourceType, resourceManager));
-      }
+  template <typename T>
+  std::shared_ptr<ResourceManager<T>> GetManager(e_ResourceType resourceType) {
+    typename std::map<e_ResourceType, std::shared_ptr<void>>::iterator iter =
+        resourceManagers.find(resourceType);
+    if (iter != resourceManagers.end()) {
+      return std::static_pointer_cast<ResourceManager<T>>((*iter).second);
+    } else {
+      Log(e_FatalError, "ResourceManagerPool", "GetManager",
+          "Could not find manager for type " + resourceType);
+      return std::shared_ptr<ResourceManager<T>>();
+    }
+  }
 
-      template <typename T> std::shared_ptr < ResourceManager<T> > GetManager(e_ResourceType resourceType) {
-        typename std::map < e_ResourceType, std::shared_ptr<void> >::iterator iter = resourceManagers.find(resourceType);
-        if (iter != resourceManagers.end()) {
-          return std::static_pointer_cast < ResourceManager<T> > ((*iter).second);
-        } else {
-          Log(e_FatalError, "ResourceManagerPool", "GetManager", "Could not find manager for type " + resourceType);
-          return std::shared_ptr < ResourceManager<T> >();
-        }
-      }
+protected:
+  std::map<e_ResourceType, std::shared_ptr<void>> resourceManagers;
+};
 
-    protected:
-      std::map < e_ResourceType, std::shared_ptr<void> > resourceManagers;
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

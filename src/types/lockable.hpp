@@ -1,6 +1,7 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_LOCKABLE
 #define _HPP_LOCKABLE
@@ -9,56 +10,47 @@
 
 namespace blunted {
 
-  enum e_NotificationSubject {
-    e_NotificationSubject_One,
-    e_NotificationSubject_All,
-  };
+enum e_NotificationSubject {
+  e_NotificationSubject_One,
+  e_NotificationSubject_All,
+};
 
-  template <typename T>
-  class Lockable {
+template <typename T>
+class Lockable {
+public:
+  Lockable() {}
 
-    public:
+  T GetData() const {
+    mutex.lock();
+    T tmp = data;
+    mutex.unlock();
+    return tmp;
+  }
 
-      Lockable() {}
+  void SetData(const T& newdata) {
+    mutex.lock();
+    this->data = newdata;
+    mutex.unlock();
+  }
 
-      T GetData() const {
-        mutex.lock();
-        T tmp = data;
-        mutex.unlock();
-        return tmp;
-      }
+  inline T operator=(const T& param) {
+    SetData(param);
+    return param;
+  }
 
-      void SetData(const T &newdata) {
-        mutex.lock();
-        this->data = newdata;
-        mutex.unlock();
-      }
+  inline T* operator->() { return &data; }
 
-      inline T operator=(const T &param) {
-        SetData(param);
-        return param;
-      }
+  inline void Lock() { mutex.lock(); }
 
-      inline T *operator->() {
-        return &data;
-      }
+  inline void Unlock() { mutex.unlock(); }
 
-      inline void Lock() {
-        mutex.lock();
-      }
+  T data;
 
-      inline void Unlock() {
-        mutex.unlock();
-      }
+  mutable std::mutex mutex;
 
-      T data;
+protected:
+};
 
-      mutable std::mutex mutex;
-
-    protected:
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

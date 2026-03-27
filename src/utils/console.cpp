@@ -63,7 +63,7 @@ void Console::PrintLog(e_LogType logType, std::string className, std::string met
   Print(bla, color);
 }
 
-void Console::Print(const std::string &string, const Vector3 &color) {
+void Console::Print(const std::string& string, const Vector3& color) {
   lines.push_back(string);
   colors.push_back(color);
   UpdateImages();

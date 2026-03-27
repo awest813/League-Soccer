@@ -1,6 +1,7 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_BLUNTED
 #define _HPP_BLUNTED
@@ -9,19 +10,19 @@
 
 namespace blunted {
 
-  class Scheduler;
-  class Properties;
+class Scheduler;
+class Properties;
 
-  /// load managers, systems, scheduler and scene
-  void Initialize(Properties &config);
+/// load managers, systems, scheduler and scene
+void Initialize(Properties& config);
 
-  /// run the scheduler
-  void Run();
+/// run the scheduler
+void Run();
 
-  Scheduler *GetScheduler();
+Scheduler* GetScheduler();
 
-  /// unload all
-  void Exit();
-}
+/// unload all
+void Exit();
+}  // namespace blunted
 
 #endif

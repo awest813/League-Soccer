@@ -12,115 +12,112 @@
 // limitations under the License.
 
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_GUI2_EVENTS
 #define _HPP_GUI2_EVENTS
 
+#include <set>
+
+#include <SDL2/SDL.h>
+
+#include "SDL2/SDL_keyboard.h"
 #include "base/math/vector3.hpp"
 #include "managers/usereventmanager.hpp"
-#include <SDL2/SDL.h>
-#include "SDL2/SDL_keyboard.h"
-#include <set>
 
 namespace blunted {
 
-  enum e_Gui2EventType {
-    e_Gui2EventType_Windowing = 0,
-    e_Gui2EventType_Mouse = 1,
-    e_Gui2EventType_Keyboard = 2,
-    e_Gui2EventType_Joystick = 3,
-    e_Gui2EventType_User = 100
-  };
+enum e_Gui2EventType {
+  e_Gui2EventType_Windowing = 0,
+  e_Gui2EventType_Mouse = 1,
+  e_Gui2EventType_Keyboard = 2,
+  e_Gui2EventType_Joystick = 3,
+  e_Gui2EventType_User = 100
+};
 
-  class Gui2Event {
+class Gui2Event {
+public:
+  Gui2Event(e_Gui2EventType eventType);
+  virtual ~Gui2Event();
 
-    public:
-      Gui2Event(e_Gui2EventType eventType);
-      virtual ~Gui2Event();
+  e_Gui2EventType GetType() const;
 
-      e_Gui2EventType GetType() const;
+  void Accept() { accepted = true; }
+  void Ignore() { accepted = false; }
 
-      void Accept() { accepted = true; }
-      void Ignore() { accepted = false; }
+  bool IsAccepted() const { return accepted; }
 
-      bool IsAccepted() const { return accepted; }
+protected:
+  e_Gui2EventType eventType;
 
-    protected:
-      e_Gui2EventType eventType;
+  bool accepted;
+};
 
-      bool accepted;
+class WindowingEvent : public Gui2Event {
+public:
+  WindowingEvent();
+  virtual ~WindowingEvent();
 
-  };
+  bool IsActivate() { return activate; }
+  bool IsEscape() { return escape; }
+  Vector3 GetDirection() { return direction; }
 
-  class WindowingEvent : public Gui2Event {
+  void SetActivate() { activate = true; }
+  void SetEscape() { escape = true; }
+  void SetDirection(const Vector3& direction) { this->direction = direction; }
 
-    public:
-      WindowingEvent();
-      virtual ~WindowingEvent();
+protected:
+  bool activate;
+  bool escape;
+  Vector3 direction;
+};
 
-      bool IsActivate() { return activate; }
-      bool IsEscape() { return escape; }
-      Vector3 GetDirection() { return direction; }
+class KeyboardEvent : public Gui2Event {
+public:
+  KeyboardEvent();
+  virtual ~KeyboardEvent();
 
-      void SetActivate() { activate = true; }
-      void SetEscape() { escape = true; }
-      void SetDirection(const Vector3 &direction) { this->direction = direction; }
+  const std::set<SDL_Keycode>& GetKeyOnce() const { return keyOnce; }
+  bool GetKeyOnce(SDL_Keycode id) const { return keyOnce.count(id); }
+  void SetKeyOnce(SDL_Keycode id) { keyOnce.insert(id); }
+  bool GetKeyContinuous(SDL_Keycode id) const { return keyContinuous.count(id); }
+  void SetKeyContinuous(SDL_Keycode id) { keyContinuous.insert(id); }
+  bool GetKeyRepeated(SDL_Keycode id) const { return keyRepeated.count(id); }
+  void SetKeyRepeated(SDL_Keycode id) { keyRepeated.insert(id); }
+  std::set<SDL_Keycode>& GetKeysymOnce() { return keysymOnce; }
+  std::set<SDL_Keycode>& GetKeysymContinuous() { return keysymContinuous; }
+  std::set<SDL_Keycode>& GetKeysymRepeated() { return keysymRepeated; }
 
-    protected:
-      bool activate;
-      bool escape;
-      Vector3 direction;
+protected:
+  std::set<SDL_Keycode> keysymOnce;
+  std::set<SDL_Keycode> keysymContinuous;
+  std::set<SDL_Keycode> keysymRepeated;
 
-  };
+  std::set<SDL_Keycode> keyOnce;
+  std::set<SDL_Keycode> keyContinuous;
+  std::set<SDL_Keycode> keyRepeated;
+};
 
-  class KeyboardEvent : public Gui2Event {
+class JoystickEvent : public Gui2Event {
+public:
+  JoystickEvent();
+  virtual ~JoystickEvent();
 
-    public:
-      KeyboardEvent();
-      virtual ~KeyboardEvent();
+  bool GetButton(int joyID, int id) const { return button[joyID][id]; }
+  void SetButton(int joyID, int id) { button[joyID][id] = true; }
+  float GetAxis(int joyID, int id) const { return axes[joyID][id]; }
+  void SetAxis(int joyID, int id, float value) { this->axes[joyID][id] = value; }
 
-      const std::set<SDL_Keycode> &GetKeyOnce() const { return keyOnce; }
-      bool GetKeyOnce(SDL_Keycode id) const { return keyOnce.count(id); }
-      void SetKeyOnce(SDL_Keycode id) { keyOnce.insert(id); }
-      bool GetKeyContinuous(SDL_Keycode id) const { return keyContinuous.count(id); }
-      void SetKeyContinuous(SDL_Keycode id) { keyContinuous.insert(id); }
-      bool GetKeyRepeated(SDL_Keycode id) const { return keyRepeated.count(id); }
-      void SetKeyRepeated(SDL_Keycode id) { keyRepeated.insert(id); }
-      std::set<SDL_Keycode> &GetKeysymOnce() { return keysymOnce; }
-      std::set<SDL_Keycode> &GetKeysymContinuous() { return keysymContinuous; }
-      std::set<SDL_Keycode> &GetKeysymRepeated() { return keysymRepeated; }
+protected:
+  // todo: doesn't it make more sense to have one joystick event per joyid? that's what we're
+  // actually doing, but then why have this multidimensional array and not just a seperate joyid
+  // variable?
+  bool button[_JOYSTICK_MAX][_JOYSTICK_MAXBUTTONS];
+  float axes[_JOYSTICK_MAX][_JOYSTICK_MAXAXES];
+};
 
-    protected:
-      std::set<SDL_Keycode> keysymOnce;
-      std::set<SDL_Keycode> keysymContinuous;
-      std::set<SDL_Keycode> keysymRepeated;
-
-      std::set<SDL_Keycode> keyOnce;
-      std::set<SDL_Keycode> keyContinuous;
-      std::set<SDL_Keycode> keyRepeated;
-
-  };
-
-  class JoystickEvent : public Gui2Event {
-
-    public:
-      JoystickEvent();
-      virtual ~JoystickEvent();
-
-      bool GetButton(int joyID, int id) const { return button[joyID][id]; }
-      void SetButton(int joyID, int id) { button[joyID][id] = true; }
-      float GetAxis(int joyID, int id) const { return axes[joyID][id]; }
-      void SetAxis(int joyID, int id, float value) { this->axes[joyID][id] = value; }
-
-    protected:
-      // todo: doesn't it make more sense to have one joystick event per joyid? that's what we're actually doing, but then why have this multidimensional array and not just a seperate joyid variable?
-      bool button[_JOYSTICK_MAX][_JOYSTICK_MAXBUTTONS];
-      float axes[_JOYSTICK_MAX][_JOYSTICK_MAXAXES];
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

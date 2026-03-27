@@ -2,37 +2,34 @@
 #define _HPP_MANAGERS_SCENE
 
 #include "defines.hpp"
-
-#include "types/singleton.hpp"
-#include "types/lockable.hpp"
 #include "scene/scene.hpp"
+#include "types/lockable.hpp"
+#include "types/singleton.hpp"
 
 namespace blunted {
 
-  typedef Lockable < std::vector < std::shared_ptr<IScene> > > vector_Scenes;
+typedef Lockable<std::vector<std::shared_ptr<IScene>>> vector_Scenes;
 
-  class SceneManager : public Singleton<SceneManager> {
+class SceneManager : public Singleton<SceneManager> {
+  friend class Singleton<SceneManager>;
 
-    friend class Singleton<SceneManager>;
+public:
+  SceneManager();
+  ~SceneManager();
 
-    public:
-      SceneManager();
-      ~SceneManager();
-      
-      virtual void Exit();
+  virtual void Exit();
 
-      void RegisterScene(std::shared_ptr<IScene> scene);
-      int GetNumScenes();
-      std::shared_ptr<IScene> GetScene(int index, bool &success); // ATOMIC
-      std::shared_ptr<IScene> GetScene(const std::string &name, bool &success); // ATOMIC
-      
-    protected:
-      vector_Scenes scenes;
+  void RegisterScene(std::shared_ptr<IScene> scene);
+  int GetNumScenes();
+  std::shared_ptr<IScene> GetScene(int index, bool& success);                // ATOMIC
+  std::shared_ptr<IScene> GetScene(const std::string& name, bool& success);  // ATOMIC
 
-    private:
+protected:
+  vector_Scenes scenes;
 
-  };
+private:
+};
 
-}
+}  // namespace blunted
 
 #endif

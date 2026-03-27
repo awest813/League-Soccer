@@ -9,9 +9,9 @@ namespace fs = std::filesystem;
 
 namespace blunted {
 
-Gui2FileBrowser::Gui2FileBrowser(Gui2WindowManager *windowManager, const std::string &name,
+Gui2FileBrowser::Gui2FileBrowser(Gui2WindowManager* windowManager, const std::string& name,
                                  float x_percent, float y_percent, float width_percent,
-                                 float height_percent, const std::string &startDir,
+                                 float height_percent, const std::string& startDir,
                                  e_DirEntryType selectType)
     : Gui2View(windowManager, name, x_percent, y_percent, width_percent, height_percent),
       directory(startDir),
@@ -27,13 +27,13 @@ Gui2FileBrowser::Gui2FileBrowser(Gui2WindowManager *windowManager, const std::st
 Gui2FileBrowser::~Gui2FileBrowser() {}
 
 void Gui2FileBrowser::OnGainFocus() {
-  Gui2View *target = grid->FindView(0, 0);
+  Gui2View* target = grid->FindView(0, 0);
   if (target)
     target->SetFocus();
 }
 
 void Gui2FileBrowser::OnClick() {
-  Gui2View *selected = grid->GetSelectedView();
+  Gui2View* selected = grid->GetSelectedView();
   clickedID = -1;
   for (unsigned int i = 0; i < dirContents.size(); i++) {
     if (selected == dirContents.at(i).button)
@@ -62,10 +62,10 @@ void Gui2FileBrowser::DisplayDirectory() {
       color = Vector3(240, 140, 60);
     else
       color = Vector3(80, 140, 255);
-    Gui2Button *button =
+    Gui2Button* button =
         new Gui2Button(windowManager, this->GetName() + "_" + dirContents.at(i).name, 0, 0,
                        width_percent - 1, 3, dirContents.at(i).name);
-    button->sig_OnClick.connect([this](auto *) { OnClick(); });
+    button->sig_OnClick.connect([this](auto*) { OnClick(); });
     button->SetColor(color);
     grid->AddView(button, i, 0);
     dirContents.at(i).button = button;
@@ -75,7 +75,7 @@ void Gui2FileBrowser::DisplayDirectory() {
   grid->UpdateLayout(0.5);
 }
 
-bool DirSortFunc(const DirEntry &a, const DirEntry &b) {
+bool DirSortFunc(const DirEntry& a, const DirEntry& b) {
   if (a.type != b.type)
     return a.type > b.type;
   else

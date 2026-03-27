@@ -9,27 +9,27 @@
 
 using namespace blunted;
 
-VisualOptionsPage::VisualOptionsPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData)
+VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
-  Gui2Frame *frame = new Gui2Frame(windowManager, "frame_visualoptions", 15, 50, 70, 40, true);
+  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_visualoptions", 15, 50, 70, 40, true);
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption *title =
+  Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_visualoptions", 5, 5, 20, 3, "Visual options");
   frame->AddView(title);
   title->Show();
 
-  Gui2Grid *grid = new Gui2Grid(windowManager, "grid_visualoptions", 5, 15, 70, 15);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_visualoptions", 5, 15, 70, 15);
 
   kitSelectionPulldown[0] =
       new Gui2Pulldown(windowManager, "pulldown_visualoptions_kitselection_t1", 0, 0, 30, 3);
-  Gui2Caption *kitSelectionCaption1 =
+  Gui2Caption* kitSelectionCaption1 =
       new Gui2Caption(windowManager, "caption_visualoptions_kitselection_t1", 0, 0, 20, 3,
                       GetGameTask()->GetMatch()->GetTeam(0)->GetTeamData()->GetName() + " kit");
   kitSelectionPulldown[1] =
       new Gui2Pulldown(windowManager, "pulldown_visualoptions_kitselection_t2", 0, 0, 30, 3);
-  Gui2Caption *kitSelectionCaption2 =
+  Gui2Caption* kitSelectionCaption2 =
       new Gui2Caption(windowManager, "caption_visualoptions_kitselection_t2", 0, 0, 20, 3,
                       GetGameTask()->GetMatch()->GetTeam(1)->GetTeamData()->GetName() + " kit");
 
@@ -43,7 +43,7 @@ VisualOptionsPage::VisualOptionsPage(Gui2WindowManager *windowManager, const Gui
   kitSelectionPulldown[1]->sig_OnChange.connect(
       std::bind(&VisualOptionsPage::OnChangeKit, this, kitSelectionPulldown[1]));
 
-  Gui2Button *randomizeSunButton = new Gui2Button(
+  Gui2Button* randomizeSunButton = new Gui2Button(
       windowManager, "button_visualoptions_randomizesun", 0, 0, 20, 3, "Randomize sun position");
   randomizeSunButton->sig_OnClick.connect([this](...) { OnRandomizeSun(); });
 
@@ -68,7 +68,7 @@ void VisualOptionsPage::OnRandomizeSun() {
   GetGameTask()->GetMatch()->SetRandomSunParams();
 }
 
-void VisualOptionsPage::OnChangeKit(Gui2Pulldown *pulldown) {
+void VisualOptionsPage::OnChangeKit(Gui2Pulldown* pulldown) {
   int teamID = atoi(pulldown->GetSelected().substr(4, 1).c_str()) - 1;
   int kitNumber = atoi(pulldown->GetSelected().substr(8, 2).c_str());
   // printf("string, team id, kit number: %s, %i, %i\n", pulldown->GetSelected().c_str(), teamID,

@@ -20,7 +20,7 @@ const float bodyRotationSmoothingMaxAngle = 0.25f * pi;
 const float initialReQueueDelayFrames = 32;
 
 void FillTemporalHumanoidNodes(boost::intrusive_ptr<Node> targetNode,
-                               std::vector<TemporalHumanoidNode> &temporalHumanoidNodes) {
+                               std::vector<TemporalHumanoidNode>& temporalHumanoidNodes) {
   // printf("%s\n", targetNode->GetName().c_str());
   TemporalHumanoidNode temporalHumanoidNode;
   temporalHumanoidNode.actualNode = targetNode;
@@ -40,10 +40,10 @@ void FillTemporalHumanoidNodes(boost::intrusive_ptr<Node> targetNode,
   }
 }
 
-HumanoidBase::HumanoidBase(PlayerBase *player, Match *match,
+HumanoidBase::HumanoidBase(PlayerBase* player, Match* match,
                            boost::intrusive_ptr<Node> humanoidSourceNode,
                            boost::intrusive_ptr<Node> fullbodySourceNode,
-                           std::map<Vector3, Vector3> &colorCoords,
+                           std::map<Vector3, Vector3>& colorCoords,
                            std::shared_ptr<AnimCollection> animCollection,
                            boost::intrusive_ptr<Node> fullbodyTargetNode,
                            boost::intrusive_ptr<Resource<Surface>> kit, int bodyUpdatePhaseOffset)
@@ -130,7 +130,7 @@ HumanoidBase::HumanoidBase(PlayerBase *player, Match *match,
   boost::intrusive_ptr<Resource<GeometryData>> bodyGeom =
       boost::static_pointer_cast<Geometry>(fullbodyNode->GetObject("fullbody"))->GetGeometryData();
   bodyGeom->resourceMutex.lock();
-  std::vector<MaterializedTriangleMesh> &tmesh = bodyGeom->GetResource()->GetTriangleMeshesRef();
+  std::vector<MaterializedTriangleMesh>& tmesh = bodyGeom->GetResource()->GetTriangleMeshesRef();
   for (unsigned int i = 0; i < tmesh.size(); i++) {
     if (tmesh.at(i).material.diffuseTexture != boost::intrusive_ptr<Resource<Surface>>()) {
       if (tmesh.at(i).material.diffuseTexture->GetIdentString() == "skin.jpg") {
@@ -178,7 +178,7 @@ HumanoidBase::HumanoidBase(PlayerBase *player, Match *match,
                                 player->GetPlayerData()->GetHairColor() + ".png",
                             true, true);
 
-  std::vector<MaterializedTriangleMesh> &hairtmesh =
+  std::vector<MaterializedTriangleMesh>& hairtmesh =
       hairStyle->GetGeometryData()->GetResource()->GetTriangleMeshesRef();
 
   for (unsigned int i = 0; i < hairtmesh.size(); i++) {
@@ -227,13 +227,13 @@ HumanoidBase::~HumanoidBase() {
     printf("done\n");
 }
 
-void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords) {
+void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3>& colorCoords) {
   if (Verbose())
     printf("prepare full body model.. ");
 
   // base anim with default angles - all anims' joints will be inversely rotated by the joints in
   // this anim. this way, the fullbody mesh doesn't need to have 0 degree angles
-  Animation *baseAnim = new Animation();
+  Animation* baseAnim = new Animation();
   baseAnim->Load("media/animations/base.anim.util");
   AnimApplyBuffer animApplyBuffer;
   animApplyBuffer.anim = baseAnim;
@@ -261,7 +261,7 @@ void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords)
   boost::intrusive_ptr<Resource<GeometryData>> fullbodyGeometryData =
       boost::static_pointer_cast<Geometry>(fullbodyNode->GetObject("fullbody"))->GetGeometryData();
   fullbodyGeometryData->resourceMutex.lock();
-  std::vector<MaterializedTriangleMesh> &materializedTriangleMeshes =
+  std::vector<MaterializedTriangleMesh>& materializedTriangleMeshes =
       fullbodyGeometryData->GetResource()->GetTriangleMeshesRef();
 
   fullbodySubgeomCount = materializedTriangleMeshes.size();
@@ -282,7 +282,7 @@ void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords)
     std::vector<std::vector<Vector3>> uniqueVertices;
 
     // generate list of unique vertices and an array linking vertexIDs with uniqueVertexIDs
-    int *uniqueIndices = new int[elementOffset / 3];
+    int* uniqueIndices = new int[elementOffset / 3];
     for (int v = 0; v < elementOffset; v += 3) {
       std::vector<Vector3> elementalVertex;
       for (int e = 0; e < GetTriangleMeshElementCount(); e++) {
@@ -340,7 +340,7 @@ void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords)
                vertexPos.coords[2]);
       }
       assert(colorCoords.find(vertexPos) != colorCoords.end());
-      const Vector3 &color = colorCoords.find(vertexPos)->second;
+      const Vector3& color = colorCoords.find(vertexPos)->second;
       uniqueMesh.data[v + 0] *= zMultiplier;
       uniqueMesh.data[v + 1] *= zMultiplier;
       uniqueMesh.data[v + 2] *= zMultiplier;
@@ -414,7 +414,7 @@ void HumanoidBase::PrepareFullbodyModel(std::map<Vector3, Vector3> &colorCoords)
     joints.at(i).orientation = jointsVec[i]->GetDerivedRotation().GetInverse().GetNormalized();
   }
 
-  Animation *straightAnim = new Animation();
+  Animation* straightAnim = new Animation();
   straightAnim->Load("media/animations/straight.anim.util");
   animApplyBuffer.anim = straightAnim;
   animApplyBuffer.anim->Apply(nodeMap, animApplyBuffer.frameNum, 0, animApplyBuffer.smooth,
@@ -490,13 +490,13 @@ void HumanoidBase::UpdateFullbodyModel(bool updateSrc) {
   boost::intrusive_ptr<Resource<GeometryData>> fullbodyGeometryData =
       boost::static_pointer_cast<Geometry>(fullbodyNode->GetObject("fullbody"))->GetGeometryData();
   fullbodyGeometryData->resourceMutex.lock();
-  std::vector<MaterializedTriangleMesh> &materializedTriangleMeshes =
+  std::vector<MaterializedTriangleMesh>& materializedTriangleMeshes =
       fullbodyGeometryData->GetResource()->GetTriangleMeshesRef();
 
   for (unsigned int subgeom = 0; subgeom < fullbodySubgeomCount; subgeom++) {
-    FloatArray &uniqueMesh = uniqueFullbodyMesh.at(subgeom);
+    FloatArray& uniqueMesh = uniqueFullbodyMesh.at(subgeom);
 
-    const std::vector<WeightedVertex> &weightedVertices = weightedVerticesVec.at(subgeom);
+    const std::vector<WeightedVertex>& weightedVertices = weightedVerticesVec.at(subgeom);
 
     int uniqueVertexCount = weightedVertices.size();
 
@@ -705,7 +705,7 @@ void HumanoidBase::Process() {
 
     bool found = false;
     for (unsigned int i = 0; i < commandQueue.size(); i++) {
-      const PlayerCommand &command = commandQueue.at(i);
+      const PlayerCommand& command = commandQueue.at(i);
 
       found = SelectAnim(command, interruptAnim);
       if (found)
@@ -960,7 +960,7 @@ void HumanoidBase::CalculateGeomOffsets() {
   */
 }
 
-void HumanoidBase::SetOffset(const std::string &nodeName, float bias, const Quaternion &orientation,
+void HumanoidBase::SetOffset(const std::string& nodeName, float bias, const Quaternion& orientation,
                              bool isRelative) {
   std::map<std::string, BiasedOffset>::iterator iter = offsets.find(nodeName);
   if (iter == offsets.end()) {
@@ -1046,7 +1046,7 @@ int HumanoidBase::GetIdleMovementAnimID() {
   return *dataSet.begin();
 }
 
-void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos) {
+void HumanoidBase::ResetPosition(const Vector3& newPos, const Vector3& focusPos) {
   startPos = newPos;
   startAngle = FixAngle((focusPos - newPos).GetNormalized(Vector3(0, -1, 0)).GetAngle2D());
   nextStartPos = startPos;
@@ -1143,7 +1143,7 @@ void HumanoidBase::ResetPosition(const Vector3 &newPos, const Vector3 &focusPos)
   */
 }
 
-void HumanoidBase::OffsetPosition(const Vector3 &offset) {
+void HumanoidBase::OffsetPosition(const Vector3& offset) {
   // todo: move this to team process or disable it altogether
   // ponder on the consequences and decide!
   // update: seems to function well as is atm
@@ -1162,7 +1162,7 @@ void HumanoidBase::OffsetPosition(const Vector3 &offset) {
   currentAnim->positionOffset += offset * cheat;
 }
 
-void HumanoidBase::TripMe(const Vector3 &tripVector, int tripType) {
+void HumanoidBase::TripMe(const Vector3& tripVector, int tripType) {
   if (match->GetBallRetainer() == player)
     return;
   if (currentAnim->anim->GetVariable("incoming_special_state").compare("") == 0 &&
@@ -1186,7 +1186,7 @@ void HumanoidBase::SetKit(boost::intrusive_ptr<Resource<Surface>> newKit) {
 
   bodyGeom->resourceMutex.lock();
 
-  std::vector<MaterializedTriangleMesh> &tmesh = bodyGeom->GetResource()->GetTriangleMeshesRef();
+  std::vector<MaterializedTriangleMesh>& tmesh = bodyGeom->GetResource()->GetTriangleMeshesRef();
 
   if (newKit != boost::intrusive_ptr<Resource<Surface>>()) {
     for (unsigned int i = 0; i < tmesh.size(); i++) {
@@ -1207,7 +1207,7 @@ void HumanoidBase::SetKit(boost::intrusive_ptr<Resource<Surface>> newKit) {
   boost::static_pointer_cast<Geometry>(fullbodyNode->GetObject("fullbody"))->OnUpdateGeometryData();
 }
 
-void HumanoidBase::ResetSituation(const Vector3 &focusPos) {
+void HumanoidBase::ResetSituation(const Vector3& focusPos) {
   currentMentalImage = 0;
 
   ResetPosition(spatialState.position, focusPos);
@@ -1228,7 +1228,7 @@ bool HumanoidBase::_HighOrBouncyBall() const {
 }
 
 // ALERT: set sorting predicates before calling this function
-void HumanoidBase::_KeepBestDirectionAnims(DataSet &dataSet, const PlayerCommand &command,
+void HumanoidBase::_KeepBestDirectionAnims(DataSet& dataSet, const PlayerCommand& command,
                                            bool strict, radian allowedAngle,
                                            int allowedVelocitySteps, int forcedQuadrantID) {
   assert(dataSet.size() != 0);
@@ -1254,17 +1254,17 @@ void HumanoidBase::_KeepBestDirectionAnims(DataSet &dataSet, const PlayerCommand
       }
     }
 
-    Animation *bestAnim = anims->GetAnim(*dataSet.begin());
+    Animation* bestAnim = anims->GetAnim(*dataSet.begin());
 
     bestQuadrantID = atoi(bestAnim->GetVariable("quadrant_id").c_str());
   }
 
-  const Quadrant &quadrant = anims->GetQuadrant(bestQuadrantID);
+  const Quadrant& quadrant = anims->GetQuadrant(bestQuadrantID);
 
   DataSet::iterator iter = dataSet.begin();
   iter++;
   while (iter != dataSet.end()) {
-    Animation *anim = anims->GetAnim(*iter);
+    Animation* anim = anims->GetAnim(*iter);
 
     if (strict) {
       if (atoi(anim->GetVariable("quadrant_id").c_str()) == bestQuadrantID) {
@@ -1278,8 +1278,8 @@ void HumanoidBase::_KeepBestDirectionAnims(DataSet &dataSet, const PlayerCommand
       }
     } else {
       int quadrantID = atoi(anim->GetVariable("quadrant_id").c_str());
-      const Quadrant &bestQuadrant = anims->GetQuadrant(bestQuadrantID);
-      const Quadrant &quadrant = anims->GetQuadrant(quadrantID);
+      const Quadrant& bestQuadrant = anims->GetQuadrant(bestQuadrantID);
+      const Quadrant& quadrant = anims->GetQuadrant(quadrantID);
 
       bool predicate = true;
 
@@ -1309,7 +1309,7 @@ void HumanoidBase::_KeepBestDirectionAnims(DataSet &dataSet, const PlayerCommand
 }
 
 // ALERT: set sorting predicates before calling this function
-void HumanoidBase::_KeepBestBodyDirectionAnims(DataSet &dataSet, const PlayerCommand &command,
+void HumanoidBase::_KeepBestBodyDirectionAnims(DataSet& dataSet, const PlayerCommand& command,
                                                bool strict, radian allowedAngle) {
   // delete nonqualified bodydir quadrants
 
@@ -1334,7 +1334,7 @@ void HumanoidBase::_KeepBestBodyDirectionAnims(DataSet &dataSet, const PlayerCom
     }
   }
 
-  Animation *bestAnim = anims->GetAnim(*dataSet.begin());
+  Animation* bestAnim = anims->GetAnim(*dataSet.begin());
 
   radian bestOutgoingBodyAngle =
       ForceIntoAllowedBodyDirectionAngle(bestAnim->GetOutgoingBodyAngle());
@@ -1344,7 +1344,7 @@ void HumanoidBase::_KeepBestBodyDirectionAnims(DataSet &dataSet, const PlayerCom
   DataSet::iterator iter = dataSet.begin();
   iter++;
   while (iter != dataSet.end()) {
-    Animation *anim = anims->GetAnim(*iter);
+    Animation* anim = anims->GetAnim(*iter);
 
     radian animOutgoingBodyAngle = ForceIntoAllowedBodyDirectionAngle(anim->GetOutgoingBodyAngle());
     radian animOutgoingAngle = ForceIntoPreferredDirectionAngle(anim->GetOutgoingAngle());
@@ -1536,7 +1536,7 @@ fabs(animRotationAngle - desiredRotationAngle) > 0.06f) { rating_side = (signSid
 */
 
 bool HumanoidBase::SelectAnim(
-    const PlayerCommand &command, e_InterruptAnim localInterruptAnim,
+    const PlayerCommand& command, e_InterruptAnim localInterruptAnim,
     bool preferPassAndShot) {  // returns false on no applicable anim found
   assert(command.desiredDirection.coords[2] == 0.0f);
 
@@ -1706,7 +1706,7 @@ bool HumanoidBase::SelectAnim(
     // if (player->GetDebug()) printf("chosen: %s\n",
     // anims->GetAnim(ratedDataSet.begin()->ID)->GetName().c_str());
     selectedAnimID = *dataSet.begin();
-    Animation *nextAnim = anims->GetAnim(selectedAnimID);
+    Animation* nextAnim = anims->GetAnim(selectedAnimID);
     Vector3 desiredMovement = command.desiredDirection * command.desiredVelocityFloat;
     if (command.desiredDirection.coords[2] != 0.0f) {
       command.desiredDirection.Print();
@@ -1797,7 +1797,7 @@ bool HumanoidBase::SelectAnim(
   return false;
 }
 
-void HumanoidBase::CalculatePredictedSituation(Vector3 &predictedPos, radian &predictedAngle) {
+void HumanoidBase::CalculatePredictedSituation(Vector3& predictedPos, radian& predictedAngle) {
   if (currentAnim->positions.size() > (unsigned int)currentAnim->frameNum) {
     assert(currentAnim->positions.size() >
            (unsigned int)currentAnim->anim->GetEffectiveFrameCount());
@@ -1818,7 +1818,7 @@ void HumanoidBase::CalculatePredictedSituation(Vector3 &predictedPos, radian &pr
   assert(predictedPos.coords[2] == 0.0f);
 }
 
-Vector3 HumanoidBase::CalculateOutgoingMovement(const std::vector<Vector3> &positions) const {
+Vector3 HumanoidBase::CalculateOutgoingMovement(const std::vector<Vector3>& positions) const {
   if (positions.size() < 2)
     return 0;
   return (positions.at(positions.size() - 1) - positions.at(positions.size() - 2)) * 100.0f;
@@ -1858,7 +1858,7 @@ void HumanoidBase::CalculateSpatialState() {
     // this way, action cheating is being omitted from the current movement, making for better
     // requeues. however, keep in mind that movementoffsets, from bumping into other players, for
     // example, will also be ignored this way.
-    const std::vector<Vector3> &origPositionCache = match->GetAnimPositionCache(currentAnim->anim);
+    const std::vector<Vector3>& origPositionCache = match->GetAnimPositionCache(currentAnim->anim);
     spatialState.animMovement =
         CalculateMovementAtFrame(origPositionCache, currentAnim->frameNum, 1)
             .GetRotated2D(startAngle);
@@ -1954,8 +1954,8 @@ void HumanoidBase::CalculateFactualSpatialState() {
   }
 }
 
-void HumanoidBase::AddTripCommandToQueue(PlayerCommandQueue &commandQueue,
-                                         const Vector3 &tripVector, int tripType) {
+void HumanoidBase::AddTripCommandToQueue(PlayerCommandQueue& commandQueue,
+                                         const Vector3& tripVector, int tripType) {
   if (tripType == 1) {
     commandQueue.push_back(GetTripCommand(tripDirection, tripType));
   } else {
@@ -1969,7 +1969,7 @@ void HumanoidBase::AddTripCommandToQueue(PlayerCommandQueue &commandQueue,
   }
 }
 
-PlayerCommand HumanoidBase::GetTripCommand(const Vector3 &tripVector, int tripType) {
+PlayerCommand HumanoidBase::GetTripCommand(const Vector3& tripVector, int tripType) {
   PlayerCommand command;
   command.desiredFunctionType = e_FunctionType_Trip;
   command.useDesiredMovement = false;
@@ -1981,7 +1981,7 @@ PlayerCommand HumanoidBase::GetTripCommand(const Vector3 &tripVector, int tripTy
   return command;
 }
 
-PlayerCommand HumanoidBase::GetBasicMovementCommand(const Vector3 &desiredDirection,
+PlayerCommand HumanoidBase::GetBasicMovementCommand(const Vector3& desiredDirection,
                                                     float velocityFloat) {
   PlayerCommand command;
   command.desiredFunctionType = e_FunctionType_Movement;
@@ -2051,7 +2051,7 @@ bool HumanoidBase::CompareIncomingVelocitySimilarity(int animIndex1, int animInd
   return rating1 < rating2;
 }
 
-void HumanoidBase::SetMovementSimilarityPredicate(const Vector3 &relDesiredDirection,
+void HumanoidBase::SetMovementSimilarityPredicate(const Vector3& relDesiredDirection,
                                                   e_Velocity desiredVelocity) const {
   predicate_RelDesiredDirection = relDesiredDirection;
   predicate_DesiredVelocity = desiredVelocity;
@@ -2066,7 +2066,7 @@ void HumanoidBase::SetMovementSimilarityPredicate(const Vector3 &relDesiredDirec
                                     1.0f, 0.9f);  // anim space values!
 }
 
-float HumanoidBase::GetMovementSimilarity(int animIndex, const Vector3 &relDesiredDirection,
+float HumanoidBase::GetMovementSimilarity(int animIndex, const Vector3& relDesiredDirection,
                                           e_Velocity desiredVelocity, float corneringBias) const {
   Vector3 desiredMovement = relDesiredDirection * EnumToFloatVelocity(desiredVelocity);
 
@@ -2145,7 +2145,7 @@ bool HumanoidBase::CompareOutgoingVelocitySimilarity(int animIndex1, int animInd
 }
 
 void HumanoidBase::SetIncomingBodyDirectionSimilarityPredicate(
-    const Vector3 &relIncomingBodyDirection) const {
+    const Vector3& relIncomingBodyDirection) const {
   predicate_RelIncomingBodyDirection = relIncomingBodyDirection;
 }
 
@@ -2166,13 +2166,13 @@ bool HumanoidBase::CompareIncomingBodyDirectionSimilarity(int animIndex1, int an
   return rating1 < rating2;
 }
 
-void HumanoidBase::SetBodyDirectionSimilarityPredicate(const Vector3 &lookAt) const {
+void HumanoidBase::SetBodyDirectionSimilarityPredicate(const Vector3& lookAt) const {
   predicate_LookAt = lookAt;
 }
 
 bool HumanoidBase::CompareBodyDirectionSimilarity(int animIndex1, int animIndex2) const {
-  Animation *a1 = anims->GetAnim(animIndex1);
-  Animation *a2 = anims->GetAnim(animIndex2);
+  Animation* a1 = anims->GetAnim(animIndex1);
+  Animation* a2 = anims->GetAnim(animIndex2);
 
   float translationFactor = 1.0f;
   Vector3 relDesiredBodyDirection1 =
@@ -2259,7 +2259,7 @@ bool HumanoidBase::CompareBodyDirectionSimilarity(int animIndex1, int animIndex2
 }
 
 void HumanoidBase::SetTripDirectionSimilarityPredicate(
-    const Vector3 &relDesiredTripDirection) const {
+    const Vector3& relDesiredTripDirection) const {
   predicate_RelDesiredTripDirection = relDesiredTripDirection;
 }
 
@@ -2272,7 +2272,7 @@ bool HumanoidBase::CompareTripDirectionSimilarity(int animIndex1, int animIndex2
 }
 
 void HumanoidBase::SetBallDirectionSimilarityPredicate(
-    const Vector3 &relDesiredBallDirection) const {
+    const Vector3& relDesiredBallDirection) const {
   predicate_RelDesiredBallDirection = relDesiredBallDirection;
 }
 
@@ -2304,7 +2304,7 @@ bool HumanoidBase::CompareCatchOrDeflect(int animIndex1, int animIndex2) const {
   return false;
 }
 
-void HumanoidBase::SetNumericVariableSimilarityPredicate(const std::string &varName,
+void HumanoidBase::SetNumericVariableSimilarityPredicate(const std::string& varName,
                                                          float desiredValue) const {
   predicate_NumericVariableName = varName;
   predicate_NumericVariableValue = desiredValue;
@@ -2321,12 +2321,12 @@ bool HumanoidBase::CompareNumericVariable(int animIndex1, int animIndex2) const 
               predicate_NumericVariableValue);
 }
 
-Vector3 HumanoidBase::CalculatePhysicsVector(Animation *anim, bool useDesiredMovement,
-                                             const Vector3 &desiredMovement,
+Vector3 HumanoidBase::CalculatePhysicsVector(Animation* anim, bool useDesiredMovement,
+                                             const Vector3& desiredMovement,
                                              bool useDesiredBodyDirection,
-                                             const Vector3 &desiredBodyDirectionRel,
-                                             std::vector<Vector3> &positions_ret,
-                                             radian &rotationOffset_ret) const {
+                                             const Vector3& desiredBodyDirectionRel,
+                                             std::vector<Vector3>& positions_ret,
+                                             radian& rotationOffset_ret) const {
   positions_ret.clear();
 
   int animTouchFrame = atoi(anim->GetVariable("touchframe").c_str());
@@ -2340,7 +2340,7 @@ Vector3 HumanoidBase::CalculatePhysicsVector(Animation *anim, bool useDesiredMov
   float incomingSwitchBias = 0.0f;  // anything other than 0.0 may result in unpuristic behavior
   float outgoingSwitchBias = 0.0f;
 
-  const std::string &animType = anim->GetAnimType();
+  const std::string& animType = anim->GetAnimType();
 
   if (animType.compare("ballcontrol") == 0) {
     outgoingSwitchBias = 0.0f;
@@ -2419,7 +2419,7 @@ Vector3 HumanoidBase::CalculatePhysicsVector(Animation *anim, bool useDesiredMov
 
   // orig anim positions
 
-  const std::vector<Vector3> &origPositionCache = match->GetAnimPositionCache(anim);
+  const std::vector<Vector3>& origPositionCache = match->GetAnimPositionCache(anim);
 
   Vector3 currentPosition;
 
@@ -2960,7 +2960,7 @@ Vector3 HumanoidBase::CalculatePhysicsVector(Animation *anim, bool useDesiredMov
   return resultingMovement;
 }
 
-Vector3 HumanoidBase::ForceIntoAllowedBodyDirectionVec(const Vector3 &src) const {
+Vector3 HumanoidBase::ForceIntoAllowedBodyDirectionVec(const Vector3& src) const {
   // check what allowed dir this vector is closest to
   float bestDot = -1.0f;
   int bestIndex = 0;
@@ -2989,7 +2989,7 @@ radian HumanoidBase::ForceIntoAllowedBodyDirectionAngle(radian angle) const {
   return allowedBodyDirAngles.at(bestIndex);
 }
 
-Vector3 HumanoidBase::ForceIntoPreferredDirectionVec(const Vector3 &src) const {
+Vector3 HumanoidBase::ForceIntoPreferredDirectionVec(const Vector3& src) const {
   float bestDot = -1.0f;
   int bestIndex = 0;
   for (unsigned int i = 0; i < preferredDirectionVecs.size(); i++) {

@@ -1,28 +1,28 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #include "teamselect.hpp"
 
 #include "../../main.hpp"
-
-#include "utils/database.hpp"
-
 #include "../pagefactory.hpp"
+#include "utils/database.hpp"
 
 using namespace blunted;
 
-void AddCompetitions(Gui2IconSelector *selector) {
+void AddCompetitions(Gui2IconSelector* selector) {
   /*
-  selector->AddEntry("1", "National teams", "databases/default/images_competitions/nationalteams.png");
-  selector->AddEntry("2", "Premier league", "databases/default/images_competitions/premierleague.png");
-  selector->AddEntry("3", "Eredivisie", "databases/default/images_competitions/eredivisie.png");
-  selector->AddEntry("4", "Bundesliga", "databases/default/images_competitions/bundesliga.png");
-  selector->AddEntry("5", "LFP", "databases/default/images_competitions/lfp.png");
-  selector->AddEntry("6", "Serie A", "databases/default/images_competitions/serie_a.png");
-  selector->AddEntry("7", "Ligue 1", "databases/default/images_competitions/ligue1.png");
+  selector->AddEntry("1", "National teams",
+  "databases/default/images_competitions/nationalteams.png"); selector->AddEntry("2", "Premier
+  league", "databases/default/images_competitions/premierleague.png"); selector->AddEntry("3",
+  "Eredivisie", "databases/default/images_competitions/eredivisie.png"); selector->AddEntry("4",
+  "Bundesliga", "databases/default/images_competitions/bundesliga.png"); selector->AddEntry("5",
+  "LFP", "databases/default/images_competitions/lfp.png"); selector->AddEntry("6", "Serie A",
+  "databases/default/images_competitions/serie_a.png"); selector->AddEntry("7", "Ligue 1",
+  "databases/default/images_competitions/ligue1.png");
   */
-  DatabaseResult *result = GetDB()->Query("select id, name, logo_url from leagues");
+  DatabaseResult* result = GetDB()->Query("select id, name, logo_url from leagues");
 
   for (unsigned int r = 0; r < result->data.size(); r++) {
     int id = atoi(result->data.at(r).at(0).c_str());
@@ -30,16 +30,18 @@ void AddCompetitions(Gui2IconSelector *selector) {
     std::string logo_url = result->data.at(r).at(2).c_str();
 
     std::string logoPath = "databases/default/" + logo_url;
-    if (!std::filesystem::exists(logoPath)) logoPath = "media/textures/orange.jpg";
+    if (!std::filesystem::exists(logoPath))
+      logoPath = "media/textures/orange.jpg";
     selector->AddEntry(int_to_str(id), name, logoPath);
   }
 
   delete result;
 }
 
-void AddTeams(Gui2IconSelector *selector, const std::string &competition_id) {
-
-  DatabaseResult *result = GetDB()->Query("select id, name, logo_url, kit_url from teams where league_id = " + competition_id + " order by name");
+void AddTeams(Gui2IconSelector* selector, const std::string& competition_id) {
+  DatabaseResult* result = GetDB()->Query(
+      "select id, name, logo_url, kit_url from teams where league_id = " + competition_id +
+      " order by name");
 
   for (unsigned int r = 0; r < result->data.size(); r++) {
     int id = atoi(result->data.at(r).at(0).c_str());
@@ -47,7 +49,8 @@ void AddTeams(Gui2IconSelector *selector, const std::string &competition_id) {
     std::string logo_url = result->data.at(r).at(2).c_str();
 
     std::string logoPath = "databases/default/" + logo_url;
-    if (!std::filesystem::exists(logoPath)) logoPath = "media/textures/orange.jpg";
+    if (!std::filesystem::exists(logoPath))
+      logoPath = "media/textures/orange.jpg";
     selector->AddEntry(int_to_str(id), name, logoPath);
   }
 
@@ -56,9 +59,9 @@ void AddTeams(Gui2IconSelector *selector, const std::string &competition_id) {
   selector->Show();
 }
 
-TeamSelectPage::TeamSelectPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData) : Gui2Page(windowManager, pageData) {
-
-  Gui2Image *bg1 = new Gui2Image(windowManager, "teamselect_image_bg1", 19, 24, 30, 42);
+TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
+    : Gui2Page(windowManager, pageData) {
+  Gui2Image* bg1 = new Gui2Image(windowManager, "teamselect_image_bg1", 19, 24, 30, 42);
   this->AddView(bg1);
   bg1->LoadImage("media/menu/backgrounds/black.png");
   bg1->Show();
@@ -67,34 +70,41 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager *windowManager, const Gui2PageD
   this->AddView(bg2);
   bg2->LoadImage("media/menu/backgrounds/black.png");
 
-  Gui2Caption *teamEmblemCredits = new Gui2Caption(windowManager, "teamselect_emblemcredits", 19, 70, 28, 3, "Team emblems by TureckiRumun, broxopios, balder, and NLP !");
+  Gui2Caption* teamEmblemCredits =
+      new Gui2Caption(windowManager, "teamselect_emblemcredits", 19, 70, 28, 3,
+                      "Team emblems by TureckiRumun, broxopios, balder, and NLP !");
   this->AddView(teamEmblemCredits);
   teamEmblemCredits->SetColor(Vector3(200, 200, 200));
   teamEmblemCredits->SetTransparency(0.5f);
   teamEmblemCredits->SetPosition(50 - teamEmblemCredits->GetTextWidthPercent() / 2, 70);
   teamEmblemCredits->Show();
 
-  Gui2Caption *p1 = new Gui2Caption(windowManager, "teamselect_caption_p1", 19, 20, 28, 3, "Player 1");
+  Gui2Caption* p1 =
+      new Gui2Caption(windowManager, "teamselect_caption_p1", 19, 20, 28, 3, "Player 1");
   p2 = new Gui2Caption(windowManager, "teamselect_caption_p2", 51, 20, 28, 3, "Player 2");
-  Gui2Grid *grid1 = new Gui2Grid(windowManager, "teamselect_grid_team1", 19, 24, 30, 41);
+  Gui2Grid* grid1 = new Gui2Grid(windowManager, "teamselect_grid_team1", 19, 24, 30, 41);
   grid2 = new Gui2Grid(windowManager, "teamselect_grid_team2", 51, 24, 30, 41);
 
-  competitionSelect1 = new Gui2IconSelector(windowManager, "teamselect_iconselector_competition1", 0, 0, 29, 18, "Competition select");
-  competitionSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_competition2", 0, 0, 29, 18, "Competition select");
-  teamSelect1 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team1", 0, 0, 29, 18, "Team select");
-  teamSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team2", 0, 0, 29, 18, "Team select");
+  competitionSelect1 = new Gui2IconSelector(windowManager, "teamselect_iconselector_competition1",
+                                            0, 0, 29, 18, "Competition select");
+  competitionSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_competition2",
+                                            0, 0, 29, 18, "Competition select");
+  teamSelect1 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team1", 0, 0, 29, 18,
+                                     "Team select");
+  teamSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team2", 0, 0, 29, 18,
+                                     "Team select");
   buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 29, 3, "Ready");
   buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 29, 3, "Ready");
 
-  competitionSelect1->sig_OnClick.connect([this](...){ FocusTeamSelect1(); });
-  teamSelect1->sig_OnClick.connect([this](...){ FocusStart1(); });
-  buttonStart1->sig_OnClick.connect([this](...){ FocusCompetitionSelect2(); });
-  competitionSelect2->sig_OnClick.connect([this](...){ FocusTeamSelect2(); });
-  teamSelect2->sig_OnClick.connect([this](...){ FocusStart2(); });
-  buttonStart2->sig_OnClick.connect([this](...){ GoOptionsMenu(); });
+  competitionSelect1->sig_OnClick.connect([this](...) { FocusTeamSelect1(); });
+  teamSelect1->sig_OnClick.connect([this](...) { FocusStart1(); });
+  buttonStart1->sig_OnClick.connect([this](...) { FocusCompetitionSelect2(); });
+  competitionSelect2->sig_OnClick.connect([this](...) { FocusTeamSelect2(); });
+  teamSelect2->sig_OnClick.connect([this](...) { FocusStart2(); });
+  buttonStart2->sig_OnClick.connect([this](...) { GoOptionsMenu(); });
 
-  competitionSelect1->sig_OnChange.connect([this](...){ SetupTeamSelect1(); });
-  competitionSelect2->sig_OnChange.connect([this](...){ SetupTeamSelect2(); });
+  competitionSelect1->sig_OnChange.connect([this](...) { SetupTeamSelect1(); });
+  competitionSelect2->sig_OnChange.connect([this](...) { SetupTeamSelect2(); });
 
   this->AddView(p1);
   p1->Show();
@@ -181,7 +191,8 @@ void TeamSelectPage::SetupTeamSelect2() {
 
 void TeamSelectPage::GoOptionsMenu() {
   GetMenuTask()->SetTeamIDs(teamSelect1->GetSelectedEntryID(), teamSelect2->GetSelectedEntryID());
-  //printf("teams: %i vs %i\n", atoi(teamSelect1->GetSelectedEntryID().c_str()), atoi(teamSelect2->GetSelectedEntryID().c_str()));
+  // printf("teams: %i vs %i\n", atoi(teamSelect1->GetSelectedEntryID().c_str()),
+  // atoi(teamSelect2->GetSelectedEntryID().c_str()));
 
   this->Exit();
 
@@ -191,7 +202,7 @@ void TeamSelectPage::GoOptionsMenu() {
   delete this;
 }
 
-void TeamSelectPage::ProcessWindowingEvent(WindowingEvent *event) {
+void TeamSelectPage::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsEscape()) {
     if (windowManager->GetFocus() == competitionSelect1) {
       Gui2Page::ProcessWindowingEvent(event);
@@ -213,7 +224,5 @@ void TeamSelectPage::ProcessWindowingEvent(WindowingEvent *event) {
     } else if (windowManager->GetFocus() == buttonStart2) {
       windowManager->SetFocus(teamSelect2);
     }
-
   }
-
 }

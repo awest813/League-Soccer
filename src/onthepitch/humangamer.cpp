@@ -1,19 +1,18 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #include "humangamer.hpp"
 
+#include "../main.hpp"
+#include "managers/resourcemanagerpool.hpp"
+#include "managers/usereventmanager.hpp"
+#include "scene/objectfactory.hpp"
 #include "team.hpp"
 
-#include "managers/usereventmanager.hpp"
-#include "managers/resourcemanagerpool.hpp"
-
-#include "scene/objectfactory.hpp"
-
-#include "../main.hpp"
-
-HumanGamer::HumanGamer(Team *team, IHIDevice *hid, e_PlayerColor color) : team(team), hid(hid), playerColor(color) {
+HumanGamer::HumanGamer(Team* team, IHIDevice* hid, e_PlayerColor color)
+    : team(team), hid(hid), playerColor(color) {
   controller = new HumanController(team->GetMatch(), hid);
 
   std::vector<Player*> activePlayers;
@@ -23,24 +22,30 @@ HumanGamer::HumanGamer(Team *team, IHIDevice *hid, e_PlayerColor color) : team(t
 }
 
 HumanGamer::~HumanGamer() {
-  if (Verbose()) printf("exiting humangamer.. ");
+  if (Verbose())
+    printf("exiting humangamer.. ");
   delete controller;
   // todo: team is being destructed at this point, cannot use its methods
-  //Player *currentPlayer = team->GetPlayer(selectedPlayerID);
+  // Player *currentPlayer = team->GetPlayer(selectedPlayerID);
   if (selectedPlayer) {
     selectedPlayer->SetExternalController(0);
     selectedPlayer->SetDebug(false);
   }
-  if (Verbose()) printf("done\n");
+  if (Verbose())
+    printf("done\n");
 }
 
 int HumanGamer::GetSelectedPlayerID() const {
-  if (selectedPlayer) return selectedPlayer->GetID(); else return -1;
+  if (selectedPlayer)
+    return selectedPlayer->GetID();
+  else
+    return -1;
 }
 
 void HumanGamer::SetSelectedPlayerID(int id) {
   if (selectedPlayer) {
-    if (selectedPlayer->GetID() == id) return;
+    if (selectedPlayer->GetID() == id)
+      return;
     selectedPlayer->SetExternalController(0);
     selectedPlayer->SetDebug(false);
   }
@@ -55,8 +60,6 @@ void HumanGamer::SetSelectedPlayerID(int id) {
   }
 }
 
-void HumanGamer::PreparePutBuffers() {
-}
+void HumanGamer::PreparePutBuffers() {}
 
-void HumanGamer::Put() {
-}
+void HumanGamer::Put() {}

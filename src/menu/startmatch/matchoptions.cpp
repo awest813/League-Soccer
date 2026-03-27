@@ -1,31 +1,35 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #include "matchoptions.hpp"
 
-#include "main.hpp"
-
 #include "../pagefactory.hpp"
+#include "main.hpp"
 
 using namespace blunted;
 
-MatchOptionsPage::MatchOptionsPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData) : Gui2Page(windowManager, pageData) {
-
-  Gui2Image *bg = new Gui2Image(windowManager, "matchoptions_image_bg1", 30, 20, 40, 70);
+MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
+    : Gui2Page(windowManager, pageData) {
+  Gui2Image* bg = new Gui2Image(windowManager, "matchoptions_image_bg1", 30, 20, 40, 70);
   this->AddView(bg);
   bg->LoadImage("media/menu/backgrounds/black.png");
   bg->Show();
 
-  Gui2Caption *header = new Gui2Caption(windowManager, "matchoptions_caption", 30, 15, 40, 3, "Match options");
+  Gui2Caption* header =
+      new Gui2Caption(windowManager, "matchoptions_caption", 30, 15, 40, 3, "Match options");
   this->AddView(header);
   header->Show();
 
-  Gui2Grid *grid = new Gui2Grid(windowManager, "matchoptions_grid", 35, 25, 30, 60);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "matchoptions_grid", 35, 25, 30, 60);
 
-  difficultySlider = new Gui2Slider(windowManager, "matchoptions_slider_difficulty", 0, 0, 29, 6, "difficulty (when HUMAN vs CPU)");
-  matchDurationSlider = new Gui2Slider(windowManager, "matchoptions_slider_matchduration", 0, 0, 29, 6, "match duration (5 minutes .. 25 min.)");
-  Gui2Button *buttonStart = new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 29, 3, "Start match");
+  difficultySlider = new Gui2Slider(windowManager, "matchoptions_slider_difficulty", 0, 0, 29, 6,
+                                    "difficulty (when HUMAN vs CPU)");
+  matchDurationSlider = new Gui2Slider(windowManager, "matchoptions_slider_matchduration", 0, 0, 29,
+                                       6, "match duration (5 minutes .. 25 min.)");
+  Gui2Button* buttonStart =
+      new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 29, 3, "Start match");
 
   float difficulty = GetConfiguration()->GetReal("match_difficulty", _default_Difficulty);
   float matchDuration = GetConfiguration()->GetReal("match_duration", _default_MatchDuration);
@@ -40,18 +44,16 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager *windowManager, const Gui2P
   this->AddView(grid);
   grid->Show();
 
-  buttonStart->sig_OnClick.connect([this](...){ GoLoadingMatchPage(); });
+  buttonStart->sig_OnClick.connect([this](...) { GoLoadingMatchPage(); });
 
   buttonStart->SetFocus();
 
   this->Show();
 }
 
-MatchOptionsPage::~MatchOptionsPage() {
-}
+MatchOptionsPage::~MatchOptionsPage() {}
 
 void MatchOptionsPage::GoLoadingMatchPage() {
-
   GetConfiguration()->Set("match_difficulty", difficultySlider->GetValue());
   GetConfiguration()->Set("match_duration", matchDurationSlider->GetValue());
   GetConfiguration()->SaveFile(GetConfigFilename());

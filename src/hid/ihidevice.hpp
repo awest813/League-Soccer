@@ -1,6 +1,7 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_HIDEVICE
 #define _HPP_HIDEVICE
@@ -9,10 +10,7 @@
 
 using namespace blunted;
 
-enum e_HIDeviceType {
-  e_HIDeviceType_Keyboard,
-  e_HIDeviceType_Gamepad
-};
+enum e_HIDeviceType { e_HIDeviceType_Keyboard, e_HIDeviceType_Gamepad };
 
 enum e_ButtonFunction {
   e_ButtonFunction_Up,
@@ -55,30 +53,28 @@ enum e_ControllerButton {
 };
 
 class IHIDevice {
+public:
+  virtual ~IHIDevice() {}
 
-  public:
-    virtual ~IHIDevice() {}
+  virtual void LoadConfig() = 0;
+  virtual void SaveConfig() = 0;
 
-    virtual void LoadConfig() = 0;
-    virtual void SaveConfig() = 0;
+  virtual void Process() = 0;
 
-    virtual void Process() = 0;
+  virtual bool GetButton(e_ButtonFunction buttonFunction) = 0;
+  virtual float GetButtonValue(e_ButtonFunction buttonFunction) = 0;  // for analog support
+  virtual void SetButton(e_ButtonFunction buttonFunction, bool state) = 0;
+  virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction) = 0;
+  virtual Vector3 GetDirection() = 0;
 
-    virtual bool GetButton(e_ButtonFunction buttonFunction) = 0;
-    virtual float GetButtonValue(e_ButtonFunction buttonFunction) = 0; // for analog support
-    virtual void SetButton(e_ButtonFunction buttonFunction, bool state) = 0;
-    virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction) = 0;
-    virtual Vector3 GetDirection() = 0;
+  e_HIDeviceType GetDeviceType() const { return deviceType; }
+  std::string GetIdentifier() const { return identifier; }
 
-    e_HIDeviceType GetDeviceType() const { return deviceType; }
-    std::string GetIdentifier() const { return identifier; }
+protected:
+  e_HIDeviceType deviceType;
+  std::string identifier;
 
-  protected:
-    e_HIDeviceType deviceType;
-    std::string identifier;
-
-    std::mutex mutex;
-
+  std::mutex mutex;
 };
 
 #endif

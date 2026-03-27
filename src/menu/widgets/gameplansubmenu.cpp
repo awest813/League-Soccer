@@ -5,8 +5,8 @@
 
 #include "gameplansubmenu.hpp"
 
-GamePlanSubMenu::GamePlanSubMenu(Gui2WindowManager *windowManager, Gui2View *parentFocus,
-                                 Gui2Grid *mainGrid, const std::string &name)
+GamePlanSubMenu::GamePlanSubMenu(Gui2WindowManager* windowManager, Gui2View* parentFocus,
+                                 Gui2Grid* mainGrid, const std::string& name)
     : Gui2View(windowManager, name, 0, 0, 100, 100), mainGrid(mainGrid), parentFocus(parentFocus) {
   grid = new Gui2Grid(windowManager, "gameplan_grid_" + name, 0, 0, 0, 0);
   this->AddView(grid);
@@ -22,12 +22,12 @@ GamePlanSubMenu::~GamePlanSubMenu() {}
 
 void GamePlanSubMenu::OnClose() {}
 
-Gui2Button *GamePlanSubMenu::AddButton(const std::string &buttonName,
-                                       const std::string &buttonCaption, int row, int column,
+Gui2Button* GamePlanSubMenu::AddButton(const std::string& buttonName,
+                                       const std::string& buttonCaption, int row, int column,
                                        Vector3 color = Vector3(-1)) {
   if (color.coords[0] < 0)
     color = windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
-  Gui2Button *theButton =
+  Gui2Button* theButton =
       new Gui2Button(windowManager, "gameplan_button_submenu_" + name + "_" + buttonName, 0, 0, 34,
                      3, buttonCaption);
   theButton->SetColor(color);
@@ -39,9 +39,9 @@ Gui2Button *GamePlanSubMenu::AddButton(const std::string &buttonName,
   return theButton;
 }
 
-Gui2Slider *GamePlanSubMenu::AddSlider(const std::string &sliderName,
-                                       const std::string &sliderCaption, int row, int column) {
-  Gui2Slider *theSlider =
+Gui2Slider* GamePlanSubMenu::AddSlider(const std::string& sliderName,
+                                       const std::string& sliderCaption, int row, int column) {
+  Gui2Slider* theSlider =
       new Gui2Slider(windowManager, "gameplan_slider_submenu_" + name + "_" + sliderName, 0, 0, 34,
                      6, sliderCaption);
   grid->AddView(theSlider, row, column);
@@ -51,7 +51,7 @@ Gui2Slider *GamePlanSubMenu::AddSlider(const std::string &sliderName,
   return theSlider;
 }
 
-Gui2Button *GamePlanSubMenu::GetToggledButton(Gui2Button *except) {
+Gui2Button* GamePlanSubMenu::GetToggledButton(Gui2Button* except) {
   for (int i = 0; i < (signed int)allButtons.size(); i++) {
     if (allButtons.at(i) != except)
       if (allButtons.at(i)->IsToggled())
@@ -60,7 +60,7 @@ Gui2Button *GamePlanSubMenu::GetToggledButton(Gui2Button *except) {
   return 0;
 }
 
-void GamePlanSubMenu::ProcessWindowingEvent(WindowingEvent *event) {
+void GamePlanSubMenu::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsEscape()) {
     mainGrid->RemoveView(1, 0);  // removing self!
     parentFocus->SetFocus();

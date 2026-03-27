@@ -1,6 +1,7 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_INTERFACE_USERTASK
 #define _HPP_INTERFACE_USERTASK
@@ -9,64 +10,57 @@
 
 namespace blunted {
 
-  class IUserTask {
+class IUserTask {
+public:
+  virtual ~IUserTask() {};
 
-    public:
-      virtual ~IUserTask() {};
+  virtual void GetPhase() = 0;
+  virtual void ProcessPhase() = 0;
+  virtual void PutPhase() = 0;
 
-      virtual void GetPhase() = 0;
-      virtual void ProcessPhase() = 0;
-      virtual void PutPhase() = 0;
+  virtual std::string GetName() const = 0;
 
-      virtual std::string GetName() const = 0;
+protected:
+};
 
-    protected:
+// messages
 
-  };
+class IUserTaskMessage : public Command {
+public:
+  IUserTaskMessage(const std::string& name, std::shared_ptr<IUserTask> task)
+      : Command(name), task(task) {};
 
+protected:
+  std::shared_ptr<IUserTask> task;
+};
 
-  // messages
+class UserTaskMessage_GetPhase : public IUserTaskMessage {
+public:
+  UserTaskMessage_GetPhase(const std::string& name, std::shared_ptr<IUserTask> task)
+      : IUserTaskMessage(name, task) {};
 
-  class IUserTaskMessage : public Command {
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-    public:
-      IUserTaskMessage(const std::string &name, std::shared_ptr<IUserTask> task) : Command(name), task(task) {};
+class UserTaskMessage_ProcessPhase : public IUserTaskMessage {
+public:
+  UserTaskMessage_ProcessPhase(const std::string& name, std::shared_ptr<IUserTask> task)
+      : IUserTaskMessage(name, task) {};
 
-    protected:
-      std::shared_ptr<IUserTask> task;
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-  };
+class UserTaskMessage_PutPhase : public IUserTaskMessage {
+public:
+  UserTaskMessage_PutPhase(const std::string& name, std::shared_ptr<IUserTask> task)
+      : IUserTaskMessage(name, task) {};
 
-  class UserTaskMessage_GetPhase : public IUserTaskMessage {
+protected:
+  virtual bool Execute(void* caller = nullptr);
+};
 
-    public:
-      UserTaskMessage_GetPhase(const std::string &name, std::shared_ptr<IUserTask> task) : IUserTaskMessage(name, task) {};
-
-    protected:
-      virtual bool Execute(void *caller = nullptr);
-
-  };
-
-  class UserTaskMessage_ProcessPhase : public IUserTaskMessage {
-
-    public:
-      UserTaskMessage_ProcessPhase(const std::string &name, std::shared_ptr<IUserTask> task) : IUserTaskMessage(name, task) {};
-
-    protected:
-      virtual bool Execute(void *caller = nullptr);
-
-  };
-
-  class UserTaskMessage_PutPhase : public IUserTaskMessage {
-
-    public:
-      UserTaskMessage_PutPhase(const std::string &name, std::shared_ptr<IUserTask> task) : IUserTaskMessage(name, task) {};
-
-    protected:
-      virtual bool Execute(void *caller = nullptr);
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

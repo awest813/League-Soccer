@@ -1,24 +1,20 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #include "pagefactory.hpp"
 
-#include "mainmenu.hpp"
-#include "credits.hpp"
-#include "settings.hpp"
-#include "controllerselect.hpp"
-#include "startmatch/teamselect.hpp"
-#include "startmatch/matchoptions.hpp"
-#include "startmatch/loadingmatch.hpp"
-#include "ingame/gamepage.hpp"
-#include "ingame/phasemenu.hpp"
-#include "ingame/gameover.hpp"
-#include "ingame/ingame.hpp"
-#include "ingame/replaymenu.hpp"
-#include "gameplan.hpp"
+#include "../main.hpp"
 #include "cameramenu.hpp"
-#include "visualoptions.hpp"
+#include "controllerselect.hpp"
+#include "credits.hpp"
+#include "gameplan.hpp"
+#include "ingame/gameover.hpp"
+#include "ingame/gamepage.hpp"
+#include "ingame/ingame.hpp"
+#include "ingame/phasemenu.hpp"
+#include "ingame/replaymenu.hpp"
 #include "league/league.hpp"
 #include "league/league_calendar.hpp"
 #include "league/league_forward.hpp"
@@ -27,19 +23,21 @@
 #include "league/league_standings.hpp"
 #include "league/league_system.hpp"
 #include "league/league_team.hpp"
+#include "mainmenu.hpp"
+#include "settings.hpp"
+#include "startmatch/loadingmatch.hpp"
+#include "startmatch/matchoptions.hpp"
+#include "startmatch/teamselect.hpp"
+#include "visualoptions.hpp"
 
-#include "../main.hpp"
-
-Gui2Page *PageFactory::CreatePage(const Gui2PageData &pageData) {
-
-  Gui2Page *page = 0;
+Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
+  Gui2Page* page = 0;
 
   if (GetGameTask()->GetMenuScene()) {
     GetGameTask()->GetMenuScene()->RandomizeTargetLocation();
   }
 
   switch (pageData.pageID) {
-
     case e_PageID_MainMenu:
       page = new MainMenuPage(windowManager, pageData);
       break;
@@ -152,8 +150,7 @@ Gui2Page *PageFactory::CreatePage(const Gui2PageData &pageData) {
       page = new AudioPage(windowManager, pageData);
       break;
 
-
-    // league mode
+      // league mode
 
     case e_PageID_League_Start:
       page = new LeagueStartPage(windowManager, pageData);
@@ -295,11 +292,9 @@ Gui2Page *PageFactory::CreatePage(const Gui2PageData &pageData) {
       page = new LeagueSystemSettingsPage(windowManager, pageData);
       break;
 
-
     default:
       page = 0;
       break;
-
   }
 
   if (page != 0) {
@@ -308,5 +303,4 @@ Gui2Page *PageFactory::CreatePage(const Gui2PageData &pageData) {
   }
 
   return page;
-
 }

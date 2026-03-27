@@ -1,59 +1,59 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_UTILS_THREADHUD
 #define _HPP_UTILS_THREADHUD
 
+#include <SDL2/SDL_ttf.h>
+
 #include "managers/resourcemanager.hpp"
-#include "types/thread.hpp"
+#include "scene/objects/image2d.hpp"
 #include "scene/resources/surface.hpp"
 #include "scene/scene2d/scene2d.hpp"
-#include "scene/objects/image2d.hpp"
-
-#include <SDL2/SDL_ttf.h>
+#include "types/thread.hpp"
 
 namespace blunted {
 
-  struct WorkerThreadItem {
-    unsigned long beginTime_ms;
-    unsigned long endTime_ms;
-    e_ThreadState state;
-    std::string commandName;
-  };
+struct WorkerThreadItem {
+  unsigned long beginTime_ms;
+  unsigned long endTime_ms;
+  e_ThreadState state;
+  std::string commandName;
+};
 
-  class ThreadHud {
+class ThreadHud {
+public:
+  ThreadHud(std::shared_ptr<Scene2D> scene2D);
+  virtual ~ThreadHud();
 
-    public:
-      ThreadHud(std::shared_ptr<Scene2D> scene2D);
-      virtual ~ThreadHud();
+  void Execute();
 
-      void Execute();
+  void Redraw(bool forceRedraw = false);
 
-      void Redraw(bool forceRedraw = false);
+protected:
+  std::shared_ptr<Scene2D> scene2D;
 
-    protected:
-      std::shared_ptr<Scene2D> scene2D;
+  std::vector<std::vector<WorkerThreadItem>>
+      workerThreadHistory;  // vector content is guaranteed to be chronologic
+  boost::intrusive_ptr<Image2D> graph;
 
-      std::vector < std::vector<WorkerThreadItem> > workerThreadHistory; // vector content is guaranteed to be chronologic
-      boost::intrusive_ptr<Image2D> graph;
+  int skipRedrawCounter;
 
-      int skipRedrawCounter;
+  int _width;
+  int _headerheight;
+  int _lineheight;
+  int _height;
 
-      int _width;
-      int _headerheight;
-      int _lineheight;
-      int _height;
+  bool gui_autoPlay;
+  unsigned long gui_focusTime_ms;
+  float gui_zoomLevel;
+  float gui_zoomMomentum;
 
-      bool gui_autoPlay;
-      unsigned long gui_focusTime_ms;
-      float gui_zoomLevel;
-      float gui_zoomMomentum;
+  TTF_Font* font;
+};
 
-      TTF_Font *font;
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

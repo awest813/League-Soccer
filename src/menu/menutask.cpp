@@ -1,26 +1,22 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #include "menutask.hpp"
 
 #include "../onthepitch/match.hpp"
-
-#include "pagefactory.hpp"
-
-#include "mainmenu.hpp"
-#include "ingame/ingame.hpp"
-#include "visualoptions.hpp"
-#include "ingame/replaymenu.hpp"
-#include "ingame/phasemenu.hpp"
-#include "ingame/gameover.hpp"
-
-#include "gametask.hpp"
-
-#include "main.hpp"
-
 #include "framework/scheduler.hpp"
+#include "gametask.hpp"
+#include "ingame/gameover.hpp"
+#include "ingame/ingame.hpp"
+#include "ingame/phasemenu.hpp"
+#include "ingame/replaymenu.hpp"
+#include "main.hpp"
+#include "mainmenu.hpp"
 #include "managers/resourcemanagerpool.hpp"
+#include "pagefactory.hpp"
+#include "visualoptions.hpp"
 
 using namespace blunted;
 
@@ -30,13 +26,16 @@ void SetActiveController(int side, bool keyboard) {
   int menuControllerID = -1;
   for (unsigned int i = 0; i < sides.size(); i++) {
     if (sides.at(i).side == side) {
-      if (GetControllers().at(sides.at(i).controllerID)->GetDeviceType() == e_HIDeviceType_Gamepad) {
-        menuControllerID = static_cast<HIDGamepad*>(GetControllers().at(sides.at(i).controllerID))->GetGamepadID();
+      if (GetControllers().at(sides.at(i).controllerID)->GetDeviceType() ==
+          e_HIDeviceType_Gamepad) {
+        menuControllerID =
+            static_cast<HIDGamepad*>(GetControllers().at(sides.at(i).controllerID))->GetGamepadID();
         keyboardActive = false;
       }
       break;
     }
-    if (i == sides.size() - 1) menuControllerID = 0; // AI opponent, so allow choosing their team with controller
+    if (i == sides.size() - 1)
+      menuControllerID = 0;  // AI opponent, so allow choosing their team with controller
   }
 
   GetMenuTask()->SetActiveJoystickID(menuControllerID);
@@ -51,9 +50,10 @@ void SetActiveController(int side, bool keyboard) {
   }
 }
 
-MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font *defaultFont, TTF_Font *defaultOutlineFont) : Gui2Task(GetScene2D(), aspectRatio, margin) {
-
-  Gui2Style *style = windowManager->GetStyle();
+MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font* defaultFont,
+                   TTF_Font* defaultOutlineFont)
+    : Gui2Task(GetScene2D(), aspectRatio, margin) {
+  Gui2Style* style = windowManager->GetStyle();
 
   style->SetFont(e_TextType_Default, defaultFont);
   style->SetFont(e_TextType_DefaultOutline, defaultOutlineFont);
@@ -62,29 +62,27 @@ MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font *defaultFont, TTF_F
   style->SetFont(e_TextType_ToolTip, defaultFont);
 
   // Modern dark sports theme
-  style->SetColor(e_DecorationType_Dark1, Vector3(8, 15, 28));       // deep navy (button bg)
-  style->SetColor(e_DecorationType_Dark2, Vector3(22, 32, 52));      // medium navy (inactive/disabled)
-  style->SetColor(e_DecorationType_Bright1, Vector3(200, 220, 250)); // icy blue-white (text)
-  style->SetColor(e_DecorationType_Bright2, Vector3(30, 200, 120));  // emerald green (hover/focus)
-  style->SetColor(e_DecorationType_Toggled, Vector3(255, 165, 30));  // warm amber (toggled)
+  style->SetColor(e_DecorationType_Dark1, Vector3(8, 15, 28));   // deep navy (button bg)
+  style->SetColor(e_DecorationType_Dark2, Vector3(22, 32, 52));  // medium navy (inactive/disabled)
+  style->SetColor(e_DecorationType_Bright1, Vector3(200, 220, 250));  // icy blue-white (text)
+  style->SetColor(e_DecorationType_Bright2, Vector3(30, 200, 120));   // emerald green (hover/focus)
+  style->SetColor(e_DecorationType_Toggled, Vector3(255, 165, 30));   // warm amber (toggled)
 
   windowManager->SetTimeStep_ms(10);
 
-  Gui2Root *root = windowManager->GetRoot();
+  Gui2Root* root = windowManager->GetRoot();
   root->Show();
 
-  PageFactory *pageFactory = new PageFactory();
+  PageFactory* pageFactory = new PageFactory();
   windowManager->SetPageFactory(pageFactory);
 
   if (!QuickStart()) {
-
     queuedFixture->team1KitNum = 1;
     queuedFixture->team2KitNum = 2;
 
     menuAction = e_MenuAction_Menu;
 
   } else {
-
     int size = GetControllers().size();
     for (int i = 0; i < size; i++) {
       SideSelection side;
@@ -111,25 +109,23 @@ MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font *defaultFont, TTF_F
     queuedFixture->team2KitNum = 2;
 
     menuAction = e_MenuAction_Menu;
-
   }
-
 }
 
 MenuTask::~MenuTask() {
-  if (Verbose()) printf("exiting menutask.. ");
+  if (Verbose())
+    printf("exiting menutask.. ");
 
   delete windowManager->GetPageFactory();
 
-  if (Verbose()) printf("done\n");
+  if (Verbose())
+    printf("done\n");
 }
 
 void MenuTask::ProcessPhase() {
-
   Gui2Task::ProcessPhase();
 
   if (menuAction == e_MenuAction_Menu) {
-
     windowManager->GetPagePath()->Clear();
 
     GetGameTask()->Action(e_GameTaskMessage_StopMatch);
@@ -147,17 +143,17 @@ void MenuTask::ProcessPhase() {
     }
 
   } else if (menuAction == e_MenuAction_Game) {
-
     GetGameTask()->Action(e_GameTaskMessage_StopMenuScene);
     GetGameTask()->Action(e_GameTaskMessage_StartMatch);
-
   }
 
   menuAction = e_MenuAction_None;
 }
 
 bool MenuTask::QuickStart() {
-  return !IsReleaseVersion() && EnvironmentManager::GetInstance().GetTime_ms() < 10000; // after 5 seconds, quickstart disabled (== after > 0 matches have been played)
+  return !IsReleaseVersion() &&
+         EnvironmentManager::GetInstance().GetTime_ms() <
+             10000;  // after 5 seconds, quickstart disabled (== after > 0 matches have been played)
 }
 
 void MenuTask::QuitGame() {

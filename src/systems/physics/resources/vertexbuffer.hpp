@@ -1,38 +1,36 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_SYSTEM_PHYSICS_RESOURCE_VERTEXBUFFER
 #define _HPP_SYSTEM_PHYSICS_RESOURCE_VERTEXBUFFER
 
-#include "defines.hpp"
-
 #include "base/geometry/triangle.hpp"
+#include "defines.hpp"
 
 namespace blunted {
 
-  class Renderer3D;
+class Renderer3D;
 
-  class VertexBuffer {
+class VertexBuffer {
+public:
+  VertexBuffer();
+  virtual ~VertexBuffer();
 
-    public:
-      VertexBuffer();
-      virtual ~VertexBuffer();
+  int CreateVertexBuffer(Renderer3D* renderer3D, std::vector<Triangle*> triangles);
 
-      int CreateVertexBuffer(Renderer3D *renderer3D, std::vector<Triangle*> triangles);
+  void SetID(int value);
+  int GetID();
 
-      void SetID(int value);
-      int GetID();
+  int GetVertexCount();
 
-      int GetVertexCount();
+protected:
+  int vertexBufferID;
+  int vertexCount;
+  Renderer3D* renderer3D;
+};
 
-    protected:
-      int vertexBufferID;
-      int vertexCount;
-      Renderer3D *renderer3D;
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

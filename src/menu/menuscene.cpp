@@ -1,13 +1,13 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #include "menuscene.hpp"
 
+#include "../main.hpp"
 #include "managers/resourcemanagerpool.hpp"
 #include "scene/objectfactory.hpp"
-
-#include "../main.hpp"
 
 MenuScene::MenuScene() {
   Log(e_Notice, "MenuScene", "MenuScene", "Starting MenuScene");
@@ -17,17 +17,16 @@ MenuScene::MenuScene() {
   containerNode = boost::intrusive_ptr<Node>(new Node("menuSceneNode"));
   GetScene3D()->AddNode(containerNode);
 
-
   currentPosition = Vector3(0.0f, 0.0f, 1.0f);
   currentOrientation = Quaternion(QUATERNION_IDENTITY);
   SetTargetLocation(currentPosition, currentOrientation);
-
 
   // camera
 
   Log(e_Notice, "MenuScene", "MenuScene", "Creating camera object");
 
-  camera = boost::static_pointer_cast<Camera>(ObjectFactory::GetInstance().CreateObject("camera_MenuScene", e_ObjectType_Camera));
+  camera = boost::static_pointer_cast<Camera>(
+      ObjectFactory::GetInstance().CreateObject("camera_MenuScene", e_ObjectType_Camera));
   GetScene3D()->CreateSystemObjects(camera);
   camera->Init();
   camera->SetFOV(90);
@@ -38,7 +37,6 @@ MenuScene::MenuScene() {
   camera->SetRotation(orientation);
   containerNode->AddObject(camera);
 
-
   // light
 
   Log(e_Notice, "MenuScene", "MenuScene", "Creating light object");
@@ -47,7 +45,8 @@ MenuScene::MenuScene() {
   float hoverLightBrightness = 2.0f;
 
   for (int i = 0; i < 3; i++) {
-    hoverLights[i] = boost::static_pointer_cast<Light>(ObjectFactory::GetInstance().CreateObject("light_MenuScene_hover" + int_to_str(i), e_ObjectType_Light));
+    hoverLights[i] = boost::static_pointer_cast<Light>(ObjectFactory::GetInstance().CreateObject(
+        "light_MenuScene_hover" + int_to_str(i), e_ObjectType_Light));
     GetScene3D()->CreateSystemObjects(hoverLights[i]);
     hoverLights[i]->SetShadow(false);
     hoverLights[i]->SetType(e_LightType_Point);
@@ -59,18 +58,20 @@ MenuScene::MenuScene() {
   hoverLights[1]->SetColor(Vector3(0.3f, 1.0f, 0.3f) * hoverLightBrightness);
   hoverLights[2]->SetColor(Vector3(0.3f, 0.3f, 1.0f) * hoverLightBrightness);
 
-
   // geometry
 
   Log(e_Notice, "MenuScene", "MenuScene", "Creating geometry");
 
-  boost::intrusive_ptr < Resource<GeometryData> > geometryData = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/menu/background01.ase", true);
-  geom = boost::static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("geometry_menuscene", e_ObjectType_Geometry));
+  boost::intrusive_ptr<Resource<GeometryData>> geometryData =
+      ResourceManagerPool::GetInstance()
+          .GetManager<GeometryData>(e_ResourceType_GeometryData)
+          ->Fetch("media/objects/menu/background01.ase", true);
+  geom = boost::static_pointer_cast<Geometry>(
+      ObjectFactory::GetInstance().CreateObject("geometry_menuscene", e_ObjectType_Geometry));
   GetScene3D()->CreateSystemObjects(geom);
   geom->SetGeometryData(geometryData);
   geom->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
   containerNode->AddObject(geom);
-
 
   // for usage in destructor
   scene3D = GetScene3D();
@@ -80,8 +81,7 @@ MenuScene::~MenuScene() {
   scene3D->DeleteNode(containerNode);
 }
 
-void MenuScene::Get() {
-}
+void MenuScene::Get() {}
 
 void MenuScene::Process() {
   // calculate position
@@ -89,7 +89,8 @@ void MenuScene::Process() {
   unsigned long time_ms = EnvironmentManager::GetInstance().GetTime_ms();
 
   if (targetLocation.timeStamp_ms >= time_ms) {
-    float bias = (time_ms - sourceLocation.timeStamp_ms) / (float)(targetLocation.timeStamp_ms - sourceLocation.timeStamp_ms);
+    float bias = (time_ms - sourceLocation.timeStamp_ms) /
+                 (float)(targetLocation.timeStamp_ms - sourceLocation.timeStamp_ms);
     bias = pow(bias, 0.8f);
     bias = curve(bias, 1.0f);
 
@@ -124,7 +125,6 @@ void MenuScene::Process() {
   camera->SetPosition(currentPosition + randomPositionNoise * randomPositionIntensity);
   camera->SetRotation(currentOrientation);
 
-
   hoverLightPosition = currentPosition.Get2D() + Vector3(0.0f, 0.0f, 0.5f);
   for (int i = 0; i < 3; i++) {
     float separationFactor = 0.7f;
@@ -133,11 +133,9 @@ void MenuScene::Process() {
     lightOffset.Rotate2D(2.0f * pi * (i / 3.0f) + timeOffset);
     hoverLights[i]->SetPosition(hoverLightPosition + lightOffset);
   }
-
 }
 
-void MenuScene::Put() {
-}
+void MenuScene::Put() {}
 
 void MenuScene::RandomizeTargetLocation() {
   Vector3 dir = Vector3(0.0f, -1.0f, 0.0f).GetRotated2D(random(-1.0f * pi, 1.0f * pi));
@@ -151,7 +149,8 @@ void MenuScene::RandomizeTargetLocation() {
     Vector3 targetPos1 = currentPosition + dir;
     Vector3 targetPos2 = currentPosition - dir;
     targetPos = targetPos1;
-    if (targetPos1.GetLength() > targetPos2.GetLength()) targetPos = targetPos2;
+    if (targetPos1.GetLength() > targetPos2.GetLength())
+      targetPos = targetPos2;
   }
 
   radian angle = random(-0.1f * pi, 0.1f * pi);
@@ -159,13 +158,14 @@ void MenuScene::RandomizeTargetLocation() {
   SetTargetLocation(targetPos, angle);
 }
 
-void MenuScene::SetTargetLocation(const Vector3 &position, radian angle) {
+void MenuScene::SetTargetLocation(const Vector3& position, radian angle) {
   Quaternion orientation;
-  orientation.SetAngleAxis(angle, Vector3(random(-0.2f, 0.2f), random(-0.2f, 0.2f), -1.0f).GetNormalized());
+  orientation.SetAngleAxis(
+      angle, Vector3(random(-0.2f, 0.2f), random(-0.2f, 0.2f), -1.0f).GetNormalized());
   SetTargetLocation(position, orientation);
 }
 
-void MenuScene::SetTargetLocation(const Vector3 &position, const Quaternion &orientation) {
+void MenuScene::SetTargetLocation(const Vector3& position, const Quaternion& orientation) {
   sourceLocation.timeStamp_ms = EnvironmentManager::GetInstance().GetTime_ms();
   sourceLocation.position = currentPosition;
   sourceLocation.orientation = currentOrientation;

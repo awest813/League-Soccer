@@ -10,19 +10,19 @@
 
 using namespace blunted;
 
-GamePlanPage::GamePlanPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData)
+GamePlanPage::GamePlanPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
   teamID = pageData.properties->GetInt("teamID", 0);
 
   int xOffset = 32.5;  // 14;
   teamData = GetGameTask()->GetMatch()->GetTeam(teamID)->GetTeamData();
 
-  Gui2Image *bg1 = new Gui2Image(windowManager, "gameplan_image_bg", xOffset, 15, 35, 72);
+  Gui2Image* bg1 = new Gui2Image(windowManager, "gameplan_image_bg", xOffset, 15, 35, 72);
   this->AddView(bg1);
   bg1->LoadImage("media/menu/backgrounds/black.png");
   bg1->Show();
 
-  Gui2Caption *header = new Gui2Caption(windowManager, "gameplan_header", xOffset, 11, 35, 3,
+  Gui2Caption* header = new Gui2Caption(windowManager, "gameplan_header", xOffset, 11, 35, 3,
                                         "Team " + int_to_str(teamID + 1) + " game plan");
   grid = new Gui2Grid(windowManager, "gameplan_grid", xOffset, 15, 0, 0);
   gridNav = new Gui2Grid(windowManager, "gameplan_grid_navigation", xOffset, 0, 0, 0);
@@ -30,7 +30,7 @@ GamePlanPage::GamePlanPage(Gui2WindowManager *windowManager, const Gui2PageData 
   map = new Gui2PlanMap(windowManager, "gameplan_planmap", 0, 0, 35, 28, teamData);
   buttonLineup = new Gui2Button(windowManager, "gameplan_button_lineup", 0, 0, 34, 3, "Line-up");
   buttonTactics = new Gui2Button(windowManager, "gameplan_button_tactics", 0, 0, 34, 3, "Tactics");
-  Gui2Button *buttonFormation =
+  Gui2Button* buttonFormation =
       new Gui2Button(windowManager, "gameplan_button_formation", 0, 0, 34, 3, "Formation");
 
   buttonLineup->sig_OnClick.connect([this](...) { GoLineupMenu(); });
@@ -104,13 +104,13 @@ void GamePlanPage::GoLineupMenu() {
   lineupMenu->sig_OnClose.connect([this](...) { SaveLineup(); });
   lineupMenu->sig_OnClose.connect([this](...) { Reactivate(); });
 
-  const std::vector<PlayerData *> &playerData = teamData->GetPlayerData();
+  const std::vector<PlayerData*>& playerData = teamData->GetPlayerData();
   for (unsigned int i = 0; i < playerData.size(); i++) {
     Vector3 color = GetButtonColor(i);
-    Gui2Button *button =
+    Gui2Button* button =
         lineupMenu->AddButton("playerbutton_id" + int_to_str(playerData.at(i)->GetDatabaseID()),
                               playerData.at(i)->GetLastName(), i, 0, color);
-    button->sig_OnClick.connect([this](Gui2Button *btn) { LineupMenuOnClick(btn); });
+    button->sig_OnClick.connect([this](Gui2Button* btn) { LineupMenuOnClick(btn); });
     button->SetToggleable(true);
     if (i == 0)
       button->SetFocus();
@@ -119,8 +119,8 @@ void GamePlanPage::GoLineupMenu() {
   lineupMenu->Show();
 }
 
-void GamePlanPage::LineupMenuOnClick(Gui2Button *button) {
-  Gui2Button *selected = lineupMenu->GetToggledButton(button);
+void GamePlanPage::LineupMenuOnClick(Gui2Button* button) {
+  Gui2Button* selected = lineupMenu->GetToggledButton(button);
   if (selected) {
     // switch players
     selected->SetToggled(false);
@@ -152,17 +152,17 @@ void GamePlanPage::SaveLineup() {
   if (UpdateNonImportableDB()) {
     // saves to temp names db, which is used when importing the actual db.
 
-    const std::vector<Gui2Button *> &allButtons = lineupMenu->GetAllButtons();
+    const std::vector<Gui2Button*>& allButtons = lineupMenu->GetAllButtons();
 
     for (unsigned int i = 0; i < allButtons.size(); i++) {
-      Gui2View *button = lineupMenu->GetGrid()->FindView(i, 0);
+      Gui2View* button = lineupMenu->GetGrid()->FindView(i, 0);
       int id = atoi(
           button->GetName().substr(button->GetName().rfind("id") + 2, std::string::npos).c_str());
-      PlayerData *playerData = teamData->GetPlayerDataByDatabaseID(id);
+      PlayerData* playerData = teamData->GetPlayerDataByDatabaseID(id);
       unsigned int formationorder = i;
 
       // find player
-      DatabaseResult *result = namedb->Query(
+      DatabaseResult* result = namedb->Query(
           "select id from playernames where fakefirstname = \"" + playerData->GetFirstName() +
           "\" and fakelastname = \"" + playerData->GetLastName() + "\" limit 1;");
       int playerDatabaseID = -1;
@@ -196,15 +196,15 @@ void GamePlanPage::GoTacticsMenu() {
   tacticsMenu->sig_OnClose.connect([this](...) { SaveTactics(); });
   tacticsMenu->sig_OnClose.connect([this](...) { Reactivate(); });
 
-  const Properties &userProps = teamData->GetTactics().userProperties;
-  const map_Properties *userPropMap = userProps.GetProperties();
-  const Properties &factoryProps = teamData->GetTactics().factoryProperties;
-  const map_Properties *factoryPropMap = factoryProps.GetProperties();
+  const Properties& userProps = teamData->GetTactics().userProperties;
+  const map_Properties* userPropMap = userProps.GetProperties();
+  const Properties& factoryProps = teamData->GetTactics().factoryProperties;
+  const map_Properties* factoryPropMap = factoryProps.GetProperties();
 
   map_Properties::const_iterator iter = userPropMap->begin();
   int i = 0;
   while (iter != userPropMap->end()) {
-    const std::string &tacticName = (*iter).first;
+    const std::string& tacticName = (*iter).first;
     if (Verbose())
       printf("adding %s\n", tacticName.c_str());
     TacticsSlider slider;
@@ -218,7 +218,7 @@ void GamePlanPage::GoTacticsMenu() {
                                   factoryProps.GetReal(slider.tacticName.c_str()));
     slider.widget->SetValue(userProps.GetReal(slider.tacticName.c_str()));
     slider.widget->sig_OnChange.connect(
-        [this, id = slider.id](Gui2Slider *s) { TacticsMenuOnChange(s, id); });
+        [this, id = slider.id](Gui2Slider* s) { TacticsMenuOnChange(s, id); });
     if (i == 0)
       slider.widget->SetFocus();
     tacticsSliders.push_back(slider);
@@ -243,7 +243,7 @@ void GamePlanPage::SaveTactics() {
     printf("tactics:\n%s\n", tactics_xml.c_str());
 
     // find club
-    DatabaseResult *result = namedb->Query("select id from clubnames where faketargetname = \"" +
+    DatabaseResult* result = namedb->Query("select id from clubnames where faketargetname = \"" +
                                            teamData->GetName() + "\" limit 1;");
     int teamDatabaseID = -1;
     if (result->data.size() > 0) {
@@ -262,8 +262,8 @@ void GamePlanPage::SaveTactics() {
   teamData->SaveTactics();
 }
 
-void GamePlanPage::TacticsMenuOnChange(Gui2Slider *slider, int id) {
+void GamePlanPage::TacticsMenuOnChange(Gui2Slider* slider, int id) {
   // printf("slider %i (%s) altered\n", id, slider->GetName().c_str());
-  Properties &userProps = teamData->GetTacticsWritable().userProperties;
+  Properties& userProps = teamData->GetTacticsWritable().userProperties;
   userProps.Set(tacticsSliders.at(id).tacticName.c_str(), tacticsSliders.at(id).widget->GetValue());
 }

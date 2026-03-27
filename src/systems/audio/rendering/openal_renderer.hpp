@@ -1,6 +1,7 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_AUDIO_OPENAL
 #define _HPP_AUDIO_OPENAL
@@ -17,33 +18,33 @@
 
 namespace blunted {
 
-  class OpenALRenderer : public AudioRenderer {
+class OpenALRenderer : public AudioRenderer {
+public:
+  OpenALRenderer();
+  virtual ~OpenALRenderer();
 
-    public:
-      OpenALRenderer();
-      virtual ~OpenALRenderer();
+  // init & exit
+  virtual bool CreateContext();
+  virtual void Exit();
 
-      // init & exit
-      virtual bool CreateContext();
-      virtual void Exit();
+  virtual int CreateAudioSoundBuffer(const WavData* wavData);
+  virtual void DeleteAudioSoundBuffer(int audioSoundBufferID);
+  virtual void PlayAudioSoundBuffer(int audioSoundBufferID);
 
-      virtual int CreateAudioSoundBuffer(const WavData *wavData);
-      virtual void DeleteAudioSoundBuffer(int audioSoundBufferID);
-      virtual void PlayAudioSoundBuffer(int audioSoundBufferID);
+  virtual void SetListenerParameters(const Vector3& position, const Vector3& velocity,
+                                     const Quaternion& orientation);
 
-      virtual void SetListenerParameters(const Vector3 &position, const Vector3 &velocity, const Quaternion &orientation);
+  virtual void SetSourceParameter(int audioSoundBufferID, e_AudioRenderer_SourceParameter parameter,
+                                  float value);
 
-      virtual void SetSourceParameter(int audioSoundBufferID, e_AudioRenderer_SourceParameter parameter, float value);
+  void operator()();
 
-      void operator()();
+protected:
+  ALCcontext* context;
 
-    protected:
-      ALCcontext *context;
+  std::map<ALuint, ALuint> bufferSourceMapping;
+};
 
-      std::map<ALuint, ALuint> bufferSourceMapping;
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

@@ -1,6 +1,7 @@
 // written by bastiaan konings schuiling 2008 - 2014
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #ifndef _HPP_BASE_UTILS
 #define _HPP_BASE_UTILS
@@ -9,132 +10,127 @@
 
 namespace blunted {
 
-  class Vector3;
-  class Quaternion;
+class Vector3;
+class Quaternion;
 
-  // generic tree structure
-  struct s_tree;
+// generic tree structure
+struct s_tree;
 
-  struct s_treeentry {
-    std::string name;
-    std::vector <std::string> values;
+struct s_treeentry {
+  std::string name;
+  std::vector<std::string> values;
 
-    s_tree *subtree;
+  s_tree* subtree;
 
-    s_treeentry() {
-      subtree = nullptr;
+  s_treeentry() { subtree = nullptr; }
+
+  ~s_treeentry();
+};
+
+struct s_tree {
+  std::vector<s_treeentry*> entries;
+
+  ~s_tree() {
+    for (int i = 0; i < (signed int)entries.size(); i++) {
+      delete entries.at(i);
     }
+    entries.clear();
+  }
+};
 
-    ~s_treeentry();
-  };
+// ----- load .ase file into a tree
+s_tree* tree_load(const std::string asefile);
+s_tree* tree_readblock(std::ifstream& datafile);
 
-  struct s_tree {
-    std::vector <s_treeentry*> entries;
+// tree structure utility functions
+const s_treeentry* treeentry_find(const s_tree* tree, const std::string needle);
+const s_tree* tree_find(const s_tree* tree, const std::string needle);
 
-    ~s_tree() {
-      for (int i = 0; i < (signed int)entries.size(); i++) {
-        delete entries.at(i);
-      }
-      entries.clear();
-    }
-  };
+// string functions
+std::string stringchomp(std::string input, char chomp);
+void tokenize(const std::string& str, std::vector<std::string>& tokens,
+              const std::string& delimiters = " ");
 
-  // ----- load .ase file into a tree
-  s_tree *tree_load(const std::string asefile);
-  s_tree *tree_readblock(std::ifstream &datafile);
+std::string StripString(const std::string& input);  // strips special chars
 
-  // tree structure utility functions
-  const s_treeentry *treeentry_find(const s_tree *tree, const std::string needle);
-  const s_tree *tree_find(const s_tree *tree, const std::string needle);
+std::string file_to_string(std::string filename);
+void file_to_vector(std::string filename, std::vector<std::string>& destination);
 
-  // string functions
-  std::string stringchomp(std::string input, char chomp);
-  void tokenize(const std::string& str, std::vector<std::string> &tokens, const std::string &delimiters = " ");
+std::string get_file_name(const std::string& filename);
+std::string get_file_extension(const std::string& filename);
 
-  std::string StripString(const std::string &input); // strips special chars
+std::string int_to_str(int i);
+std::string real_to_str(real r);
 
-  std::string file_to_string(std::string filename);
-  void file_to_vector(std::string filename, std::vector<std::string> &destination);
+std::string GetStringFromVector(const Vector3& vec);
+Vector3 GetVectorFromString(const std::string& vecString);
+Quaternion GetQuaternionFromString(const std::string& quatString);
 
-  std::string get_file_name(const std::string &filename);
-  std::string get_file_extension(const std::string &filename);
+int CopyDirectory(std::filesystem::path const& source, std::filesystem::path const& destination);
+bool CreateDirectory(std::filesystem::path const& dir);
+bool CopyFile(std::filesystem::path const& source, std::filesystem::path const& destinationDir);
 
-  std::string int_to_str(int i);
-  std::string real_to_str(real r);
+unsigned long GetHashFromCharString(const char* str);
 
-  std::string GetStringFromVector(const Vector3 &vec);
-  Vector3 GetVectorFromString(const std::string &vecString);
-  Quaternion GetQuaternionFromString(const std::string &quatString);
+// assumes 10ms input timestep
+template <typename T>
+class ValueHistory {
+public:
+  ValueHistory(unsigned int maxTime_ms = 10000) : maxTime_ms(maxTime_ms) {}
+  virtual ~ValueHistory() {}
 
-  int CopyDirectory(std::filesystem::path const &source, std::filesystem::path const &destination);
-  bool CreateDirectory(std::filesystem::path const &dir);
-  bool CopyFile(std::filesystem::path const &source, std::filesystem::path const &destinationDir);
+  void Insert(const T& value) {
+    values.push_back(value);
+    if (values.size() > maxTime_ms / 10)
+      values.pop_front();
+  }
 
-  unsigned long GetHashFromCharString(const char *str);
-
-
-  // assumes 10ms input timestep
-  template <typename T> class ValueHistory {
-
-    public:
-      ValueHistory(unsigned int maxTime_ms = 10000) : maxTime_ms(maxTime_ms) {}
-      virtual ~ValueHistory() {}
-
-      void Insert(const T &value) {
-        values.push_back(value);
-        if (values.size() > maxTime_ms / 10) values.pop_front();
-      }
-
-      T GetAverage(unsigned int time_ms) const {
-        T total = 0;
-        unsigned int count = 0;
-        if (!values.empty()) {
-          typename std::list<T>::const_iterator iter = values.end();
+  T GetAverage(unsigned int time_ms) const {
+    T total = 0;
+    unsigned int count = 0;
+    if (!values.empty()) {
+      typename std::list<T>::const_iterator iter = values.end();
+      iter--;
+      while (count <= time_ms / 10) {
+        total += (*iter);
+        count++;
+        if (iter == values.begin())
+          break;
+        else
           iter--;
-          while (count <= time_ms / 10) {
-            total += (*iter);
-            count++;
-            if (iter == values.begin()) break; else iter--;
-          }
-        }
-        if (count > 0) total /= (float)count;
-        return total;
       }
+    }
+    if (count > 0)
+      total /= (float)count;
+    return total;
+  }
 
-      void Clear() {
-        values.clear();
-      }
+  void Clear() { values.clear(); }
 
-    protected:
-      unsigned int maxTime_ms;
-      std::list<T> values;
-
-  };
-
+protected:
+  unsigned int maxTime_ms;
+  std::list<T> values;
+};
 
 #ifdef WIN32
-  // (c) Andreas Masur
-  class CPrecisionTimer {
-    LARGE_INTEGER lFreq, lStart;
+// (c) Andreas Masur
+class CPrecisionTimer {
+  LARGE_INTEGER lFreq, lStart;
 
-    public:
-      CPrecisionTimer() {
-        QueryPerformanceFrequency(&lFreq);
-      }
+public:
+  CPrecisionTimer() { QueryPerformanceFrequency(&lFreq); }
 
-      inline void Start() {
-        QueryPerformanceCounter(&lStart);
-      }
+  inline void Start() { QueryPerformanceCounter(&lStart); }
 
-      inline double Stop() {
-        // Return duration in seconds...
-        LARGE_INTEGER lEnd;
-        QueryPerformanceCounter(&lEnd);
-        return (double(lEnd.QuadPart - lStart.QuadPart) / lFreq.QuadPart);
-      }
-  };
+  inline double Stop() {
+    // Return duration in seconds...
+    LARGE_INTEGER lEnd;
+    QueryPerformanceCounter(&lEnd);
+    return (double(lEnd.QuadPart - lStart.QuadPart) / lFreq.QuadPart);
+  }
+};
 #endif
 
-}
+}  // namespace blunted
 
 #endif

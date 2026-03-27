@@ -7,7 +7,7 @@
 
 namespace blunted {
 
-Gui2Pulldown::Gui2Pulldown(Gui2WindowManager *windowManager, const std::string &name,
+Gui2Pulldown::Gui2Pulldown(Gui2WindowManager* windowManager, const std::string& name,
                            float x_percent, float y_percent, float width_percent,
                            float height_percent)
     : Gui2View(windowManager, name, x_percent, y_percent, width_percent, height_percent) {
@@ -25,7 +25,7 @@ Gui2Pulldown::Gui2Pulldown(Gui2WindowManager *windowManager, const std::string &
 
   pulldownButton =
       new Gui2Button(windowManager, name + "_pulldownbutton", 0, 0, width_percent, 3, "tmp");
-  pulldownButton->sig_OnClick.connect([this](auto *) { PullDownOrUp(); });
+  pulldownButton->sig_OnClick.connect([this](auto*) { PullDownOrUp(); });
   this->AddView(pulldownButton);
   pulldownButton->Show();
 
@@ -41,10 +41,10 @@ Gui2Pulldown::~Gui2Pulldown() {
   }
 }
 
-void Gui2Pulldown::AddEntry(const std::string &caption, const std::string &name) {
-  Gui2Button *button = new Gui2Button(windowManager, name + "_entry" + int_to_str(entries.size()),
+void Gui2Pulldown::AddEntry(const std::string& caption, const std::string& name) {
+  Gui2Button* button = new Gui2Button(windowManager, name + "_entry" + int_to_str(entries.size()),
                                       0, 0, width_percent - 1, 3, caption);
-  button->sig_OnClick.connect([this, idx = entries.size()](auto *) { Select(idx); });
+  button->sig_OnClick.connect([this, idx = entries.size()](auto*) { Select(idx); });
 
   PulldownEntry entry;
   entry.name = name;
@@ -94,7 +94,7 @@ std::string Gui2Pulldown::GetSelected() const {
   return entries.at(selectedEntry).name;
 }
 
-void Gui2Pulldown::ProcessWindowingEvent(WindowingEvent *event) {
+void Gui2Pulldown::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsEscape()) {
     if (pulledDown)
       PullDownOrUp();

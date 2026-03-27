@@ -1,0 +1,2 @@
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26200.
+-- Configuring incomplete, errors occurred!

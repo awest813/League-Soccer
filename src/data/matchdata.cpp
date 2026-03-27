@@ -1,6 +1,7 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #include "matchdata.hpp"
 
@@ -27,7 +28,9 @@ MatchData::~MatchData() {
 
 void MatchData::AddPossessionTime_10ms(int teamID) {
   possessionTime_ms[teamID] += 10;
-  if (teamID == 0) possession60seconds = std::max(possession60seconds - 0.01f, -60.0f);
-  else if (teamID == 1) possession60seconds = std::min(possession60seconds + 0.01f, 60.0f);
-  //printf("pos60s: %f\n", possession60seconds);
+  if (teamID == 0)
+    possession60seconds = std::max(possession60seconds - 0.01f, -60.0f);
+  else if (teamID == 1)
+    possession60seconds = std::min(possession60seconds + 0.01f, 60.0f);
+  // printf("pos60s: %f\n", possession60seconds);
 }

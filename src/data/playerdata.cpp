@@ -1,21 +1,22 @@
 // written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not be used for anything important.
-// i do not offer support, so don't ask. to be used for inspiration :)
+// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
+// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
+// :)
 
 #include "playerdata.hpp"
 
+#include "../main.hpp"
+#include "base/utils.hpp"
 #include "utils/database.hpp"
 
-#include "base/utils.hpp"
-
-#include "../main.hpp"
-
 PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
+  // std::string test = "select * from players where id = " + int_to_str(databaseID) + " limit 1";
+  // printf("test: %s\n", test.c_str());
 
-  //std::string test = "select * from players where id = " + int_to_str(databaseID) + " limit 1";
-  //printf("test: %s\n", test.c_str());
-
-  DatabaseResult *result = GetDB()->Query("select firstname, lastname, role, base_stat, profile_xml, age, skincolor, hairstyle, haircolor, height from players where id = " + int_to_str(databaseID) + " limit 1");
+  DatabaseResult* result = GetDB()->Query(
+      "select firstname, lastname, role, base_stat, profile_xml, age, skincolor, hairstyle, "
+      "haircolor, height from players where id = " +
+      int_to_str(databaseID) + " limit 1");
 
   std::string roleString;
   std::string profileString;
@@ -28,16 +29,26 @@ PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
   height = 1.8f;
 
   for (unsigned int c = 0; c < result->data.at(0).size(); c++) {
-    if (result->header.at(c).compare("firstname") == 0) firstName = result->data.at(0).at(c);
-    if (result->header.at(c).compare("lastname") == 0) lastName = result->data.at(0).at(c);
-    if (result->header.at(c).compare("role") == 0) roleString = result->data.at(0).at(c);
-    if (result->header.at(c).compare("base_stat") == 0) baseStat = atof(result->data.at(0).at(c).c_str());
-    if (result->header.at(c).compare("profile_xml") == 0) profileString = result->data.at(0).at(c);
-    if (result->header.at(c).compare("age") == 0) age = atoi(result->data.at(0).at(c).c_str());
-    if (result->header.at(c).compare("skincolor") == 0) skinColor = atoi(result->data.at(0).at(c).c_str());
-    if (result->header.at(c).compare("hairstyle") == 0) hairStyle = result->data.at(0).at(c);
-    if (result->header.at(c).compare("haircolor") == 0) hairColor = result->data.at(0).at(c);
-    if (result->header.at(c).compare("height") == 0) height = atof(result->data.at(0).at(c).c_str());
+    if (result->header.at(c).compare("firstname") == 0)
+      firstName = result->data.at(0).at(c);
+    if (result->header.at(c).compare("lastname") == 0)
+      lastName = result->data.at(0).at(c);
+    if (result->header.at(c).compare("role") == 0)
+      roleString = result->data.at(0).at(c);
+    if (result->header.at(c).compare("base_stat") == 0)
+      baseStat = atof(result->data.at(0).at(c).c_str());
+    if (result->header.at(c).compare("profile_xml") == 0)
+      profileString = result->data.at(0).at(c);
+    if (result->header.at(c).compare("age") == 0)
+      age = atoi(result->data.at(0).at(c).c_str());
+    if (result->header.at(c).compare("skincolor") == 0)
+      skinColor = atoi(result->data.at(0).at(c).c_str());
+    if (result->header.at(c).compare("hairstyle") == 0)
+      hairStyle = result->data.at(0).at(c);
+    if (result->header.at(c).compare("haircolor") == 0)
+      hairColor = result->data.at(0).at(c);
+    if (result->header.at(c).compare("height") == 0)
+      height = atof(result->data.at(0).at(c).c_str());
   }
 
   delete result;
@@ -49,24 +60,22 @@ PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
     roles.push_back(GetRoleFromString(roleStrings.at(i)));
   }
 
-
   // get average stat for current age
 
   XMLLoader loader;
   XMLTree tree = loader.Load(profileString);
 
-  //printf("player: %s, %s (age %i)\n", lastName.c_str(), firstName.c_str(), age);
+  // printf("player: %s, %s (age %i)\n", lastName.c_str(), firstName.c_str(), age);
   map_XMLTree::const_iterator iter = tree.children.begin();
   while (iter != tree.children.end()) {
-    float profileStat = atof((*iter).second.value.c_str()); // profile value
+    float profileStat = atof((*iter).second.value.c_str());  // profile value
 
     float value = CalculateStat(baseStat, profileStat, age, e_DevelopmentCurveType_Normal);
-    //printf("base: %f; profile: %f; result: %f\n", baseStat, profileStat, value);
+    // printf("base: %f; profile: %f; result: %f\n", baseStat, profileStat, value);
 
     stats.Set((*iter).first.c_str(), value);
     iter++;
   }
-
 }
 
 PlayerData::PlayerData() {
@@ -100,16 +109,16 @@ PlayerData::PlayerData() {
   stats.Set("mental_vision", 0.6);
 }
 
-PlayerData::~PlayerData() {
-}
+PlayerData::~PlayerData() {}
 
-const std::vector<e_PlayerRole> &PlayerData::GetRoles() const {
+const std::vector<e_PlayerRole>& PlayerData::GetRoles() const {
   return roles;
 }
 
-float PlayerData::GetStat(const char *name) {
+float PlayerData::GetStat(const char* name) {
   bool exists = stats.Exists(name);
-  if (!exists) printf("Stat named '%s' does not exist!\n", name);
+  if (!exists)
+    printf("Stat named '%s' does not exist!\n", name);
   assert(exists);
   return stats.GetReal(name, 1.0f);
 }

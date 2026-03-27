@@ -18,11 +18,11 @@
 
 using namespace blunted;
 
-IntroPage::IntroPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData)
+IntroPage::IntroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
   windowManager->BlackoutBackground(true);
 
-  Gui2Root *root = windowManager->GetRoot();
+  Gui2Root* root = windowManager->GetRoot();
 
   bg = new Gui2Image(windowManager, "image_intro", 0, 0, 100, 100);
   bg->LoadImage("media/menu/backgrounds/intro01.png");
@@ -39,22 +39,22 @@ IntroPage::~IntroPage() {
   windowManager->BlackoutBackground(false);
 }
 
-void IntroPage::ProcessWindowingEvent(WindowingEvent *event) {
+void IntroPage::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsEscape() || event->IsActivate()) {
     CreatePage((int)e_PageID_MainMenu, 0);
     return;
   }
 }
 
-void IntroPage::ProcessKeyboardEvent(KeyboardEvent *event) {
+void IntroPage::ProcessKeyboardEvent(KeyboardEvent* event) {
   CreatePage((int)e_PageID_MainMenu, 0);
 }
 
-OutroPage::OutroPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData)
+OutroPage::OutroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
   windowManager->BlackoutBackground(true);
 
-  Gui2Root *root = windowManager->GetRoot();
+  Gui2Root* root = windowManager->GetRoot();
 
   bg = new Gui2Image(windowManager, "image_outro", 0, 0, 100, 100);
   bg->LoadImage("media/menu/backgrounds/outro01.png");
@@ -71,20 +71,20 @@ OutroPage::~OutroPage() {
   windowManager->BlackoutBackground(false);
 }
 
-void OutroPage::ProcessWindowingEvent(WindowingEvent *event) {
+void OutroPage::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsEscape() || event->IsActivate()) {
     GetMenuTask()->QuitGame();
   }
 }
 
-void OutroPage::ProcessKeyboardEvent(KeyboardEvent *event) {
+void OutroPage::ProcessKeyboardEvent(KeyboardEvent* event) {
   GetMenuTask()->QuitGame();
 }
 
-MainMenuPage::MainMenuPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData)
+MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
   // Title positioned upper-left
-  Gui2Image *title = new Gui2Image(windowManager, "image_main_title", 4, 8, 38, 18);
+  Gui2Image* title = new Gui2Image(windowManager, "image_main_title", 4, 8, 38, 18);
   title->LoadImage("media/menu/main/title01.png");
 
   this->AddView(title);
@@ -195,7 +195,7 @@ void MainMenuPage::GoOutro() {
   delete this;
 }
 
-bool SortClubPlayersByAverageStat(const PlayerImport &a, const PlayerImport &b) {
+bool SortClubPlayersByAverageStat(const PlayerImport& a, const PlayerImport& b) {
   if (a.averageStat < b.averageStat)
     return true;
   else
@@ -203,7 +203,7 @@ bool SortClubPlayersByAverageStat(const PlayerImport &a, const PlayerImport &b) 
   return false;
 }
 
-bool SortClubPlayersByRole(const PlayerImport &a, const PlayerImport &b) {
+bool SortClubPlayersByRole(const PlayerImport& a, const PlayerImport& b) {
   float aDef = 0;
   float aAtt = 0;
   float bDef = 0;
@@ -237,10 +237,10 @@ bool SortClubPlayersByRole(const PlayerImport &a, const PlayerImport &b) {
   return false;
 }
 
-std::string RenameLeague(Database *namedb, const std::string &name, const std::string &srcfield) {
+std::string RenameLeague(Database* namedb, const std::string& name, const std::string& srcfield) {
   std::string query =
       "select " + srcfield + " from leaguenames where name = \"" + name + "\" limit 1;";
-  DatabaseResult *result = namedb->Query(query);
+  DatabaseResult* result = namedb->Query(query);
   std::string targetName;
   if (result->data.size() > 0) {
     targetName = result->data.at(0).at(0);
@@ -250,10 +250,10 @@ std::string RenameLeague(Database *namedb, const std::string &name, const std::s
   return targetName;
 }
 
-std::string RenameClub(Database *namedb, const std::string &name, const std::string &srcfield) {
+std::string RenameClub(Database* namedb, const std::string& name, const std::string& srcfield) {
   std::string query =
       "select " + srcfield + " from clubnames where name = \"" + name + "\" limit 1;";
-  DatabaseResult *result = namedb->Query(query);
+  DatabaseResult* result = namedb->Query(query);
   std::string targetName;
   if (result->data.size() > 0) {
     targetName = result->data.at(0).at(0);
@@ -263,12 +263,12 @@ std::string RenameClub(Database *namedb, const std::string &name, const std::str
   return targetName;
 }
 
-ClubData GetClubData(Database *namedb, const std::string &name) {
+ClubData GetClubData(Database* namedb, const std::string& name) {
   std::string query =
       "select formation_xml, tactics_xml, shortname, color1, color2 from clubnames where name = "
       "\"" +
       name + "\" limit 1;";
-  DatabaseResult *result = namedb->Query(query);
+  DatabaseResult* result = namedb->Query(query);
   ClubData data;
   if (result->data.size() > 0) {
     data.formation_xml = result->data.at(0).at(0);
@@ -291,11 +291,11 @@ ClubData GetClubData(Database *namedb, const std::string &name) {
   return data;
 }
 
-void GetPlayerData(Database *namedb, const std::string &firstname, const std::string &lastname,
-                   std::string &fakefirstname_ret, std::string &fakelastname_ret,
-                   int &skincolor_ret, std::string &hairstyle_ret, std::string &haircolor_ret,
-                   float &height_ret, float &weight_ret, signed int &formationorder_ret,
-                   float &baseStatOffset_ret, std::string &customProfile_ret) {
+void GetPlayerData(Database* namedb, const std::string& firstname, const std::string& lastname,
+                   std::string& fakefirstname_ret, std::string& fakelastname_ret,
+                   int& skincolor_ret, std::string& hairstyle_ret, std::string& haircolor_ret,
+                   float& height_ret, float& weight_ret, signed int& formationorder_ret,
+                   float& baseStatOffset_ret, std::string& customProfile_ret) {
   skincolor_ret = 0;
   hairstyle_ret = "";
   haircolor_ret = "";
@@ -306,7 +306,7 @@ void GetPlayerData(Database *namedb, const std::string &firstname, const std::st
       "select fakefirstname, fakelastname, skincolor, hairstyle, haircolor, height, weight, "
       "formationorder, base_stat_offset, profile_xml from playernames where firstname = \"" +
       firstname + "\" and lastname = \"" + lastname + "\" limit 1;";
-  DatabaseResult *result = namedb->Query(query);
+  DatabaseResult* result = namedb->Query(query);
   if (result->data.size() > 0 && atoi(result->data.at(0).at(2).c_str()) != 0) {
     fakefirstname_ret = result->data.at(0).at(0);
     fakelastname_ret = result->data.at(0).at(1);
@@ -344,7 +344,7 @@ void GetPlayerData(Database *namedb, const std::string &firstname, const std::st
  * name. maybe it's useful for somebody. */
 
 bool MainMenuPage::GoImportDB() {
-  Database *namedb = new Database();
+  Database* namedb = new Database();
   bool dbSuccess = namedb->Load("databases/names.sqlite");
   if (!dbSuccess)
     Log(e_FatalError, "MainMenuPage", "GoImportDB", "Could not open database");
@@ -360,7 +360,7 @@ bool MainMenuPage::GoImportDB() {
   query += "drop table tournaments;";
   query += "drop table tournamentdata;";
   query += "commit;";
-  DatabaseResult *result = GetDB()->Query(query);
+  DatabaseResult* result = GetDB()->Query(query);
   delete result;
 
   query = "vacuum;";  // *woooooshhh* http://www.sqlite.org/lang_vacuum.html
@@ -551,14 +551,14 @@ bool MainMenuPage::GoImportDB() {
       "<p11><position>1.0,  0.0</position><role>CF</role></p11>";
 
   //<p1><position>-1.0,  0.0</position><role>GK</role></p1><p2><position>-0.7,
-  //0.75</position><role>LB</role></p2><p3><position>-1.0,
-  //0.25</position><role>CB</role></p3><p4><position>-1.0,
+  // 0.75</position><role>LB</role></p2><p3><position>-1.0,
+  // 0.25</position><role>CB</role></p3><p4><position>-1.0,
   //-0.25</position><role>CB</role></p4><p5><position>-0.7,
   //-0.75</position><role>RB</role></p5><p6><position>-0.2,
-  //0.3</position><role>CM</role></p6><p7><position>-0.2,
+  // 0.3</position><role>CM</role></p6><p7><position>-0.2,
   //-0.3</position><role>CM</role></p7><p8><position> 0.7,
-  //0.9</position><role>LM</role></p8><p9><position> 0.2,
-  //0.0</position><role>AM</role></p9><p10><position>0.7,
+  // 0.9</position><role>LM</role></p8><p9><position> 0.2,
+  // 0.0</position><role>AM</role></p9><p10><position>0.7,
   //-0.9</position><role>RM</role></p10><p11><position>1.0,  0.0</position><role>CF</role></p11>
 
   /*
@@ -924,7 +924,7 @@ bool MainMenuPage::GoImportDB() {
   query =
       "begin transaction; delete from players; delete from sqlite_sequence where name=\"players\";";
   for (unsigned int i = 0; i < importedPlayers.size(); i++) {
-    PlayerImport &player = importedPlayers.at(i);
+    PlayerImport& player = importedPlayers.at(i);
 
     // XX float averageStatAtCurrentAge = averageStatPerAge.find(player.age)->second;
     // XX player.averageStartStat = (player.averageStat / averageStatAtCurrentAge) *
@@ -1031,8 +1031,9 @@ bool MainMenuPage::GoImportDB() {
       while (iter != clubs.at(c).players.end()) {
         if ((*iter).position.compare("GK") == 0) {
           if ((*iter).id != keepers.at(0).id)
-            query += (std::string)(
-                "delete from players where players.id = " + int_to_str((*iter).id) + ";");
+            query +=
+                (std::string)("delete from players where players.id = " + int_to_str((*iter).id) +
+                              ";");
           iter = clubs.at(c).players.erase(iter);
         } else {
           iter++;
@@ -1105,7 +1106,7 @@ bool MainMenuPage::GoImportDB() {
           firstname + "\" AND lastname = \"" + lastname + "\") OR (fakefirstname = \"" + firstname +
           "\" AND fakelastname = \"" + lastname + "\"));";
       printf("%s\n", namequery.c_str());
-      DatabaseResult *nameresult = namedb->Query(namequery);
+      DatabaseResult* nameresult = namedb->Query(namequery);
       delete nameresult;
     }
 
@@ -1233,6 +1234,6 @@ iter->second); iter++;
 */
 
 // inhibit 'back' button from closing the game
-void MainMenuPage::ProcessWindowingEvent(WindowingEvent *event) {
+void MainMenuPage::ProcessWindowingEvent(WindowingEvent* event) {
   event->Ignore();
 }
