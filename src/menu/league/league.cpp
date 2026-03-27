@@ -44,13 +44,12 @@ LeaguePage::LeaguePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
 LeaguePage::~LeaguePage() {}
 
 void LeaguePage::StepTime() {
-  DatabaseResult* result = GetDB()->Query(
+  auto result = GetDB()->Query(
       "SELECT strftime(\"%w\", timestamp), strftime(\"%Y\", timestamp), seasonyear FROM settings "
       "LIMIT 1");
   int dayOfWeek = atoi(result->data.at(0).at(0).c_str());
   int actualyear = atoi(result->data.at(0).at(1).c_str());
   int seasonyear = atoi(result->data.at(0).at(2).c_str());
-  delete result;
 
   int offset = 0;
   if (dayOfWeek < 3)
@@ -62,12 +61,10 @@ void LeaguePage::StepTime() {
 
   result = GetDB()->Query("UPDATE settings SET timestamp = date(timestamp, '+" +
                           int_to_str(offset) + " day')");
-  delete result;
 
   // check if season complete
   if (actualyear > seasonyear) {
     result = GetDB()->Query("UPDATE settings SET seasonyear = " + int_to_str(seasonyear + 1));
-    delete result;
     GenerateSeasonCalendars();
   }
 
@@ -75,7 +72,7 @@ void LeaguePage::StepTime() {
 }
 
 void LeaguePage::SetTimeCaption() {
-  DatabaseResult* result =
+  auto result =
       GetDB()->Query("SELECT timestamp, strftime('%w', timestamp) FROM settings LIMIT 1");
   std::string dayName;
   switch (atoi(result->data.at(0).at(1).c_str())) {
@@ -105,7 +102,6 @@ void LeaguePage::SetTimeCaption() {
       break;
   }
   captionTime->SetCaption(result->data.at(0).at(0) + " (" + dayName + ")");
-  delete result;
 }
 
 LeagueStartPage::LeagueStartPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
@@ -427,7 +423,7 @@ void LeagueStartNewPage::GoProceed() {
 
   /* test
 
-  DatabaseResult *result = database->Query("select * from players");
+  auto result = database->Query("select * from players");
 
   for (unsigned int h = 0; h < result->header.size(); h++) {
     printf("%s - ", result->header.at(h).c_str());
@@ -440,7 +436,6 @@ void LeagueStartNewPage::GoProceed() {
     printf("\n");
   }
 
-  delete result;
   */
 }
 
@@ -462,12 +457,11 @@ void LeagueStartNewPage::CloseCreateSaveDialog() {
       Log(e_FatalError, "LeagueStartNewPage", "CloseCreateSaveDialog",
           "Could not prepare database for league");
 
-    DatabaseResult* result = GetDB()->Query(
+    auto result = GetDB()->Query(
         "INSERT INTO settings (managername, team_id, currency, difficulty, seasonyear, timestamp) "
         "VALUES ('" +
         managerNameInput->GetText() + "', 5, '" + currencySelectPulldown->GetSelected() + "', " +
         real_to_str(difficultySlider->GetValue()) + ", 2013, '2013-06-01')");
-    delete result;
 
     GenerateSeasonCalendars();
 

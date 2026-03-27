@@ -6,6 +6,8 @@
 #ifndef _HPP_TEAMDATA
 #define _HPP_TEAMDATA
 
+#include <memory>
+
 #include "../gamedefines.hpp"
 #include "base/properties.hpp"
 #include "defines.hpp"
@@ -44,9 +46,9 @@ public:
   void SwitchPlayers(int databaseID1, int databaseID2);
 
   // vector index# is entry in formation[index#]
-  const std::vector<PlayerData*>& GetPlayerData() { return playerData; }
-  int GetPlayerNum() { return playerData.size(); }
-  PlayerData* GetPlayerData(int num) { return playerData.at(num); }
+  const std::vector<std::unique_ptr<PlayerData>>& GetPlayerData() { return playerData; }
+  int GetPlayerNum() { return static_cast<int>(playerData.size()); }
+  PlayerData* GetPlayerData(int num) { return playerData.at(num).get(); }
   PlayerData* GetPlayerDataByDatabaseID(int id);
 
   void SaveLineup();
@@ -66,7 +68,7 @@ protected:
 
   FormationEntry formation[playerNum];
 
-  std::vector<PlayerData*> playerData;
+  std::vector<std::unique_ptr<PlayerData>> playerData;
 };
 
 #endif

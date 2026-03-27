@@ -6,8 +6,8 @@
 #include "matchdata.hpp"
 
 MatchData::MatchData(int team1DatabaseID, int team2DatabaseID) {
-  teamData[0] = new TeamData(team1DatabaseID);
-  teamData[1] = new TeamData(team2DatabaseID);
+  teamData[0] = std::make_unique<TeamData>(team1DatabaseID);
+  teamData[1] = std::make_unique<TeamData>(team2DatabaseID);
 
   goalCount[0] = 0;
   goalCount[1] = 0;
@@ -19,11 +19,6 @@ MatchData::MatchData(int team1DatabaseID, int team2DatabaseID) {
   shots[1] = 0;
 
   possession60seconds = 0.0f;
-}
-
-MatchData::~MatchData() {
-  delete teamData[0];
-  delete teamData[1];
 }
 
 void MatchData::AddPossessionTime_10ms(int teamID) {

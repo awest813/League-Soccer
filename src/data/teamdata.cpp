@@ -55,7 +55,7 @@ Vector3 GetDefaultRolePosition(e_PlayerRole role) {
 }
 
 TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
-  DatabaseResult* result = GetDB()->Query(
+  auto result = GetDB()->Query(
       "select teams.name, teams.logo_url, teams.kit_url, teams.formation_xml, "
       "teams.formation_factory_xml, teams.tactics_xml, teams.tactics_factory_xml, teams.shortname, "
       "teams.color1, teams.color2 from teams, leagues where teams.id = " +
@@ -104,7 +104,6 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
     std::transform(shortName.begin(), shortName.end(), shortName.begin(), ::toupper);
   }
 
-  delete result;
 
   logo_url = "databases/default/" + logo_url;
   kit_url = "databases/default/" + kit_url;
@@ -272,18 +271,12 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
     // int playerDatabaseID = atoi(playerQuery.result[r * playerQuery.columns + c]);
     int playerDatabaseID = atoi(result->data.at(r).at(0).c_str());
     // printf("loading player %i\n", playerDatabaseID);
-    PlayerData* onePlayerData = new PlayerData(playerDatabaseID);
-    playerData.push_back(onePlayerData);
+    playerData.push_back(std::make_unique<PlayerData>(playerDatabaseID));
   }
 
-  delete result;
 }
 
-TeamData::~TeamData() {
-  for (int i = 0; i < (signed int)playerData.size(); i++) {
-    delete playerData.at(i);
-  }
-}
+TeamData::~TeamData() {}
 
 FormationEntry TeamData::GetFormationEntry(int num) {
   assert(num >= 0 && num < playerNum);
@@ -307,9 +300,7 @@ void TeamData::SwitchPlayers(int databaseID1, int databaseID2) {
   assert(index2 != -1);
   // printf("old id on index1 %i\n", playerData.at(index1)->GetDatabaseID());
   // printf("swapping players %i and %i\n", index1, index2);
-  PlayerData* tmp = playerData.at(index1);
-  playerData.at(index1) = playerData.at(index2);
-  playerData.at(index2) = tmp;
+  std::swap(playerData.at(index1), playerData.at(index2));
   // printf("new id on index1 %i\n", playerData.at(index1)->GetDatabaseID());
 }
 
@@ -322,7 +313,7 @@ PlayerData* TeamData::GetPlayerDataByDatabaseID(int id) {
     }
   }
   assert(index != -1);
-  return playerData.at(index);
+  return playerData.at(index).get();
 }
 
 void TeamData::SaveLineup() {}
@@ -340,9 +331,8 @@ void TeamData::SaveTactics() {
     iter++;
   }
 
-  DatabaseResult* result = GetDB()->Query("update teams set tactics_xml = \"" + tactics_xml +
+  auto result = GetDB()->Query("update teams set tactics_xml = \"" + tactics_xml +
                                           "\" where id = " + int_to_str(GetDatabaseID()) + ";");
-  delete result;
 }
 
 void TeamData::Save() {

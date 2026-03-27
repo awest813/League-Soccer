@@ -110,3 +110,77 @@ jobs:
 
       - name: Build (Release)
         run: cmake --build build-release --parallel $(nproc)
+
+  build-macos:
+    name: Build (macOS 14)
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install \
+            cmake \
+            sdl2 sdl2_image sdl2_ttf sdl2_gfx \
+            boost openal-soft sqlite
+
+      - name: Configure (Debug)
+        run: |
+          cmake -S . -B build-macos \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Build (Debug)
+        run: cmake --build build-macos --parallel 3
+
+      - name: Configure (Release)
+        run: |
+          cmake -S . -B build-macos-release \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build (Release)
+        run: cmake --build build-macos-release --parallel 3
+
+  build-windows:
+    name: Build (Windows 2022 + MSVC + vcpkg)
+    runs-on: windows-2022
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}\vcpkg
+      VCPKG_DEFAULT_TRIPLET: x64-windows
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Bootstrap vcpkg
+        shell: pwsh
+        run: |
+          git clone https://github.com/microsoft/vcpkg $env:VCPKG_ROOT
+          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
+
+      - name: Install dependencies (vcpkg)
+        shell: pwsh
+        run: |
+          & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet $env:VCPKG_DEFAULT_TRIPLET `
+            boost-system boost-thread boost-filesystem `
+            sdl2 sdl2-image[libjpeg-turbo] sdl2-ttf sdl2-gfx `
+            opengl openal-soft sqlite3
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build-win `
+            -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=$env:VCPKG_DEFAULT_TRIPLET
+
+      - name: Build (Debug)
+        shell: pwsh
+        run: cmake --build build-win --config Debug --parallel
+
+      - name: Build (Release)
+        shell: pwsh
+        run: cmake --build build-win --config Release --parallel

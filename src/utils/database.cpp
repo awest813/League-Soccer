@@ -30,7 +30,7 @@ bool Database::Load(const std::string& filename) {
     return true;
 }
 
-DatabaseResult* Database::Query(const std::string& query) {
+std::unique_ptr<DatabaseResult> Database::Query(const std::string& query) {
   int rows, columns;
   char** result;
   char* errorMsg = 0;
@@ -42,7 +42,7 @@ DatabaseResult* Database::Query(const std::string& query) {
     sqlite3_free(errorMsg);
   }
 
-  DatabaseResult* dbresult = new DatabaseResult();
+  auto dbresult = std::make_unique<DatabaseResult>();
 
   // header
   for (int i = 0; i < columns; i++) {

@@ -34,12 +34,12 @@ welcome – see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 | 1.8 | Update `README.md` (fix URLs, add developer section) | ✅ |
 | 1.9 | Replace `boost::bind` → lambdas/`std::bind`; `boost::random` → `std::random`; `boost::circular_buffer` → custom std impl | ✅ |
 | 1.10 | Replace `boost::thread` with `std::thread` | ✅ |
-| 1.11 | Replace raw `new`/`delete` owners with `std::unique_ptr` | 📋 |
-| 1.12 | Address suppressed compiler warnings one module at a time | 📋 |
+| 1.11 | Replace raw owner patterns with RAII (`std::unique_ptr`) across core data/DB paths | ✅ |
+| 1.12 | Remove global warning suppressions and keep warnings visible during incremental cleanup | ✅ |
 | 1.13 | Enforce clang-format in CI (checks changed files per PR) | ✅ |
 | 1.14 | Add **clang-tidy** configuration and CI step | ✅ |
-| 1.15 | Windows CI (via MSVC / vcpkg) | 📋 |
-| 1.16 | macOS CI (fix main-thread rendering issue) | 📋 |
+| 1.15 | Windows CI (via MSVC / vcpkg) | ✅ |
+| 1.16 | macOS CI build coverage (runtime rendering fix tracked in 4.1) | ✅ |
 
 ---
 

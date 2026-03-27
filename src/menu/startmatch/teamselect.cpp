@@ -22,7 +22,7 @@ void AddCompetitions(Gui2IconSelector* selector) {
   "databases/default/images_competitions/serie_a.png"); selector->AddEntry("7", "Ligue 1",
   "databases/default/images_competitions/ligue1.png");
   */
-  DatabaseResult* result = GetDB()->Query("select id, name, logo_url from leagues");
+  auto result = GetDB()->Query("select id, name, logo_url from leagues");
 
   for (unsigned int r = 0; r < result->data.size(); r++) {
     int id = atoi(result->data.at(r).at(0).c_str());
@@ -35,11 +35,10 @@ void AddCompetitions(Gui2IconSelector* selector) {
     selector->AddEntry(int_to_str(id), name, logoPath);
   }
 
-  delete result;
 }
 
 void AddTeams(Gui2IconSelector* selector, const std::string& competition_id) {
-  DatabaseResult* result = GetDB()->Query(
+  auto result = GetDB()->Query(
       "select id, name, logo_url, kit_url from teams where league_id = " + competition_id +
       " order by name");
 
@@ -54,7 +53,6 @@ void AddTeams(Gui2IconSelector* selector, const std::string& competition_id) {
     selector->AddEntry(int_to_str(id), name, logoPath);
   }
 
-  delete result;
 
   selector->Show();
 }
