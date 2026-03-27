@@ -103,6 +103,9 @@ jobs:
       - name: Build (Debug)
         run: cmake --build build --parallel $(nproc)
 
+      - name: Test (Debug)
+        run: ctest --test-dir build --output-on-failure
+
       - name: Configure (Release)
         run: |
           cmake -S . -B build-release \
@@ -135,6 +138,9 @@ jobs:
 
       - name: Build (Debug)
         run: cmake --build build-macos --parallel 3
+
+      - name: Test (Debug)
+        run: ctest --test-dir build-macos --output-on-failure
 
       - name: Configure (Release)
         run: |
@@ -180,6 +186,10 @@ jobs:
       - name: Build (Debug)
         shell: pwsh
         run: cmake --build build-win --config Debug --parallel
+
+      - name: Test (Debug)
+        shell: pwsh
+        run: ctest --test-dir build-win -C Debug --output-on-failure
 
       - name: Build (Release)
         shell: pwsh
