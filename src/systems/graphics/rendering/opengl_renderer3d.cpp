@@ -502,9 +502,9 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
           int yWin = yCenter - (height * 0.5f);
           xWin = std::max(xWin, 0); // super annoying to have a window's controls being unreachable
           yWin = std::max(yWin, 0);
-          xWin -= 3; // window border size (educated guess - is a user setting, after all)
-          yWin -= 12; // window border size + taskbar (educated guess - is a user setting, after
-    all) SetWindowPos(hWnd, nullptr, xWin, yWin, 0, 0, SWP_NOSIZE);
+          xWin -= 3;   // window border size (educated guess - is a user setting, after all)
+          yWin -= 12;  // window border size + taskbar (educated guess - user setting)
+          SetWindowPos(hWnd, nullptr, xWin, yWin, 0, 0, SWP_NOSIZE);
         }
         //SetWindowPos(hWnd, nullptr, 976, 0, 0, 0, SWP_NOSIZE);
       }
