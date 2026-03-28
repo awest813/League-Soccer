@@ -16,6 +16,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules")
 project(GameplayFootball VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH} LANGUAGES C CXX)
 include(CTest)
 option(GAMEPLAYFOOTBALL_BUILD_GAME "Build the SDL/OpenGL game executable and runtime libraries." ON)
+option(GAMEPLAYFOOTBALL_BUILD_DOCS "Generate API documentation with Doxygen (requires doxygen)." OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -174,4 +175,23 @@ endif()
 
 if(BUILD_TESTING)
   add_subdirectory(tests)
+endif()
+
+# ── Doxygen documentation target (task 5.1) ────────────────────────────────
+if(GAMEPLAYFOOTBALL_BUILD_DOCS)
+  find_package(Doxygen REQUIRED)
+  # Generate Doxyfile from template, substituting project version
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/Doxyfile.in
+    ${PROJECT_SOURCE_DIR}/Doxyfile
+    @ONLY
+  )
+  set(DOXYGEN_IN  ${PROJECT_SOURCE_DIR}/Doxyfile)
+  set(DOXYGEN_OUT ${PROJECT_SOURCE_DIR}/docs)
+  add_custom_target(docs
+    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_IN}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM
+  )
 endif()

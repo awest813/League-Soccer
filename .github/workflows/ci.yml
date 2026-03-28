@@ -231,3 +231,34 @@ jobs:
           name: gameplayfootball-windows-x64
           path: build-win/Release/gameplayfootball.exe
           if-no-files-found: warn
+
+  # Task 5.1: build Doxygen HTML docs and upload as a CI artifact
+  docs:
+    name: Generate Doxygen docs
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Doxygen
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends doxygen graphviz cmake build-essential
+
+      - name: Generate Doxyfile from template
+        run: |
+          cmake -S . -B /tmp/build-docs \
+            -DGAMEPLAYFOOTBALL_BUILD_GAME=OFF \
+            -DBUILD_TESTING=OFF \
+            -DGAMEPLAYFOOTBALL_BUILD_DOCS=ON \
+            -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=OFF
+
+      - name: Generate docs
+        run: doxygen Doxyfile
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gameplayfootball-docs
+          path: docs/html/
+          if-no-files-found: error
+
