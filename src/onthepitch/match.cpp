@@ -22,6 +22,7 @@
 
 const unsigned int replaySize_ms = 10000;
 const unsigned int camPosSize = 150;  // 180; //130
+const float excitementEventDecayRate = 0.99f;  // per 10ms tick
 
 Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
     : matchData(matchData), controllers(controllers) {
@@ -361,6 +362,8 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
       blunted::circular_buffer<ReplayBallTouchesNetFrame>(GetReplaySize_ms() / 10);
 
   excitement = 0.0f;
+  excitementEventBoost = 0.0f;
+  excitementEventTimer_ms = 0;
 
   lastBodyBallCollisionTime_ms = 0;
 
@@ -1007,8 +1010,19 @@ void Match::Process() {
         // slow decay
         excitement = clamp(excitement * 0.998f + cur_excitement * 0.002f, 0.0f, 1.0f);
       }
-      crowd01->SetGain((excitement) * 0.5f * GetConfiguration()->GetReal("audio_volume", 0.5f));
-      crowd02->SetGain(clamp((excitement - 0.3f) * 1.43f, 0.0f, 1.0f) * 0.5f *
+      // apply transient event boost (e.g. foul) on top of base excitement
+      if (excitementEventTimer_ms > 0) {
+        excitementEventTimer_ms -= 10;
+        if (excitementEventTimer_ms < 0)
+          excitementEventTimer_ms = 0;
+        // decay boost toward zero as timer runs down
+        excitementEventBoost *= excitementEventDecayRate;
+        if (excitementEventTimer_ms == 0)
+          excitementEventBoost = 0.0f;
+      }
+      float effectiveExcitement = clamp(excitement + excitementEventBoost, 0.0f, 1.0f);
+      crowd01->SetGain(effectiveExcitement * 0.5f * GetConfiguration()->GetReal("audio_volume", 0.5f));
+      crowd02->SetGain(clamp((effectiveExcitement - 0.3f) * 1.43f, 0.0f, 1.0f) * 0.5f *
                        GetConfiguration()->GetReal("audio_volume", 0.5f));
     }
 
@@ -1939,6 +1953,9 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
           referee->TripNotice(p1, p2, tripType);
           matchData->AddFoul(p2->GetTeamID());
           p1->Injure(tripType * 0.04f);
+          // crowd reacts to foul with brief excitement boost
+          excitementEventBoost = 0.5f + tripType * 0.1f;
+          excitementEventTimer_ms = 3000;
         }
       }
       if (p2sensitivity > trip0threshold) {
@@ -1954,6 +1971,9 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
           referee->TripNotice(p2, p1, tripType);
           matchData->AddFoul(p1->GetTeamID());
           p2->Injure(tripType * 0.04f);
+          // crowd reacts to foul with brief excitement boost
+          excitementEventBoost = 0.5f + tripType * 0.1f;
+          excitementEventTimer_ms = 3000;
         }
       }
 

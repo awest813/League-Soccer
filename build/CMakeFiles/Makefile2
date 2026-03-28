@@ -1576,10 +1576,6 @@ CMakeFiles/gui2lib.dir/clean:
 # Target rules for target CMakeFiles/blunted2.dir
 
 # All Build rule for target.
-CMakeFiles/blunted2.dir/all: CMakeFiles/baselib.dir/all
-CMakeFiles/blunted2.dir/all: CMakeFiles/systemscommonlib.dir/all
-CMakeFiles/blunted2.dir/all: CMakeFiles/systemsgraphicslib.dir/all
-CMakeFiles/blunted2.dir/all: CMakeFiles/systemsaudiolib.dir/all
 CMakeFiles/blunted2.dir/all: CMakeFiles/loaderslib.dir/all
 CMakeFiles/blunted2.dir/all: CMakeFiles/typeslib.dir/all
 CMakeFiles/blunted2.dir/all: CMakeFiles/frameworklib.dir/all
@@ -1587,6 +1583,10 @@ CMakeFiles/blunted2.dir/all: CMakeFiles/scenelib.dir/all
 CMakeFiles/blunted2.dir/all: CMakeFiles/managerslib.dir/all
 CMakeFiles/blunted2.dir/all: CMakeFiles/utilslib.dir/all
 CMakeFiles/blunted2.dir/all: CMakeFiles/gui2lib.dir/all
+CMakeFiles/blunted2.dir/all: CMakeFiles/baselib.dir/all
+CMakeFiles/blunted2.dir/all: CMakeFiles/systemscommonlib.dir/all
+CMakeFiles/blunted2.dir/all: CMakeFiles/systemsgraphicslib.dir/all
+CMakeFiles/blunted2.dir/all: CMakeFiles/systemsaudiolib.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/blunted2.dir/build.make CMakeFiles/blunted2.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/blunted2.dir/build.make CMakeFiles/blunted2.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/runner/work/League-Soccer/League-Soccer/build/CMakeFiles --progress-num=8 "Built target blunted2"
@@ -1779,14 +1779,14 @@ CMakeFiles/datalib.dir/clean:
 # Target rules for target CMakeFiles/gameplayfootball.dir
 
 # All Build rule for target.
-CMakeFiles/gameplayfootball.dir/all: CMakeFiles/gf_mathlib.dir/all
-CMakeFiles/gameplayfootball.dir/all: CMakeFiles/gf_ballphysicslib.dir/all
 CMakeFiles/gameplayfootball.dir/all: CMakeFiles/blunted2.dir/all
 CMakeFiles/gameplayfootball.dir/all: CMakeFiles/leaguelib.dir/all
 CMakeFiles/gameplayfootball.dir/all: CMakeFiles/gamelib.dir/all
 CMakeFiles/gameplayfootball.dir/all: CMakeFiles/hidlib.dir/all
 CMakeFiles/gameplayfootball.dir/all: CMakeFiles/menulib.dir/all
 CMakeFiles/gameplayfootball.dir/all: CMakeFiles/datalib.dir/all
+CMakeFiles/gameplayfootball.dir/all: CMakeFiles/gf_mathlib.dir/all
+CMakeFiles/gameplayfootball.dir/all: CMakeFiles/gf_ballphysicslib.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gameplayfootball.dir/build.make CMakeFiles/gameplayfootball.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gameplayfootball.dir/build.make CMakeFiles/gameplayfootball.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/runner/work/League-Soccer/League-Soccer/build/CMakeFiles --progress-num=26,27,28,29 "Built target gameplayfootball"
@@ -1818,10 +1818,10 @@ CMakeFiles/gameplayfootball.dir/clean:
 # Target rules for target tests/CMakeFiles/gameplayfootball_math_tests.dir
 
 # All Build rule for target.
-tests/CMakeFiles/gameplayfootball_math_tests.dir/all: CMakeFiles/gf_mathlib.dir/all
-tests/CMakeFiles/gameplayfootball_math_tests.dir/all: CMakeFiles/gf_ballphysicslib.dir/all
 tests/CMakeFiles/gameplayfootball_math_tests.dir/all: _deps/googletest-build/googletest/CMakeFiles/gtest.dir/all
 tests/CMakeFiles/gameplayfootball_math_tests.dir/all: _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/all
+tests/CMakeFiles/gameplayfootball_math_tests.dir/all: CMakeFiles/gf_mathlib.dir/all
+tests/CMakeFiles/gameplayfootball_math_tests.dir/all: CMakeFiles/gf_ballphysicslib.dir/all
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_math_tests.dir/build.make tests/CMakeFiles/gameplayfootball_math_tests.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_math_tests.dir/build.make tests/CMakeFiles/gameplayfootball_math_tests.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/runner/work/League-Soccer/League-Soccer/build/CMakeFiles --progress-num=31 "Built target gameplayfootball_math_tests"

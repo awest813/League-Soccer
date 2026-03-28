@@ -6,6 +6,8 @@
 #ifndef _HPP_MENU_GAME
 #define _HPP_MENU_GAME
 
+#include <boost/signals2.hpp>
+
 #include "utils/gui2/page.hpp"
 #include "utils/gui2/windowmanager.hpp"
 
@@ -32,6 +34,11 @@ public:
 
 protected:
   Match* match;
+
+  boost::signals2::connection conn_MatchPhaseChange;
+  boost::signals2::connection conn_ShortReplayMoment;
+  boost::signals2::connection conn_ExtendedReplayMoment;
+  boost::signals2::connection conn_GameOver;
 };
 
 #endif

@@ -712,6 +712,22 @@ void Humanoid::Process() {
             CastPlayer(),
             GetTouchTypeForBodyPart(currentAnim->anim->GetVariable("touch_bodypart")));
         match->GetMatchData()->AddShot(team->GetID());
+
+        // Detect shots on target via linear trajectory projection toward opposing goal
+        {
+          Vector3 ballPos = match->GetBall()->Predict(0);
+          float goalX = pitchHalfW * -team->GetSide();
+          float dx = goalX - ballPos.coords[0];
+          float shotVelX = touchVec.coords[0];
+          if (fabs(shotVelX) > 0.1f && (dx * shotVelX > 0.0f)) {
+            float t = dx / shotVelX;
+            float y_at_goal = ballPos.coords[1] + touchVec.coords[1] * t;
+            float z_at_goal = ballPos.coords[2] + touchVec.coords[2] * t;
+            if (fabs(y_at_goal) < goalHalfWidth && z_at_goal > 0.0f && z_at_goal < goalHeight) {
+              match->GetMatchData()->AddShotOnTarget(team->GetID());
+            }
+          }
+        }
       }
 
       else if (currentAnim->functionType == e_FunctionType_Interfere) {

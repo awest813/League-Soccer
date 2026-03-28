@@ -35,19 +35,13 @@ GamePage::~GamePage() {
   // problem is, this function may be called outside of gametask's or match's lifetime.
 
   if (match) {
-    // GetGameTask()->matchLifetimeMutex.lock();
-    // if (GetGameTask()->GetMatch() != 0) {
-
     if (Verbose())
       printf("disconnecting signals\n");
 
-    match->sig_OnMatchPhaseChange.disconnect([this](...) { GoMatchPhasePage(); });
-    match->sig_OnShortReplayMoment.disconnect([this](...) { GoShortReplayPage(); });
-    match->sig_OnExtendedReplayMoment.disconnect([this](...) { GoExtendedReplayPage(); });
-    match->sig_OnGameOver.disconnect([this](...) { GoGameOverPage(); });
-
-    //}
-    // GetGameTask()->matchLifetimeMutex.unlock();
+    conn_MatchPhaseChange.disconnect();
+    conn_ShortReplayMoment.disconnect();
+    conn_ExtendedReplayMoment.disconnect();
+    conn_GameOver.disconnect();
   }
 }
 
@@ -60,10 +54,13 @@ void GamePage::Process() {
       if (Verbose())
         printf("connecting signals\n");
 
-      match->sig_OnMatchPhaseChange.connect([this](...) { GoMatchPhasePage(); });
-      match->sig_OnShortReplayMoment.connect([this](...) { GoShortReplayPage(); });
-      match->sig_OnExtendedReplayMoment.connect([this](...) { GoExtendedReplayPage(); });
-      match->sig_OnGameOver.connect([this](...) { GoGameOverPage(); });
+      conn_MatchPhaseChange =
+          match->sig_OnMatchPhaseChange.connect([this](...) { GoMatchPhasePage(); });
+      conn_ShortReplayMoment =
+          match->sig_OnShortReplayMoment.connect([this](...) { GoShortReplayPage(); });
+      conn_ExtendedReplayMoment =
+          match->sig_OnExtendedReplayMoment.connect([this](...) { GoExtendedReplayPage(); });
+      conn_GameOver = match->sig_OnGameOver.connect([this](...) { GoGameOverPage(); });
     }
     GetGameTask()->matchLifetimeMutex.unlock();
   }

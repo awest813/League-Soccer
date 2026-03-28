@@ -9,6 +9,7 @@
 #include "framework/scheduler.hpp"
 #include "main.hpp"
 #include "managers/environmentmanager.hpp"
+#include "utils/gui2/widgets/caption.hpp"
 
 using namespace blunted;
 
@@ -29,7 +30,14 @@ ReplayPage::ReplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   cam = 0;
   modifierValue = 0.0f;
   autoRun = false;
+  slowMotion = false;
   stayInReplay = true;
+
+  // Timeline label: shows current replay position at bottom centre of screen
+  timeLabel = new Gui2Caption(windowManager, "caption_replay_time", 35, 95, 30, 3, "");
+  this->AddView(timeLabel);
+  timeLabel->Show();
+  UpdateTimeLabel();
 
   sig_OnClose.connect([this](...) { OnClose(); });
 
@@ -70,11 +78,24 @@ void ReplayPage::Autorun(int replayHistoryOffset_ms, bool stayInReplay) {
   this->stayInReplay = stayInReplay;
 }
 
+void ReplayPage::UpdateTimeLabel() {
+  unsigned long replaySize_ms = maxTime_ms - minTime_ms;
+  unsigned long elapsed_ms = actualTime_ms - minTime_ms;
+  float positionPct = (replaySize_ms > 0) ? (elapsed_ms * 100.0f / replaySize_ms) : 0.0f;
+  unsigned long secsAgo = (maxTime_ms - actualTime_ms) / 1000;
+  std::string label = std::string(slowMotion ? "[0.5x] " : "") +
+                      int_to_str(elapsed_ms / 1000) + "s / " +
+                      int_to_str(replaySize_ms / 1000) + "s  (" +
+                      int_to_str(static_cast<int>(round(positionPct))) + "%)  -" +
+                      int_to_str(secsAgo) + "s";
+  timeLabel->SetCaption(label);
+}
+
 void ReplayPage::Process() {
   if (autoRun) {
     Vector3 direction;
-    direction.coords[0] = 0.5f;
-    ProcessInput(direction, false, false);
+    direction.coords[0] = slowMotion ? 0.25f : 0.5f;
+    ProcessInput(direction, false, false, false);
   }
 }
 
@@ -84,10 +105,13 @@ void ReplayPage::ProcessKeyboardEvent(KeyboardEvent* event) {
 
   bool button1 = false;
   bool button2 = false;
+  bool slowMo = false;
   if (event->GetKeyOnce(keyboard->GetFunctionMapping(e_ButtonFunction_ShortPass)))
     button1 = true;
   if (event->GetKeyOnce(keyboard->GetFunctionMapping(e_ButtonFunction_HighPass)))
     button2 = true;
+  if (event->GetKeyContinuous(keyboard->GetFunctionMapping(e_ButtonFunction_Sprint)))
+    slowMo = true;
 
   Vector3 direction;
   if (event->GetKeyContinuous(keyboard->GetFunctionMapping(e_ButtonFunction_Left)))
@@ -99,7 +123,7 @@ void ReplayPage::ProcessKeyboardEvent(KeyboardEvent* event) {
   if (event->GetKeyContinuous(keyboard->GetFunctionMapping(e_ButtonFunction_Down)))
     direction.coords[1] += 0.5f;
 
-  ProcessInput(direction, button1, button2);
+  ProcessInput(direction, button1, button2, slowMo);
 }
 
 void ReplayPage::ProcessJoystickEvent(JoystickEvent* event) {
@@ -120,6 +144,9 @@ void ReplayPage::ProcessJoystickEvent(JoystickEvent* event) {
       event->GetButton(0, gamepad->GetControllerMapping(gamepad->GetFunctionMapping(
                               e_ButtonFunction_Shot)));  // need 2 options because maybe the first
                                                          // is set to gui's 'escape' function
+  bool slowMo =
+      event->GetButton(0, gamepad->GetControllerMapping(
+                              gamepad->GetFunctionMapping(e_ButtonFunction_Sprint)));
 
   Vector3 direction;
   direction.coords[0] = event->GetAxis(0, 0);
@@ -142,10 +169,14 @@ void ReplayPage::ProcessJoystickEvent(JoystickEvent* event) {
         signSide(direction.coords[1]);
   }
 
-  ProcessInput(direction, button1, button2);
+  ProcessInput(direction, button1, button2, slowMo);
 }
 
-void ReplayPage::ProcessInput(const Vector3& direction, bool button1, bool button2) {
+void ReplayPage::ProcessInput(const Vector3& direction, bool button1, bool button2,
+                              bool slowMoInput) {
+  // slow-motion: held sprint button halves playback speed
+  slowMotion = slowMoInput;
+
   // autorun
   if (button2 && autoRun == false) {
     actualTime_ms = minTime_ms;
@@ -174,7 +205,8 @@ void ReplayPage::ProcessInput(const Vector3& direction, bool button1, bool butto
     modifierValue = clamp(modifierValue, -1.0f, 1.0f);
   }
 
-  float timeMovement = direction.coords[0] * 2.0f;
+  float speedMultiplier = slowMotion ? 0.5f : 1.0f;
+  float timeMovement = direction.coords[0] * 2.0f * speedMultiplier;
   actualTime_ms += int(round(timeMovement * 10.0f));
 
   if (autoRun && actualTime_ms >= (signed int)maxTime_ms) {
@@ -182,11 +214,10 @@ void ReplayPage::ProcessInput(const Vector3& direction, bool button1, bool butto
   }
 
   actualTime_ms = clamp(actualTime_ms, minTime_ms, maxTime_ms);
-  // printf("min time: %lu, max time: %lu\n", minTime_ms, maxTime_ms);
-  // unsigned long resultTime = clamp(actualTime_ms + PredictFrameTimeToGo_ms(7) *
-  // int(round(timeMovement)), minTime_ms, maxTime_ms);
+
+  UpdateTimeLabel();
+
   unsigned long resultTime = actualTime_ms;
-  // printf("%lu\n", resultTime);
 
   // feed results to match - replays are effectively replayed there
 
