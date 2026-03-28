@@ -5,6 +5,9 @@
 
 #include "gameover.hpp"
 
+#include <ctime>
+
+#include "../../data/matchhistory.hpp"
 #include "../pagefactory.hpp"
 #include "main.hpp"
 
@@ -30,7 +33,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   this->AddView(header);
   header->Show();
 
-  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 40, 82, 20, 3, "well then");
+  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 55, 82, 20, 3, "well then");
   this->AddView(buttonOkay);
   buttonOkay->Show();
   buttonOkay->sig_OnClick.connect([this](...) { GoMainMenu(); });
@@ -111,6 +114,52 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->Show();
 
   buttonOkay->SetFocus();
+
+  // Auto-save match result to history
+  {
+    float poss1 = match->GetMatchData()->GetPossessionTime_ms(0);
+    float poss2 = match->GetMatchData()->GetPossessionTime_ms(1);
+    float totalPoss = poss1 + poss2;
+
+    MatchHistoryEntry entry;
+    entry.id = 0;
+
+    time_t now = time(nullptr);
+    char tsbuf[32];
+    struct tm* tminfo = localtime(&now);
+    strftime(tsbuf, sizeof(tsbuf), "%Y-%m-%d %H:%M:%S", tminfo);
+    entry.timestamp = tsbuf;
+
+    entry.team1_name = match->GetTeam(0)->GetTeamData()->GetName();
+    entry.team2_name = match->GetTeam(1)->GetTeamData()->GetName();
+    entry.score1 = match->GetMatchData()->GetGoalCount(0);
+    entry.score2 = match->GetMatchData()->GetGoalCount(1);
+    entry.match_time_ms = (int)match->GetMatchTime_ms();
+    entry.possession1_pct = (totalPoss > 0) ? poss1 / totalPoss * 100.0f : 50.0f;
+    entry.possession2_pct = (totalPoss > 0) ? poss2 / totalPoss * 100.0f : 50.0f;
+    entry.shots1 = match->GetMatchData()->GetShots(0);
+    entry.shots2 = match->GetMatchData()->GetShots(1);
+    entry.shots_on_target1 = match->GetMatchData()->GetShotsOnTarget(0);
+    entry.shots_on_target2 = match->GetMatchData()->GetShotsOnTarget(1);
+    entry.passes1 = match->GetMatchData()->GetPassAttempts(0);
+    entry.passes2 = match->GetMatchData()->GetPassAttempts(1);
+    entry.passes_completed1 = match->GetMatchData()->GetPassesCompleted(0);
+    entry.passes_completed2 = match->GetMatchData()->GetPassesCompleted(1);
+    entry.fouls1 = match->GetMatchData()->GetFouls(0);
+    entry.fouls2 = match->GetMatchData()->GetFouls(1);
+
+    MatchHistory::EnsureTable();
+    MatchHistory::SaveMatch(entry);
+  }
+
+  Gui2Button* buttonHistory =
+      new Gui2Button(windowManager, "button_gameover_history", 25, 82, 20, 3, "match history");
+  this->AddView(buttonHistory);
+  buttonHistory->Show();
+  buttonHistory->sig_OnClick.connect([this](...) {
+    Properties props;
+    CreatePage((int)e_PageID_MatchHistory, props);
+  });
 
   this->Show();
 }

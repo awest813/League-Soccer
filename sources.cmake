@@ -500,7 +500,10 @@ set(MENU_HEADERS
    src/menu/ingame/ingame.hpp
    src/menu/ingame/playerhud.hpp
    src/menu/ingame/scoreboard.hpp
+   src/menu/ingame/statsoverlay.hpp
    src/menu/ingame/radar.hpp
+   src/menu/ingame/matchhistorypage.hpp
+   src/menu/ingame/setpieceeditor.hpp
 )
 
 set(MENU_SOURCES
@@ -534,7 +537,10 @@ set(MENU_SOURCES
    src/menu/ingame/phasemenu.cpp
    src/menu/ingame/ingame.cpp
    src/menu/ingame/scoreboard.cpp
+   src/menu/ingame/statsoverlay.cpp
    src/menu/ingame/playerhud.cpp
+   src/menu/ingame/matchhistorypage.cpp
+   src/menu/ingame/setpieceeditor.cpp
    src/menu/settings.cpp
 )
 
@@ -542,10 +548,14 @@ set(DATA_HEADERS
    src/data/matchdata.hpp
    src/data/teamdata.hpp
    src/data/playerdata.hpp
+   src/data/matchhistory.hpp
+   src/data/setpiececonfig.hpp
 )
 
 set(DATA_SOURCES
    src/data/matchdata.cpp
    src/data/playerdata.cpp
    src/data/teamdata.cpp
+   src/data/matchhistory.cpp
+   src/data/setpiececonfig.cpp
 )

@@ -33,6 +33,8 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   Gui2Button* buttonSystemSettings =
       new Gui2Button(windowManager, "button_systemsettings", 0, 0, 30, 3, "system settings");
   Gui2Button* buttonReplay = new Gui2Button(windowManager, "button_replay", 0, 0, 30, 3, "replay");
+  Gui2Button* buttonSetPieces =
+      new Gui2Button(windowManager, "button_setpieces", 0, 0, 30, 3, "set pieces");
   Gui2Button* buttonPreQuit =
       new Gui2Button(windowManager, "button_quit", 0, 0, 30, 3, "forfeit match");
 
@@ -42,6 +44,7 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   buttonVisualOptions->sig_OnClick.connect([this](...) { GoVisualOptions(); });
   buttonSystemSettings->sig_OnClick.connect([this](...) { GoSystemSettings(); });
   buttonReplay->sig_OnClick.connect([this](...) { GoReplay(); });
+  buttonSetPieces->sig_OnClick.connect([this](...) { GoSetPieceEditor(); });
   buttonPreQuit->sig_OnClick.connect([this](...) { GoPreQuit(); });
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid", 10, 10, 80, 80);
@@ -52,7 +55,8 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   grid->AddView(buttonVisualOptions, 3, 0);
   grid->AddView(buttonSystemSettings, 4, 0);
   grid->AddView(buttonReplay, 5, 0);
-  grid->AddView(buttonPreQuit, 6, 0);
+  grid->AddView(buttonSetPieces, 6, 0);
+  grid->AddView(buttonPreQuit, 7, 0);
 
   grid->UpdateLayout(0.5);
 
@@ -96,6 +100,13 @@ void IngamePage::GoReplay() {
 
 void IngamePage::GoPreQuit() {
   CreatePage(e_PageID_PreQuit);
+}
+
+void IngamePage::GoSetPieceEditor() {
+  Properties properties;
+  properties.Set("teamDatabaseID",
+                 GetGameTask()->GetMatch()->GetTeam(teamID)->GetTeamData()->GetDatabaseID());
+  CreatePage((int)e_PageID_SetPieceEditor, properties);
 }
 
 void IngamePage::ProcessWindowingEvent(WindowingEvent* event) {

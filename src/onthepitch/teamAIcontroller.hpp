@@ -19,6 +19,7 @@
 #ifndef _HPP_TEAM_AICONTROLLER
 #define _HPP_TEAM_AICONTROLLER
 
+#include "../data/setpiececonfig.hpp"
 #include "../gamedefines.hpp"
 #include "base/properties.hpp"
 
@@ -46,6 +47,7 @@ public:
   void ApplyOffsideTrap(Vector3& position) const;
   float GetOffsideTrapX() const { return offsideTrapX; }
   void PrepareSetPiece(e_SetPiece setPiece, int takerTeamID = -1);
+  SetPieceParams GetSetPieceParams(e_SetPiece setPiece);
   Player* GetPieceTaker() { return taker; }
   e_SetPiece GetSetPieceType() { return setPieceType; }
   void ApplyAttackingRun(Player* manualPlayer = 0);

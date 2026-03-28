@@ -108,6 +108,11 @@ void GamePage::ProcessWindowingEvent(WindowingEvent* event) {
 }
 
 void GamePage::ProcessKeyboardEvent(KeyboardEvent* event) {
+  if (event->GetKeyOnce(SDLK_TAB)) {
+    if (match) match->ToggleStatsOverlay();
+    return;
+  }
+
   if (event->GetKeyOnce(SDLK_ESCAPE)) {
     // check which team the keyboard belongs to
     int controllerID = 0;

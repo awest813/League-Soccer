@@ -21,7 +21,7 @@ BUILD_GMOCK:BOOL=ON
 BUILD_TESTING:BOOL=ON
 
 //The directory containing a CMake configuration file for Boost.
-Boost_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Boost-1.83.0
+Boost_DIR:PATH=Boost_DIR-NOTFOUND
 
 //Path to a file.
 Boost_INCLUDE_DIR:PATH=/usr/include
@@ -418,7 +418,7 @@ PKG_CONFIG_ARGN:STRING=
 PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
 
 //The directory containing a CMake configuration file for SDL2.
-SDL2_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/SDL2
+SDL2_DIR:PATH=SDL2_DIR-NOTFOUND
 
 //Path to a file.
 SDL2_GFX_INCLUDE_DIR:PATH=/usr/include/SDL2
@@ -509,6 +509,8 @@ pkgcfg_lib_PC_SQLite3_sqlite3:FILEPATH=/usr/lib/x86_64-linux-gnu/libsqlite3.so
 
 //ADVANCED property for variable: Boost_DIR
 Boost_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_INCLUDE_DIR
+Boost_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_ADDR2LINE
 CMAKE_ADDR2LINE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_AR
@@ -647,7 +649,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=5
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -703,7 +705,7 @@ CTEST_SUBMIT_RETRY_DELAY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: DART_TESTING_TIMEOUT
 DART_TESTING_TIMEOUT-ADVANCED:INTERNAL=1
 //Details about finding Boost
-FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/lib/x86_64-linux-gnu/cmake/Boost-1.83.0/BoostConfig.cmake][cfound components: system ][v1.83.0()]
+FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/include][c ][v0.0.0()]
 //Details about finding OpenAL
 FIND_PACKAGE_MESSAGE_DETAILS_OpenAL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libopenal.so][/usr/include/AL][v()]
 //Details about finding OpenGL
@@ -817,6 +819,14 @@ SITE-ADVANCED:INTERNAL=1
 SQLite3_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: SQLite3_LIBRARY
 SQLite3_LIBRARY-ADVANCED:INTERNAL=1
+//Components requested for this build tree.
+_Boost_COMPONENTS_SEARCHED:INTERNAL=
+//Last used Boost_INCLUDE_DIR value.
+_Boost_INCLUDE_DIR_LAST:INTERNAL=/usr/include
+//Last used Boost_NAMESPACE value.
+_Boost_NAMESPACE_LAST:INTERNAL=boost
+//Last used Boost_USE_MULTITHREADED value.
+_Boost_USE_MULTITHREADED_LAST:INTERNAL=TRUE
 //linker supports push/pop state
 _CMAKE_CXX_LINKER_PUSHPOP_STATE_SUPPORTED:INTERNAL=TRUE
 //linker supports push/pop state

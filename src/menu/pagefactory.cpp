@@ -13,8 +13,10 @@
 #include "ingame/gameover.hpp"
 #include "ingame/gamepage.hpp"
 #include "ingame/ingame.hpp"
+#include "ingame/matchhistorypage.hpp"
 #include "ingame/phasemenu.hpp"
 #include "ingame/replaymenu.hpp"
+#include "ingame/setpieceeditor.hpp"
 #include "league/league.hpp"
 #include "league/league_calendar.hpp"
 #include "league/league_forward.hpp"
@@ -290,6 +292,14 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
 
     case e_PageID_League_System_Settings:
       page = new LeagueSystemSettingsPage(windowManager, pageData);
+      break;
+
+    case e_PageID_MatchHistory:
+      page = new MatchHistoryPage(windowManager, pageData);
+      break;
+
+    case e_PageID_SetPieceEditor:
+      page = new SetPieceEditorPage(windowManager, pageData);
       break;
 
     default:

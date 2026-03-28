@@ -336,6 +336,10 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   root->AddView(scoreboard);
   scoreboard->Show();
 
+  statsOverlay = new Gui2StatsOverlay(menuTask->GetWindowManager(), this);
+  root->AddView(statsOverlay);
+  statsOverlay->Hide();
+
   messageCaption = new Gui2Caption(menuTask->GetWindowManager(), "game_messages", 0, 0, 80, 8, "");
   messageCaption->SetTransparency(0.3f);
   root->AddView(messageCaption);
@@ -471,6 +475,9 @@ void Match::Exit() {
 
   scoreboard->Exit();
   delete scoreboard;
+
+  statsOverlay->Exit();
+  delete statsOverlay;
 
   animPositionCache.clear();
 
@@ -745,6 +752,20 @@ signed int Match::GetBestPossessionTeamID() {
 
 void Match::GameOver() {
   gameOver = true;
+}
+
+void Match::AddExcitementBoost(float amount, int duration_ms) {
+  if (amount > excitementEventBoost) excitementEventBoost = amount;
+  if (duration_ms > excitementEventTimer_ms) excitementEventTimer_ms = duration_ms;
+}
+
+void Match::ToggleStatsOverlay() {
+  if (statsOverlay->IsVisible()) {
+    statsOverlay->Hide();
+  } else {
+    statsOverlay->UpdateStats();
+    statsOverlay->Show();
+  }
 }
 
 void Match::GetCameraParams(float& zoom, float& height, float& fov, float& angleFactor) {
@@ -1378,6 +1399,9 @@ void Match::Put() {
     timeStr += int_to_str(seconds);
     scoreboard->SetTimeStr(timeStr);
     //}
+
+    if (statsOverlay->IsVisible())
+      statsOverlay->UpdateStats();
 
     if (messageCaptionRemoveTime_ms <= fetchedbuf_actualTime_ms)
       messageCaption->Hide();

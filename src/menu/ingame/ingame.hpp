@@ -28,6 +28,7 @@ public:
   void GoSystemSettings();
   void GoReplay();
   void GoPreQuit();
+  void GoSetPieceEditor();
 
   virtual void ProcessWindowingEvent(WindowingEvent* event);
 
