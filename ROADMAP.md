@@ -100,10 +100,10 @@ welcome - see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 | # | Task | Status |
 |---|------|--------|
-| 5.1 | Generate API docs with **Doxygen** | `PLANNED` |
-| 5.2 | Architecture overview document | `PLANNED` |
-| 5.3 | Docker-based development environment | `PLANNED` |
-| 5.4 | Script to auto-fetch and set up data assets | `PLANNED` |
+| 5.1 | Generate API docs with **Doxygen** | `DONE` |
+| 5.2 | Architecture overview document | `DONE` |
+| 5.3 | Docker-based development environment | `DONE` |
+| 5.4 | Script to auto-fetch and set up data assets | `DONE` |
 
 ---
 

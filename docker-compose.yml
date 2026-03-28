@@ -1,0 +1,60 @@
+# docker-compose.yml – League-Soccer / Gameplay Football development environment
+#
+# Usage:
+#   docker compose build          # build the dev image
+#   docker compose run --rm dev   # interactive shell with all deps installed
+#   docker compose run --rm test  # run the full test suite headlessly
+#
+# The repository root is mounted into /workspace so that edits on the host
+# are immediately visible inside the container without rebuilding the image.
+
+services:
+  # ── dev: interactive development shell ──────────────────────────────────────
+  dev:
+    build:
+      context: .
+      target: base        # use the dependency-only stage, no pre-built binary
+    image: gameplayfootball-dev:latest
+    container_name: gameplayfootball-dev
+    volumes:
+      - .:/workspace:cached
+    working_dir: /workspace
+    environment:
+      - DISPLAY=${DISPLAY:-:99}
+      - TERM=xterm-256color
+    # Allow X11 forwarding from the host when DISPLAY is set
+    network_mode: host
+    stdin_open: true
+    tty: true
+    command: bash
+
+  # ── test: headless test runner ───────────────────────────────────────────────
+  test:
+    build:
+      context: .
+      target: base
+    image: gameplayfootball-dev:latest
+    volumes:
+      - .:/workspace:cached
+    working_dir: /workspace
+    command: >
+      bash -c "
+        cmake -S . -B /tmp/build-test
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DGAMEPLAYFOOTBALL_BUILD_GAME=OFF
+          -DBUILD_TESTING=ON
+        && cmake --build /tmp/build-test --parallel
+        && ctest --test-dir /tmp/build-test --output-on-failure
+      "
+
+  # ── docs: generate Doxygen HTML docs ────────────────────────────────────────
+  docs:
+    build:
+      context: .
+      target: base
+    image: gameplayfootball-dev:latest
+    volumes:
+      - .:/workspace:cached
+    working_dir: /workspace
+    command: doxygen Doxyfile
