@@ -1,7 +1,6 @@
 #include "matchhistory.hpp"
 
 #include <filesystem>
-#include <sstream>
 
 #include "sqlite3.h"
 
@@ -51,27 +50,37 @@ void MatchHistory::SaveMatch(const MatchHistoryEntry& e) {
     return;
   }
 
-  std::ostringstream sql;
-  sql << "INSERT INTO match_history ("
-         "timestamp, team1_name, team2_name, score1, score2, match_time_ms,"
-         "possession1_pct, possession2_pct, shots1, shots2,"
-         "shots_on_target1, shots_on_target2, passes1, passes2,"
-         "passes_completed1, passes_completed2, fouls1, fouls2"
-         ") VALUES ("
-      << "'" << e.timestamp << "',"
-      << "'" << e.team1_name << "',"
-      << "'" << e.team2_name << "',"
-      << e.score1 << "," << e.score2 << "," << e.match_time_ms << ","
-      << e.possession1_pct << "," << e.possession2_pct << ","
-      << e.shots1 << "," << e.shots2 << ","
-      << e.shots_on_target1 << "," << e.shots_on_target2 << ","
-      << e.passes1 << "," << e.passes2 << ","
-      << e.passes_completed1 << "," << e.passes_completed2 << ","
-      << e.fouls1 << "," << e.fouls2 << ");";
+  const char* sql =
+      "INSERT INTO match_history ("
+      "timestamp, team1_name, team2_name, score1, score2, match_time_ms,"
+      "possession1_pct, possession2_pct, shots1, shots2,"
+      "shots_on_target1, shots_on_target2, passes1, passes2,"
+      "passes_completed1, passes_completed2, fouls1, fouls2"
+      ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
-  char* errMsg = nullptr;
-  sqlite3_exec(db, sql.str().c_str(), nullptr, nullptr, &errMsg);
-  if (errMsg) sqlite3_free(errMsg);
+  sqlite3_stmt* stmt = nullptr;
+  if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+    sqlite3_bind_text(stmt, 1, e.timestamp.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, e.team1_name.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, e.team2_name.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(stmt, 4, e.score1);
+    sqlite3_bind_int(stmt, 5, e.score2);
+    sqlite3_bind_int(stmt, 6, e.match_time_ms);
+    sqlite3_bind_double(stmt, 7, e.possession1_pct);
+    sqlite3_bind_double(stmt, 8, e.possession2_pct);
+    sqlite3_bind_int(stmt, 9, e.shots1);
+    sqlite3_bind_int(stmt, 10, e.shots2);
+    sqlite3_bind_int(stmt, 11, e.shots_on_target1);
+    sqlite3_bind_int(stmt, 12, e.shots_on_target2);
+    sqlite3_bind_int(stmt, 13, e.passes1);
+    sqlite3_bind_int(stmt, 14, e.passes2);
+    sqlite3_bind_int(stmt, 15, e.passes_completed1);
+    sqlite3_bind_int(stmt, 16, e.passes_completed2);
+    sqlite3_bind_int(stmt, 17, e.fouls1);
+    sqlite3_bind_int(stmt, 18, e.fouls2);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
 
   sqlite3_close(db);
 }

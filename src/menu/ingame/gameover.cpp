@@ -161,8 +161,6 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
     CreatePage((int)e_PageID_MatchHistory, props);
   });
 
-  buttonOkay->SetFocus();
-
   this->Show();
 }
 
