@@ -29,6 +29,8 @@ public:
      // possession time instead of gametime? not sure yet, think about this)
   void AddShot(int teamID) { shots[teamID] += 1; }
   int GetShots(int teamID) { return shots[teamID]; }
+  void AddShotOnTarget(int teamID) { shotsOnTarget[teamID] += 1; }
+  int GetShotsOnTarget(int teamID) { return shotsOnTarget[teamID]; }
 
   // pass tracking
   void AddPassAttempt(int teamID) {
@@ -56,6 +58,7 @@ protected:
   unsigned long possessionTime_ms[2];
   float possession60seconds;  // -600 to 600 for possession of team 1 / 2 respectively
   int shots[2];
+  int shotsOnTarget[2];
 
   int passAttempts[2];
   int passesCompleted[2];

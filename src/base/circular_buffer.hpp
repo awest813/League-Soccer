@@ -12,6 +12,9 @@ namespace blunted {
 template <typename T>
 class circular_buffer {
 public:
+  using iterator = typename std::deque<T>::iterator;
+  using const_iterator = typename std::deque<T>::const_iterator;
+
   explicit circular_buffer(std::size_t capacity = 0) : capacity_(capacity) {}
 
   void push_back(const T& val) {
@@ -26,6 +29,9 @@ public:
 
   T& at(std::size_t i) { return buf_.at(i); }
   const T& at(std::size_t i) const { return buf_.at(i); }
+
+  T& operator[](std::size_t i) { return buf_[i]; }
+  const T& operator[](std::size_t i) const { return buf_[i]; }
 
   T& back() { return buf_.back(); }
   const T& back() const { return buf_.back(); }

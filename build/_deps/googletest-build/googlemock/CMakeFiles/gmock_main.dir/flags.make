@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googlemock/include -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googlemock -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest/include -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest
 
-CXX_FLAGS = -g -g -Wall -Wextra -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
+CXX_FLAGS = -O3 -DNDEBUG -Wall -O3 -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
 

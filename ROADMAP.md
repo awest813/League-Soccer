@@ -66,15 +66,15 @@ welcome - see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 | # | Task | Status |
 |---|------|--------|
-| 3.1 | **Replay system** - record match state and play it back | `PLANNED` |
-| 3.2 | **Statistics overlay** - shots on target, possession %, pass accuracy | `PLANNED` |
+| 3.1 | **Replay system** - record match state and play it back | `IN PROGRESS` |
+| 3.2 | **Statistics overlay** - shots on target, possession %, pass accuracy | `IN PROGRESS` |
 | 3.3 | **Save/Load match state** (SQLite-backed) | `PLANNED` |
-| 3.4 | **Improved AI** - add pressure / counter-press tactics | `PLANNED` |
+| 3.4 | **Improved AI** - add pressure / counter-press tactics | `DONE` |
 | 3.5 | **Set-piece editor** - configurable free-kick / corner routines | `PLANNED` |
-| 3.6 | **Player stamina system** - fatigue affecting sprint speed | `PLANNED` |
-| 3.7 | **Injury / substitution system** | `PLANNED` |
+| 3.6 | **Player stamina system** - fatigue affecting sprint speed | `DONE` |
+| 3.7 | **Injury / substitution system** | `DONE` |
 | 3.8 | **Weather effects** - rain / wind altering ball trajectory | `IDEA` |
-| 3.9 | **Dynamic crowd audio** - crowd reacts to chances and goals | `PLANNED` |
+| 3.9 | **Dynamic crowd audio** - crowd reacts to chances and goals | `IN PROGRESS` |
 
 ---
 

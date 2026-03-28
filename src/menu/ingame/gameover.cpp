@@ -39,6 +39,8 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   float possession2 = match->GetMatchData()->GetPossessionTime_ms(1);
   int shots1 = match->GetMatchData()->GetShots(0);
   int shots2 = match->GetMatchData()->GetShots(1);
+  int shotsOnTarget1 = match->GetMatchData()->GetShotsOnTarget(0);
+  int shotsOnTarget2 = match->GetMatchData()->GetShotsOnTarget(1);
   int passes1 = match->GetMatchData()->GetPassAttempts(0);
   int passes2 = match->GetMatchData()->GetPassAttempts(1);
   int passComp1 = match->GetMatchData()->GetPassesCompleted(0);
@@ -65,6 +67,22 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->AddView(new Gui2Caption(windowManager, "caption_shots_t2", 0, 0, 10, 3, int_to_str(shots2)),
                 1, 2);
 
+  auto shotOnTargetStr = [](int onTarget, int total) -> std::string {
+    if (total == 0)
+      return "0";
+    return int_to_str(onTarget) + "/" + int_to_str(total);
+  };
+  grid->AddView(
+      new Gui2Caption(windowManager, "caption_sot_t1", 0, 0, 25, 3,
+                      shotOnTargetStr(shotsOnTarget1, shots1)),
+      2, 0);
+  grid->AddView(
+      new Gui2Caption(windowManager, "caption_sot_header", 0, 0, 35, 3, "shots on target"), 2, 1);
+  grid->AddView(
+      new Gui2Caption(windowManager, "caption_sot_t2", 0, 0, 10, 3,
+                      shotOnTargetStr(shotsOnTarget2, shots2)),
+      2, 2);
+
   auto passAccStr = [](int completed, int attempted) -> std::string {
     if (attempted == 0)
       return "0%";
@@ -73,19 +91,19 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   };
   grid->AddView(
       new Gui2Caption(windowManager, "caption_passacc_t1", 0, 0, 25, 3, passAccStr(passComp1, passes1)),
-      2, 0);
+      3, 0);
   grid->AddView(
-      new Gui2Caption(windowManager, "caption_passacc_header", 0, 0, 35, 3, "pass accuracy"), 2, 1);
+      new Gui2Caption(windowManager, "caption_passacc_header", 0, 0, 35, 3, "pass accuracy"), 3, 1);
   grid->AddView(
       new Gui2Caption(windowManager, "caption_passacc_t2", 0, 0, 10, 3, passAccStr(passComp2, passes2)),
-      2, 2);
+      3, 2);
 
   grid->AddView(
-      new Gui2Caption(windowManager, "caption_fouls_t1", 0, 0, 25, 3, int_to_str(fouls1)), 3, 0);
+      new Gui2Caption(windowManager, "caption_fouls_t1", 0, 0, 25, 3, int_to_str(fouls1)), 4, 0);
   grid->AddView(
-      new Gui2Caption(windowManager, "caption_fouls_header", 0, 0, 35, 3, "fouls"), 3, 1);
+      new Gui2Caption(windowManager, "caption_fouls_header", 0, 0, 35, 3, "fouls"), 4, 1);
   grid->AddView(
-      new Gui2Caption(windowManager, "caption_fouls_t2", 0, 0, 10, 3, int_to_str(fouls2)), 3, 2);
+      new Gui2Caption(windowManager, "caption_fouls_t2", 0, 0, 10, 3, int_to_str(fouls2)), 4, 2);
 
   grid->UpdateLayout(0.5);
 

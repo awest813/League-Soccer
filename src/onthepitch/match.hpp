@@ -393,6 +393,8 @@ protected:
   bool nettingHasChanged;
 
   float excitement;
+  float excitementEventBoost;
+  int excitementEventTimer_ms;
 
   Vector3 previousBallPos;
 

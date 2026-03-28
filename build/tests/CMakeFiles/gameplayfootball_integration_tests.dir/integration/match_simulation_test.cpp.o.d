@@ -39,6 +39,8 @@ tests/CMakeFiles/gameplayfootball_integration_tests.dir/integration/match_simula
  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar2-decl.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar2.h \
  /usr/include/c++/13/bits/ios_base.h /usr/include/c++/13/ext/atomicity.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/gthr.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/gthr-default.h \
@@ -119,16 +121,22 @@ tests/CMakeFiles/gameplayfootball_integration_tests.dir/integration/match_simula
  /usr/include/x86_64-linux-gnu/sys/select.h \
  /usr/include/x86_64-linux-gnu/bits/select.h \
  /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h \
- /usr/include/alloca.h /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+ /usr/include/x86_64-linux-gnu/bits/select2.h \
+ /usr/include/x86_64-linux-gnu/bits/select-decl.h /usr/include/alloca.h \
+ /usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h \
+ /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+ /usr/include/x86_64-linux-gnu/bits/stdlib.h \
  /usr/include/c++/13/bits/std_abs.h /usr/include/c++/13/cstdio \
  /usr/include/stdio.h /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
- /usr/include/c++/13/cerrno /usr/include/errno.h \
- /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
- /usr/include/x86_64-linux-gnu/asm/errno.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio2-decl.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio2.h /usr/include/c++/13/cerrno \
+ /usr/include/errno.h /usr/include/x86_64-linux-gnu/bits/errno.h \
+ /usr/include/linux/errno.h /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
  /usr/include/c++/13/bits/charconv.h \
@@ -191,8 +199,10 @@ tests/CMakeFiles/gameplayfootball_integration_tests.dir/integration/match_simula
  /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest/include/gtest/gtest-message.h \
  /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest/include/gtest/internal/gtest-port.h \
  /usr/include/c++/13/stdlib.h /usr/include/string.h \
- /usr/include/strings.h /usr/include/c++/13/iostream \
- /usr/include/x86_64-linux-gnu/sys/stat.h \
+ /usr/include/strings.h \
+ /usr/include/x86_64-linux-gnu/bits/strings_fortified.h \
+ /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
+ /usr/include/c++/13/iostream /usr/include/x86_64-linux-gnu/sys/stat.h \
  /usr/include/x86_64-linux-gnu/bits/stat.h \
  /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
  /usr/include/x86_64-linux-gnu/bits/statx.h /usr/include/linux/stat.h \
@@ -214,6 +224,8 @@ tests/CMakeFiles/gameplayfootball_integration_tests.dir/integration/match_simula
  /usr/include/x86_64-linux-gnu/bits/confname.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
+ /usr/include/x86_64-linux-gnu/bits/unistd.h \
+ /usr/include/x86_64-linux-gnu/bits/unistd-decl.h \
  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
  /usr/include/linux/close_range.h /usr/include/regex.h \
  /usr/include/c++/13/condition_variable /usr/include/c++/13/bits/chrono.h \

@@ -36,7 +36,7 @@ CMAKE_AR:FILEPATH=/usr/bin/ar
 
 //Choose the type of build, options are: None Debug Release RelWithDebInfo
 // MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=Debug
+CMAKE_BUILD_TYPE:STRING=Release
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -347,6 +347,9 @@ GameplayFootball_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 GameplayFootball_SOURCE_DIR:STATIC=/home/runner/work/League-Soccer/League-Soccer
 
+//No help, variable specified on the command line.
+HEADLESS_TESTS:UNINITIALIZED=ON
+
 //Enable installation of googletest. (Projects embedding googletest
 // may want to turn this OFF.)
 INSTALL_GTEST:BOOL=ON
@@ -388,6 +391,9 @@ OPENGL_INCLUDE_DIR:PATH=/usr/include
 OPENGL_egl_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libEGL.so
 
 //Path to a library.
+OPENGL_gl_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libGL.so
+
+//Path to a library.
 OPENGL_gles2_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libGLESv2.so
 
 //Path to a library.
@@ -400,7 +406,7 @@ OPENGL_glu_LIBRARY:FILEPATH=OPENGL_glu_LIBRARY-NOTFOUND
 OPENGL_glx_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libGLX.so
 
 //Path to a library.
-OPENGL_opengl_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libOpenGL.so
+OPENGL_opengl_LIBRARY:FILEPATH=OPENGL_opengl_LIBRARY-NOTFOUND
 
 //Path to a file.
 OPENGL_xmesa_INCLUDE_DIR:PATH=OPENGL_xmesa_INCLUDE_DIR-NOTFOUND
@@ -561,8 +567,6 @@ CMAKE_C_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 CMAKE_DLLTOOL-ADVANCED:INTERNAL=1
 //Path to cache edit program executable.
 CMAKE_EDIT_COMMAND:INTERNAL=/usr/local/bin/ccmake
-//Whether to issue deprecation errors for macros and functions.
-CMAKE_ERROR_DEPRECATED:INTERNAL=FALSE
 //Executable file format
 CMAKE_EXECUTABLE_FORMAT:INTERNAL=ELF
 //ADVANCED property for variable: CMAKE_EXE_LINKER_FLAGS
@@ -682,20 +686,12 @@ CMAKE_STATIC_LINKER_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_STRIP
 CMAKE_STRIP-ADVANCED:INTERNAL=1
-//Suppress errors that are meant for the author of the CMakeLists.txt
-// files.
-CMAKE_SUPPRESS_DEVELOPER_ERRORS:INTERNAL=TRUE
-//Suppress Warnings that are meant for the author of the CMakeLists.txt
-// files.
-CMAKE_SUPPRESS_DEVELOPER_WARNINGS:INTERNAL=TRUE
 //ADVANCED property for variable: CMAKE_TAPI
 CMAKE_TAPI-ADVANCED:INTERNAL=1
 //uname command
 CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
-//Whether to issue warnings for deprecated functionality.
-CMAKE_WARN_DEPRECATED:INTERNAL=FALSE
 //ADVANCED property for variable: COVERAGE_COMMAND
 COVERAGE_COMMAND-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: COVERAGE_EXTRA_FLAGS
@@ -711,7 +707,7 @@ FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/lib/x86_64-linux-gnu/cmake/Boo
 //Details about finding OpenAL
 FIND_PACKAGE_MESSAGE_DETAILS_OpenAL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libopenal.so][/usr/include/AL][v()]
 //Details about finding OpenGL
-FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libOpenGL.so][/usr/lib/x86_64-linux-gnu/libGLX.so][/usr/include][c ][v()]
+FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libGL.so][/usr/include][c ][v()]
 //Details about finding Python3
 FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/usr/bin/python3.12][cfound components: Interpreter ][v3.12.3()]
 //Details about finding SDL2_gfx
@@ -750,6 +746,8 @@ OPENGL_GLX_INCLUDE_DIR-ADVANCED:INTERNAL=1
 OPENGL_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OPENGL_egl_LIBRARY
 OPENGL_egl_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENGL_gl_LIBRARY
+OPENGL_gl_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OPENGL_gles2_LIBRARY
 OPENGL_gles2_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OPENGL_gles3_LIBRARY

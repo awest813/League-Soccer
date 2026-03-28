@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/home/runner/work/League-Soccer/League-Soccer/src -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest/include -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest
 
-CXX_FLAGS = -g -g -Wall -Wextra -std=c++17
+CXX_FLAGS = -O3 -DNDEBUG -Wall -O3 -std=c++17
 
