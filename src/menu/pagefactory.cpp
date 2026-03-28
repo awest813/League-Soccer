@@ -323,6 +323,18 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
       page = new CareerTransferMarketPage(windowManager, pageData);
       break;
 
+    case e_PageID_CareerPressConference:
+      page = new CareerPressConferencePage(windowManager, pageData);
+      break;
+
+    case e_PageID_CareerLeagueExpansion:
+      page = new CareerLeagueExpansionPage(windowManager, pageData);
+      break;
+
+    case e_PageID_CareerCustomLeague:
+      page = new CareerCustomLeaguePage(windowManager, pageData);
+      break;
+
     default:
       page = 0;
       break;

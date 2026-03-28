@@ -52,3 +52,19 @@ target_link_libraries(gameplayfootball_integration_tests PRIVATE
 )
 
 gtest_discover_tests(gameplayfootball_integration_tests)
+
+# Career data unit tests (Phase 6: tasks 6.13, 6.16, 6.17)
+add_executable(gameplayfootball_career_tests
+  career/careerdata_test.cpp
+  ${PROJECT_SOURCE_DIR}/src/data/careerdata.cpp
+)
+
+target_include_directories(gameplayfootball_career_tests PRIVATE
+  ${PROJECT_SOURCE_DIR}/src
+)
+
+target_link_libraries(gameplayfootball_career_tests PRIVATE
+  GTest::gtest_main
+)
+
+gtest_discover_tests(gameplayfootball_career_tests)
