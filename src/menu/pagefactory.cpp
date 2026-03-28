@@ -152,6 +152,10 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
       page = new AudioPage(windowManager, pageData);
       break;
 
+    case e_PageID_Language:
+      page = new LanguagePage(windowManager, pageData);
+      break;
+
       // league mode
 
     case e_PageID_League_Start:

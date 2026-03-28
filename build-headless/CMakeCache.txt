@@ -345,6 +345,9 @@ GameplayFootball_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 GameplayFootball_SOURCE_DIR:STATIC=/home/runner/work/League-Soccer/League-Soccer
 
+//No help, variable specified on the command line.
+HEADLESS:UNINITIALIZED=ON
+
 //Enable installation of googletest. (Projects embedding googletest
 // may want to turn this OFF.)
 INSTALL_GTEST:BOOL=ON

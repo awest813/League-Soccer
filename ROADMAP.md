@@ -89,7 +89,7 @@ welcome - see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 | 4.3 | **HiDPI / Retina display** support | `DONE` |
 | 4.4 | **Resolution selector** in the options menu | `DONE` |
 | 4.5 | **Controller remapping** in-game menu | `DONE` |
-| 4.6 | **Localization / i18n** scaffolding | `IDEA` |
+| 4.6 | **Localization / i18n** scaffolding | `DONE` |
 | 4.7 | **Shader improvements** - normal mapping, ambient occlusion | `DONE` |
 | 4.8 | **Widescreen camera** preset (16:9 / 21:9) | `DONE` |
 | 4.9 | **UI/Menu modernization** - dark sports theme, vertical main menu, centered HUD | `DONE` |

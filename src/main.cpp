@@ -24,6 +24,7 @@
 #include "utils/objectloader.hpp"
 #include "utils/orbitcamera.hpp"
 #include "utils/threadhud.hpp"
+#include "utils/localization.hpp"
 
 #if defined(WIN32) && defined(__MINGW32__)
 #undef main
@@ -302,6 +303,9 @@ int main(int argc, const char** argv) {
   if (argc > 1)
     configFile = argv[1];
   config->LoadFile(configFile.c_str());
+
+  // Initialize localization using saved language preference (default: "en")
+  Localization::GetInstance().Load(config->Get("locale_language", "en"));
 
   Initialize(*config);
 

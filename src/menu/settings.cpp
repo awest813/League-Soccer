@@ -6,9 +6,12 @@
 #include "settings.hpp"
 
 #include <iterator>
+#include <string>
+#include <vector>
 
 #include "../main.hpp"
 #include "pagefactory.hpp"
+#include "utils/localization.hpp"
 
 SettingsPage::SettingsPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
@@ -24,18 +27,22 @@ SettingsPage::SettingsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Button* buttonGraphics =
       new Gui2Button(windowManager, "button_graphics", 0, 0, 30, 3, "graphics");
   Gui2Button* buttonAudio = new Gui2Button(windowManager, "button_audio", 0, 0, 30, 3, "audio");
+  Gui2Button* buttonLanguage =
+      new Gui2Button(windowManager, "button_language", 0, 0, 30, 3, "language");
 
   buttonGameplay->sig_OnClick.connect([this](...) { GoGameplay(); });
   buttonController->sig_OnClick.connect([this](...) { GoController(); });
   buttonGraphics->sig_OnClick.connect([this](...) { GoGraphics(); });
   buttonAudio->sig_OnClick.connect([this](...) { GoAudio(); });
+  buttonLanguage->sig_OnClick.connect([this](...) { GoLanguage(); });
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "settingsgrid", 20, 25, 60, 55);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "settingsgrid", 20, 25, 60, 60);
 
   grid->AddView(buttonGameplay, 0, 0);
   grid->AddView(buttonController, 1, 0);
   grid->AddView(buttonGraphics, 2, 0);
   grid->AddView(buttonAudio, 3, 0);
+  grid->AddView(buttonLanguage, 4, 0);
 
   grid->UpdateLayout(0.5);
 
@@ -63,6 +70,10 @@ void SettingsPage::GoGraphics() {
 
 void SettingsPage::GoAudio() {
   CreatePage(e_PageID_Audio);
+}
+
+void SettingsPage::GoLanguage() {
+  CreatePage(e_PageID_Language);
 }
 
 // GAMEPLAY MENU
@@ -1690,4 +1701,52 @@ void AudioPage::Exit() {
   GetConfiguration()->SaveFile(GetConfigFilename());
 
   Gui2Page::Exit();
+}
+
+// LANGUAGE MENU (task 4.6 - localization scaffolding)
+
+LanguagePage::LanguagePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
+    : Gui2Page(windowManager, pageData) {
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "caption_language", 20, 5, 60, 3, "Language");
+  this->AddView(title);
+  title->Show();
+
+  Gui2Caption* note = new Gui2Caption(windowManager, "caption_language_note", 20, 10, 60, 3,
+                                      "Select a language:");
+  this->AddView(note);
+  note->Show();
+
+  const std::vector<std::string>& langs = Localization::GetAvailableLanguages();
+  Gui2Grid* grid = new Gui2Grid(windowManager, "languagegrid", 20, 17, 60, 70);
+
+  for (int i = 0; i < static_cast<int>(langs.size()); ++i) {
+    const std::string& code = langs[i];
+    std::string displayName = Localization::GetLanguageDisplayName(code);
+    // Append a marker to the currently active language
+    if (code == Localization::GetInstance().GetCurrentLanguage()) {
+      displayName += " *";
+    }
+    Gui2Button* btn =
+        new Gui2Button(windowManager, "button_lang_" + code, 0, 0, 30, 3, displayName);
+    btn->sig_OnClick.connect([this, code](...) { SelectLanguage(code); });
+    grid->AddView(btn, i, 0);
+    if (i == 0) btn->SetFocus();
+  }
+
+  grid->UpdateLayout(0.5);
+  this->AddView(grid);
+  grid->Show();
+
+  this->Show();
+}
+
+LanguagePage::~LanguagePage() {}
+
+void LanguagePage::SelectLanguage(const std::string& languageCode) {
+  Localization::GetInstance().Load(languageCode);
+  GetConfiguration()->Set("locale_language", languageCode);
+  GetConfiguration()->SaveFile(GetConfigFilename());
+  // Recreate this page so the active-language marker refreshes.
+  CreatePage(e_PageID_Language);
 }
