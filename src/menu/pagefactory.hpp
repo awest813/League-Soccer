@@ -74,7 +74,10 @@ enum e_PageID {
   e_PageID_League_Management_Transfers,
   e_PageID_League_System,
   e_PageID_League_System_Save,
-  e_PageID_League_System_Settings
+  e_PageID_League_System_Settings,
+
+  e_PageID_MatchHistory,
+  e_PageID_SetPieceEditor
 };
 
 class PageFactory : public Gui2PageFactory {

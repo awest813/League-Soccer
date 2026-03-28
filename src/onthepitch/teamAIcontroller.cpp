@@ -818,6 +818,12 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
   else
     team->SetFadingTeamPossessionAmount(0.5);
 
+  // Load custom set-piece formation parameters
+  SetPieceParams spParams =
+      SetPieceConfig::Load(team->GetTeamData()->GetDatabaseID(), setPiece);
+  float depth = spParams.formation_depth;
+  float width = spParams.formation_width;
+
   switch (setPiece) {
     case e_SetPiece_KickOff:
       for (unsigned int i = 0; i < players.size(); i++) {
@@ -891,8 +897,8 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
           midfieldFocus = 0.1f;
           midfieldFocusStrength = 0.7f;
         }
-        lowYBound = -pitchHalfH * 0.6;
-        highYBound = pitchHalfH * 0.6;
+        lowYBound = -pitchHalfH * 0.6 * width;
+        highYBound = pitchHalfH * 0.6 * width;
         Vector3 basePos = AI_GetAdaptedFormationPosition(
             match, players.at(i), backXBound, frontXBound, lowYBound, highYBound, xFocus,
             xFocusStrength, yFocus, yFocusStrength,
@@ -941,9 +947,9 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
               clamp((ballPos.coords[0] * -team->GetSide()) / pitchHalfW, -1.0, 1.0) * 0.5 +
               0.5;  // 0 == close to our goal, 1 == far from our goal
           backXBound =
-              clamp(team->GetSide() * pitchHalfW * (0.7 - xOffset * 0.7), -pitchHalfW, pitchHalfW);
+              clamp(team->GetSide() * pitchHalfW * (depth - xOffset * depth), -pitchHalfW, pitchHalfW);
           frontXBound =
-              clamp(team->GetSide() * pitchHalfW * (-0.3 - xOffset * 0.7), -pitchHalfW, pitchHalfW);
+              clamp(team->GetSide() * pitchHalfW * (-0.43f * depth - xOffset * depth), -pitchHalfW, pitchHalfW);
           // printf("fb: %f %f\n", backXBound, frontXBound);
           xFocus = clamp(ballPos.coords[0] + 10 * -team->GetSide(), -pitchHalfW, pitchHalfW);
           xFocusStrength = 0.5 + xOffset * 0.2;
@@ -963,8 +969,8 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
           yFocus = ballPos.coords[1] * 0.2;
           yFocusStrength = 0.8 - xOffset * 0.4;
         }
-        lowYBound = -pitchHalfH * 0.7;
-        highYBound = pitchHalfH * 0.7;
+        lowYBound = -pitchHalfH * 0.7 * width;
+        highYBound = pitchHalfH * 0.7 * width;
         Vector3 basePos = AI_GetAdaptedFormationPosition(
             match, players.at(i), backXBound, frontXBound, lowYBound, highYBound, xFocus,
             xFocusStrength, yFocus, yFocusStrength, ballPos, 0.4, 0, 0, false);
@@ -1224,6 +1230,10 @@ void TeamAIController::UpdateTactics() {
     }
     iter++;
   }
+}
+
+SetPieceParams TeamAIController::GetSetPieceParams(e_SetPiece setPiece) {
+  return SetPieceConfig::Load(team->GetTeamData()->GetDatabaseID(), setPiece);
 }
 
 void TeamAIController::Reset() {

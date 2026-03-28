@@ -12,6 +12,7 @@
 #include "../data/matchdata.hpp"
 #include "../menu/ingame/radar.hpp"
 #include "../menu/ingame/scoreboard.hpp"
+#include "../menu/ingame/statsoverlay.hpp"
 #include "../menu/ingame/tacticsdebug.hpp"
 #include "../menu/menutask.hpp"
 #include "AIsupport/mentalimage.hpp"
@@ -195,6 +196,9 @@ public:
 
   void GameOver();
 
+  void AddExcitementBoost(float amount, int duration_ms);
+  void ToggleStatsOverlay();
+
   void GetCameraParams(float& zoom, float& height, float& fov, float& angleFactor);
   void SetCameraParams(float zoom, float height, float fov, float angleFactor);
 
@@ -315,6 +319,7 @@ protected:
   Gui2Radar* radar;
   Gui2TacticsDebug* tacticsDebug;
   Gui2Caption* messageCaption;
+  Gui2StatsOverlay* statsOverlay;
   unsigned long messageCaptionRemoveTime_ms;
 
   mutable Lockable<unsigned long> iterations;
