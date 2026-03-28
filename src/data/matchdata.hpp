@@ -30,6 +30,24 @@ public:
   void AddShot(int teamID) { shots[teamID] += 1; }
   int GetShots(int teamID) { return shots[teamID]; }
 
+  // pass tracking
+  void AddPassAttempt(int teamID) {
+    passAttempts[teamID]++;
+    pendingPassTeamID = teamID;
+  }
+  void RecordBallTouch(int receivingTeamID) {
+    if (pendingPassTeamID == receivingTeamID) {
+      passesCompleted[receivingTeamID]++;
+    }
+    pendingPassTeamID = -1;
+  }
+  int GetPassAttempts(int teamID) const { return passAttempts[teamID]; }
+  int GetPassesCompleted(int teamID) const { return passesCompleted[teamID]; }
+
+  // foul tracking
+  void AddFoul(int teamID) { foulsCommitted[teamID]++; }
+  int GetFouls(int teamID) const { return foulsCommitted[teamID]; }
+
 protected:
   std::array<std::unique_ptr<TeamData>, 2> teamData;
 
@@ -38,6 +56,12 @@ protected:
   unsigned long possessionTime_ms[2];
   float possession60seconds;  // -600 to 600 for possession of team 1 / 2 respectively
   int shots[2];
+
+  int passAttempts[2];
+  int passesCompleted[2];
+  int pendingPassTeamID;
+
+  int foulsCommitted[2];
 };
 
 #endif

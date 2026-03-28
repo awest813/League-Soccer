@@ -586,6 +586,8 @@ float Player::GetStat(const char* name) const {
   multiplier *=
       0.7f +
       0.3f * GetFatigueFactorInv();  // todo: some stats are more affected by fatigue than others
+  // injury reduces all stats by up to 40%
+  multiplier *= 1.0f - injuryLevel * 0.4f;
   // if (GetExternalController()) printf("stat %s: %f\n", name, playerData->GetStat(name));
   // if (GetDebug()) printf("stat %s == %f\n", name, playerData->GetStat(name) * multiplier);
 

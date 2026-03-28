@@ -1,0 +1,2 @@
+/usr/bin/ar qc libgf_ballphysicslib.a CMakeFiles/gf_ballphysicslib.dir/src/onthepitch/ballphysics.cpp.o
+/usr/bin/ranlib libgf_ballphysicslib.a

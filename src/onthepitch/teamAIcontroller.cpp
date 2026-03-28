@@ -48,6 +48,11 @@ TeamAIController::TeamAIController(Team* team) : team(team) {
   endApplyKeeperRush_ms = 0;
   forwardSupportPlayer = 0;
 
+  counterPressActive = false;
+  counterPressEndTime_ms = 0;
+  counterPressPlayers.clear();
+  prevTeamHasPossession = false;
+
   baseTeamTactics.Set("position_offense_depth_factor", 0.9f);
   baseTeamTactics.Set("position_defense_depth_factor", 0.75f);
   baseTeamTactics.Set("position_offense_width_factor", 0.9f);
@@ -219,6 +224,18 @@ void TeamAIController::Process() {
       }
     }
   */
+
+  // counter-press: trigger immediately when possession is lost
+  if (team->GetHumanGamerCount() == 0) {
+    if (prevTeamHasPossession && !teamHasPossession) {
+      ApplyCounterPress();
+    }
+    if (counterPressActive && match->GetActualTime_ms() > counterPressEndTime_ms) {
+      counterPressActive = false;
+      counterPressPlayers.clear();
+    }
+  }
+  prevTeamHasPossession = teamHasPossession;
 
   // trigger attacking runs
 
@@ -1106,6 +1123,31 @@ void TeamAIController::ApplyTeamPressure() {
   }
 }
 
+void TeamAIController::ApplyCounterPress() {
+  // Gegenpressing: immediately after losing the ball, send up to 3 outfield players
+  // to swarm the opponent who just gained possession.
+  counterPressActive = true;
+  counterPressEndTime_ms = match->GetActualTime_ms() + 4000;
+  counterPressPlayers.clear();
+
+  Player* opp = match->GetTeam(abs(team->GetID() - 1))->GetBestPossessionPlayer();
+  if (!opp)
+    return;
+
+  Vector3 ballPos = match->GetBall()->Predict(0).Get2D();
+
+  // gather the 3 outfield players closest to the ball
+  std::vector<Player*> pressers;
+  AI_GetClosestPlayers(team, ballPos, true, pressers, 3);
+
+  for (Player* presser : pressers) {
+    if (!presser || presser == team->GetGoalie())
+      continue;
+    presser->SetManMarkingID(opp->GetID());
+    counterPressPlayers.push_back(presser);
+  }
+}
+
 void TeamAIController::ApplyKeeperRush() {
   endApplyKeeperRush_ms = match->GetActualTime_ms() + 300;
 }
@@ -1196,6 +1238,11 @@ void TeamAIController::Reset() {
   endApplyTeamPressure_ms = 0;
   teamPressurePlayer = 0;
   endApplyKeeperRush_ms = 0;
+
+  counterPressActive = false;
+  counterPressEndTime_ms = 0;
+  counterPressPlayers.clear();
+  prevTeamHasPossession = false;
 
   teamHasPossession = false;
   teamHasUniquePossession = false;

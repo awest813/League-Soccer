@@ -50,6 +50,7 @@ public:
   e_SetPiece GetSetPieceType() { return setPieceType; }
   void ApplyAttackingRun(Player* manualPlayer = 0);
   void ApplyTeamPressure();
+  void ApplyCounterPress();
   void ApplyKeeperRush();
   void CalculateSituation();
 
@@ -60,6 +61,10 @@ public:
 
   unsigned long GetEndApplyTeamPressure_ms() { return endApplyTeamPressure_ms; }
   Player* GetTeamPressurePlayer() { return teamPressurePlayer; }
+
+  bool IsCounterPressActive() const { return counterPressActive; }
+  unsigned long GetCounterPressEndTime_ms() const { return counterPressEndTime_ms; }
+  const std::vector<Player*>& GetCounterPressPlayers() const { return counterPressPlayers; }
 
   Player* GetForwardSupportPlayer() { return forwardSupportPlayer; }
 
@@ -103,6 +108,11 @@ protected:
   unsigned long endApplyTeamPressure_ms;
   Player* teamPressurePlayer;
   unsigned long endApplyKeeperRush_ms;
+
+  bool counterPressActive;
+  unsigned long counterPressEndTime_ms;
+  std::vector<Player*> counterPressPlayers;
+  bool prevTeamHasPossession;
 
   Player* forwardSupportPlayer;  // sort of like the attacking run player, but more for a forward
                                  // offset for a player close to the action, to support the player

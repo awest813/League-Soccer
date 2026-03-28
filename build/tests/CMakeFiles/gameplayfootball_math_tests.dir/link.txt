@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -g -Wall -Wextra -Wl,--dependency-file=CMakeFiles/gameplayfootball_math_tests.dir/link.d CMakeFiles/gameplayfootball_math_tests.dir/base/math_test.cpp.o CMakeFiles/gameplayfootball_math_tests.dir/onthepitch/ball_physics_test.cpp.o -o gameplayfootball_math_tests  ../libgf_ballphysicslib.a ../libgf_mathlib.a ../lib/libgtest_main.a ../lib/libgtest.a
