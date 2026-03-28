@@ -57,4 +57,11 @@ services:
     volumes:
       - .:/workspace:cached
     working_dir: /workspace
-    command: doxygen Doxyfile
+    command: >
+      bash -c "
+        cmake -S . -B /tmp/build-docs
+          -DGAMEPLAYFOOTBALL_BUILD_GAME=OFF
+          -DBUILD_TESTING=OFF
+          -DGAMEPLAYFOOTBALL_BUILD_DOCS=ON
+        && cmake --build /tmp/build-docs --target docs
+      "
