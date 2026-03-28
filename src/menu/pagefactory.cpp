@@ -25,6 +25,7 @@
 #include "league/league_standings.hpp"
 #include "league/league_system.hpp"
 #include "league/league_team.hpp"
+#include "career/careerpages.hpp"
 #include "mainmenu.hpp"
 #include "settings.hpp"
 #include "startmatch/loadingmatch.hpp"
@@ -304,6 +305,22 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
 
     case e_PageID_SetPieceEditor:
       page = new SetPieceEditorPage(windowManager, pageData);
+      break;
+
+    case e_PageID_CareerMenu:
+      page = new CareerMenuPage(windowManager, pageData);
+      break;
+
+    case e_PageID_CareerNewGame:
+      page = new CareerNewGamePage(windowManager, pageData);
+      break;
+
+    case e_PageID_CareerHub:
+      page = new CareerHubPage(windowManager, pageData);
+      break;
+
+    case e_PageID_CareerTransferMarket:
+      page = new CareerTransferMarketPage(windowManager, pageData);
       break;
 
     default:

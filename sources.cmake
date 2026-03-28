@@ -471,6 +471,7 @@ set(HID_SOURCES
 )
 
 set(MENU_HEADERS
+   src/menu/career/careerpages.hpp
    src/menu/league/league_calendar.hpp
    src/menu/league/league_standings.hpp
    src/menu/league/league_team.hpp
@@ -509,6 +510,7 @@ set(MENU_HEADERS
 )
 
 set(MENU_SOURCES
+   src/menu/career/careerpages.cpp
    src/menu/credits.cpp
    src/menu/league/league_system.cpp
    src/menu/league/league_team.cpp
@@ -547,6 +549,16 @@ set(MENU_SOURCES
 )
 
 set(DATA_HEADERS
+   src/data/careerdata.hpp
+   src/data/contractdata.hpp
+   src/data/transfermarket.hpp
+   src/data/moraledata.hpp
+   src/data/scoutingdata.hpp
+   src/data/youthacademy.hpp
+   src/data/staffdata.hpp
+   src/data/achievementdata.hpp
+   src/data/facilitydata.hpp
+   src/data/draftdata.hpp
    src/data/matchdata.hpp
    src/data/teamdata.hpp
    src/data/playerdata.hpp
@@ -555,6 +567,15 @@ set(DATA_HEADERS
 )
 
 set(DATA_SOURCES
+   src/data/careerdata.cpp
+   src/data/transfermarket.cpp
+   src/data/moraledata.cpp
+   src/data/scoutingdata.cpp
+   src/data/youthacademy.cpp
+   src/data/staffdata.cpp
+   src/data/achievementdata.cpp
+   src/data/facilitydata.cpp
+   src/data/draftdata.cpp
    src/data/matchdata.cpp
    src/data/playerdata.cpp
    src/data/teamdata.cpp

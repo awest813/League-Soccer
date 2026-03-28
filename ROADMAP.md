@@ -114,21 +114,21 @@ welcome - see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 | # | Task | Status |
 |---|------|--------|
-| 6.1 | **myCoach Mode** - Create-a-coach, skill trees, training drills focus | `PLANNED` |
-| 6.2 | **myGM Mode** - Full general manager controls (trades, contracts, draft, budget) | `PLANNED` |
-| 6.3 | **Player Career Mode** - Control a single player, request transfers, grow attributes | `PLANNED` |
-| 6.4 | **Manager Career Mode** - Handle tactics, lineups, press conferences, board objectives | `PLANNED` |
-| 6.5 | **Dynamic transfer market** - AI teams make bids, negotiate, loan deals | `PLANNED` |
-| 6.6 | **Contract negotiation system** - salary, bonuses, release clauses, contract length | `PLANNED` |
-| 6.7 | **Draft system** - annual rookie draft with scouting reports and pick trading | `PLANNED` |
-| 6.8 | **Scouting network** - hire scouts, discover hidden gems, attribute uncertainty | `PLANNED` |
-| 6.9 | **Youth academy** - promote youth players, develop prospects over seasons | `PLANNED` |
-| 6.10 | **Staff management** - hire / fire assistant coaches, fitness coaches, medical staff | `PLANNED` |
-| 6.11 | **Facility upgrades** - improve training grounds, stadium, medical center | `PLANNED` |
-| 6.12 | **Morale and chemistry system** - team cohesion affects on-pitch performance | `PLANNED` |
+| 6.1 | **myCoach Mode** - Create-a-coach, skill trees, training drills focus | `DONE` |
+| 6.2 | **myGM Mode** - Full general manager controls (trades, contracts, draft, budget) | `DONE` |
+| 6.3 | **Player Career Mode** - Control a single player, request transfers, grow attributes | `DONE` |
+| 6.4 | **Manager Career Mode** - Handle tactics, lineups, press conferences, board objectives | `DONE` |
+| 6.5 | **Dynamic transfer market** - AI teams make bids, negotiate, loan deals | `DONE` |
+| 6.6 | **Contract negotiation system** - salary, bonuses, release clauses, contract length | `DONE` |
+| 6.7 | **Draft system** - annual rookie draft with scouting reports and pick trading | `DONE` |
+| 6.8 | **Scouting network** - hire scouts, discover hidden gems, attribute uncertainty | `DONE` |
+| 6.9 | **Youth academy** - promote youth players, develop prospects over seasons | `DONE` |
+| 6.10 | **Staff management** - hire / fire assistant coaches, fitness coaches, medical staff | `DONE` |
+| 6.11 | **Facility upgrades** - improve training grounds, stadium, medical center | `DONE` |
+| 6.12 | **Morale and chemistry system** - team cohesion affects on-pitch performance | `DONE` |
 | 6.13 | **Press conference / media interactions** - dialogue choices impact reputation | `IDEA` |
-| 6.14 | **Achievement / milestone system** - personal and club records, hall of fame | `PLANNED` |
-| 6.15 | **Multi-season persistence** - save career progress across multiple seasons | `PLANNED` |
+| 6.14 | **Achievement / milestone system** - personal and club records, hall of fame | `DONE` |
+| 6.15 | **Multi-season persistence** - save career progress across multiple seasons | `DONE` |
 | 6.16 | **League expansion / relegation** - dynamic league structure with promotion / demotion | `IDEA` |
 | 6.17 | **Custom league creation** - users define teams, divisions, rules | `IDEA` |
 

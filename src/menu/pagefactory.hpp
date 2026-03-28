@@ -78,7 +78,12 @@ enum e_PageID {
   e_PageID_League_System_Settings,
 
   e_PageID_MatchHistory,
-  e_PageID_SetPieceEditor
+  e_PageID_SetPieceEditor,
+
+  e_PageID_CareerMenu,
+  e_PageID_CareerNewGame,
+  e_PageID_CareerHub,
+  e_PageID_CareerTransferMarket
 };
 
 class PageFactory : public Gui2PageFactory {
