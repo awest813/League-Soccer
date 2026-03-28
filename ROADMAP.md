@@ -84,14 +84,14 @@ welcome - see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 | # | Task | Status |
 |---|------|--------|
-| 4.1 | Fix macOS rendering (dispatch OpenGL calls to main thread) | `PLANNED` |
-| 4.2 | Windows CI/CD with automated release artifacts | `PLANNED` |
-| 4.3 | **HiDPI / Retina display** support | `PLANNED` |
-| 4.4 | **Resolution selector** in the options menu | `PLANNED` |
-| 4.5 | **Controller remapping** in-game menu | `PLANNED` |
+| 4.1 | Fix macOS rendering (dispatch OpenGL calls to main thread) | `DONE` |
+| 4.2 | Windows CI/CD with automated release artifacts | `DONE` |
+| 4.3 | **HiDPI / Retina display** support | `DONE` |
+| 4.4 | **Resolution selector** in the options menu | `DONE` |
+| 4.5 | **Controller remapping** in-game menu | `DONE` |
 | 4.6 | **Localization / i18n** scaffolding | `IDEA` |
-| 4.7 | **Shader improvements** - normal mapping, ambient occlusion | `IN PROGRESS` |
-| 4.8 | **Widescreen camera** preset (16:9 / 21:9) | `PLANNED` |
+| 4.7 | **Shader improvements** - normal mapping, ambient occlusion | `DONE` |
+| 4.8 | **Widescreen camera** preset (16:9 / 21:9) | `DONE` |
 | 4.9 | **UI/Menu modernization** - dark sports theme, vertical main menu, centered HUD | `DONE` |
 
 ---

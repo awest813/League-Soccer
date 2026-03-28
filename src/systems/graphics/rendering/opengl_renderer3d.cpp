@@ -88,7 +88,7 @@ OpenGLRenderer3D::OpenGLRenderer3D()
   // SetPriorityClass(thread.native_handle(), HIGH_PRIORITY_CLASS);
 };
 
-OpenGLRenderer3D::~OpenGLRenderer3D() {};
+OpenGLRenderer3D::~OpenGLRenderer3D(){};
 
 void OpenGLRenderer3D::SwapBuffers() {
   SDL_GL_SwapWindow(window);
@@ -367,6 +367,10 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
 
   // #ifdef WIN32
   //  SDL subsystems must be initialized before setting attributes
+#ifdef __APPLE__
+  SDL_SetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, "0");
+  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+#endif
   SDL_Init(SDL_INIT_VIDEO);
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -398,7 +402,7 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
 
   window = SDL_CreateWindow(
       "Gameplay Football", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height,
-      SDL_WINDOW_OPENGL /* | SDL_RESIZABLE*/ | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
+      SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
   if (!window) {
     Log(e_FatalError, "OpenGLRenderer3D", "CreateContext",
         "Failed to create SDL window: " + std::string(SDL_GetError()));
@@ -414,21 +418,36 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
     return false;
   }
 
+#ifdef __APPLE__
+  SDL_GL_MakeCurrent(window, context);
+#endif
+
+  int drawable_w = width;
+  int drawable_h = height;
+  SDL_GL_GetDrawableSize(window, &drawable_w, &drawable_h);
+  if (drawable_w != width || drawable_h != height) {
+    Log(e_Notice, "OpenGLRenderer3D", "CreateContext",
+        "HiDPI display detected: logical " + std::to_string(width) + "x" + std::to_string(height) +
+            " -> drawable " + std::to_string(drawable_w) + "x" + std::to_string(drawable_h));
+    this->context_width = drawable_w;
+    this->context_height = drawable_h;
+  }
+
   //    *reinterpret_cast<void**>(&(mapping.func)) =
   //    SDL_GL_GetProcAddress(#func); *reinterpret_cast<void**>(&(mapping.func))
   //    = (void*) func;
-#define SDL_PROC(ret, func, params)                                              \
-  do {                                                                           \
-    *reinterpret_cast<void**>(&(mapping.func)) = SDL_GL_GetProcAddress(#func);   \
-    if (!mapping.func) {                                                         \
-      Log(e_FatalError, "OpenGLRenderer3D", "CreateContext",                     \
-          "Couldn't load GL function " #func ": " + std::string(SDL_GetError()));\
-      SDL_GL_DeleteContext(context);                                             \
-      context = nullptr;                                                         \
-      SDL_DestroyWindow(window);                                                 \
-      window = nullptr;                                                          \
-      return false;                                                              \
-    }                                                                            \
+#define SDL_PROC(ret, func, params)                                               \
+  do {                                                                            \
+    *reinterpret_cast<void**>(&(mapping.func)) = SDL_GL_GetProcAddress(#func);    \
+    if (!mapping.func) {                                                          \
+      Log(e_FatalError, "OpenGLRenderer3D", "CreateContext",                      \
+          "Couldn't load GL function " #func ": " + std::string(SDL_GetError())); \
+      SDL_GL_DeleteContext(context);                                              \
+      context = nullptr;                                                          \
+      SDL_DestroyWindow(window);                                                  \
+      window = nullptr;                                                           \
+      return false;                                                               \
+    }                                                                             \
   } while (0);
 #include "sdl_glfuncs.h"
 #undef SDL_PROC
@@ -454,53 +473,53 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
         "OpenGL version not equal to or higher than 3.2 (or not reported as such)");
 
 #ifdef WIN32
-  // VK: TODO check if centering is still required with SDL2
-  /*
-  SDL_VERSION(&wmInfo.version);
-  if (SDL_GetWMInfo(&wmInfo)) {
+    // VK: TODO check if centering is still required with SDL2
+    /*
+    SDL_VERSION(&wmInfo.version);
+    if (SDL_GetWMInfo(&wmInfo)) {
 
-    HWND hWnd = wmInfo.window;
-    // center window
-    // todo: needs linux version for centering as well. not sure how. find out.
-    if (!fullscreen) {
-      //#undef _WIN32_WINNT
-      //#define _WIN32_WINNT 0x0500
-      //#undef WINVER
-      //#define WINVER 0x0500
-      //#include <windows.h>
-      //#include <winuser.h>
-      HMONITOR mon = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
-      MONITORINFO monInfo;
-      monInfo.cbSize = sizeof(MONITORINFO);
-      bool getMonInfo = GetMonitorInfo(mon, &monInfo);
-      if (getMonInfo != 0) {
-        RECT rect = monInfo.rcWork;
-        int xSize = rect.right - rect.left;
-        int xCenter = rect.left + (xSize * 0.5f);
-        int ySize = rect.bottom - rect.top;
-        int yCenter = rect.top + (ySize * 0.5f);
-        int xWin = xCenter - (width * 0.5f);
-        int yWin = yCenter - (height * 0.5f);
-        xWin = std::max(xWin, 0); // super annoying to have a window's controls being unreachable
-        yWin = std::max(yWin, 0);
-        xWin -= 3; // window border size (educated guess - is a user setting, after all)
-        yWin -= 12; // window border size + taskbar (educated guess - is a user setting, after all)
-        SetWindowPos(hWnd, nullptr, xWin, yWin, 0, 0, SWP_NOSIZE);
+      HWND hWnd = wmInfo.window;
+      // center window
+      // todo: needs linux version for centering as well. not sure how. find out.
+      if (!fullscreen) {
+        //#undef _WIN32_WINNT
+        //#define _WIN32_WINNT 0x0500
+        //#undef WINVER
+        //#define WINVER 0x0500
+        //#include <windows.h>
+        //#include <winuser.h>
+        HMONITOR mon = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO monInfo;
+        monInfo.cbSize = sizeof(MONITORINFO);
+        bool getMonInfo = GetMonitorInfo(mon, &monInfo);
+        if (getMonInfo != 0) {
+          RECT rect = monInfo.rcWork;
+          int xSize = rect.right - rect.left;
+          int xCenter = rect.left + (xSize * 0.5f);
+          int ySize = rect.bottom - rect.top;
+          int yCenter = rect.top + (ySize * 0.5f);
+          int xWin = xCenter - (width * 0.5f);
+          int yWin = yCenter - (height * 0.5f);
+          xWin = std::max(xWin, 0); // super annoying to have a window's controls being unreachable
+          yWin = std::max(yWin, 0);
+          xWin -= 3;   // window border size (educated guess - is a user setting, after all)
+          yWin -= 12;  // window border size + taskbar (educated guess - user setting)
+          SetWindowPos(hWnd, nullptr, xWin, yWin, 0, 0, SWP_NOSIZE);
+        }
+        //SetWindowPos(hWnd, nullptr, 976, 0, 0, 0, SWP_NOSIZE);
       }
-      //SetWindowPos(hWnd, nullptr, 976, 0, 0, 0, SWP_NOSIZE);
-    }
 
-    //HDC hDC = GetDC(wmInfo.window);
-    //wglMakeCurrent(hDC, wmInfo.hglrc);
-  }
-   */
+      //HDC hDC = GetDC(wmInfo.window);
+      //wglMakeCurrent(hDC, wmInfo.hglrc);
+    }
+     */
 #endif
 
 #ifdef WIN32
   bool success = false;  // wglSwapIntervalEXT(-1);
   if (!success)
     wglSwapIntervalEXT(1);
-  // if (!success) printf("ANTI TEAR NOT SUPPORTED\n\n\n\n\n");
+    // if (!success) printf("ANTI TEAR NOT SUPPORTED\n\n\n\n\n");
 #endif
 
 #ifdef __linux__
@@ -2273,6 +2292,8 @@ void OpenGLRenderer3D::LoadShader(const std::string& name, const std::string& fi
     SetUniformFloat("ambient", "contextY", (float)0.0);
     SetUniformFloat("ambient", "contextWidth", (float)context_width);
     SetUniformFloat("ambient", "contextHeight", (float)context_height);
+    SetUniformFloat("ambient", "ssaoStrength", 1.0f);
+    SetUniformFloat("ambient", "ssaoRadius", 0.18f);
 
     unsigned int kernelSize = 32;
     // SetUniformInt("ambient", "SSAO_kernelSize", kernelSize);

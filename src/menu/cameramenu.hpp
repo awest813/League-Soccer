@@ -24,6 +24,8 @@ public:
 
   void UpdateCamera();
 
+  void ApplyPreset(float zoom, float height, float fov, float angleFactor);
+
 protected:
   Gui2Slider* sliderZoom;
   Gui2Slider* sliderHeight;
