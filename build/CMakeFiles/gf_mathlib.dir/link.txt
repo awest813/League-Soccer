@@ -1,0 +1,2 @@
+/usr/bin/ar qc libgf_mathlib.a CMakeFiles/gf_mathlib.dir/src/base/log.cpp.o CMakeFiles/gf_mathlib.dir/src/base/math/vector3.cpp.o CMakeFiles/gf_mathlib.dir/src/base/math/matrix3.cpp.o CMakeFiles/gf_mathlib.dir/src/base/math/bluntmath.cpp.o CMakeFiles/gf_mathlib.dir/src/base/math/quaternion.cpp.o CMakeFiles/gf_mathlib.dir/src/base/math/matrix4.cpp.o
+/usr/bin/ranlib libgf_mathlib.a
