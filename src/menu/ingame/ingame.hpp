@@ -23,6 +23,7 @@ public:
 
   void GoGamePlan();
   void GoControllerSelect();
+  void GoControllerRemap();
   void GoCameraSettings();
   void GoVisualOptions();
   void GoSystemSettings();

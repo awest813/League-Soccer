@@ -26,6 +26,8 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
       new Gui2Button(windowManager, "button_gameplan", 0, 0, 30, 3, "game plan");
   Gui2Button* buttonControllerSelect =
       new Gui2Button(windowManager, "button_controllerselect", 0, 0, 30, 3, "controller select");
+  Gui2Button* buttonControllerRemap =
+      new Gui2Button(windowManager, "button_controllerremap", 0, 0, 30, 3, "controller remap");
   Gui2Button* buttonCameraSettings =
       new Gui2Button(windowManager, "button_camerasettings", 0, 0, 30, 3, "camera settings");
   Gui2Button* buttonVisualOptions =
@@ -40,6 +42,7 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
 
   buttonGamePlan->sig_OnClick.connect([this](...) { GoGamePlan(); });
   buttonControllerSelect->sig_OnClick.connect([this](...) { GoControllerSelect(); });
+  buttonControllerRemap->sig_OnClick.connect([this](...) { GoControllerRemap(); });
   buttonCameraSettings->sig_OnClick.connect([this](...) { GoCameraSettings(); });
   buttonVisualOptions->sig_OnClick.connect([this](...) { GoVisualOptions(); });
   buttonSystemSettings->sig_OnClick.connect([this](...) { GoSystemSettings(); });
@@ -51,12 +54,13 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
 
   grid->AddView(buttonGamePlan, 0, 0);
   grid->AddView(buttonControllerSelect, 1, 0);
-  grid->AddView(buttonCameraSettings, 2, 0);
-  grid->AddView(buttonVisualOptions, 3, 0);
-  grid->AddView(buttonSystemSettings, 4, 0);
-  grid->AddView(buttonReplay, 5, 0);
-  grid->AddView(buttonSetPieces, 6, 0);
-  grid->AddView(buttonPreQuit, 7, 0);
+  grid->AddView(buttonControllerRemap, 2, 0);
+  grid->AddView(buttonCameraSettings, 3, 0);
+  grid->AddView(buttonVisualOptions, 4, 0);
+  grid->AddView(buttonSystemSettings, 5, 0);
+  grid->AddView(buttonReplay, 6, 0);
+  grid->AddView(buttonSetPieces, 7, 0);
+  grid->AddView(buttonPreQuit, 8, 0);
 
   grid->UpdateLayout(0.5);
 
@@ -69,6 +73,10 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
 }
 
 IngamePage::~IngamePage() {}
+
+void IngamePage::GoControllerRemap() {
+  CreatePage(e_PageID_Controller);
+}
 
 void IngamePage::GoGamePlan() {
   Properties properties;

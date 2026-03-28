@@ -20,6 +20,9 @@ uniform float contextHeight;
 uniform float contextX;
 uniform float contextY;
 
+uniform float ssaoStrength;
+uniform float ssaoRadius;
+
 uniform vec2 cameraClip;
 
 const int SSAO_kernelSize = 32; // don't make larger than this: 32 is hardcoded in source, so no more sample positions exist
@@ -135,7 +138,7 @@ void main(void) {
   // http://john-chapman-graphics.blogspot.nl/2013/01/ssao-tutorial.html
 
   vec2 noiseScale = vec2(contextWidth / 4.0f, contextHeight / 4.0f);
-  float SSAO_radius = 0.18f;//0.12f;
+  float SSAO_radius = ssaoRadius;
 
   vec3 normal = texture2D(map_normal, texCoord).xyz;
   float SSAO = 0.0;
@@ -176,7 +179,7 @@ void main(void) {
   SSAO /= SSAO_kernelSize * 1.0f;
   SSAO = 1.0f - SSAO;
   //SSAO = SSAO * 2.0f - 1.0f; // exaggerate effect
-  SSAO = SSAO * 1.5f - 0.5f; // exaggerate effect
+  SSAO = SSAO * ssaoStrength * 1.5f - 0.5f * ssaoStrength; // exaggerate effect
   //SSAO *= SSAO; // exaggerate effect
   SSAO = clamp(SSAO, 0.0f, 1.0f);
   //SSAO = 1; //disable

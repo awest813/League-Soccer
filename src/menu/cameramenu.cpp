@@ -36,6 +36,26 @@ CameraPage::CameraPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   sliderAngleFactor->sig_OnChange.connect([this](...) { UpdateCamera(); });
   this->sig_OnClose.connect([this](...) { OnClose(); });
 
+  Gui2Button* buttonPresetStandard =
+      new Gui2Button(windowManager, "cam_preset_standard", 0, 0, 30, 3, "standard (16:9)");
+  Gui2Button* buttonPresetWidescreen =
+      new Gui2Button(windowManager, "cam_preset_widescreen", 0, 0, 30, 3, "widescreen (16:9)");
+  Gui2Button* buttonPresetUltrawide =
+      new Gui2Button(windowManager, "cam_preset_ultrawide", 0, 0, 30, 3, "ultrawide (21:9)");
+
+  buttonPresetStandard->sig_OnClick.connect([this](...) { ApplyPreset(0.5f, 0.3f, 0.4f, 0.0f); });
+  buttonPresetWidescreen->sig_OnClick.connect([this](...) { ApplyPreset(0.6f, 0.2f, 0.5f, 0.1f); });
+  buttonPresetUltrawide->sig_OnClick.connect([this](...) { ApplyPreset(0.7f, 0.15f, 0.6f, 0.2f); });
+
+  Gui2Grid* presetGrid = new Gui2Grid(windowManager, "cam_presetgrid", 30, 58, 50, 20);
+  presetGrid->AddView(buttonPresetStandard, 0, 0);
+  presetGrid->AddView(buttonPresetWidescreen, 1, 0);
+  presetGrid->AddView(buttonPresetUltrawide, 2, 0);
+  presetGrid->UpdateLayout(0.5);
+
+  this->AddView(presetGrid);
+  presetGrid->Show();
+
   this->AddView(grid);
   grid->Show();
 
@@ -53,6 +73,14 @@ CameraPage::CameraPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
 }
 
 CameraPage::~CameraPage() {}
+
+void CameraPage::ApplyPreset(float zoom, float height, float fov, float angleFactor) {
+  sliderZoom->SetValue(zoom);
+  sliderHeight->SetValue(height);
+  sliderFOV->SetValue(fov);
+  sliderAngleFactor->SetValue(angleFactor);
+  UpdateCamera();
+}
 
 void CameraPage::OnClose() {
   if (Verbose())
