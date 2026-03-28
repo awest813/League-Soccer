@@ -29,6 +29,7 @@ public:
   void GoController();
   void GoGraphics();
   void GoAudio();
+  void GoLanguage();
 
 protected:
 };
@@ -201,6 +202,15 @@ public:
 
 protected:
   Gui2Slider* sliderVolume;
+};
+
+class LanguagePage : public Gui2Page {
+public:
+  LanguagePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
+  virtual ~LanguagePage();
+
+protected:
+  void SelectLanguage(const std::string& languageCode);
 };
 
 #endif

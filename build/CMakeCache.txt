@@ -348,6 +348,9 @@ GameplayFootball_IS_TOP_LEVEL:STATIC=ON
 GameplayFootball_SOURCE_DIR:STATIC=/home/runner/work/League-Soccer/League-Soccer
 
 //No help, variable specified on the command line.
+HEADLESS:UNINITIALIZED=ON
+
+//No help, variable specified on the command line.
 HEADLESS_TESTS:UNINITIALIZED=ON
 
 //Enable installation of googletest. (Projects embedding googletest

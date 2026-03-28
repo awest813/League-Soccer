@@ -39,6 +39,7 @@ enum e_PageID {
   e_PageID_GamepadFunction,
   e_PageID_Graphics,
   e_PageID_Audio,
+  e_PageID_Language,
 
   e_PageID_League_Start,
   e_PageID_League_Start_Load,
