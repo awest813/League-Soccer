@@ -18,6 +18,15 @@ MatchData::MatchData(int team1DatabaseID, int team2DatabaseID) {
   shots[0] = 0;
   shots[1] = 0;
 
+  passAttempts[0] = 0;
+  passAttempts[1] = 0;
+  passesCompleted[0] = 0;
+  passesCompleted[1] = 0;
+  pendingPassTeamID = -1;
+
+  foulsCommitted[0] = 0;
+  foulsCommitted[1] = 0;
+
   possession60seconds = 0.0f;
 }
 

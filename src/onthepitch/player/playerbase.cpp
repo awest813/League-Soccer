@@ -26,6 +26,7 @@ PlayerBase::PlayerBase(Match* match, PlayerData* playerData)
   lastTouchType = e_TouchType_None;
   fatigueFactorInv = 1.0;
   confidenceFactor = 1.0;
+  injuryLevel = 0.0f;
 
   averageStat = GetStat("physical_balance") + GetStat("physical_reaction") +
                 GetStat("physical_acceleration") + GetStat("physical_velocity") +
@@ -142,8 +143,9 @@ float PlayerBase::GetStat(const char* name) const {
 }
 
 float PlayerBase::GetMaxVelocity() const {
-  // see humanoidbase's physics function
-  return sprintVelocity * GetVelocityMultiplier();
+  // fatigue reduces sprint speed: fully rested = 100%, exhausted = 60%
+  const float fatigueFactor = 0.6f + 0.4f * fatigueFactorInv;
+  return sprintVelocity * GetVelocityMultiplier() * fatigueFactor;
 }
 
 float PlayerBase::GetVelocityMultiplier() const {
@@ -164,6 +166,7 @@ void PlayerBase::ResetSituation(const Vector3& focusPos) {
   positionHistoryPerSecond.clear();
   lastTouchTime_ms = 0;
   lastTouchType = e_TouchType_None;
+  injuryLevel = 0.0f;
   if (IsActive())
     humanoid->ResetSituation(focusPos);
   if (GetController())

@@ -1937,6 +1937,8 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
                          .GetNormalized(bounceVec),
                      tripType);
           referee->TripNotice(p1, p2, tripType);
+          matchData->AddFoul(p2->GetTeamID());
+          p1->Injure(tripType * 0.04f);
         }
       }
       if (p2sensitivity > trip0threshold) {
@@ -1950,6 +1952,8 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
                          .GetNormalized(-bounceVec),
                      tripType);
           referee->TripNotice(p2, p1, tripType);
+          matchData->AddFoul(p1->GetTeamID());
+          p2->Injure(tripType * 0.04f);
         }
       }
 

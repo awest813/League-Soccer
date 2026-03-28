@@ -104,6 +104,11 @@ public:
   }
   float GetConfidenceFactor() const { return confidenceFactor; }
 
+  float GetInjuryLevel() const { return injuryLevel; }
+  void Injure(float severity) {
+    injuryLevel = clamp(injuryLevel + severity, 0.0f, 1.0f);
+  }
+
   float GetAverageStat() { return averageStat; }
 
   virtual void ResetSituation(const Vector3& focusPos);
@@ -129,6 +134,7 @@ protected:
 
   float fatigueFactorInv;
   float confidenceFactor;
+  float injuryLevel;
 
   float averageStat;
 

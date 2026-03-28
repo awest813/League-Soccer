@@ -51,3 +51,4 @@ Expected Output:
     #Original rules preserved
     *.log
 Final reminder: Output ONLY the .gitignore content. If nothing should be ignored, output NOTHING.build-headless/
+build/

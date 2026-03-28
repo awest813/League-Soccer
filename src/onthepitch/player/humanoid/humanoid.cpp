@@ -536,6 +536,7 @@ void Humanoid::Process() {
         team->SetLastTouchPlayer(
             CastPlayer(),
             GetTouchTypeForBodyPart(currentAnim->anim->GetVariable("touch_bodypart")));
+        match->GetMatchData()->RecordBallTouch(team->GetID());
         CastPlayer()->UpdatePossessionStats(false);
       }
 
@@ -560,6 +561,7 @@ void Humanoid::Process() {
         team->SetLastTouchPlayer(
             CastPlayer(),
             GetTouchTypeForBodyPart(currentAnim->anim->GetVariable("touch_bodypart")));
+        match->GetMatchData()->RecordBallTouch(team->GetID());
         CastPlayer()->UpdatePossessionStats(false);
       }
 
@@ -660,6 +662,7 @@ void Humanoid::Process() {
         team->SetLastTouchPlayer(
             CastPlayer(),
             GetTouchTypeForBodyPart(currentAnim->anim->GetVariable("touch_bodypart")));
+        match->GetMatchData()->AddPassAttempt(team->GetID());
         CastPlayer()->UpdatePossessionStats(false);
         if (targetPlayer)
           targetPlayer->UpdatePossessionStats(false);
