@@ -1,7 +1,6 @@
 #include "setpiececonfig.hpp"
 
 #include <filesystem>
-#include <sstream>
 
 #include "sqlite3.h"
 
@@ -49,24 +48,20 @@ SetPieceParams SetPieceConfig::Load(int teamDatabaseID, e_SetPiece setPiece) {
     return defaults;
   }
 
-  std::string sql =
-      "SELECT formation_depth, formation_width FROM set_piece_config WHERE team_id=" +
-      std::to_string(teamDatabaseID) +
-      " AND set_piece_type=" + std::to_string((int)setPiece) + ";";
+  const char* sql =
+      "SELECT formation_depth, formation_width FROM set_piece_config "
+      "WHERE team_id=? AND set_piece_type=?;";
 
-  char** table = nullptr;
-  int rows = 0, cols = 0;
-  char* errMsg = nullptr;
-  int ret = sqlite3_get_table(db, sql.c_str(), &table, &rows, &cols, &errMsg);
-  if (errMsg) sqlite3_free(errMsg);
-
+  sqlite3_stmt* stmt = nullptr;
   SetPieceParams result = defaults;
-  if (ret == SQLITE_OK && rows > 0 && table[2] && table[3]) {
-    result.formation_depth = std::stof(table[2]);
-    result.formation_width = std::stof(table[3]);
-    sqlite3_free_table(table);
-  } else if (table) {
-    sqlite3_free_table(table);
+  if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+    sqlite3_bind_int(stmt, 1, teamDatabaseID);
+    sqlite3_bind_int(stmt, 2, static_cast<int>(setPiece));
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+      result.formation_depth = static_cast<float>(sqlite3_column_double(stmt, 0));
+      result.formation_width = static_cast<float>(sqlite3_column_double(stmt, 1));
+    }
+    sqlite3_finalize(stmt);
   }
 
   sqlite3_close(db);
@@ -83,15 +78,19 @@ void SetPieceConfig::Save(int teamDatabaseID, e_SetPiece setPiece,
     return;
   }
 
-  std::ostringstream sql;
-  sql << "INSERT OR REPLACE INTO set_piece_config "
-         "(team_id, set_piece_type, formation_depth, formation_width) VALUES ("
-      << teamDatabaseID << "," << (int)setPiece << ","
-      << params.formation_depth << "," << params.formation_width << ");";
+  const char* saveSql =
+      "INSERT OR REPLACE INTO set_piece_config "
+      "(team_id, set_piece_type, formation_depth, formation_width) VALUES (?,?,?,?);";
 
-  char* errMsg = nullptr;
-  sqlite3_exec(db, sql.str().c_str(), nullptr, nullptr, &errMsg);
-  if (errMsg) sqlite3_free(errMsg);
+  sqlite3_stmt* stmt = nullptr;
+  if (sqlite3_prepare_v2(db, saveSql, -1, &stmt, nullptr) == SQLITE_OK) {
+    sqlite3_bind_int(stmt, 1, teamDatabaseID);
+    sqlite3_bind_int(stmt, 2, static_cast<int>(setPiece));
+    sqlite3_bind_double(stmt, 3, params.formation_depth);
+    sqlite3_bind_double(stmt, 4, params.formation_width);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
 
   sqlite3_close(db);
 }

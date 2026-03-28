@@ -950,6 +950,7 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
               clamp(team->GetSide() * pitchHalfW * (depth - xOffset * depth), -pitchHalfW, pitchHalfW);
           frontXBound =
               clamp(team->GetSide() * pitchHalfW * (-0.43f * depth - xOffset * depth), -pitchHalfW, pitchHalfW);
+              // -0.43 pushes attackers forward past centre into the opponent half for deep free kicks
           // printf("fb: %f %f\n", backXBound, frontXBound);
           xFocus = clamp(ballPos.coords[0] + 10 * -team->GetSide(), -pitchHalfW, pitchHalfW);
           xFocusStrength = 0.5 + xOffset * 0.2;
