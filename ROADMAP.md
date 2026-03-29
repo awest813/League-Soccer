@@ -126,11 +126,11 @@ welcome - see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 | 6.10 | **Staff management** - hire / fire assistant coaches, fitness coaches, medical staff | `DONE` |
 | 6.11 | **Facility upgrades** - improve training grounds, stadium, medical center | `DONE` |
 | 6.12 | **Morale and chemistry system** - team cohesion affects on-pitch performance | `DONE` |
-| 6.13 | **Press conference / media interactions** - dialogue choices impact reputation | `IDEA` |
+| 6.13 | **Press conference / media interactions** - dialogue choices impact reputation | `DONE` |
 | 6.14 | **Achievement / milestone system** - personal and club records, hall of fame | `DONE` |
 | 6.15 | **Multi-season persistence** - save career progress across multiple seasons | `DONE` |
-| 6.16 | **League expansion / relegation** - dynamic league structure with promotion / demotion | `IDEA` |
-| 6.17 | **Custom league creation** - users define teams, divisions, rules | `IDEA` |
+| 6.16 | **League expansion / relegation** - dynamic league structure with promotion / demotion | `DONE` |
+| 6.17 | **Custom league creation** - users define teams, divisions, rules | `DONE` |
 
 ---
 

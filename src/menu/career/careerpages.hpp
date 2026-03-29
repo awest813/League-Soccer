@@ -40,6 +40,9 @@ class CareerHubPage : public Gui2Page {
  protected:
   void GoTransferMarket();
   void GoSquad();
+  void GoPressConference();
+  void GoLeagueExpansion();
+  void GoCustomLeague();
 };
 
 // Transfer market browser
@@ -47,4 +50,40 @@ class CareerTransferMarketPage : public Gui2Page {
  public:
   CareerTransferMarketPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~CareerTransferMarketPage();
+};
+
+// 6.13 – Press conference / media interactions
+class CareerPressConferencePage : public Gui2Page {
+ public:
+  CareerPressConferencePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
+  virtual ~CareerPressConferencePage();
+
+ protected:
+  // Called when the user selects an answer (index 0-2)
+  void SelectAnswer(int answerIndex);
+
+  // Reputation delta for each answer of the current question
+  int m_reputationDeltas[3] = {5, 0, -5};
+};
+
+// 6.16 – League expansion / relegation configuration
+class CareerLeagueExpansionPage : public Gui2Page {
+ public:
+  CareerLeagueExpansionPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
+  virtual ~CareerLeagueExpansionPage();
+
+ protected:
+  void EnableRelegation();
+  void DisableRelegation();
+  void AddDivision();
+};
+
+// 6.17 – Custom league creation
+class CareerCustomLeaguePage : public Gui2Page {
+ public:
+  CareerCustomLeaguePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
+  virtual ~CareerCustomLeaguePage();
+
+ protected:
+  void CreateCustomLeague();
 };
