@@ -19,6 +19,9 @@ protected:
   void GoMyGM();
   void GoPlayerCareer();
   void GoManagerCareer();
+
+private:
+  void GoCareerMode(const std::string& mode);
 };
 
 // New career setup: pick team and difficulty
@@ -29,6 +32,9 @@ public:
 
 protected:
   void StartCareer();
+
+private:
+  std::string m_mode;  // career mode passed from CareerMenuPage via properties
 };
 
 // Career hub: season info, budget, objectives

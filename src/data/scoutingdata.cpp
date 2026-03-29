@@ -35,7 +35,7 @@ ScoutReport ScoutingNetwork::GenerateReport(int scoutID, int playerID, int seaso
   int skill = scout ? scout->skill : 50;
 
   // Uncertainty is inversely proportional to scout skill: skill 100 = ±5, skill 0 = ±30
-  int baseUncertainty = 30 - (skill * 25 / 100);
+  int baseUncertainty = 30 - static_cast<int>(skill * 25.0f / 100.0f);
 
   static const char* attrs[] = {"pace", "shooting", "passing", "dribbling", "defending",
                                  "physical", nullptr};

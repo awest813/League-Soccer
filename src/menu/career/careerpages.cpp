@@ -2,6 +2,9 @@
 
 #include "../../main.hpp"
 #include "../pagefactory.hpp"
+#include "base/properties.hpp"
+
+using namespace blunted;
 
 // ---------------------------------------------------------------------------
 // CareerMenuPage
@@ -42,17 +45,23 @@ CareerMenuPage::CareerMenuPage(Gui2WindowManager* windowManager, const Gui2PageD
 
 CareerMenuPage::~CareerMenuPage() {}
 
+void CareerMenuPage::GoCareerMode(const std::string& mode) {
+  Properties props;
+  props.Set("careerMode", mode);
+  CreatePage(e_PageID_CareerNewGame, props);
+}
+
 void CareerMenuPage::GoMyCoach() {
-  CreatePage(e_PageID_CareerNewGame);
+  GoCareerMode("mycoach");
 }
 void CareerMenuPage::GoMyGM() {
-  CreatePage(e_PageID_CareerNewGame);
+  GoCareerMode("mygm");
 }
 void CareerMenuPage::GoPlayerCareer() {
-  CreatePage(e_PageID_CareerNewGame);
+  GoCareerMode("player");
 }
 void CareerMenuPage::GoManagerCareer() {
-  CreatePage(e_PageID_CareerNewGame);
+  GoCareerMode("manager");
 }
 
 // ---------------------------------------------------------------------------
@@ -61,8 +70,18 @@ void CareerMenuPage::GoManagerCareer() {
 
 CareerNewGamePage::CareerNewGamePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
+  m_mode = pageData.properties ? pageData.properties->Get("careerMode", "manager") : "manager";
+
+  std::string modeLabel = "Manager Career";
+  if (m_mode == "mycoach")
+    modeLabel = "myCoach";
+  else if (m_mode == "mygm")
+    modeLabel = "myGM";
+  else if (m_mode == "player")
+    modeLabel = "Player Career";
+
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_newgame", 20, 20, 60, 3, "New Career");
+      new Gui2Caption(windowManager, "caption_newgame", 20, 20, 60, 3, "New " + modeLabel);
   this->AddView(title);
   title->Show();
 
