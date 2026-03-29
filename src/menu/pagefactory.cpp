@@ -7,6 +7,7 @@
 
 #include "../main.hpp"
 #include "cameramenu.hpp"
+#include "career/careerpages.hpp"
 #include "controllerselect.hpp"
 #include "credits.hpp"
 #include "gameplan.hpp"
@@ -25,7 +26,6 @@
 #include "league/league_standings.hpp"
 #include "league/league_system.hpp"
 #include "league/league_team.hpp"
-#include "career/careerpages.hpp"
 #include "mainmenu.hpp"
 #include "settings.hpp"
 #include "startmatch/loadingmatch.hpp"

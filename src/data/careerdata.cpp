@@ -23,7 +23,8 @@ int CareerDatabase::CreateSave(const CareerSave& save) {
 
 CareerSave* CareerDatabase::GetSave(int saveID) {
   for (auto& s : m_saves) {
-    if (s.saveID == saveID) return &s;
+    if (s.saveID == saveID)
+      return &s;
   }
   return nullptr;
 }
@@ -36,18 +37,21 @@ void CareerDatabase::DeleteSave(int saveID) {
 
 void CareerDatabase::RecordSeason(int saveID, const SeasonRecord& record) {
   CareerSave* s = GetSave(saveID);
-  if (s) s->history.push_back(record);
+  if (s)
+    s->history.push_back(record);
 }
 
 void CareerDatabase::AdvanceSeason(int saveID) {
   CareerSave* s = GetSave(saveID);
-  if (s) s->currentSeason++;
+  if (s)
+    s->currentSeason++;
 }
 
 // 6.13 – clamp reputation to [0, 100] after applying delta
 void CareerDatabase::ApplyReputationDelta(int saveID, int delta) {
   CareerSave* s = GetSave(saveID);
-  if (!s) return;
+  if (!s)
+    return;
   s->reputation = std::max(0, std::min(100, s->reputation + delta));
 }
 
@@ -55,7 +59,8 @@ void CareerDatabase::ApplyReputationDelta(int saveID, int delta) {
 void CareerDatabase::SetLeagueExpansionSettings(int saveID,
                                                 const LeagueExpansionSettings& settings) {
   CareerSave* s = GetSave(saveID);
-  if (s) s->leagueSettings = settings;
+  if (s)
+    s->leagueSettings = settings;
 }
 
 // 6.16 – compute which teams move between divisions.
@@ -84,5 +89,6 @@ std::vector<std::pair<int, int>> CareerDatabase::ComputePromotionRelegation(
 // 6.17 – attach a custom league configuration to a save
 void CareerDatabase::SetCustomLeague(int saveID, const CustomLeagueConfig& config) {
   CareerSave* s = GetSave(saveID);
-  if (s) s->customLeague = config;
+  if (s)
+    s->customLeague = config;
 }

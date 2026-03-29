@@ -69,7 +69,7 @@ struct CareerSave {
 };
 
 class CareerDatabase {
- public:
+public:
   CareerDatabase() = default;
 
   bool Load(const std::string& path);
@@ -97,7 +97,7 @@ class CareerDatabase {
   // 6.17 – configure a custom league for a save
   void SetCustomLeague(int saveID, const CustomLeagueConfig& config);
 
- private:
+private:
   std::vector<CareerSave> m_saves;
   int m_nextSaveID = 1;
 };

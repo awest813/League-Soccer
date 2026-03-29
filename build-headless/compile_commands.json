@@ -66,6 +66,18 @@
   "output": "tests/CMakeFiles/gameplayfootball_integration_tests.dir/integration/match_simulation_test.cpp.o"
 },
 {
+  "directory": "/home/runner/work/League-Soccer/League-Soccer/build-headless/tests",
+  "command": "/usr/bin/c++  -I/home/runner/work/League-Soccer/League-Soccer/src -isystem /home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googletest/include -isystem /home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googletest -g -g -Wall -Wextra -std=c++17 -o CMakeFiles/gameplayfootball_career_tests.dir/career/careerdata_test.cpp.o -c /home/runner/work/League-Soccer/League-Soccer/tests/career/careerdata_test.cpp",
+  "file": "/home/runner/work/League-Soccer/League-Soccer/tests/career/careerdata_test.cpp",
+  "output": "tests/CMakeFiles/gameplayfootball_career_tests.dir/career/careerdata_test.cpp.o"
+},
+{
+  "directory": "/home/runner/work/League-Soccer/League-Soccer/build-headless/tests",
+  "command": "/usr/bin/c++  -I/home/runner/work/League-Soccer/League-Soccer/src -isystem /home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googletest/include -isystem /home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googletest -g -g -Wall -Wextra -std=c++17 -o CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/careerdata.cpp.o -c /home/runner/work/League-Soccer/League-Soccer/src/data/careerdata.cpp",
+  "file": "/home/runner/work/League-Soccer/League-Soccer/src/data/careerdata.cpp",
+  "output": "tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/careerdata.cpp.o"
+},
+{
   "directory": "/home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-build/googlemock",
   "command": "/usr/bin/c++  -I/home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googlemock/include -I/home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googlemock -isystem /home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googletest/include -isystem /home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googletest -g -g -Wall -Wextra -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googlemock/src/gmock-all.cc",
   "file": "/home/runner/work/League-Soccer/League-Soccer/build-headless/_deps/googletest-src/googlemock/src/gmock-all.cc",

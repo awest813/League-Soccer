@@ -7,4 +7,5 @@
 include("/home/runner/work/League-Soccer/League-Soccer/build-headless/tests/gameplayfootball_math_tests[1]_include.cmake")
 include("/home/runner/work/League-Soccer/League-Soccer/build-headless/tests/gameplayfootball_velocity_tests[1]_include.cmake")
 include("/home/runner/work/League-Soccer/League-Soccer/build-headless/tests/gameplayfootball_integration_tests[1]_include.cmake")
+include("/home/runner/work/League-Soccer/League-Soccer/build-headless/tests/gameplayfootball_career_tests[1]_include.cmake")
 subdirs("../_deps/googletest-build")
