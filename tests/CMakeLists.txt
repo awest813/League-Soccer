@@ -57,6 +57,8 @@ gtest_discover_tests(gameplayfootball_integration_tests)
 add_executable(gameplayfootball_career_tests
   career/careerdata_test.cpp
   ${PROJECT_SOURCE_DIR}/src/data/careerdata.cpp
+  ${PROJECT_SOURCE_DIR}/src/data/draftdata.cpp
+  ${PROJECT_SOURCE_DIR}/src/data/scoutingdata.cpp
 )
 
 target_include_directories(gameplayfootball_career_tests PRIVATE

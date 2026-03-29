@@ -23,7 +23,8 @@ ReplayPage::ReplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   signed long tmp =
       match->GetActualTime_ms() - match->GetReplaySize_ms();  // must be signed for negative numbers
   minTime_ms = std::max((signed long)10, tmp);
-  maxTime_ms = std::max((long unsigned int)10, match->GetActualTime_ms() - 10);
+  signed long tmp2 = static_cast<signed long>(match->GetActualTime_ms()) - 10;
+  maxTime_ms = static_cast<unsigned long>(std::max(10L, tmp2));
   actualTime_ms = clamp(maxTime_ms - 3000, minTime_ms, maxTime_ms);
   replayCamCount = match->GetReplayCamCount();
 

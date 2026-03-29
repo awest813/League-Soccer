@@ -78,6 +78,18 @@
   "output": "tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/careerdata.cpp.o"
 },
 {
+  "directory": "/home/runner/work/League-Soccer/League-Soccer/build/tests",
+  "command": "/usr/bin/c++  -I/home/runner/work/League-Soccer/League-Soccer/src -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest/include -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest -O3 -DNDEBUG -Wall -O3 -std=c++17 -o CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/draftdata.cpp.o -c /home/runner/work/League-Soccer/League-Soccer/src/data/draftdata.cpp",
+  "file": "/home/runner/work/League-Soccer/League-Soccer/src/data/draftdata.cpp",
+  "output": "tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/draftdata.cpp.o"
+},
+{
+  "directory": "/home/runner/work/League-Soccer/League-Soccer/build/tests",
+  "command": "/usr/bin/c++  -I/home/runner/work/League-Soccer/League-Soccer/src -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest/include -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest -O3 -DNDEBUG -Wall -O3 -std=c++17 -o CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/scoutingdata.cpp.o -c /home/runner/work/League-Soccer/League-Soccer/src/data/scoutingdata.cpp",
+  "file": "/home/runner/work/League-Soccer/League-Soccer/src/data/scoutingdata.cpp",
+  "output": "tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/scoutingdata.cpp.o"
+},
+{
   "directory": "/home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-build/googlemock",
   "command": "/usr/bin/c++  -I/home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googlemock/include -I/home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googlemock -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest/include -isystem /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googletest -O3 -DNDEBUG -Wall -O3 -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googlemock/src/gmock-all.cc",
   "file": "/home/runner/work/League-Soccer/League-Soccer/build/_deps/googletest-src/googlemock/src/gmock-all.cc",

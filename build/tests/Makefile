@@ -251,6 +251,54 @@ __/src/data/careerdata.cpp.s:
 	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/careerdata.cpp.s
 .PHONY : __/src/data/careerdata.cpp.s
 
+__/src/data/draftdata.o: __/src/data/draftdata.cpp.o
+.PHONY : __/src/data/draftdata.o
+
+# target to build an object file
+__/src/data/draftdata.cpp.o:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/draftdata.cpp.o
+.PHONY : __/src/data/draftdata.cpp.o
+
+__/src/data/draftdata.i: __/src/data/draftdata.cpp.i
+.PHONY : __/src/data/draftdata.i
+
+# target to preprocess a source file
+__/src/data/draftdata.cpp.i:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/draftdata.cpp.i
+.PHONY : __/src/data/draftdata.cpp.i
+
+__/src/data/draftdata.s: __/src/data/draftdata.cpp.s
+.PHONY : __/src/data/draftdata.s
+
+# target to generate assembly for a file
+__/src/data/draftdata.cpp.s:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/draftdata.cpp.s
+.PHONY : __/src/data/draftdata.cpp.s
+
+__/src/data/scoutingdata.o: __/src/data/scoutingdata.cpp.o
+.PHONY : __/src/data/scoutingdata.o
+
+# target to build an object file
+__/src/data/scoutingdata.cpp.o:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/scoutingdata.cpp.o
+.PHONY : __/src/data/scoutingdata.cpp.o
+
+__/src/data/scoutingdata.i: __/src/data/scoutingdata.cpp.i
+.PHONY : __/src/data/scoutingdata.i
+
+# target to preprocess a source file
+__/src/data/scoutingdata.cpp.i:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/scoutingdata.cpp.i
+.PHONY : __/src/data/scoutingdata.cpp.i
+
+__/src/data/scoutingdata.s: __/src/data/scoutingdata.cpp.s
+.PHONY : __/src/data/scoutingdata.s
+
+# target to generate assembly for a file
+__/src/data/scoutingdata.cpp.s:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/scoutingdata.cpp.s
+.PHONY : __/src/data/scoutingdata.cpp.s
+
 base/math_test.o: base/math_test.cpp.o
 .PHONY : base/math_test.o
 
@@ -391,6 +439,12 @@ help:
 	@echo "... __/src/data/careerdata.o"
 	@echo "... __/src/data/careerdata.i"
 	@echo "... __/src/data/careerdata.s"
+	@echo "... __/src/data/draftdata.o"
+	@echo "... __/src/data/draftdata.i"
+	@echo "... __/src/data/draftdata.s"
+	@echo "... __/src/data/scoutingdata.o"
+	@echo "... __/src/data/scoutingdata.i"
+	@echo "... __/src/data/scoutingdata.s"
 	@echo "... base/math_test.o"
 	@echo "... base/math_test.i"
 	@echo "... base/math_test.s"

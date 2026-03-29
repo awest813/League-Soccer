@@ -169,4 +169,90 @@ TEST(CareerDataTest, SetCustomLeagueNoopForUnknownSave) {
   db.SetCustomLeague(999, cfg);
 }
 
+// ---------------------------------------------------------------------------
+// DraftSystem – projectedPick ordering
+// ---------------------------------------------------------------------------
+
+}  // namespace
+
+#include "data/draftdata.hpp"
+#include "data/scoutingdata.hpp"
+
+namespace {
+
+TEST(DraftDataTest, ProjectedPickMatchesSortedOrder) {
+  DraftSystem ds;
+  ds.GenerateProspects(2025, 10);
+  const auto& prospects = ds.GetProspects();
+  ASSERT_EQ(static_cast<int>(prospects.size()), 10);
+
+  // Prospects are sorted best-to-worst by actualRating; projectedPick must be 1..N in order
+  for (int i = 0; i < static_cast<int>(prospects.size()); ++i) {
+    EXPECT_EQ(prospects[i].projectedPick, i + 1)
+        << "Pick " << i << " has wrong projectedPick";
+    if (i > 0) {
+      EXPECT_GE(prospects[i - 1].actualRating, prospects[i].actualRating)
+          << "Prospects are not sorted descending by actualRating";
+    }
+  }
+}
+
+TEST(DraftDataTest, ProjectedPickIsOneForBestProspect) {
+  DraftSystem ds;
+  ds.GenerateProspects(2025, 5);
+  const auto& prospects = ds.GetProspects();
+  ASSERT_FALSE(prospects.empty());
+  EXPECT_EQ(prospects.front().projectedPick, 1);
+}
+
+// ---------------------------------------------------------------------------
+// ScoutingNetwork – uncertainty formula boundary values
+// ---------------------------------------------------------------------------
+
+TEST(ScoutingNetworkTest, UncertaintyAtSkill100Is5) {
+  ScoutingNetwork net;
+  Scout s;
+  s.skill = 100;
+  int scoutID = net.HireScout(s);
+  ScoutReport report = net.GenerateReport(scoutID, 1, 1, 1);
+  // skill 100 -> baseUncertainty = 30 - (100 * 25 / 100) = 30 - 25 = 5
+  for (const auto& kv : report.attributeUncertainty) {
+    EXPECT_EQ(kv.second, 5) << "Attribute: " << kv.first;
+  }
+}
+
+TEST(ScoutingNetworkTest, UncertaintyAtSkill0Is30) {
+  ScoutingNetwork net;
+  Scout s;
+  s.skill = 0;
+  int scoutID = net.HireScout(s);
+  ScoutReport report = net.GenerateReport(scoutID, 1, 1, 1);
+  // skill 0 -> baseUncertainty = 30 - 0 = 30
+  for (const auto& kv : report.attributeUncertainty) {
+    EXPECT_EQ(kv.second, 30) << "Attribute: " << kv.first;
+  }
+}
+
+TEST(ScoutingNetworkTest, UncertaintyAtSkill50Is18) {
+  ScoutingNetwork net;
+  Scout s;
+  s.skill = 50;
+  int scoutID = net.HireScout(s);
+  ScoutReport report = net.GenerateReport(scoutID, 1, 1, 1);
+  // skill 50 -> 30 - int(50 * 25.0f / 100.0f) = 30 - int(12.5f) = 30 - 12 = 18
+  // (with float arithmetic, 50*25/100 = 12.5 -> truncated to 12)
+  for (const auto& kv : report.attributeUncertainty) {
+    EXPECT_EQ(kv.second, 18) << "Attribute: " << kv.first;
+  }
+}
+
+TEST(ScoutingNetworkTest, NoScoutUsesDefaultSkill50) {
+  ScoutingNetwork net;
+  // Generate report with non-existent scoutID -> falls back to skill=50
+  ScoutReport report = net.GenerateReport(999, 1, 1, 1);
+  for (const auto& kv : report.attributeUncertainty) {
+    EXPECT_EQ(kv.second, 18) << "Attribute: " << kv.first;
+  }
+}
+
 }  // namespace

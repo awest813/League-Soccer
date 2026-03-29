@@ -36,6 +36,10 @@ void DraftSystem::GenerateProspects(int /*year*/, int count) {
             [](const DraftProspect& a, const DraftProspect& b) {
               return a.actualRating > b.actualRating;
             });
+  // Update projectedPick to match the sorted order (1-based)
+  for (int i = 0; i < static_cast<int>(m_prospects.size()); ++i) {
+    m_prospects[i].projectedPick = i + 1;
+  }
 }
 
 std::vector<std::pair<int, int>> DraftSystem::ConductDraft(const std::vector<int>& teamOrder) {

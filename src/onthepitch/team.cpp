@@ -103,7 +103,7 @@ signed int Team::GetSide() {
   signed int side;
   if (id == 0)
     side = -1;
-  if (id == 1)
+  else
     side = 1;
 
   // -1 == left, 1 == right
