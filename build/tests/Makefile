@@ -213,6 +213,44 @@ gameplayfootball_integration_tests/fast:
 	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_integration_tests.dir/build.make tests/CMakeFiles/gameplayfootball_integration_tests.dir/build
 .PHONY : gameplayfootball_integration_tests/fast
 
+# Convenience name for target.
+tests/CMakeFiles/gameplayfootball_career_tests.dir/rule:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/gameplayfootball_career_tests.dir/rule
+.PHONY : tests/CMakeFiles/gameplayfootball_career_tests.dir/rule
+
+# Convenience name for target.
+gameplayfootball_career_tests: tests/CMakeFiles/gameplayfootball_career_tests.dir/rule
+.PHONY : gameplayfootball_career_tests
+
+# fast build rule for target.
+gameplayfootball_career_tests/fast:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/build
+.PHONY : gameplayfootball_career_tests/fast
+
+__/src/data/careerdata.o: __/src/data/careerdata.cpp.o
+.PHONY : __/src/data/careerdata.o
+
+# target to build an object file
+__/src/data/careerdata.cpp.o:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/careerdata.cpp.o
+.PHONY : __/src/data/careerdata.cpp.o
+
+__/src/data/careerdata.i: __/src/data/careerdata.cpp.i
+.PHONY : __/src/data/careerdata.i
+
+# target to preprocess a source file
+__/src/data/careerdata.cpp.i:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/careerdata.cpp.i
+.PHONY : __/src/data/careerdata.cpp.i
+
+__/src/data/careerdata.s: __/src/data/careerdata.cpp.s
+.PHONY : __/src/data/careerdata.s
+
+# target to generate assembly for a file
+__/src/data/careerdata.cpp.s:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/__/src/data/careerdata.cpp.s
+.PHONY : __/src/data/careerdata.cpp.s
+
 base/math_test.o: base/math_test.cpp.o
 .PHONY : base/math_test.o
 
@@ -236,6 +274,30 @@ base/math_test.s: base/math_test.cpp.s
 base/math_test.cpp.s:
 	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_math_tests.dir/build.make tests/CMakeFiles/gameplayfootball_math_tests.dir/base/math_test.cpp.s
 .PHONY : base/math_test.cpp.s
+
+career/careerdata_test.o: career/careerdata_test.cpp.o
+.PHONY : career/careerdata_test.o
+
+# target to build an object file
+career/careerdata_test.cpp.o:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/career/careerdata_test.cpp.o
+.PHONY : career/careerdata_test.cpp.o
+
+career/careerdata_test.i: career/careerdata_test.cpp.i
+.PHONY : career/careerdata_test.i
+
+# target to preprocess a source file
+career/careerdata_test.cpp.i:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/career/careerdata_test.cpp.i
+.PHONY : career/careerdata_test.cpp.i
+
+career/careerdata_test.s: career/careerdata_test.cpp.s
+.PHONY : career/careerdata_test.s
+
+# target to generate assembly for a file
+career/careerdata_test.cpp.s:
+	cd /home/runner/work/League-Soccer/League-Soccer/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/gameplayfootball_career_tests.dir/build.make tests/CMakeFiles/gameplayfootball_career_tests.dir/career/careerdata_test.cpp.s
+.PHONY : career/careerdata_test.cpp.s
 
 integration/match_simulation_test.o: integration/match_simulation_test.cpp.o
 .PHONY : integration/match_simulation_test.o
@@ -322,12 +384,19 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... gameplayfootball_career_tests"
 	@echo "... gameplayfootball_integration_tests"
 	@echo "... gameplayfootball_math_tests"
 	@echo "... gameplayfootball_velocity_tests"
+	@echo "... __/src/data/careerdata.o"
+	@echo "... __/src/data/careerdata.i"
+	@echo "... __/src/data/careerdata.s"
 	@echo "... base/math_test.o"
 	@echo "... base/math_test.i"
 	@echo "... base/math_test.s"
+	@echo "... career/careerdata_test.o"
+	@echo "... career/careerdata_test.i"
+	@echo "... career/careerdata_test.s"
 	@echo "... integration/match_simulation_test.o"
 	@echo "... integration/match_simulation_test.i"
 	@echo "... integration/match_simulation_test.s"
