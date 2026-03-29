@@ -10,11 +10,11 @@ using namespace blunted;
 
 // Mode selection: myCoach / myGM / Player Career / Manager Career
 class CareerMenuPage : public Gui2Page {
- public:
+public:
   CareerMenuPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~CareerMenuPage();
 
- protected:
+protected:
   void GoMyCoach();
   void GoMyGM();
   void GoPlayerCareer();
@@ -23,21 +23,21 @@ class CareerMenuPage : public Gui2Page {
 
 // New career setup: pick team and difficulty
 class CareerNewGamePage : public Gui2Page {
- public:
+public:
   CareerNewGamePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~CareerNewGamePage();
 
- protected:
+protected:
   void StartCareer();
 };
 
 // Career hub: season info, budget, objectives
 class CareerHubPage : public Gui2Page {
- public:
+public:
   CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~CareerHubPage();
 
- protected:
+protected:
   void GoTransferMarket();
   void GoSquad();
   void GoPressConference();
@@ -47,18 +47,18 @@ class CareerHubPage : public Gui2Page {
 
 // Transfer market browser
 class CareerTransferMarketPage : public Gui2Page {
- public:
+public:
   CareerTransferMarketPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~CareerTransferMarketPage();
 };
 
 // 6.13 – Press conference / media interactions
 class CareerPressConferencePage : public Gui2Page {
- public:
+public:
   CareerPressConferencePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~CareerPressConferencePage();
 
- protected:
+protected:
   // Called when the user selects an answer (index 0-2)
   void SelectAnswer(int answerIndex);
 
@@ -68,11 +68,11 @@ class CareerPressConferencePage : public Gui2Page {
 
 // 6.16 – League expansion / relegation configuration
 class CareerLeagueExpansionPage : public Gui2Page {
- public:
+public:
   CareerLeagueExpansionPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~CareerLeagueExpansionPage();
 
- protected:
+protected:
   void EnableRelegation();
   void DisableRelegation();
   void AddDivision();
@@ -80,10 +80,10 @@ class CareerLeagueExpansionPage : public Gui2Page {
 
 // 6.17 – Custom league creation
 class CareerCustomLeaguePage : public Gui2Page {
- public:
+public:
   CareerCustomLeaguePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~CareerCustomLeaguePage();
 
- protected:
+protected:
   void CreateCustomLeague();
 };

@@ -28,7 +28,7 @@
 // Each line is:  key=Translated string
 
 class Localization {
- public:
+public:
   static Localization& GetInstance();
 
   // Load a locale file from data/locale/<languageCode>.ini.
@@ -48,7 +48,7 @@ class Localization {
   // Human-readable display name for a language code, e.g. "es" -> "Español".
   static std::string GetLanguageDisplayName(const std::string& code);
 
- private:
+private:
   Localization() = default;
   Localization(const Localization&) = delete;
   Localization& operator=(const Localization&) = delete;

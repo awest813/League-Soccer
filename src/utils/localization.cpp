@@ -49,9 +49,11 @@ bool Localization::Load(const std::string& languageCode) {
   std::string line;
   while (std::getline(file, line)) {
     // Skip blank lines and comments (# or ;)
-    if (line.empty() || line[0] == '#' || line[0] == ';') continue;
+    if (line.empty() || line[0] == '#' || line[0] == ';')
+      continue;
     auto sep = line.find('=');
-    if (sep == std::string::npos) continue;
+    if (sep == std::string::npos)
+      continue;
     std::string key = line.substr(0, sep);
     std::string value = line.substr(sep + 1);
     strings_[key] = value;
@@ -59,8 +61,7 @@ bool Localization::Load(const std::string& languageCode) {
 
   currentLanguage_ = languageCode;
   Log(e_Notice, "Localization", "Load",
-      "Loaded locale '" + languageCode + "' (" +
-          std::to_string(strings_.size()) + " strings)");
+      "Loaded locale '" + languageCode + "' (" + std::to_string(strings_.size()) + " strings)");
   return true;
 }
 
@@ -70,7 +71,8 @@ bool Localization::Load(const std::string& languageCode) {
 
 const std::string& Localization::Translate(const std::string& key) const {
   auto it = strings_.find(key);
-  if (it != strings_.end()) return it->second;
+  if (it != strings_.end())
+    return it->second;
   // Return the key itself so the UI is always human-readable.
   return key;
 }
@@ -98,10 +100,15 @@ std::vector<std::string> Localization::GetAvailableLanguages() {
 // ---------------------------------------------------------------------------
 
 std::string Localization::GetLanguageDisplayName(const std::string& code) {
-  if (code == "en") return "English";
-  if (code == "es") return "Español";
-  if (code == "fr") return "Français";
-  if (code == "de") return "Deutsch";
-  if (code == "pt") return "Português";
+  if (code == "en")
+    return "English";
+  if (code == "es")
+    return "Español";
+  if (code == "fr")
+    return "Français";
+  if (code == "de")
+    return "Deutsch";
+  if (code == "pt")
+    return "Português";
   return code;
 }
