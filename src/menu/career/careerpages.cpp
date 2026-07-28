@@ -1785,8 +1785,9 @@ void CareerMatchdayPage::SimulateMatch(int fixtureIndex) {
     return;
 
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+  const bool isHome = ((m_week + fixtureIndex) % 2) == 0;
   SimulatedMatch res = CareerDatabase::GetInstance().SimulateMatchResult(
-      m_opponents[fixtureIndex], std::to_string(save ? save->club.clubID : 0));
+      m_opponents[fixtureIndex], std::to_string(save ? save->club.clubID : 0), isHome);
   m_results[fixtureIndex] = res;
 
   m_matchesPlayed++;
@@ -1909,6 +1910,7 @@ void CareerMatchdayPage::GoBack() {
   // ApplyMatchResult. Only advance the calendar week here to avoid double-counting.
   if (save && m_matchesPlayed > 0) {
     save->season.currentWeek++;
+    CareerDatabase::GetInstance().SaveCareerData();
   }
   this->Exit();
   if (IsOwnerMode()) {

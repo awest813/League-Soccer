@@ -1,6 +1,7 @@
 #include "career_database.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <ctime>
 #include <functional>
 #include <random>
@@ -219,8 +220,10 @@ void CareerDatabase::AddEvent(const std::string& eventType, const std::string& d
   if (m_activeSave->recentEvents.size() > 50) m_activeSave->recentEvents.erase(m_activeSave->recentEvents.begin());
   if (isMajor) {
     m_activeSave->legacyStats[eventType]++;
+    // Persist on major milestones only. Routine matchday chatter used to flush
+    // the save file on every simulated fixture (thousands of writes per season).
+    SaveCareerData();
   }
-  SaveCareerData();
 }
 
 void CareerDatabase::RecruitFreeAgent(const std::string& playerName) {
@@ -527,8 +530,10 @@ void CareerDatabase::RecordMatchStats(const std::string& playerName, int goals, 
   it->matchesPlayed++;
   it->careerGoals += std::max(0, goals);
   it->careerAssists += std::max(0, assists);
-  it->matchForm = ClampInt(it->matchForm + goals * 6 + assists * 4 + 2, 0, 100);
-  it->morale = ClampInt(it->morale + goals * 3 + assists * 2 + 1, 0, 100);
+  // Keep per-match form gains modest so a hot streak cannot snowball the
+  // whole squad's simulated strength across a 38-game season.
+  it->matchForm = ClampInt(it->matchForm + goals * 3 + assists * 2 + 1, 0, 100);
+  it->morale = ClampInt(it->morale + goals * 2 + assists * 1 + 1, 0, 100);
   UpdatePlayerValue(*it);
 }
 
@@ -676,7 +681,7 @@ bool CareerDatabase::CompleteTransfer(const std::string& playerName) {
                                     }),
                      m_activeBids.end());
 
-  AddEvent("transfer", "Completed transfer for " + playerName, 2, false);
+  AddEvent("transfer", "Completed transfer for " + playerName, 2, true);
   ModifyBoardConfidence(1);
   return true;
 }
@@ -944,7 +949,9 @@ void CareerDatabase::InvestInPrestige(long long amount) {
   m_activeSave->club.reputation = m_activeSave->reputation;
 }
 
-SimulatedMatch CareerDatabase::SimulateMatchResult(const std::string& opponentName, const std::string& opponentTeamDBID) {
+SimulatedMatch CareerDatabase::SimulateMatchResult(const std::string& opponentName,
+                                                   const std::string& opponentTeamDBID,
+                                                   bool isHome) {
   SimulatedMatch result;
   result.opponentName = opponentName;
   if (!m_activeSave) return result;
@@ -971,49 +978,54 @@ SimulatedMatch CareerDatabase::SimulateMatchResult(const std::string& opponentNa
     teamForm = formSum / count;
   }
 
-  // Derive a stable opponent rating from the opponent's identity so each
-  // opponent plays to a different strength. Prefer the opponent name (the
-  // caller always has it); fall back to a numeric team id, then to a random
-  // rating. Parsing the id is guarded so a non-numeric id can never throw.
+  // Wider, identity-stable opponent pool (roughly 45-88) so weak and elite
+  // clubs both meet realistic resistance across a season.
   if (!opponentName.empty()) {
     int seed = static_cast<int>(std::hash<std::string>{}(opponentName) % 1000);
-    opponentOVR = 55 + (seed % 21);
+    opponentOVR = 45 + (seed % 44);
   } else if (!opponentTeamDBID.empty()) {
     int idValue = SafeStoi(opponentTeamDBID);
-    opponentOVR = 55 + ((idValue % 21) + 21) % 21;
+    opponentOVR = 45 + ((idValue % 44) + 44) % 44;
   } else {
-    opponentOVR = 60 + RandomInt(0, 20);
+    opponentOVR = 55 + RandomInt(0, 30);
   }
 
-  int baseAttack = teamOVR + teamForm / 4 + (teamMorale - 50) / 10;
-  int baseDefense = teamOVR + teamForm / 5 + (teamMorale - 50) / 15;
-  int oppAttack = opponentOVR + RandomInt(0, 10);
-  int oppDefense = opponentOVR + RandomInt(0, 5);
+  int baseAttack = teamOVR + (teamForm - 50) / 8 + (teamMorale - 50) / 12;
+  int baseDefense = teamOVR + (teamForm - 50) / 10 + (teamMorale - 50) / 15;
+  int oppAttack = opponentOVR + RandomInt(-2, 4);
+  int oppDefense = opponentOVR + RandomInt(-2, 3);
 
   if (strategy == "Attacking") {
-    baseAttack += 5;
+    baseAttack += 4;
     baseDefense -= 3;
   } else if (strategy == "Defensive") {
     baseAttack -= 3;
-    baseDefense += 5;
+    baseDefense += 4;
   }
 
-  float homeAdv = 1.1f;
-  // Home goals scale with our attack relative to their defense; goals conceded
-  // scale with their attack relative to our defense. Home advantage boosts our
-  // attack and shores up our defense, so a stronger defense concedes fewer.
-  float attackFactor = (float)baseAttack * homeAdv / std::max(1.0f, (float)oppDefense);
-  float concedeFactor = (float)oppAttack / std::max(1.0f, (float)baseDefense * homeAdv);
+  // homeGoals/awayGoals mean "us" / "them" for ApplyMatchResult bookkeeping.
+  // Expected goals are primarily OVR-gap driven so club tiers separate cleanly.
+  float venueAttack = isHome ? 1.08f : 0.92f;
+  float ourXG =
+      1.05f * venueAttack + 0.06f * static_cast<float>(baseAttack - oppDefense);
+  float theirXG =
+      1.05f / venueAttack + 0.06f * static_cast<float>(oppAttack - baseDefense);
+  ourXG = std::max(0.2f, std::min(3.8f, ourXG));
+  theirXG = std::max(0.2f, std::min(3.8f, theirXG));
 
-  std::normal_distribution<float> goalDist(1.3f, 0.8f);
-  int expectedHomeGoals = std::max(0, (int)(goalDist(CareerRng()) * attackFactor));
-  int expectedAwayGoals = std::max(0, (int)(goalDist(CareerRng()) * concedeFactor));
+  std::poisson_distribution<int> ourDist(ourXG);
+  std::poisson_distribution<int> theirDist(theirXG);
+  int expectedHomeGoals = ourDist(CareerRng());
+  int expectedAwayGoals = theirDist(CareerRng());
 
   result.homeGoals = ClampInt(expectedHomeGoals, 0, 9);
   result.awayGoals = ClampInt(expectedAwayGoals, 0, 7);
   result.homeShots = result.homeGoals + RandomInt(2, 8);
   result.awayShots = result.awayGoals + RandomInt(2, 8);
-  result.homePossession = ClampInt(50 + (teamOVR - opponentOVR) + RandomInt(-5, 5) + (strategy == "Attacking" ? 5 : strategy == "Defensive" ? -5 : 0), 30, 70);
+  result.homePossession = ClampInt(50 + (teamOVR - opponentOVR) + RandomInt(-5, 5) +
+                                       (strategy == "Attacking" ? 5 : strategy == "Defensive" ? -5 : 0) +
+                                       (isHome ? 3 : -3),
+                                   30, 70);
   result.played = true;
 
   std::vector<int> scorerIndices;
@@ -1055,9 +1067,17 @@ void CareerDatabase::ApplyMatchResult(int homeGoals, int awayGoals, const std::s
                         std::to_string(awayGoals);
   if (!opponentLabel.empty()) summary += " " + opponentLabel;
   // Draws are reputation-neutral; only decisive results move the needle.
+  // Match results are not major legacy events — season advance / transfers are.
   const int reputationDelta = isWin ? 1 : (isDraw ? 0 : -1);
-  AddEvent("matchday", summary, reputationDelta, !isDraw);
+  AddEvent("matchday", summary, reputationDelta, false);
   ModifyBoardConfidence(reputationDelta);
+
+  // Squad-wide form/fitness regression after every match prevents mid-season
+  // inflation from turning average clubs into perpetual title winners.
+  for (auto& player : m_activeSave->roster) {
+    player.matchForm = ClampInt(player.matchForm - RandomInt(1, 3), 25, 100);
+    player.fitness = ClampInt(player.fitness - RandomInt(0, 2), 55, 100);
+  }
 
   for (const auto& scorerName : scorers) {
     RecordMatchStats(scorerName, 1, 0);
@@ -1155,7 +1175,6 @@ bool CareerDatabase::SaveToFile(const std::string& path) const {
   }
 
   file.close();
-  printf("[career] Saved to %s\n", path.c_str());
   return true;
 }
 

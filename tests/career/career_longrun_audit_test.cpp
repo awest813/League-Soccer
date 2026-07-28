@@ -158,6 +158,7 @@ void CloseSeasonLikeUi(CareerDatabase& db, const PersonaTier& persona) {
 TEST(CareerLongRunAudit, EstimateLeaguePositionBands) {
   EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(30, 5, 3), 1);   // ~95 pts
   EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(24, 8, 6), 2);   // ~80 pts
+  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(23, 4, 11), 4);  // 73 pts
   EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(12, 12, 14), 12); // ~48 pts
   EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(5, 8, 25), 19);  // ~23 pts
   EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(0, 0, 0), 10);
@@ -184,7 +185,8 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
   struct PersonaReport {
     std::string name;
     int finalSeason = 0;
-    int avgFinish = 0;
+    double avgFinish = 0.0;
+    double avgWins = 0.0;
     int bestFinish = 20;
     int titles = 0;
     int finalOvr = 0;
@@ -236,7 +238,9 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
 
       for (int match = 0; match < kMatchesPerSeason; ++match) {
         const std::string& opponent = opponents[match % 24];
-        SimulatedMatch result = db.SimulateMatchResult(opponent, std::to_string(match + 1));
+        const bool isHome = (match % 2) == 0;
+        SimulatedMatch result =
+            db.SimulateMatchResult(opponent, std::to_string(match + 1), isHome);
         ASSERT_TRUE(result.played) << persona.name << " S" << season << " M" << match;
         EXPECT_GE(result.homeGoals, 0);
         EXPECT_LE(result.homeGoals, 9);
@@ -249,8 +253,6 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
       ASSERT_NE(save, nullptr);
       const int played = save->seasonWins + save->seasonDraws + save->seasonLosses;
       EXPECT_EQ(played, kMatchesPerSeason) << persona.name << " season " << (season + 1);
-      EXPECT_EQ(save->seasonGoalsFor,
-                save->seasonGoalsFor);  // sanity: counters remain finite
       EXPECT_GE(save->transferBudget, 0) << persona.name << " season " << (season + 1);
       EXPECT_GE(save->wageBudget, 0) << persona.name << " season " << (season + 1);
       EXPECT_FALSE(save->roster.empty()) << persona.name << " season " << (season + 1);
@@ -319,23 +321,33 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
     report.finalReputation = save->reputation;
     report.finalBoardConfidence = save->boardConfidence;
     int finishSum = 0;
+    int winsSum = 0;
     for (const auto& rec : save->history) {
       finishSum += rec.leaguePosition;
+      winsSum += rec.wins;
       report.bestFinish = std::min(report.bestFinish, rec.leaguePosition);
       if (rec.wonTitle) report.titles++;
     }
-    report.avgFinish = finishSum / kSeasons;
+    report.avgFinish = static_cast<double>(finishSum) / kSeasons;
+    report.avgWins = static_cast<double>(winsSum) / kSeasons;
     reports.push_back(report);
 
-    // Stronger tiers should generally finish better than the relegation battler
-    // across a 12-season sample (soft ordering guard, not a strict ladder).
+    // Soft tier guards on the 12-season sample.
     if (std::string(persona.name).find("TierA") != std::string::npos) {
-      EXPECT_LE(report.avgFinish, 8) << persona.name;
-      EXPECT_GE(report.titles, 1) << persona.name;
+      EXPECT_LE(report.avgFinish, 6.0) << persona.name;
+      EXPECT_GE(report.avgWins, 18.0) << persona.name;
     }
     if (std::string(persona.name).find("TierD") != std::string::npos) {
-      EXPECT_GE(report.avgFinish, 10) << persona.name;
+      EXPECT_GE(report.avgFinish, 8.0) << persona.name;
+      EXPECT_LE(report.avgWins, 18.0) << persona.name;
     }
+
+    // Emit a concise audit line for each persona (visible in test logs).
+    printf("[career-audit] %s | avgFinish=%.1f avgWins=%.1f best=%d titles=%d finalOvr=%d rep=%d "
+           "board=%d budget=%lld\n",
+           report.name.c_str(), report.avgFinish, report.avgWins, report.bestFinish, report.titles,
+           report.finalOvr, report.finalReputation, report.finalBoardConfidence,
+           report.finalTransferBudget);
 
     EXPECT_GE(save->reputation, -100);
     EXPECT_LE(save->reputation, 100);
@@ -344,11 +356,10 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
   }
 
   ASSERT_EQ(reports.size(), 4u);
-  // Elite dynasty should outperform the relegation battler on average finish.
+  // Stronger personas should win more matches across the 12-season sample.
+  EXPECT_GT(reports[3].avgWins, reports[0].avgWins);
+  EXPECT_GT(reports[2].avgWins, reports[1].avgWins);
   EXPECT_LT(reports[3].avgFinish, reports[0].avgFinish);
-  // Title challenger should beat midtable on best finish or average.
-  EXPECT_TRUE(reports[2].avgFinish <= reports[1].avgFinish ||
-              reports[2].bestFinish <= reports[1].bestFinish);
 }
 
 }  // namespace

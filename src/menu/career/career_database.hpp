@@ -87,7 +87,8 @@ public:
   void InvestInFanBase(long long amount);
   void InvestInPrestige(long long amount);
 
-  SimulatedMatch SimulateMatchResult(const std::string& opponentName, const std::string& opponentTeamDBID);
+  SimulatedMatch SimulateMatchResult(const std::string& opponentName, const std::string& opponentTeamDBID,
+                                     bool isHome = true);
   // Apply a finished match to season W/D/L, goals, board confidence, reputation,
   // and optional scorer bookkeeping. Shared by sim and 3D result paths.
   void ApplyMatchResult(int homeGoals, int awayGoals, const std::string& opponentLabel,
