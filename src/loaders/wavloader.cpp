@@ -23,7 +23,7 @@ void WAVLoader::Load(const std::string& filename,
   long BUFFER_SIZE = 1024 * 1024 * 4;
 
   FILE* f = nullptr;
-  fopen_s(&f, filename.c_str(), "rb");
+  f = fopen(filename.c_str(), "rb");
   if (!f) {
     Log(e_FatalError, "WAVLoader", "Load", "Could not load " + filename + ": file not found");
   }

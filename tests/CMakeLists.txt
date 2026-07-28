@@ -59,6 +59,7 @@ gtest_discover_tests(gameplayfootball_integration_tests)
 add_executable(gameplayfootball_league_integration_tests
   integration/league_bootstrap_test.cpp
   ${PROJECT_SOURCE_DIR}/src/league/leaguecode.cpp
+  ${PROJECT_SOURCE_DIR}/src/league/leaguesetup.cpp
   ${PROJECT_SOURCE_DIR}/src/utils/database.cpp
   ${PROJECT_SOURCE_DIR}/src/utils/xmlloader.cpp
   ${PROJECT_SOURCE_DIR}/src/base/properties.cpp

@@ -378,10 +378,12 @@ set(BLUNTED_CORE_SOURCES
 
 set(LEAGUE_HEADERS
    src/league/leaguecode.hpp
+   src/league/leaguesetup.hpp
 )
 
 set(LEAGUE_SOURCES
    src/league/leaguecode.cpp
+   src/league/leaguesetup.cpp
 )
 
 set(CORE_HEADERS

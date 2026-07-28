@@ -1338,7 +1338,7 @@ void Animation::Save(const std::string& filename) {
   }
 
   FILE* file = nullptr;
-  fopen_s(&file, filename.c_str(), "w");
+  file = fopen(filename.c_str(), "w");
   if (!file) {
     Log(e_Error, "Animation", "Save", "Could not open file " + filename + " for writing");
     return;
