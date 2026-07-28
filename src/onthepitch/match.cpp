@@ -445,7 +445,13 @@ void Match::Exit() {
 
   fullbodyNode.reset();
 
-  messageCaption->Hide();
+  // Exit() removes messageCaption from the GUI view tree (root) and cleans up
+  // its own children; reset() then deletes the Gui2Caption exactly once.
+  // Without this, root's cascading Exit() (triggered below by menuTask.reset())
+  // would delete it first, leaving this unique_ptr dangling and causing a
+  // heap-use-after-free when Match's destructor runs.
+  messageCaption->Exit();
+  messageCaption.reset();
 
   // remove, don't delete, because main.cpp is owner
   GetDynamicNode()->RemoveObject(GetGreenDebugPilon());
