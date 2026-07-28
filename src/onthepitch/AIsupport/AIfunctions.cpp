@@ -33,8 +33,9 @@
 
 // convert formation position to formation position based on ball position
 // deprecated
-Vector3 AI_GetAdaptedInitialPos(Match* match, const Vector3& initialPosition, const Vector3& focusPoint,
-                                float ballMagnetDistance, float ballMagnetDistancePow) {
+Vector3 AI_GetAdaptedInitialPos(Match* match, const Vector3& initialPosition,
+                                const Vector3& focusPoint, float ballMagnetDistance,
+                                float ballMagnetDistancePow) {
   Vector3 effectiveFocusPoint = focusPoint;
   if (effectiveFocusPoint.coords[2] == -100.0)
     effectiveFocusPoint = match->GetBall()->Predict(100).Get2D();

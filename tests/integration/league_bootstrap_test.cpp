@@ -1,10 +1,10 @@
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "base/properties.hpp"
 #include "league/leaguecode.hpp"
@@ -54,9 +54,7 @@ public:
     std::filesystem::current_path(target);
   }
 
-  ~ScopedCurrentPath() {
-    std::filesystem::current_path(original_);
-  }
+  ~ScopedCurrentPath() { std::filesystem::current_path(original_); }
 
 private:
   std::filesystem::path original_;
@@ -74,9 +72,7 @@ public:
     std::filesystem::remove_all(root_, error);
   }
 
-  const std::filesystem::path& root() const {
-    return root_;
-  }
+  const std::filesystem::path& root() const { return root_; }
 
 private:
   std::filesystem::path root_;
@@ -98,8 +94,7 @@ void WriteTextFile(const std::filesystem::path& path, const std::string& content
   output << contents;
 }
 
-void CreateFoundationDatabase(const std::filesystem::path& root,
-                              const std::string& databaseName,
+void CreateFoundationDatabase(const std::filesystem::path& root, const std::string& databaseName,
                               const std::string& playerStatsColumnName = "profile_xml") {
   const auto databaseDir = root / "databases" / databaseName;
   std::filesystem::create_directories(databaseDir);
@@ -109,9 +104,10 @@ void CreateFoundationDatabase(const std::filesystem::path& root,
 
   ExecSql(db,
           "CREATE TABLE leagues(id INTEGER PRIMARY KEY, name TEXT);"
-          "CREATE TABLE teams(id INTEGER PRIMARY KEY, league_id INTEGER, name TEXT, logo_url TEXT, kit_url TEXT);"
-          "CREATE TABLE players(id INTEGER PRIMARY KEY, team_id INTEGER, " + playerStatsColumnName +
-              " TEXT, base_stat INTEGER);");
+          "CREATE TABLE teams(id INTEGER PRIMARY KEY, league_id INTEGER, name TEXT, logo_url TEXT, "
+          "kit_url TEXT);"
+          "CREATE TABLE players(id INTEGER PRIMARY KEY, team_id INTEGER, " +
+              playerStatsColumnName + " TEXT, base_stat INTEGER);");
 
   ExecSql(db,
           "INSERT INTO leagues(id, name) VALUES (1, 'Premier Test League');"
@@ -139,9 +135,8 @@ int QuerySingleInt(Database* db, const std::string& sql) {
   auto result = db->Query(sql);
   EXPECT_FALSE(result->data.empty()) << sql;
   EXPECT_FALSE(result->data.at(0).empty()) << sql;
-  return result->data.empty() || result->data.at(0).empty()
-             ? 0
-             : std::stoi(result->data.at(0).at(0));
+  return result->data.empty() || result->data.at(0).empty() ? 0
+                                                            : std::stoi(result->data.at(0).at(0));
 }
 
 std::string QuerySingleString(Database* db, const std::string& sql) {
@@ -162,7 +157,8 @@ TEST(LeagueBootstrapIntegrationTest, CreateNewLeagueSaveCopiesDatabaseAndKnownAs
   EXPECT_TRUE(std::filesystem::exists(saveDir / "database.sqlite"));
   EXPECT_TRUE(std::filesystem::exists(saveDir / "autosave.sqlite"));
   EXPECT_TRUE(std::filesystem::exists(saveDir / "images_teams" / "test" / "alpha_logo.png"));
-  EXPECT_TRUE(std::filesystem::exists(saveDir / "images_teams" / "test" / "alpha" / "kit_home.png"));
+  EXPECT_TRUE(
+      std::filesystem::exists(saveDir / "images_teams" / "test" / "alpha" / "kit_home.png"));
   EXPECT_FALSE(std::filesystem::exists(saveDir / "images_teams" / "test" / "bravo"));
 }
 
@@ -171,21 +167,25 @@ TEST(LeagueBootstrapIntegrationTest, PrepareDatabaseForLeagueSupportsProfileXmlS
   ScopedCurrentPath cwd(workspace.root());
   CreateFoundationDatabase(workspace.root(), "default", "profile_xml");
 
-  ASSERT_TRUE(GetDB()->Load((workspace.root() / "databases" / "default" / "database.sqlite").string()));
+  ASSERT_TRUE(
+      GetDB()->Load((workspace.root() / "databases" / "default" / "database.sqlite").string()));
   ASSERT_TRUE(PrepareDatabaseForLeague());
 
-  EXPECT_EQ(QuerySingleInt(GetDB(),
-                           "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='settings'"),
-            1);
-  EXPECT_EQ(QuerySingleInt(GetDB(),
-                           "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='calendar'"),
-            1);
-  EXPECT_EQ(QuerySingleInt(GetDB(),
-                           "SELECT COUNT(*) FROM pragma_table_info('players') WHERE name='stats_temporal'"),
-            1);
+  EXPECT_EQ(
+      QuerySingleInt(GetDB(),
+                     "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='settings'"),
+      1);
+  EXPECT_EQ(
+      QuerySingleInt(GetDB(),
+                     "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='calendar'"),
+      1);
+  EXPECT_EQ(
+      QuerySingleInt(
+          GetDB(), "SELECT COUNT(*) FROM pragma_table_info('players') WHERE name='stats_temporal'"),
+      1);
 
-  const auto temporalStats = QuerySingleString(
-      GetDB(), "SELECT stats_temporal FROM players WHERE id = 1 LIMIT 1");
+  const auto temporalStats =
+      QuerySingleString(GetDB(), "SELECT stats_temporal FROM players WHERE id = 1 LIMIT 1");
   EXPECT_NE(temporalStats.find("<current>"), std::string::npos);
   EXPECT_NE(temporalStats.find("<pace>"), std::string::npos);
 }
@@ -195,7 +195,8 @@ TEST(LeagueBootstrapIntegrationTest, GenerateSeasonCalendarsCreatesRoundRobinFix
   ScopedCurrentPath cwd(workspace.root());
   CreateFoundationDatabase(workspace.root(), "default");
 
-  ASSERT_TRUE(GetDB()->Load((workspace.root() / "databases" / "default" / "database.sqlite").string()));
+  ASSERT_TRUE(
+      GetDB()->Load((workspace.root() / "databases" / "default" / "database.sqlite").string()));
   ASSERT_TRUE(PrepareDatabaseForLeague());
 
   GetDB()->Query(
@@ -213,7 +214,8 @@ TEST(LeagueBootstrapIntegrationTest, StepLeagueTimeAdvancesMatchDaysAndRollsSeas
   ScopedCurrentPath cwd(workspace.root());
   CreateFoundationDatabase(workspace.root(), "default");
 
-  ASSERT_TRUE(GetDB()->Load((workspace.root() / "databases" / "default" / "database.sqlite").string()));
+  ASSERT_TRUE(
+      GetDB()->Load((workspace.root() / "databases" / "default" / "database.sqlite").string()));
   ASSERT_TRUE(PrepareDatabaseForLeague());
 
   GetDB()->Query(

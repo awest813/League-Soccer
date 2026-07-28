@@ -30,12 +30,11 @@ void AudioSystem::Initialize(const Properties& config) {
   ResourceManagerPool::GetInstance().RegisterManager(e_ResourceType_AudioSoundBuffer,
                                                      audioSoundBufferResourceManager);
 
-  const std::string requestedRenderer = config.Get(
-      "audio_renderer",
+  const std::string requestedRenderer = config.Get("audio_renderer",
 #ifdef GF_USE_OPENAL
-      "openal"
+                                                   "openal"
 #else
-      "null"
+                                                   "null"
 #endif
   );
 

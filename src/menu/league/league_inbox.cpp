@@ -1,12 +1,11 @@
 #include "league_inbox.hpp"
 
 #include "../../main.hpp"
-#include "menu_smoke.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
+#include "menu_smoke.hpp"
 
-LeagueInboxPage::LeagueInboxPage(Gui2WindowManager* windowManager,
-                                 const Gui2PageData& pageData)
+LeagueInboxPage::LeagueInboxPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
       frame(nullptr),
       messageGrid(nullptr),
@@ -17,19 +16,18 @@ LeagueInboxPage::LeagueInboxPage(Gui2WindowManager* windowManager,
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_inbox", 2, 2, 66, 3, "Inbox");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_inbox", 2, 2, 66, 3, "Inbox");
   frame->AddView(title);
   title->Show();
 
-  countCaption =
-      new Gui2Caption(windowManager, "caption_inbox_count", 2, 6, 66, 2, "");
+  countCaption = new Gui2Caption(windowManager, "caption_inbox_count", 2, 6, 66, 2, "");
   frame->AddView(countCaption);
   countCaption->Show();
 
   RefreshMessages();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_inbox_back", 25, 92, 50, 3, "Back to Dashboard");
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_inbox_back", 25, 92, 50, 3, "Back to Dashboard");
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   frame->AddView(btnBack);
   btnBack->Show();
@@ -61,8 +59,9 @@ void LeagueInboxPage::RefreshMessages() {
   messageGrid = new Gui2Grid(windowManager, "grid_inbox", 2, 9, 66, 78);
 
   if (result->data.empty()) {
-    Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_inbox_empty", 0, 0, 86, 3,
-                                            "No messages yet. Messages will appear as you play matches.");
+    Gui2Caption* emptyCap =
+        new Gui2Caption(windowManager, "caption_inbox_empty", 0, 0, 86, 3,
+                        "No messages yet. Messages will appear as you play matches.");
     messageGrid->AddView(emptyCap, 0, 0);
   } else {
     int row = 0;
@@ -79,14 +78,14 @@ void LeagueInboxPage::RefreshMessages() {
       btn->sig_OnClick.connect([this, msgID, sender, subject, timestamp](...) {
         GetDB()->Query("UPDATE inbox_messages SET read = 1 WHERE id = " + msgID);
 
-        auto bodyResult = GetDB()->Query(
-            "SELECT body FROM inbox_messages WHERE id = " + msgID);
+        auto bodyResult = GetDB()->Query("SELECT body FROM inbox_messages WHERE id = " + msgID);
         std::string body = "No content.";
         if (!bodyResult->data.empty() && !bodyResult->data.at(0).at(0).empty()) {
           body = bodyResult->data.at(0).at(0);
         }
 
-        Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_msg_" + msgID, 20, 15, 60, 70, subject);
+        Gui2Dialog* dlg =
+            new Gui2Dialog(windowManager, "dialog_msg_" + msgID, 20, 15, 60, 70, subject);
         Gui2Text* txt = new Gui2Text(windowManager, "text_msg_" + msgID, 5, 5, 90, 70, 2.5, 50, "");
         txt->AddText("From: " + sender);
         txt->AddText("Date: " + timestamp);
@@ -120,7 +119,8 @@ void LeagueInboxPage::DeleteMessage(int msgID) {
 void LeagueInboxPage::GoBack() {
   this->Exit();
   Properties properties;
-  windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Forward), properties, 0);
+  windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Forward), properties,
+                                              0);
   delete this;
 }
 
@@ -128,8 +128,7 @@ void LeagueInboxPage::Process() {
   Gui2Page::Process();
 
   if (!league_menu_smoke::RouteEnabled("inbox") || autoAdvanceTriggered ||
-      league_menu_smoke::Now_ms() <
-          pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
+      league_menu_smoke::Now_ms() < pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
     return;
   }
 

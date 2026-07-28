@@ -314,8 +314,8 @@ protected:
 
   std::unique_ptr<Ball> ball;
 
-  std::vector<std::shared_ptr<MentalImage>> mentalImages;  // [index] == index * 10 ms ago ([0] == now)
-
+  std::vector<std::shared_ptr<MentalImage>>
+      mentalImages;  // [index] == index * 10 ms ago ([0] == now)
 
   std::unique_ptr<Gui2ScoreBoard> scoreboard;
   std::unique_ptr<Gui2Radar> radar;

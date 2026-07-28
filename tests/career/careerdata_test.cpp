@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-
 #include "data/careerdata.hpp"
+
+#include <gtest/gtest.h>
 
 // Unit tests for Phase 6 CareerSaveRegistry new functionality:
 //   6.13 ApplyReputationDelta
@@ -314,8 +314,7 @@ TEST(DraftDataTest, ProjectedPickMatchesSortedOrder) {
 
   // Prospects are sorted best-to-worst by actualRating; projectedPick must be 1..N in order
   for (int i = 0; i < static_cast<int>(prospects.size()); ++i) {
-    EXPECT_EQ(prospects[i].projectedPick, i + 1)
-        << "Pick " << i << " has wrong projectedPick";
+    EXPECT_EQ(prospects[i].projectedPick, i + 1) << "Pick " << i << " has wrong projectedPick";
     if (i > 0) {
       EXPECT_GE(prospects[i - 1].actualRating, prospects[i].actualRating)
           << "Prospects are not sorted descending by actualRating";

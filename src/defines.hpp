@@ -31,6 +31,7 @@
 #include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -39,7 +40,6 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <cstring>
 #include <string>
 #include <thread>
 #include <vector>
@@ -59,7 +59,8 @@ inline int fopen_s(FILE** file, const char* filename, const char* mode) {
 }
 
 inline int strcpy_s(char* dest, size_t destSize, const char* src) {
-  if (!dest || !src || destSize == 0) return EINVAL;
+  if (!dest || !src || destSize == 0)
+    return EINVAL;
   std::strncpy(dest, src, destSize - 1);
   dest[destSize - 1] = '\0';
   return 0;

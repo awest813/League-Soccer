@@ -64,7 +64,7 @@ void CareerSaveRegistry::ApplyReputationDelta(int saveID, int delta) {
 
 // 6.16 – replace the league structure stored in a save
 void CareerSaveRegistry::SetLeagueExpansionSettings(int saveID,
-                                                const LeagueExpansionSettings& settings) {
+                                                    const LeagueExpansionSettings& settings) {
   CareerSave* s = GetSave(saveID);
   if (s)
     s->leagueSettings = settings;

@@ -76,7 +76,8 @@ SettingsPage::SettingsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Button* buttonController =
       new Gui2Button(windowManager, "button_controller", 0, 0, 30, 4, "Controller");
   Gui2Button* buttonGraphics =
-      new Gui2Button(windowManager, "button_graphics", 0, 0, 30, 4, Localization::GetInstance().Translate("settings_graphics"));
+      new Gui2Button(windowManager, "button_graphics", 0, 0, 30, 4,
+                     Localization::GetInstance().Translate("settings_graphics"));
   Gui2Button* buttonAudio = new Gui2Button(windowManager, "button_audio", 0, 0, 30, 4, "Audio");
   Gui2Button* buttonLanguage =
       new Gui2Button(windowManager, "button_language", 0, 0, 30, 4, "Language");
@@ -144,9 +145,9 @@ void SettingsPage::GoLanguage() {
 GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_gameplay", 15, 5, 70, 90, true);
-  
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_gameplay", 2, 2, 66, 3,
-                                       "Gameplay Tweakage");
+
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "caption_settings_gameplay", 2, 2, 66, 3, "Gameplay Tweakage");
   frame->AddView(title);
   title->Show();
 
@@ -276,7 +277,8 @@ void GameplayPage::Exit() {
 
 ControllerPage::ControllerPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_controller", 15, 15, 70, 70, true);
+  Gui2Frame* frame =
+      new Gui2Frame(windowManager, "frame_settings_controller", 15, 15, 70, 70, true);
   this->AddView(frame);
   frame->Show();
 
@@ -326,8 +328,8 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_keyboard", 2,
-                                       2, 66, 3, "Keyboard Setup");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_keyboard", 2, 2,
+                                       66, 3, "Keyboard Setup");
   frame->AddView(title);
   title->Show();
 
@@ -584,8 +586,8 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_gamepads", 2,
-                                       2, 66, 3, "Gamepads Setup");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_gamepads", 2, 2,
+                                       66, 3, "Gamepads Setup");
   frame->AddView(title);
   title->Show();
   title->SetFocus();
@@ -615,8 +617,7 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   if (x == 0) {
     AddSettingsNotice(this, windowManager, "caption_settings_controller_gamepads_empty", 62,
                       "No gamepads detected. Connect one to edit gamepad settings.");
-    Gui2Button* backButton =
-        AddSettingsBackButton(this, windowManager, "button_gamepadsmenu_back");
+    Gui2Button* backButton = AddSettingsBackButton(this, windowManager, "button_gamepadsmenu_back");
     backButton->SetFocus();
   }
 
@@ -659,13 +660,13 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
     return;
   }
 
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_gamepadsetup", 15, 15, 70, 70, true);
+  Gui2Frame* frame =
+      new Gui2Frame(windowManager, "frame_settings_gamepadsetup", 15, 15, 70, 70, true);
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_settings_controller_gamepadsetup", 2, 2, 66, 3,
-                      "'" + controller->GetIdentifier() + "' Setup");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_gamepadsetup", 2,
+                                       2, 66, 3, "'" + controller->GetIdentifier() + "' Setup");
   frame->AddView(title);
   title->Show();
 
@@ -842,8 +843,9 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
 
   HIDGamepad* controller = GetGamepadIfAvailable(controllerID);
   if (!controller) {
-    Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_gamepadmapping",
-                                         10, 20, 80, 3, "Gamepad mapping");
+    Gui2Caption* title =
+        new Gui2Caption(windowManager, "caption_settings_controller_gamepadmapping", 10, 20, 80, 3,
+                        "Gamepad mapping");
     this->AddView(title);
     title->Show();
     AddSettingsNotice(this, windowManager, "caption_settings_controller_gamepadmapping_invalid", 45,
@@ -871,8 +873,7 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
   std::string gpbuttonIDs_string[e_ControllerButton_Size];
   for (int i = 0; i < e_ControllerButton_Size; i++) {
     gpbuttonButtons[i] = 0;
-    gpbuttonIDs[i] =
-        controller->GetControllerMapping((e_ControllerButton)i);
+    gpbuttonIDs[i] = controller->GetControllerMapping((e_ControllerButton)i);
     if (gpbuttonIDs[i] >= 0) {  // button
       gpbuttonIDs_string[i] = int_to_str(gpbuttonIDs[i]);
     } else {  // axis
@@ -1103,9 +1104,8 @@ void GamepadMappingPage::OnClose() {
   }
 
   if (controllerID == 1)
-    GetMenuTask()->SetEventJoyButtons(
-        controller->GetControllerMapping(e_ControllerButton_A),
-        controller->GetControllerMapping(e_ControllerButton_B));
+    GetMenuTask()->SetEventJoyButtons(controller->GetControllerMapping(e_ControllerButton_A),
+                                      controller->GetControllerMapping(e_ControllerButton_B));
 
   controller->SaveConfig();
 }
@@ -1181,13 +1181,13 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
 
   HIDGamepad* controller = GetGamepadIfAvailable(controllerID);
   if (!controller) {
-    Gui2Caption* title = new Gui2Caption(windowManager,
-                                         "caption_settings_controller_gamepadfunction", 10, 10, 80,
-                                         3, "Gamepad functions");
+    Gui2Caption* title =
+        new Gui2Caption(windowManager, "caption_settings_controller_gamepadfunction", 10, 10, 80, 3,
+                        "Gamepad functions");
     this->AddView(title);
     title->Show();
-    AddSettingsNotice(this, windowManager, "caption_settings_controller_gamepadfunction_invalid", 45,
-                      "That gamepad is no longer connected.");
+    AddSettingsNotice(this, windowManager, "caption_settings_controller_gamepadfunction_invalid",
+                      45, "That gamepad is no longer connected.");
     Gui2Button* backButton =
         AddSettingsBackButton(this, windowManager, "button_gamepadfunction_back");
     backButton->SetFocus();
@@ -1218,14 +1218,10 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   std::string modifierStr[4];
   Gui2Image* modifierTargetImage[4];
   std::string modifierTargetImageLRstr[4];
-  modifierIDs[0] =
-      controller->GetFunctionMapping(e_ButtonFunction_Switch);
-  modifierIDs[1] =
-      controller->GetFunctionMapping(e_ButtonFunction_Special);
-  modifierIDs[2] =
-      controller->GetFunctionMapping(e_ButtonFunction_Sprint);
-  modifierIDs[3] =
-      controller->GetFunctionMapping(e_ButtonFunction_Dribble);
+  modifierIDs[0] = controller->GetFunctionMapping(e_ButtonFunction_Switch);
+  modifierIDs[1] = controller->GetFunctionMapping(e_ButtonFunction_Special);
+  modifierIDs[2] = controller->GetFunctionMapping(e_ButtonFunction_Sprint);
+  modifierIDs[3] = controller->GetFunctionMapping(e_ButtonFunction_Dribble);
   for (int i = 0; i < 4; i++) {
     if (modifierIDs[i] == e_ControllerButton_L1) {
       modifierStr[i] = "L1";
@@ -1316,12 +1312,9 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   // on the ball
 
   std::string onTheBallStr[4];
-  onTheBallIDs[0] =
-      controller->GetFunctionMapping(e_ButtonFunction_LongPass);
-  onTheBallIDs[1] =
-      controller->GetFunctionMapping(e_ButtonFunction_HighPass);
-  onTheBallIDs[2] =
-      controller->GetFunctionMapping(e_ButtonFunction_ShortPass);
+  onTheBallIDs[0] = controller->GetFunctionMapping(e_ButtonFunction_LongPass);
+  onTheBallIDs[1] = controller->GetFunctionMapping(e_ButtonFunction_HighPass);
+  onTheBallIDs[2] = controller->GetFunctionMapping(e_ButtonFunction_ShortPass);
   onTheBallIDs[3] = controller->GetFunctionMapping(e_ButtonFunction_Shot);
   for (int i = 0; i < 4; i++) {
     if (onTheBallIDs[i] == e_ControllerButton_Y)
@@ -1400,14 +1393,10 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   // off the ball
 
   std::string offTheBallStr[4];
-  offTheBallIDs[0] =
-      controller->GetFunctionMapping(e_ButtonFunction_KeeperRush);
-  offTheBallIDs[1] =
-      controller->GetFunctionMapping(e_ButtonFunction_Sliding);
-  offTheBallIDs[2] =
-      controller->GetFunctionMapping(e_ButtonFunction_Pressure);
-  offTheBallIDs[3] =
-      controller->GetFunctionMapping(e_ButtonFunction_TeamPressure);
+  offTheBallIDs[0] = controller->GetFunctionMapping(e_ButtonFunction_KeeperRush);
+  offTheBallIDs[1] = controller->GetFunctionMapping(e_ButtonFunction_Sliding);
+  offTheBallIDs[2] = controller->GetFunctionMapping(e_ButtonFunction_Pressure);
+  offTheBallIDs[3] = controller->GetFunctionMapping(e_ButtonFunction_TeamPressure);
   for (int i = 0; i < 4; i++) {
     if (offTheBallIDs[i] == e_ControllerButton_Y)
       offTheBallStr[i] = "Y";
@@ -1669,8 +1658,8 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_settings_graphics", 2, 2, 66, 3, Localization::GetInstance().Translate("graphics_title"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_graphics", 2, 2, 66, 3,
+                                       Localization::GetInstance().Translate("graphics_title"));
   frame->AddView(title);
   title->Show();
   title->SetFocus();
@@ -1788,8 +1777,9 @@ void GraphicsPage::SetResolution(int resIndex) {
 
   bg = new Gui2Frame(windowManager, "image_setresolution_bg", 0, 0, 100, 13, true);
 
-  restartCaption1 = new Gui2Caption(windowManager, "caption_settings_resolution_info1", 0, 0, 100,
-                                    3, Localization::GetInstance().Translate("graphics_restart_note"));
+  restartCaption1 =
+      new Gui2Caption(windowManager, "caption_settings_resolution_info1", 0, 0, 100, 3,
+                      Localization::GetInstance().Translate("graphics_restart_note"));
   restartCaption2 = new Gui2Caption(windowManager, "caption_settings_resolution_info2", 0, 0, 100,
                                     3, "if this resolution doesn't happen to work, you can always");
   restartCaption3 = new Gui2Caption(windowManager, "caption_settings_resolution_info3", 0, 0, 100,
@@ -1824,7 +1814,7 @@ AudioPage::AudioPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_audio", 15, 15, 70, 70, true);
   this->AddView(frame);
   frame->Show();
- 
+
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_settings_audio", 2, 2, 66, 3, "Audio setup");
   frame->AddView(title);
@@ -1869,14 +1859,13 @@ LanguagePage::LanguagePage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_language", 15, 15, 70, 70, true);
   this->AddView(frame);
   frame->Show();
- 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_language", 2, 2, 66, 3, "Language");
+
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_language", 2, 2, 66, 3, "Language");
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* note = new Gui2Caption(windowManager, "caption_language_note", 2, 8, 66, 3,
-                                      "Select a language:");
+  Gui2Caption* note =
+      new Gui2Caption(windowManager, "caption_language_note", 2, 8, 66, 3, "Select a language:");
   frame->AddView(note);
   note->Show();
 
@@ -1903,7 +1892,8 @@ LanguagePage::LanguagePage(Gui2WindowManager* windowManager, const Gui2PageData&
         new Gui2Button(windowManager, "button_lang_" + code, 0, 0, 30, 3, displayName);
     btn->sig_OnClick.connect([this, code](...) { SelectLanguage(code); });
     grid->AddView(btn, i, 0);
-    if (i == 0) btn->SetFocus();
+    if (i == 0)
+      btn->SetFocus();
   }
 
   grid->UpdateLayout(0.5);

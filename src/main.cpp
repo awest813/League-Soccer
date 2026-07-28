@@ -32,10 +32,10 @@
 #include "scene/scene3d/scene3d.hpp"
 #include "systems/audio/audio_system.hpp"
 #include "types/thread.hpp"
+#include "utils/localization.hpp"
 #include "utils/objectloader.hpp"
 #include "utils/orbitcamera.hpp"
 #include "utils/threadhud.hpp"
-#include "utils/localization.hpp"
 
 #if defined(WIN32) && defined(__MINGW32__)
 #undef main
@@ -301,10 +301,12 @@ const std::vector<IHIDevice*>& GetControllers() {
 }
 
 void AddGamepad(int deviceIndex) {
-  if (deviceIndex < 0 || deviceIndex >= SDL_NumJoysticks()) return;
+  if (deviceIndex < 0 || deviceIndex >= SDL_NumJoysticks())
+    return;
   HIDGamepad* gamepad = new HIDGamepad(deviceIndex);
   controllers.push_back(gamepad);
-  printf("[main] Gamepad added: index %d, total controllers: %zu\n", deviceIndex, controllers.size());
+  printf("[main] Gamepad added: index %d, total controllers: %zu\n", deviceIndex,
+         controllers.size());
 }
 
 void RemoveGamepad(int deviceIndex) {
@@ -312,7 +314,8 @@ void RemoveGamepad(int deviceIndex) {
     HIDGamepad* gp = dynamic_cast<HIDGamepad*>(*it);
     if (gp && gp->GetGamepadID() == deviceIndex) {
       controllers.erase(it);
-      printf("[main] Gamepad removed: index %d, total controllers: %zu\n", deviceIndex, controllers.size());
+      printf("[main] Gamepad removed: index %d, total controllers: %zu\n", deviceIndex,
+             controllers.size());
       return;
     }
   }

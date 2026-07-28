@@ -188,8 +188,9 @@ struct CareerEvent {
   bool isMajor = false;
 
   CareerEvent() = default;
-  CareerEvent(const std::string& t, const std::string& desc, int rep, int64_t time, bool major = false)
-    : type(t), description(desc), reputationImpact(rep), timestamp(time), isMajor(major) {}
+  CareerEvent(const std::string& t, const std::string& desc, int rep, int64_t time,
+              bool major = false)
+      : type(t), description(desc), reputationImpact(rep), timestamp(time), isMajor(major) {}
 };
 
 struct TransferTarget {
@@ -247,7 +248,7 @@ struct StaffMember {
 
   StaffMember() = default;
   StaffMember(const std::string& n, const std::string& r, int s, long long sal, int yrs)
-    : name(n), role(r), skill(s), salary(sal), contractYearsRemaining(yrs), morale(70) {}
+      : name(n), role(r), skill(s), salary(sal), contractYearsRemaining(yrs), morale(70) {}
 };
 
 struct SponsorDeal {
@@ -259,7 +260,11 @@ struct SponsorDeal {
 
   SponsorDeal() = default;
   SponsorDeal(const std::string& name, const std::string& t, long long rev, int yrs, int repReq)
-    : sponsorName(name), type(t), annualRevenue(rev), yearsRemaining(yrs), reputationRequirement(repReq) {}
+      : sponsorName(name),
+        type(t),
+        annualRevenue(rev),
+        yearsRemaining(yrs),
+        reputationRequirement(repReq) {}
 };
 
 struct ClubFinances {
@@ -280,7 +285,13 @@ struct ClubFinances {
   int debtLevel = 0;
 };
 
-enum class OwnerObjectiveType { PROMOTION, AVOID_RELEGATION, WIN_TITLE, FINANCIAL_STABILITY, GROW_FANBASE };
+enum class OwnerObjectiveType {
+  PROMOTION,
+  AVOID_RELEGATION,
+  WIN_TITLE,
+  FINANCIAL_STABILITY,
+  GROW_FANBASE
+};
 
 struct SimulatedMatch {
   std::string opponentName;

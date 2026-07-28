@@ -21,7 +21,7 @@
 #include "utils/splitgeometry.hpp"
 
 const unsigned int replaySize_ms = 10000;
-const unsigned int camPosSize = 150;  // 180; //130
+const unsigned int camPosSize = 150;           // 180; //130
 const float excitementEventDecayRate = 0.99f;  // per 10ms tick
 
 Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
@@ -298,11 +298,10 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
 
   Gui2Root* root = menuTask->GetWindowManager()->GetRoot();
 
-  radar = std::make_unique<Gui2Radar>(menuTask->GetWindowManager(), "game_radar", 38, 78, 24, 18,
-                                      this, matchData->GetTeamData(0)->GetColor1(),
-                                      matchData->GetTeamData(0)->GetColor2(),
-                                      matchData->GetTeamData(1)->GetColor1(),
-                                      matchData->GetTeamData(1)->GetColor2());
+  radar = std::make_unique<Gui2Radar>(
+      menuTask->GetWindowManager(), "game_radar", 38, 78, 24, 18, this,
+      matchData->GetTeamData(0)->GetColor1(), matchData->GetTeamData(0)->GetColor2(),
+      matchData->GetTeamData(1)->GetColor1(), matchData->GetTeamData(1)->GetColor2());
   root->AddView(radar.get());
   radar->Show();
 
@@ -342,8 +341,8 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   root->AddView(statsOverlay.get());
   statsOverlay->Hide();
 
-  messageCaption = std::make_unique<Gui2Caption>(menuTask->GetWindowManager(), "game_messages", 0,
-                                                 0, 80, 8, "");
+  messageCaption =
+      std::make_unique<Gui2Caption>(menuTask->GetWindowManager(), "game_messages", 0, 0, 80, 8, "");
   messageCaption->SetTransparency(0.3f);
   root->AddView(messageCaption.get());
   messageCaptionRemoveTime_ms = actualTime_ms + 5000;
@@ -755,8 +754,10 @@ void Match::GameOver() {
 }
 
 void Match::AddExcitementBoost(float amount, int duration_ms) {
-  if (amount > excitementEventBoost) excitementEventBoost = amount;
-  if (duration_ms > excitementEventTimer_ms) excitementEventTimer_ms = duration_ms;
+  if (amount > excitementEventBoost)
+    excitementEventBoost = amount;
+  if (duration_ms > excitementEventTimer_ms)
+    excitementEventTimer_ms = duration_ms;
 }
 
 void Match::ToggleStatsOverlay() {
@@ -1040,7 +1041,8 @@ void Match::Process() {
           excitementEventBoost = 0.0f;
       }
       float effectiveExcitement = clamp(excitement + excitementEventBoost, 0.0f, 1.0f);
-      crowd01->SetGain(effectiveExcitement * 0.5f * GetConfiguration()->GetReal("audio_volume", 0.5f));
+      crowd01->SetGain(effectiveExcitement * 0.5f *
+                       GetConfiguration()->GetReal("audio_volume", 0.5f));
       crowd02->SetGain(clamp((effectiveExcitement - 0.3f) * 1.43f, 0.0f, 1.0f) * 0.5f *
                        GetConfiguration()->GetReal("audio_volume", 0.5f));
     }
@@ -2062,8 +2064,7 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
       while (victimIter != victimObjectList.end()) {
         std::string bodyPartName = (*victimIter)->GetName();
         if (bodyPartName == "left_foot" || bodyPartName == "right_foot" ||
-            bodyPartName == "left_lowerleg" ||
-            bodyPartName == "right_lowerleg"
+            bodyPartName == "left_lowerleg" || bodyPartName == "right_lowerleg"
             /*bodyPartName == "left_upperleg" || bodyPartName == "right_upperleg"*/) {
           if (objAABB.Intersects((*victimIter)->GetAABB())) {
             // printf("HIT: %s hits %s\n", (*objIter)->GetName().c_str(),
