@@ -1,9 +1,10 @@
 #ifndef CAREER_DATABASE_HPP
 #define CAREER_DATABASE_HPP
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
+
 #include "../../data/careerdata.hpp"
 
 namespace blunted {
@@ -29,12 +30,14 @@ public:
 
   bool Initialize(const std::string& saveDir);
   bool LoadCareerSave(const std::string& saveName);
-  bool CreateNewCareer(const std::string& careerName, const std::string& mode, const std::string& managerName);
+  bool CreateNewCareer(const std::string& careerName, const std::string& mode,
+                       const std::string& managerName);
   bool SaveCareerData();
 
   CareerSave* GetActiveSave() { return m_activeSave.get(); }
 
-  void AddEvent(const std::string& eventType, const std::string& description, int reputationDelta, bool isMajor);
+  void AddEvent(const std::string& eventType, const std::string& description, int reputationDelta,
+                bool isMajor);
 
   void RecruitFreeAgent(const std::string& playerName);
   bool TrainSquad();
@@ -55,7 +58,8 @@ public:
 
   void PopulateTransferMarket();
   std::vector<TransferTarget> GetTransferTargets() const;
-  TransferBid PlaceBid(const std::string& playerName, long long bidAmount, int offeredWage, int contractYears);
+  TransferBid PlaceBid(const std::string& playerName, long long bidAmount, int offeredWage,
+                       int contractYears);
   std::vector<TransferBid>& GetActiveBids() { return m_activeBids; }
   void WithdrawBid(const std::string& playerName);
   void ProcessPendingBids();
@@ -87,8 +91,8 @@ public:
   void InvestInFanBase(long long amount);
   void InvestInPrestige(long long amount);
 
-  SimulatedMatch SimulateMatchResult(const std::string& opponentName, const std::string& opponentTeamDBID,
-                                     bool isHome = true);
+  SimulatedMatch SimulateMatchResult(const std::string& opponentName,
+                                     const std::string& opponentTeamDBID, bool isHome = true);
   // Apply a finished match to season W/D/L, goals, board confidence, reputation,
   // and optional scorer bookkeeping. Shared by sim and 3D result paths.
   void ApplyMatchResult(int homeGoals, int awayGoals, const std::string& opponentLabel,
@@ -120,6 +124,6 @@ private:
   bool LoadFromFile(const std::string& path);
 };
 
-} // namespace blunted
+}  // namespace blunted
 
-#endif // CAREER_DATABASE_HPP
+#endif  // CAREER_DATABASE_HPP

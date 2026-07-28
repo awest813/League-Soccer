@@ -16,15 +16,15 @@ namespace fs = std::filesystem;
 
 struct PersonaTier {
   const char* name;
-  const char* mode;       // CreateNewCareer mode string
-  int rosterOvr;          // starting average overall
+  const char* mode;  // CreateNewCareer mode string
+  int rosterOvr;     // starting average overall
   int rosterSize;
   long long transferBudget;
   long long wageBudget;
   const char* strategy;
-  bool ownerLoop;         // run owner finance / board / sponsor flow
-  bool heavyTraining;     // coach-style training focus
-  bool activeTransfers;   // gm-style transfer activity
+  bool ownerLoop;        // run owner finance / board / sponsor flow
+  bool heavyTraining;    // coach-style training focus
+  bool activeTransfers;  // gm-style transfer activity
   unsigned int seed;
 };
 
@@ -53,7 +53,8 @@ std::string PersonaTempDir(const PersonaTier& persona) {
 void SeedRoster(CareerSave* save, int ovr, int size) {
   ASSERT_NE(save, nullptr);
   save->roster.clear();
-  static const char* positions[] = {"GK", "CB", "CB", "LB", "RB", "DM", "CM", "CM", "AM", "CF", "ST"};
+  static const char* positions[] = {"GK", "CB", "CB", "LB", "RB", "DM",
+                                    "CM", "CM", "AM", "CF", "ST"};
   for (int i = 0; i < size; ++i) {
     PlayerCareerState p;
     p.name = "Audit Player " + std::to_string(i);
@@ -74,9 +75,11 @@ void SeedRoster(CareerSave* save, int ovr, int size) {
 }
 
 int AverageOvr(const CareerSave* save) {
-  if (!save || save->roster.empty()) return 0;
+  if (!save || save->roster.empty())
+    return 0;
   int sum = 0;
-  for (const auto& p : save->roster) sum += p.ovr;
+  for (const auto& p : save->roster)
+    sum += p.ovr;
   return sum / static_cast<int>(save->roster.size());
 }
 
@@ -156,11 +159,11 @@ void CloseSeasonLikeUi(CareerDatabase& db, const PersonaTier& persona) {
 }
 
 TEST(CareerLongRunAudit, EstimateLeaguePositionBands) {
-  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(30, 5, 3), 1);   // ~95 pts
-  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(24, 8, 6), 2);   // ~80 pts
-  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(23, 4, 11), 4);  // 73 pts
-  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(12, 12, 14), 12); // ~48 pts
-  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(5, 8, 25), 19);  // ~23 pts
+  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(30, 5, 3), 1);     // ~95 pts
+  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(24, 8, 6), 2);     // ~80 pts
+  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(23, 4, 11), 4);    // 73 pts
+  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(12, 12, 14), 12);  // ~48 pts
+  EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(5, 8, 25), 19);    // ~23 pts
   EXPECT_EQ(CareerDatabase::EstimateLeaguePosition(0, 0, 0), 10);
 }
 
@@ -223,10 +226,10 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
     EXPECT_NEAR(startOvr, persona.rosterOvr, 5) << persona.name;
 
     static const char* opponents[] = {
-        "FC United",     "Athletic Club", "Wanderers FC",      "Real Deportivo", "Inter Milano",
-        "Bayern Munich", "FC Barcelona",  "Chelsea FC",        "Arsenal FC",     "Juventus Turin",
-        "AC Milan",      "Liverpool FC",  "Borussia Dortmund", "Paris SG",       "Ajax Amsterdam",
-        "Porto FC",      "Benfica",       "Sporting CP",       "Napoli",         "Atletico Madrid",
+        "FC United",     "Athletic Club", "Wanderers FC",      "Real Deportivo",  "Inter Milano",
+        "Bayern Munich", "FC Barcelona",  "Chelsea FC",        "Arsenal FC",      "Juventus Turin",
+        "AC Milan",      "Liverpool FC",  "Borussia Dortmund", "Paris SG",        "Ajax Amsterdam",
+        "Porto FC",      "Benfica",       "Sporting CP",       "Napoli",          "Atletico Madrid",
         "Tottenham",     "Rivertown FC",  "Harbor City",       "Northgate United"};
 
     for (int season = 0; season < kSeasons; ++season) {
@@ -239,8 +242,7 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
       for (int match = 0; match < kMatchesPerSeason; ++match) {
         const std::string& opponent = opponents[match % 24];
         const bool isHome = (match % 2) == 0;
-        SimulatedMatch result =
-            db.SimulateMatchResult(opponent, std::to_string(match + 1), isHome);
+        SimulatedMatch result = db.SimulateMatchResult(opponent, std::to_string(match + 1), isHome);
         ASSERT_TRUE(result.played) << persona.name << " S" << season << " M" << match;
         EXPECT_GE(result.homeGoals, 0);
         EXPECT_LE(result.homeGoals, 9);
@@ -326,7 +328,8 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
       finishSum += rec.leaguePosition;
       winsSum += rec.wins;
       report.bestFinish = std::min(report.bestFinish, rec.leaguePosition);
-      if (rec.wonTitle) report.titles++;
+      if (rec.wonTitle)
+        report.titles++;
     }
     report.avgFinish = static_cast<double>(finishSum) / kSeasons;
     report.avgWins = static_cast<double>(winsSum) / kSeasons;
@@ -343,11 +346,12 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
     }
 
     // Emit a concise audit line for each persona (visible in test logs).
-    printf("[career-audit] %s | avgFinish=%.1f avgWins=%.1f best=%d titles=%d finalOvr=%d rep=%d "
-           "board=%d budget=%lld\n",
-           report.name.c_str(), report.avgFinish, report.avgWins, report.bestFinish, report.titles,
-           report.finalOvr, report.finalReputation, report.finalBoardConfidence,
-           report.finalTransferBudget);
+    printf(
+        "[career-audit] %s | avgFinish=%.1f avgWins=%.1f best=%d titles=%d finalOvr=%d rep=%d "
+        "board=%d budget=%lld\n",
+        report.name.c_str(), report.avgFinish, report.avgWins, report.bestFinish, report.titles,
+        report.finalOvr, report.finalReputation, report.finalBoardConfidence,
+        report.finalTransferBudget);
 
     EXPECT_GE(save->reputation, -100);
     EXPECT_LE(save->reputation, 100);
