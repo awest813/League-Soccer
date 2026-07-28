@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "copilot/**", "claude/**" ]
+    branches: [ "main", "master", "copilot/**", "claude/**", "cursor/**" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
 
 permissions:
   contents: read
