@@ -80,10 +80,19 @@ function(gf_find_boost)
   # FindBoost.cmake module doesn't recognize 'signals2' as a valid
   # COMPONENTS entry - it has no header-only exception listed for it - and
   # gives up even though the headers are right there on disk), just locate
-  # the headers directly. vcpkg's toolchain file already adds the triplet's
-  # install prefix to CMAKE_PREFIX_PATH, so find_path() picks it up
-  # automatically with no extra hints needed.
-  find_path(GF_BOOST_HEADER_DIR NAMES boost/signals2.hpp boost/intrusive_ptr.hpp)
+  # the headers directly. vcpkg's toolchain file adds the triplet's install
+  # prefix to CMAKE_PREFIX_PATH, but pass it as an explicit HINTS too (using
+  # the VCPKG_INSTALLED_DIR/VCPKG_TARGET_TRIPLET variables the toolchain
+  # itself defines) so this doesn't depend on that propagation working.
+  message(STATUS "gf_find_boost: fallback search - VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR} "
+                 "VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET} CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}")
+  find_path(GF_BOOST_HEADER_DIR
+    NAMES boost/signals2.hpp boost/intrusive_ptr.hpp
+    HINTS
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
+      "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
+  )
+  message(STATUS "gf_find_boost: header-only fallback search result: ${GF_BOOST_HEADER_DIR}")
   if(GF_BOOST_HEADER_DIR)
     if(NOT TARGET Boost::headers)
       add_library(Boost::headers INTERFACE IMPORTED GLOBAL)
