@@ -23,10 +23,6 @@ int ClampInt(int value, int minValue, int maxValue) {
   return std::max(minValue, std::min(maxValue, value));
 }
 
-long long ClampLongLong(long long value, long long minValue, long long maxValue) {
-  return std::max(minValue, std::min(maxValue, value));
-}
-
 int RandomInt(int minValue, int maxValue) {
   std::uniform_int_distribution<int> dist(minValue, maxValue);
   return dist(CareerRng());
@@ -129,10 +125,6 @@ PlayerCareerState PlayerFromRecord(const std::string& val) {
     p.matchesPlayed = SafeStoi(t[12]);
   p.preferredPosition = p.position;
   return p;
-}
-
-bool IsGoalkeeper(const PlayerCareerState& player) {
-  return player.preferredPosition == "GK" || player.position == "GK";
 }
 
 }  // namespace
