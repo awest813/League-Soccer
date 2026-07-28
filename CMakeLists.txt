@@ -70,10 +70,32 @@ function(gf_find_boost)
     cmake_policy(SET CMP0167 OLD)
   endif()
   find_package(Boost QUIET)
-  if(NOT Boost_FOUND)
-    message(FATAL_ERROR
-      "Could not find Boost. Install Boost development packages or configure with a vcpkg toolchain.")
+  if(Boost_FOUND)
+    return()
   endif()
+
+  # Last resort: boost::signals2 and boost::intrusive_ptr are both
+  # header-only, so if every find_package(Boost ...) attempt above failed
+  # (observed with some vcpkg baselines: CMake's own bundled classic
+  # FindBoost.cmake module doesn't recognize 'signals2' as a valid
+  # COMPONENTS entry - it has no header-only exception listed for it - and
+  # gives up even though the headers are right there on disk), just locate
+  # the headers directly. vcpkg's toolchain file already adds the triplet's
+  # install prefix to CMAKE_PREFIX_PATH, so find_path() picks it up
+  # automatically with no extra hints needed.
+  find_path(GF_BOOST_HEADER_DIR NAMES boost/signals2.hpp boost/intrusive_ptr.hpp)
+  if(GF_BOOST_HEADER_DIR)
+    if(NOT TARGET Boost::headers)
+      add_library(Boost::headers INTERFACE IMPORTED GLOBAL)
+      set_target_properties(Boost::headers PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${GF_BOOST_HEADER_DIR}")
+    endif()
+    set(Boost_FOUND TRUE PARENT_SCOPE)
+    return()
+  endif()
+
+  message(FATAL_ERROR
+    "Could not find Boost. Install Boost development packages or configure with a vcpkg toolchain.")
 endfunction()
 
 function(gf_pick_target out_var)
