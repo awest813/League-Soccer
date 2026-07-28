@@ -360,9 +360,9 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
 
   std::list<boost::intrusive_ptr<Spatial>>::iterator spatialIter = spatials.begin();
   while (spatialIter != spatials.end()) {
-    ReplaySpatial* spatial = new ReplaySpatial(GetReplaySize_ms() / 10);
+    auto spatial = std::make_unique<ReplaySpatial>(GetReplaySize_ms() / 10);
     spatial->spatial = *spatialIter;
-    replay.push_back(spatial);
+    replay.push_back(std::move(spatial));
     spatialIter++;
   }
   replayBallTouchesNetFrames =
@@ -464,17 +464,17 @@ void Match::Exit() {
   scene3D->DeleteObject(crowd02);
 
   radar->Exit();
-  delete radar;
+  radar.reset();
   if (tacticsDebug) {
     tacticsDebug->Exit();
-    delete tacticsDebug;
+    tacticsDebug.reset();
   }
 
   scoreboard->Exit();
-  delete scoreboard;
+  scoreboard.reset();
 
   statsOverlay->Exit();
-  delete statsOverlay;
+  statsOverlay.reset();
 
   animPositionCache.clear();
 
@@ -650,7 +650,7 @@ Player* Match::GetPlayer(int playerID) {
   for (int t = 0; t < 2; t++) {
     for (unsigned int p = 0; p < teams[t]->GetAllPlayers().size(); p++) {
       if (teams[t]->GetAllPlayers().at(p)->GetID() == playerID) {
-        return teams[t]->GetAllPlayers().at(p);
+        return teams[t]->GetAllPlayers().at(p).get();
       }
     }
   }
