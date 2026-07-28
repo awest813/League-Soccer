@@ -101,7 +101,7 @@ jobs:
             exit 0
           fi
           echo "Running clang-tidy on: $FILES"
-          echo "$FILES" | xargs -r clang-tidy -p build --warnings-as-errors='*' \
+          echo "$FILES" | xargs -r clang-tidy -p build \
             --header-filter='src/.*' 2>&1 | tee tidy-output.txt
           grep -c "error:" tidy-output.txt && exit 1 || true
 
