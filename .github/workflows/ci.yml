@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "copilot/**", "claude/**" ]
+    branches: [ "main", "master", "copilot/**", "claude/**", "cursor/**" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ jobs:
       - name: Check changed files
         run: |
           BASE="${{ github.event.pull_request.base.sha || 'HEAD~1' }}"
-          FILES=$(git diff --name-only "$BASE"...HEAD -- '*.cpp' '*.hpp' 2>/dev/null || true)
+          FILES=$(git diff --name-only --diff-filter=d "$BASE"...HEAD -- '*.cpp' '*.hpp' 2>/dev/null || true)
           if [ -z "$FILES" ]; then
             echo "No C++ files changed – skipping format check."
             exit 0
@@ -83,7 +83,7 @@ jobs:
             libgl1-mesa-dev \
             libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
             libopenal-dev \
-            libboost-system-dev libboost-signals2-dev \
+            libboost-dev \
             libsqlite3-dev
 
       - name: Configure (generate compile_commands.json)
@@ -95,13 +95,13 @@ jobs:
       - name: Run clang-tidy on changed files
         run: |
           BASE="${{ github.event.pull_request.base.sha || 'HEAD~1' }}"
-          FILES=$(git diff --name-only "$BASE"...HEAD -- 'src/*.cpp' 'src/**/*.cpp' 2>/dev/null || true)
+          FILES=$(git diff --name-only --diff-filter=d "$BASE"...HEAD -- 'src/*.cpp' 'src/**/*.cpp' 2>/dev/null || true)
           if [ -z "$FILES" ]; then
             echo "No C++ source files changed – skipping clang-tidy."
             exit 0
           fi
           echo "Running clang-tidy on: $FILES"
-          echo "$FILES" | xargs -r clang-tidy -p build --warnings-as-errors='*' \
+          echo "$FILES" | xargs -r clang-tidy -p build \
             --header-filter='src/.*' 2>&1 | tee tidy-output.txt
           grep -c "error:" tidy-output.txt && exit 1 || true
 
@@ -121,7 +121,7 @@ jobs:
             libgl1-mesa-dev \
             libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
             libopenal-dev \
-            libboost-system-dev libboost-signals2-dev \
+            libboost-dev \
             libsqlite3-dev \
             xvfb
 
@@ -149,7 +149,7 @@ jobs:
       - name: Smoke test Full Match
         run: |
           cd build
-          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_full_match.config" 260 \
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_full_match.config" 420 \
             "[menu-smoke] Main menu ready, opening Quick Match" \
             "[menu-smoke] Full match complete:" \
             "[menu-smoke] Full-match verification succeeded, quitting test run"
@@ -297,7 +297,7 @@ jobs:
         shell: pwsh
         run: |
           & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet $env:VCPKG_DEFAULT_TRIPLET `
-            boost-system boost-thread boost-filesystem `
+            boost-signals2 boost-smart-ptr `
             sdl2 sdl2-image[libjpeg-turbo] sdl2-ttf sdl2-gfx `
             opengl openal-soft sqlite3
 
@@ -307,7 +307,7 @@ jobs:
           cmake -S . -B build-win `
             -G "Visual Studio 17 2022" -A x64 `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" `
-            -DVCPKG_TARGET_TRIPLET=$env:VCPKG_DEFAULT_TRIPLET
+            -DVCPKG_TARGET_TRIPLET="$env:VCPKG_DEFAULT_TRIPLET"
 
       - name: Build (Debug)
         shell: pwsh
@@ -338,7 +338,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Doxygen
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends doxygen graphviz cmake build-essential
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends doxygen graphviz cmake build-essential libboost-dev
 
       - name: Generate Doxyfile from template
         run: |

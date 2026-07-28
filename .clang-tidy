@@ -4,7 +4,6 @@
 
 Checks: >
   clang-diagnostic-*,
-  clang-analyzer-*,
   modernize-use-nullptr,
   modernize-use-override,
   modernize-use-using,
@@ -16,8 +15,16 @@ Checks: >
   performance-unnecessary-copy-initialization,
   performance-move-const-arg,
   readability-redundant-smartptr-get,
-  readability-redundant-string-cstr,
-  -clang-analyzer-alpha.*
+  readability-redundant-string-cstr
+
+# clang-analyzer-* (deep symbolic-execution static analysis) is intentionally
+# excluded: it produces pervasive false-positive use-after-free/leak reports
+# around boost::signals2's internal weak_ptr/connection teardown, which is
+# used throughout this codebase's near-ubiquitous
+# 'widget->sig_OnClick.connect([this](...) {...})' pattern. That noise would
+# make clang-tidy fail on almost any PR that touches a menu/GUI file,
+# contradicting this config's own goal of focusing on actionable
+# modernisation checks.
 
 WarningsAsErrors: ''
 

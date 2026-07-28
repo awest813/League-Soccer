@@ -2,15 +2,15 @@
 
 #include <string>
 #include <vector>
+
+#include "../../data/careerdata.hpp"
 #include "../../utils/gui2/page.hpp"
 #include "../../utils/gui2/widgets/button.hpp"
 #include "../../utils/gui2/widgets/caption.hpp"
+#include "../../utils/gui2/widgets/editline.hpp"
 #include "../../utils/gui2/widgets/grid.hpp"
 #include "../../utils/gui2/widgets/pulldown.hpp"
-#include "../../utils/gui2/widgets/editline.hpp"
 #include "../../utils/gui2/windowmanager.hpp"
-#include "../../data/staffdata.hpp"
-#include "../../data/careerdata.hpp"
 #include "career_database.hpp"
 
 using namespace blunted;

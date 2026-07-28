@@ -1,8 +1,8 @@
-#include <gtest/gtest.h>
-
 #include "data/careerdata.hpp"
 
-// Unit tests for Phase 6 CareerDatabase new functionality:
+#include <gtest/gtest.h>
+
+// Unit tests for Phase 6 CareerSaveRegistry new functionality:
 //   6.13 ApplyReputationDelta
 //   6.16 SetLeagueExpansionSettings / ComputePromotionRelegation
 //   6.17 SetCustomLeague
@@ -12,7 +12,7 @@ namespace {
 // ---------------------------------------------------------------------------
 // Helper – create a fresh save and return its ID
 // ---------------------------------------------------------------------------
-static int MakeSave(CareerDatabase& db) {
+static int MakeSave(CareerSaveRegistry& db) {
   CareerSave s;
   s.mode = CareerMode::MANAGER;
   s.club.clubID = 1;
@@ -25,35 +25,35 @@ static int MakeSave(CareerDatabase& db) {
 // ---------------------------------------------------------------------------
 
 TEST(CareerDataTest, ReputationClampsAtHundred) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   int id = MakeSave(db);
   db.ApplyReputationDelta(id, 100);
   EXPECT_EQ(db.GetSave(id)->reputation, 100);
 }
 
 TEST(CareerDataTest, ReputationClampsAtZero) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   int id = MakeSave(db);
   db.ApplyReputationDelta(id, -200);
   EXPECT_EQ(db.GetSave(id)->reputation, 0);
 }
 
 TEST(CareerDataTest, ReputationPositiveDelta) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   int id = MakeSave(db);
   db.ApplyReputationDelta(id, 5);
   EXPECT_EQ(db.GetSave(id)->reputation, 55);
 }
 
 TEST(CareerDataTest, ReputationNegativeDelta) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   int id = MakeSave(db);
   db.ApplyReputationDelta(id, -10);
   EXPECT_EQ(db.GetSave(id)->reputation, 40);
 }
 
 TEST(CareerDataTest, ReputationNoopForUnknownSave) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   // Should not crash even when saveID does not exist
   db.ApplyReputationDelta(999, 10);
 }
@@ -63,7 +63,7 @@ TEST(CareerDataTest, ReputationNoopForUnknownSave) {
 // ---------------------------------------------------------------------------
 
 TEST(CareerDataTest, SetLeagueExpansionSettingsPersists) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   int id = MakeSave(db);
 
   LeagueExpansionSettings settings;
@@ -98,7 +98,7 @@ TEST(CareerDataTest, ComputePromotionRelegation_BottomTeamsRelegated) {
   // Division 0 standings: teams 10, 20, 30, 40 (best to worst)
   std::vector<std::vector<int>> standings = {{10, 20, 30, 40}, {50, 60, 70, 80}};
 
-  auto relegated = CareerDatabase::ComputePromotionRelegation(settings, standings);
+  auto relegated = CareerSaveRegistry::ComputePromotionRelegation(settings, standings);
 
   // Teams 30 and 40 should be relegated from division 0
   ASSERT_EQ(relegated.size(), 2u);
@@ -118,7 +118,7 @@ TEST(CareerDataTest, ComputePromotionRelegation_LastDivisionNotRelegated) {
   settings.divisions.push_back(d2);
 
   std::vector<std::vector<int>> standings = {{1, 2, 3, 4}, {5, 6, 7, 8}};
-  auto relegated = CareerDatabase::ComputePromotionRelegation(settings, standings);
+  auto relegated = CareerSaveRegistry::ComputePromotionRelegation(settings, standings);
 
   // Only division 0 teams can be relegated (div 1 is the bottom)
   for (const auto& p : relegated) {
@@ -133,7 +133,7 @@ TEST(CareerDataTest, ComputePromotionRelegation_EmptyStandings) {
   settings.divisions.push_back(d);
 
   std::vector<std::vector<int>> standings;  // empty
-  auto relegated = CareerDatabase::ComputePromotionRelegation(settings, standings);
+  auto relegated = CareerSaveRegistry::ComputePromotionRelegation(settings, standings);
   EXPECT_TRUE(relegated.empty());
 }
 
@@ -142,7 +142,7 @@ TEST(CareerDataTest, ComputePromotionRelegation_EmptyStandings) {
 // ---------------------------------------------------------------------------
 
 TEST(CareerDataTest, SetCustomLeaguePersists) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   int id = MakeSave(db);
 
   CustomLeagueConfig cfg;
@@ -162,7 +162,7 @@ TEST(CareerDataTest, SetCustomLeaguePersists) {
 }
 
 TEST(CareerDataTest, SetCustomLeagueNoopForUnknownSave) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   CustomLeagueConfig cfg;
   cfg.leagueName = "Ghost League";
   // Should not crash when save does not exist
@@ -180,7 +180,7 @@ TEST(CareerDataTest, OwnerModeEnumExists) {
 }
 
 TEST(CareerDataTest, OwnerModeCreateSaveAndRetrieve) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   CareerSave s;
   s.mode = CareerMode::OWNER;
   s.controlledEntityID = 5;
@@ -198,7 +198,7 @@ TEST(CareerDataTest, OwnerModeCreateSaveAndRetrieve) {
 }
 
 TEST(CareerDataTest, OwnerReputationClampingWorks) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   CareerSave s;
   s.mode = CareerMode::OWNER;
   s.club.reputation = 90;
@@ -212,7 +212,7 @@ TEST(CareerDataTest, OwnerReputationClampingWorks) {
 }
 
 TEST(CareerDataTest, OwnerModeSeasonAdvances) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   CareerSave s;
   s.mode = CareerMode::OWNER;
   s.currentSeason = 1;
@@ -226,7 +226,7 @@ TEST(CareerDataTest, OwnerModeSeasonAdvances) {
 }
 
 TEST(CareerDataTest, OwnerModeLeagueExpansion) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   CareerSave s;
   s.mode = CareerMode::OWNER;
   int id = db.CreateSave(s);
@@ -245,7 +245,7 @@ TEST(CareerDataTest, OwnerModeLeagueExpansion) {
 }
 
 TEST(CareerDataTest, OwnerModeCustomLeague) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   CareerSave s;
   s.mode = CareerMode::OWNER;
   int id = db.CreateSave(s);
@@ -263,7 +263,7 @@ TEST(CareerDataTest, OwnerModeCustomLeague) {
 }
 
 TEST(CareerDataTest, OwnerDeleteSave) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   CareerSave s;
   s.mode = CareerMode::OWNER;
   int id = db.CreateSave(s);
@@ -274,7 +274,7 @@ TEST(CareerDataTest, OwnerDeleteSave) {
 }
 
 TEST(CareerDataTest, OwnerRecordSeason) {
-  CareerDatabase db;
+  CareerSaveRegistry db;
   CareerSave s;
   s.mode = CareerMode::OWNER;
   int id = db.CreateSave(s);
@@ -314,8 +314,7 @@ TEST(DraftDataTest, ProjectedPickMatchesSortedOrder) {
 
   // Prospects are sorted best-to-worst by actualRating; projectedPick must be 1..N in order
   for (int i = 0; i < static_cast<int>(prospects.size()); ++i) {
-    EXPECT_EQ(prospects[i].projectedPick, i + 1)
-        << "Pick " << i << " has wrong projectedPick";
+    EXPECT_EQ(prospects[i].projectedPick, i + 1) << "Pick " << i << " has wrong projectedPick";
     if (i > 0) {
       EXPECT_GE(prospects[i - 1].actualRating, prospects[i].actualRating)
           << "Prospects are not sorted descending by actualRating";

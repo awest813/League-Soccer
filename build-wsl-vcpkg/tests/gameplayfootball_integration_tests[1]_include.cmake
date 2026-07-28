@@ -1,5 +1,0 @@
-if(EXISTS "/mnt/c/Users/allen/Downloads/archivedwl-490/League-Soccer/build-wsl-vcpkg/tests/gameplayfootball_integration_tests[1]_tests.cmake")
-  include("/mnt/c/Users/allen/Downloads/archivedwl-490/League-Soccer/build-wsl-vcpkg/tests/gameplayfootball_integration_tests[1]_tests.cmake")
-else()
-  add_test(gameplayfootball_integration_tests_NOT_BUILT gameplayfootball_integration_tests_NOT_BUILT)
-endif()

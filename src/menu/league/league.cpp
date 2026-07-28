@@ -9,12 +9,12 @@
 #include <chrono>
 #include <ctime>
 
-#include "../../main.hpp"
 #include "../../league/leaguecode.hpp"
-#include "utils/database.hpp"
-#include "menu_smoke.hpp"
+#include "../../main.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
+#include "menu_smoke.hpp"
+#include "utils/database.hpp"
 #include "utils/gui2/widgets/caption.hpp"
 #include "utils/gui2/widgets/frame.hpp"
 #include "utils/gui2/widgets/root.hpp"
@@ -24,8 +24,7 @@ namespace {
 
 std::string MakeMenuSmokeLeagueSaveName() {
   const auto now = std::chrono::system_clock::now().time_since_epoch();
-  const auto milliseconds =
-      std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+  const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
   std::string route = league_menu_smoke::GetRoute();
   if (route.empty()) {
     route = "bootstrap";
@@ -35,8 +34,7 @@ std::string MakeMenuSmokeLeagueSaveName() {
       ch = '_';
     }
   }
-  return "MenuSmokeLeague_" + route + "_" +
-         std::to_string(milliseconds % 1000000000LL);
+  return "MenuSmokeLeague_" + route + "_" + std::to_string(milliseconds % 1000000000LL);
 }
 
 }  // namespace
@@ -92,23 +90,20 @@ void LeaguePage::Process() {
   Gui2Page::Process();
 
   if (league_menu_smoke::AnyEnabled() && !autoStepTriggered &&
-      league_menu_smoke::Now_ms() >=
-          pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
+      league_menu_smoke::Now_ms() >= pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
     autoStepTriggered = true;
     printf("[menu-smoke] League page reached, advancing time once\n");
     StepTime();
   }
 
   if (league_menu_smoke::HasRoute() && !autoAdvanceTriggered &&
-      league_menu_smoke::Now_ms() >=
-          pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
+      league_menu_smoke::Now_ms() >= pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
     autoAdvanceTriggered = true;
     printf("[menu-smoke] League page ready, opening dashboard\n");
     GoForward();
   } else if (league_menu_smoke::BootstrapEnabled() && !league_menu_smoke::HasRoute() &&
              !autoAdvanceTriggered &&
-             league_menu_smoke::Now_ms() >=
-                 pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
+             league_menu_smoke::Now_ms() >= pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
     autoAdvanceTriggered = true;
     printf("[menu-smoke] League page flow succeeded\n");
     GetMenuTask()->QuitGame();
@@ -142,8 +137,7 @@ void LeaguePage::StepTime() {
 }
 
 void LeaguePage::SetTimeCaption() {
-  auto result =
-      GetDB()->Query("SELECT timestamp, strftime('%w', timestamp) FROM settings LIMIT 1");
+  auto result = GetDB()->Query("SELECT timestamp, strftime('%w', timestamp) FROM settings LIMIT 1");
   if (result->data.empty() || result->data.at(0).size() < 2)
     return;
   std::string dayName;
@@ -215,8 +209,7 @@ void LeagueStartPage::Process() {
   Gui2Page::Process();
 
   if (!autoAdvanceTriggered && league_menu_smoke::AnyEnabled() &&
-      league_menu_smoke::Now_ms() >=
-          pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
+      league_menu_smoke::Now_ms() >= pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
     autoAdvanceTriggered = true;
     printf("[menu-smoke] League start reached, creating a new league\n");
     GoNew();
@@ -278,7 +271,8 @@ void LeagueStartLoadPage::GoLoadSave() {
 
   GetDB()->Load(saveLoc.string() + "/autosave.sqlite");
 
-  auto checkResult = GetDB()->Query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'match_results' LIMIT 1");
+  auto checkResult = GetDB()->Query(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'match_results' LIMIT 1");
   if (checkResult->data.empty()) {
     GetDB()->Query(
         "CREATE TABLE match_results(id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -291,7 +285,8 @@ void LeagueStartLoadPage::GoLoadSave() {
         "competition_id INTEGER)");
   }
 
-  auto inboxCheck = GetDB()->Query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'inbox_messages' LIMIT 1");
+  auto inboxCheck = GetDB()->Query(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'inbox_messages' LIMIT 1");
   if (inboxCheck->data.empty()) {
     GetDB()->Query(
         "CREATE TABLE inbox_messages(id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -313,6 +308,10 @@ void LeagueStartLoadPage::GoLoadSave() {
 LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
                                        const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
+      databaseSelectDialog(nullptr),
+      databaseSelectBrowser(nullptr),
+      previousFocus(nullptr),
+      createSaveDialog(nullptr),
       success(false),
       pageCreatedTime_ms(league_menu_smoke::Now_ms()),
       dialogShownTime_ms(0),
@@ -336,23 +335,22 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
       windowManager, "caption_league_start_new_currency", 0, 0, 30, 2.5, "Select currency");
   Gui2Caption* saveNameCaption = new Gui2Caption(
       windowManager, "caption_league_start_new_savegamename", 0, 0, 30, 2.5, "Savegame name");
-   Gui2Caption* managerNameCaption = new Gui2Caption(
+  Gui2Caption* managerNameCaption = new Gui2Caption(
       windowManager, "caption_league_start_new_managername", 0, 0, 30, 2.5, "Manager name");
 
   Gui2Caption* teamSelectCaption = new Gui2Caption(
       windowManager, "caption_league_start_new_teamselect", 0, 0, 30, 2.5, "Select your team");
 
   databaseSelectButton = new Gui2Button(windowManager, "button_league_start_new_dbselect", 0, 0, 30,
-                                         3, data_SelectedDatabase);
+                                        3, data_SelectedDatabase);
   databaseSelectButton->sig_OnClick.connect([this](...) { GoDatabaseSelectDialog(); });
 
-   teamSelectPulldown =
-       new Gui2Pulldown(windowManager, "pulldown_league_start_new_teamselect", 0, 0, 30, 3);
-   teamSelectPulldown->sig_OnChange.connect([this](Gui2Pulldown* pd) {
-     data_SelectedTeamID = pd->GetSelected();
-   });
+  teamSelectPulldown =
+      new Gui2Pulldown(windowManager, "pulldown_league_start_new_teamselect", 0, 0, 30, 3);
+  teamSelectPulldown->sig_OnChange.connect(
+      [this](Gui2Pulldown* pd) { data_SelectedTeamID = pd->GetSelected(); });
 
-   currencySelectPulldown =
+  currencySelectPulldown =
       new Gui2Pulldown(windowManager, "pulldown_league_start_new_currencyselect", 0, 0, 30, 3);
   currencySelectPulldown->AddEntry("Euro", "euro");
   currencySelectPulldown->AddEntry("Dollar", "dollar");
@@ -665,9 +663,8 @@ void LeagueStartNewPage::CloseCreateSaveDialog() {
       "INSERT INTO settings (managername, team_id, currency, difficulty, seasonyear, timestamp) "
       "VALUES ('" +
       managerNameInput->GetText() + "', " + data_SelectedTeamID + ", '" +
-      currencySelectPulldown->GetSelected() + "', " +
-      real_to_str(difficultySlider->GetValue()) + ", " +
-      std::to_string(currentYear) + ", '" + startDate + "')");
+      currencySelectPulldown->GetSelected() + "', " + real_to_str(difficultySlider->GetValue()) +
+      ", " + std::to_string(currentYear) + ", '" + startDate + "')");
 
   GenerateSeasonCalendars();
 

@@ -28,8 +28,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
     libsdl2-ttf-dev \
     libsdl2-gfx-dev \
     libopenal-dev \
-    libboost-system-dev \
-    libboost-signals2-dev \
+    libboost-dev \
     libsqlite3-dev \
     # Documentation
     doxygen \

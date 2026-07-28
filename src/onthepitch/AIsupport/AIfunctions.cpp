@@ -33,8 +33,9 @@
 
 // convert formation position to formation position based on ball position
 // deprecated
-Vector3 AI_GetAdaptedInitialPos(Match* match, const Vector3& initialPosition, const Vector3& focusPoint,
-                                float ballMagnetDistance, float ballMagnetDistancePow) {
+Vector3 AI_GetAdaptedInitialPos(Match* match, const Vector3& initialPosition,
+                                const Vector3& focusPoint, float ballMagnetDistance,
+                                float ballMagnetDistancePow) {
   Vector3 effectiveFocusPoint = focusPoint;
   if (effectiveFocusPoint.coords[2] == -100.0)
     effectiveFocusPoint = match->GetBall()->Predict(100).Get2D();
@@ -1130,18 +1131,18 @@ float AI_GetTeamPossessionFactor(Match* match, Team* team) {
 
 Player* AI_GetClosestPlayer(Team* team, const Vector3& position, bool onlyAIControlled,
                             Player* except) {
-  const std::vector<Player*>& players = team->GetAllPlayers();
+  const std::vector<std::unique_ptr<Player>>& players = team->GetAllPlayers();
 
   float closestDistance = 10000;
   Player* closestPlayer = nullptr;
 
   for (unsigned int i = 0; i < players.size(); i++) {
-    if (players.at(i)->IsActive() && players.at(i) != except) {
+    if (players.at(i)->IsActive() && players.at(i).get() != except) {
       float distance = (players.at(i)->GetPosition() - position).GetLength();
       if (distance < closestDistance) {
         if (!onlyAIControlled || !team->IsHumanControlled(players.at(i)->GetID())) {
           closestDistance = distance;
-          closestPlayer = players.at(i);
+          closestPlayer = players.at(i).get();
         }
       }
     }
@@ -1152,11 +1153,11 @@ Player* AI_GetClosestPlayer(Team* team, const Vector3& position, bool onlyAICont
 
 void AI_GetClosestPlayers(Team* team, const Vector3& position, bool onlyAIControlled,
                           std::vector<Player*>& result, unsigned int playerCount) {
-  const std::vector<Player*>& players = team->GetAllPlayers();
+  const std::vector<std::unique_ptr<Player>>& players = team->GetAllPlayers();
   std::multimap<float, Player*> tmpResult;
 
   float closestDistance = 10000;
-  Player* closestPlayer = players.at(0);
+  Player* closestPlayer = players.at(0).get();
 
   // printf("total players: %i\n", players.size());
 
@@ -1165,7 +1166,7 @@ void AI_GetClosestPlayers(Team* team, const Vector3& position, bool onlyAIContro
       float distance = (players.at(i)->GetPosition() - position).GetLength();
       if ((!onlyAIControlled) ||
           (onlyAIControlled && !team->IsHumanControlled(players.at(i)->GetID()))) {
-        tmpResult.insert(std::pair<float, Player*>(distance, players.at(i)));
+        tmpResult.insert(std::pair<float, Player*>(distance, players.at(i).get()));
       }
     }
   }

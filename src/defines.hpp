@@ -31,6 +31,7 @@
 #include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -42,6 +43,29 @@
 #include <string>
 #include <thread>
 #include <vector>
+
+// MSVC's CRT provides the "safe" _s variants of some C standard library
+// functions (fopen_s, strcpy_s, ...) as part of C11 Annex K. glibc / libc++
+// on Linux and macOS do not implement Annex K, so provide minimal portable
+// shims here for the handful of call sites that rely on them. This keeps a
+// single source file compiling identically on MSVC, GCC and Clang without
+// scattering #ifdef _WIN32 guards throughout the codebase.
+#ifndef _MSC_VER
+#include <cerrno>
+
+inline int fopen_s(FILE** file, const char* filename, const char* mode) {
+  *file = std::fopen(filename, mode);
+  return *file ? 0 : errno;
+}
+
+inline int strcpy_s(char* dest, size_t destSize, const char* src) {
+  if (!dest || !src || destSize == 0)
+    return EINVAL;
+  std::strncpy(dest, src, destSize - 1);
+  dest[destSize - 1] = '\0';
+  return 0;
+}
+#endif
 
 namespace blunted {
 

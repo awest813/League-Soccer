@@ -32,16 +32,79 @@ endif()
 
 function(gf_find_boost)
   find_package(Boost CONFIG QUIET)
-  if(NOT Boost_FOUND)
-    if(POLICY CMP0167)
-      cmake_policy(SET CMP0167 OLD)
-    endif()
-    find_package(Boost QUIET)
-    if(NOT Boost_FOUND)
-      message(FATAL_ERROR
-        "Could not find Boost. Install Boost development packages or configure with a vcpkg toolchain.")
-    endif()
+  if(Boost_FOUND)
+    return()
   endif()
+
+  # Modern vcpkg baselines don't always generate an aggregate
+  # BoostConfig.cmake merely from installing individual boost-* ports (this
+  # project only needs Boost.Signals2, which pulls in Boost.SmartPtr /
+  # intrusive_ptr as a dependency). Their toolchain instead specially
+  # intercepts find_package(Boost ... COMPONENTS ...) calls (see the vcpkg
+  # port's own documented usage: 'find_package(Boost REQUIRED COMPONENTS
+  # signals2)') and resolves each requested component against its own
+  # vcpkg-generated config package under the hood.
+  find_package(Boost QUIET COMPONENTS signals2)
+  if(TARGET Boost::signals2)
+    if(NOT TARGET Boost::headers)
+      add_library(Boost::headers ALIAS Boost::signals2)
+    endif()
+    set(Boost_FOUND TRUE PARENT_SCOPE)
+    return()
+  endif()
+
+  # Other vcpkg baselines instead expose a standalone lower-case CMake
+  # config package per component (e.g. boost_signals2-config.cmake).
+  find_package(boost_signals2 CONFIG QUIET)
+  foreach(candidate IN ITEMS Boost::signals2 boost_signals2::boost_signals2)
+    if(TARGET ${candidate})
+      if(NOT TARGET Boost::headers)
+        add_library(Boost::headers ALIAS ${candidate})
+      endif()
+      set(Boost_FOUND TRUE PARENT_SCOPE)
+      return()
+    endif()
+  endforeach()
+
+  if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 OLD)
+  endif()
+  find_package(Boost QUIET)
+  if(Boost_FOUND)
+    return()
+  endif()
+
+  # Last resort: boost::signals2 and boost::intrusive_ptr are both
+  # header-only, so if every find_package(Boost ...) attempt above failed
+  # (observed with some vcpkg baselines: CMake's own bundled classic
+  # FindBoost.cmake module doesn't recognize 'signals2' as a valid
+  # COMPONENTS entry - it has no header-only exception listed for it - and
+  # gives up even though the headers are right there on disk), just locate
+  # the headers directly. vcpkg's toolchain file adds the triplet's install
+  # prefix to CMAKE_PREFIX_PATH, but pass it as an explicit HINTS too (using
+  # the VCPKG_INSTALLED_DIR/VCPKG_TARGET_TRIPLET variables the toolchain
+  # itself defines) so this doesn't depend on that propagation working.
+  message(STATUS "gf_find_boost: fallback search - VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR} "
+                 "VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET} CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}")
+  find_path(GF_BOOST_HEADER_DIR
+    NAMES boost/signals2.hpp boost/intrusive_ptr.hpp
+    HINTS
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
+      "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
+  )
+  message(STATUS "gf_find_boost: header-only fallback search result: ${GF_BOOST_HEADER_DIR}")
+  if(GF_BOOST_HEADER_DIR)
+    if(NOT TARGET Boost::headers)
+      add_library(Boost::headers INTERFACE IMPORTED GLOBAL)
+      set_target_properties(Boost::headers PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${GF_BOOST_HEADER_DIR}")
+    endif()
+    set(Boost_FOUND TRUE PARENT_SCOPE)
+    return()
+  endif()
+
+  message(FATAL_ERROR
+    "Could not find Boost. Install Boost development packages or configure with a vcpkg toolchain.")
 endfunction()
 
 function(gf_pick_target out_var)
@@ -54,13 +117,32 @@ function(gf_pick_target out_var)
   set(${out_var} "" PARENT_SCOPE)
 endfunction()
 
+# Prefer each SDL2 package's modern CMake config (as shipped by vcpkg and
+# newer distro packages, which provides proper imported targets), but fall
+# back to the classic FindXxx.cmake modules in CMakeModules/ (which only set
+# plain _LIBRARIES/_INCLUDE_DIRS variables) for older distro packages - e.g.
+# Ubuntu 22.04's libsdl2-image-dev/libsdl2-ttf-dev - that don't ship a CMake
+# config file at all.
+# This is a macro (not a function): the classic Find modules set plain
+# variables (e.g. SDL2_IMAGE_LIBRARIES) with a bare set(), no PARENT_SCOPE,
+# so calling find_package() from inside a function() would trap those
+# variables in the function's local scope and silently drop them (they'd
+# never reach the elseif(SDL2_IMAGE_LIBRARIES)/_INCLUDE_DIRS consumers
+# below) - a macro executes in the caller's scope instead.
+macro(gf_find_sdl2_package name)
+  find_package(${name} CONFIG QUIET)
+  if(NOT ${name}_FOUND)
+    find_package(${name} REQUIRED)
+  endif()
+endmacro()
+
 # Find required libraries
 if(GAMEPLAYFOOTBALL_BUILD_GAME)
   gf_find_boost()
   find_package(OpenGL REQUIRED)
-  find_package(SDL2 REQUIRED CONFIG)
-  find_package(SDL2_image REQUIRED CONFIG)
-  find_package(SDL2_ttf REQUIRED CONFIG)
+  gf_find_sdl2_package(SDL2)
+  gf_find_sdl2_package(SDL2_image)
+  gf_find_sdl2_package(SDL2_ttf)
   find_package(SDL2_gfx REQUIRED)
   find_package(OpenAL QUIET)
   find_package(SQLite3 REQUIRED)
@@ -98,9 +180,9 @@ function(gf_target_includes tgt)
     ${PROJECT_SOURCE_DIR}/src
     ${OPENGL_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
-    ${SDL2_IMAGE_DIRS}
-    ${SDL2_TTF_DIRS}
-    ${SDL2_GFX_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}
+    ${SDL2_TTF_INCLUDE_DIRS}
+    ${SDL2_GFX_INCLUDE_DIRS}
     ${GF_BOOST_INCLUDE_DIRS}
     ${SQLite3_INCLUDE_DIRS}
   )
@@ -219,9 +301,13 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
   endif()
   if(GF_SDL2_IMAGE_TARGET)
     list(APPEND LIBRARIES ${GF_SDL2_IMAGE_TARGET})
+  elseif(SDL2_IMAGE_LIBRARIES)
+    list(APPEND LIBRARIES ${SDL2_IMAGE_LIBRARIES})
   endif()
   if(GF_SDL2_TTF_TARGET)
     list(APPEND LIBRARIES ${GF_SDL2_TTF_TARGET})
+  elseif(SDL2_TTF_LIBRARIES)
+    list(APPEND LIBRARIES ${SDL2_TTF_LIBRARIES})
   endif()
   if(GF_OPENGL_TARGET)
     list(APPEND LIBRARIES ${GF_OPENGL_TARGET})
@@ -245,9 +331,9 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
     ${PROJECT_SOURCE_DIR}/src
     ${OPENGL_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
-    ${SDL2_IMAGE_DIRS}
-    ${SDL2_TTF_DIRS}
-    ${SDL2_GFX_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}
+    ${SDL2_TTF_INCLUDE_DIRS}
+    ${SDL2_GFX_INCLUDE_DIRS}
     ${GF_BOOST_INCLUDE_DIRS}
     ${SQLite3_INCLUDE_DIRS}
   )

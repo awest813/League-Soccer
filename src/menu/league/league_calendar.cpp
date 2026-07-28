@@ -5,9 +5,9 @@
 #include <functional>
 
 #include "../../main.hpp"
-#include "menu_smoke.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
+#include "menu_smoke.hpp"
 #include "utils/gui2/widgets/dialog.hpp"
 #include "utils/gui2/widgets/text.hpp"
 
@@ -21,7 +21,7 @@ LeagueCalendarPage::LeagueCalendarPage(Gui2WindowManager* windowManager,
   frame = new Gui2Frame(windowManager, "frame_league_cal", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
- 
+
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_league_calendar", 2, 2, 66, 3, "Calendar / Fixtures");
   frame->AddView(title);
@@ -32,8 +32,7 @@ LeagueCalendarPage::LeagueCalendarPage(Gui2WindowManager* windowManager,
   frame->AddView(filterLabel);
   filterLabel->Show();
 
-  leagueFilterPulldown =
-      new Gui2Pulldown(windowManager, "pulldown_cal_league", 22, 6, 30, 3);
+  leagueFilterPulldown = new Gui2Pulldown(windowManager, "pulldown_cal_league", 22, 6, 30, 3);
   leagueFilterPulldown->AddEntry("All Leagues", "all");
 
   auto leaguesResult = GetDB()->Query("SELECT id, name FROM leagues ORDER BY name");
@@ -50,7 +49,8 @@ LeagueCalendarPage::LeagueCalendarPage(Gui2WindowManager* windowManager,
 
   RefreshFixtures();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_cal_back", 30, 92, 40, 3, "Back to Dashboard");
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_cal_back", 30, 92, 40, 3, "Back to Dashboard");
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   frame->AddView(btnBack);
   btnBack->Show();
@@ -65,8 +65,7 @@ void LeagueCalendarPage::Process() {
   Gui2Page::Process();
 
   if (!league_menu_smoke::RouteEnabled("calendar") || autoAdvanceTriggered ||
-      league_menu_smoke::Now_ms() <
-          pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
+      league_menu_smoke::Now_ms() < pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
     return;
   }
 
@@ -99,8 +98,9 @@ void LeagueCalendarPage::RefreshFixtures() {
   query += "ORDER BY c.timestamp LIMIT 40";
 
   auto result = GetDB()->Query(query);
-  Gui2Caption* fixturesHeader = new Gui2Caption(windowManager, "caption_cal_header", 2, 10, 66, 2,
-                                    "Date              | Home                | Away                | League");
+  fixturesHeader =
+      new Gui2Caption(windowManager, "caption_cal_header", 2, 10, 66, 2,
+                      "Date              | Home                | Away                | League");
   frame->AddView(fixturesHeader);
   fixturesHeader->Show();
 
@@ -109,12 +109,13 @@ void LeagueCalendarPage::RefreshFixtures() {
   for (const auto& r : result->data) {
     std::string calID = r.at(0);
     char buf[256];
-    snprintf(buf, sizeof(buf), "%-17s | %-19s | %-19s | %s",
-             r.at(1).c_str(), r.at(2).c_str(), r.at(3).c_str(), r.at(4).c_str());
+    snprintf(buf, sizeof(buf), "%-17s | %-19s | %-19s | %s", r.at(1).c_str(), r.at(2).c_str(),
+             r.at(3).c_str(), r.at(4).c_str());
     std::string homeTeam = r.at(2);
     std::string awayTeam = r.at(3);
-    Gui2Button* btn = new Gui2Button(windowManager, "btn_fixture_" + std::to_string(row), 0, 0, 86, 2.5, buf);
-    btn->sig_OnClick.connect([this, windowManager, calID, homeTeam, awayTeam](...) {
+    Gui2Button* btn =
+        new Gui2Button(windowManager, "btn_fixture_" + std::to_string(row), 0, 0, 86, 2.5, buf);
+    btn->sig_OnClick.connect([this, calID, homeTeam, awayTeam](...) {
       Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_fixture", 25, 25, 50, 50,
                                        homeTeam + " vs " + awayTeam);
       Gui2Text* txt = new Gui2Text(windowManager, "text_fixture", 5, 5, 90, 70, 2.5, 40, "");
@@ -155,16 +156,21 @@ void LeagueCalendarPage::RefreshFixtures() {
           std::string t2 = calRow->data.at(0).at(1);
           std::string comp = calRow->data.at(0).at(2);
           GetDB()->Query(
-              "INSERT INTO match_results (calendar_id, team1_id, team2_id, team1_goals, team2_goals, played, competition_id) "
-              "VALUES (" + calID + ", " + t1 + ", " + t2 + ", " +
-              std::to_string(goals1) + ", " + std::to_string(goals2) + ", 1, " + comp + ")");
+              "INSERT INTO match_results (calendar_id, team1_id, team2_id, team1_goals, "
+              "team2_goals, played, competition_id) "
+              "VALUES (" +
+              calID + ", " + t1 + ", " + t2 + ", " + std::to_string(goals1) + ", " +
+              std::to_string(goals2) + ", 1, " + comp + ")");
 
           std::string resultStr = homeTeam + " " + std::to_string(goals1) + " - " +
-                                   std::to_string(goals2) + " " + awayTeam;
+                                  std::to_string(goals2) + " " + awayTeam;
           GetDB()->Query(
               "INSERT INTO inbox_messages (sender, subject, body) VALUES "
-              "('Match Reporter', 'Match Result: " + resultStr + "', "
-              "'Full-time: " + resultStr + ". Check the Standings page for updated league tables.')");
+              "('Match Reporter', 'Match Result: " +
+              resultStr +
+              "', "
+              "'Full-time: " +
+              resultStr + ". Check the Standings page for updated league tables.')");
         }
         dlg->Exit();
         delete dlg;
@@ -183,6 +189,7 @@ void LeagueCalendarPage::RefreshFixtures() {
 void LeagueCalendarPage::GoBack() {
   this->Exit();
   Properties properties;
-  windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Forward), properties, 0);
+  windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Forward), properties,
+                                              0);
   delete this;
 }

@@ -30,12 +30,11 @@ void AudioSystem::Initialize(const Properties& config) {
   ResourceManagerPool::GetInstance().RegisterManager(e_ResourceType_AudioSoundBuffer,
                                                      audioSoundBufferResourceManager);
 
-  const std::string requestedRenderer = config.Get(
-      "audio_renderer",
+  const std::string requestedRenderer = config.Get("audio_renderer",
 #ifdef GF_USE_OPENAL
-      "openal"
+                                                   "openal"
 #else
-      "null"
+                                                   "null"
 #endif
   );
 
@@ -63,7 +62,32 @@ void AudioSystem::Initialize(const Properties& config) {
   createContext->Wait();
 
   if (!createContext->success) {
-    Log(e_FatalError, "AudioSystem", "Initialize", "Could not create context");
+    // The requested renderer (typically OpenAL) failed to open an audio
+    // device at runtime -- this is common on headless machines, CI runners
+    // and containers without audio hardware. Fall back to silent audio
+    // instead of treating it as fatal, so the game still runs everywhere.
+    Log(e_Warning, "AudioSystem", "Initialize",
+        "Requested audio renderer failed to create a context; falling back to silent audio");
+
+    boost::intrusive_ptr<Message_Shutdown> shutdown(new Message_Shutdown());
+    rendererTask->messageQueue.PushMessage(shutdown);
+    shutdown->Wait();
+    rendererTask->Join();
+    delete rendererTask;
+
+    rendererTask = new NullAudioRenderer();
+    rendererTask->Run();
+
+    boost::intrusive_ptr<AudioRendererMessage_CreateContext> fallbackContext(
+        new AudioRendererMessage_CreateContext());
+    rendererTask->messageQueue.PushMessage(fallbackContext);
+    fallbackContext->Wait();
+
+    if (!fallbackContext->success) {
+      Log(e_FatalError, "AudioSystem", "Initialize", "Could not create context");
+    } else {
+      Log(e_Notice, "AudioSystem", "Initialize", "Created silent-audio fallback context");
+    }
   } else {
     Log(e_Notice, "AudioSystem", "Initialize", "Created context");
   }

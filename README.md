@@ -62,7 +62,7 @@ Install required dependencies:
 sudo apt-get install git cmake build-essential libgl1-mesa-dev \
   libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
   libopenal-dev \
-  libboost-system-dev libboost-thread-dev libboost-filesystem-dev \
+  libboost-dev \
   libsqlite3-dev xvfb
 ```
 
@@ -101,7 +101,7 @@ cmake ..
 make -j$(nproc)
 ```
 
-### Windows (Work in Progress)
+### Windows
 
 **Prerequisites:**
 - [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) – *Desktop development with C++* workload
@@ -117,8 +117,8 @@ git clone https://github.com/microsoft/vcpkg
 
 **Install dependencies:**
 ```bat
-.\vcpkg\vcpkg.exe install --triplet x86-windows ^
-  boost:x86-windows sdl2 sdl2-image[libjpeg-turbo] ^
+.\vcpkg\vcpkg.exe install --triplet x64-windows ^
+  boost-signals2 boost-smart-ptr sdl2 sdl2-image[libjpeg-turbo] ^
   sdl2-ttf sdl2-gfx opengl openal-soft sqlite3
 ```
 
@@ -128,18 +128,18 @@ cd C:\dev
 git clone https://github.com/awest813/League-Soccer.git
 cd League-Soccer
 
-xcopy /e /i data build\Debug
-xcopy /e /i data build\Release
+xcopy /e /i data build-win\Debug
+xcopy /e /i data build-win\Release
 
-cd build
-cmake .. -DCMAKE_GENERATOR_PLATFORM=Win32 ^
+cmake -S . -B build-win -G "Visual Studio 17 2022" -A x64 ^
   -DCMAKE_TOOLCHAIN_FILE=C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake ^
-  -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE
+  -DVCPKG_TARGET_TRIPLET=x64-windows
 
-cmake --build . --parallel --config Release
+cmake --build build-win --parallel --config Release
 ```
 
-Run `build\Release\gameplayfootball.exe`.
+Run `build-win\Release\gameplayfootball.exe`. This mirrors the configuration
+validated by the `build-windows` job in [CI](.github/workflows/ci.yml).
 
 ---
 

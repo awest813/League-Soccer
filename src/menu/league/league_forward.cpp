@@ -4,16 +4,16 @@
 
 #include "../../league/leaguecode.hpp"
 #include "../../main.hpp"
-#include "menu_smoke.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
+#include "menu_smoke.hpp"
 
 namespace {
 
 std::string SafeValue(const DatabaseResult* result, size_t row, size_t col,
                       const std::string& fallback = "-") {
-  if (result == nullptr || row >= result->data.size() ||
-      col >= result->data.at(row).size() || result->data.at(row).at(col).empty()) {
+  if (result == nullptr || row >= result->data.size() || col >= result->data.at(row).size() ||
+      result->data.at(row).at(col).empty()) {
     return fallback;
   }
   return result->data.at(row).at(col);
@@ -25,13 +25,14 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
     : Gui2Page(windowManager, pageData),
       pageCreatedTime_ms(league_menu_smoke::Now_ms()),
       autoAdvanceTriggered(false) {
-  auto result = GetDB()->Query(
-      "SELECT managername, timestamp FROM settings LIMIT 1");
+  auto result = GetDB()->Query("SELECT managername, timestamp FROM settings LIMIT 1");
   std::string mgrName = "Manager";
   std::string dateStr = "";
   if (!result->data.empty()) {
-    if (result->data.at(0).size() > 0) mgrName = result->data.at(0).at(0);
-    if (result->data.at(0).size() > 1) dateStr = result->data.at(0).at(1);
+    if (result->data.at(0).size() > 0)
+      mgrName = result->data.at(0).at(0);
+    if (result->data.at(0).size() > 1)
+      dateStr = result->data.at(0).at(1);
   }
 
   auto teamResult = GetDB()->Query(
@@ -51,8 +52,7 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   }
 
   std::string unreadMessages = "0";
-  auto unreadResult =
-      GetDB()->Query("SELECT COUNT(*) FROM inbox_messages WHERE read = 0 LIMIT 1");
+  auto unreadResult = GetDB()->Query("SELECT COUNT(*) FROM inbox_messages WHERE read = 0 LIMIT 1");
   if (!unreadResult->data.empty()) {
     unreadMessages = SafeValue(unreadResult.get(), 0, 0, "0");
   }
@@ -74,14 +74,16 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   std::string standingsLine = "No standings data yet";
   auto standingsResult = GetDB()->Query(
       "SELECT "
-      "  SUM(CASE WHEN (team_id = team1_id AND team1_goals > team2_goals) OR "
-      "              (team_id = team2_id AND team2_goals > team1_goals) THEN 3 "
-      "       WHEN team1_goals = team2_goals THEN 1 ELSE 0 END) AS pts, "
+      "  SUM(CASE WHEN goals_for > goals_against THEN 3 "
+      "       WHEN goals_for = goals_against THEN 1 ELSE 0 END) AS pts, "
       "  COUNT(*) AS played "
-      "FROM (SELECT team1_id AS team_id, team1_goals, team2_goals FROM match_results WHERE played = 1 "
+      "FROM (SELECT team1_id AS team_id, team1_goals AS goals_for, team2_goals AS goals_against "
+      "      FROM match_results WHERE played = 1 "
       "      UNION ALL "
-      "      SELECT team2_id AS team_id, team1_goals, team2_goals FROM match_results WHERE played = 1) "
-      "WHERE team_id = " + teamID);
+      "      SELECT team2_id AS team_id, team2_goals AS goals_for, team1_goals AS goals_against "
+      "      FROM match_results WHERE played = 1) "
+      "WHERE team_id = " +
+      teamID);
   if (!standingsResult->data.empty()) {
     standingsLine = SafeValue(standingsResult.get(), 0, 1, "0") + " matches played, " +
                     SafeValue(standingsResult.get(), 0, 0, "0") + " points earned";
@@ -96,9 +98,8 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info =
-      new Gui2Caption(windowManager, "caption_forward_info", 3, 6, 40, 2,
-                      "Manager: " + mgrName + " | Date: " + dateStr);
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_forward_info", 3, 6, 40, 2,
+                                      "Manager: " + mgrName + " | Date: " + dateStr);
   frame->AddView(info);
   info->Show();
 
@@ -111,14 +112,21 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   navPanel->AddView(navTitle);
   navTitle->Show();
 
-  Gui2Button* btnTeam = new Gui2Button(windowManager, "btn_forward_team", 0, 0, 36, 4, "Team Management");
-  Gui2Button* btnCalendar = new Gui2Button(windowManager, "btn_forward_calendar", 0, 0, 36, 4, "Calendar / Fixtures");
-  Gui2Button* btnStandings = new Gui2Button(windowManager, "btn_forward_standings", 0, 0, 36, 4, "Standings");
-  Gui2Button* btnManagement = new Gui2Button(windowManager, "btn_forward_management", 0, 0, 36, 4, "Management");
+  Gui2Button* btnTeam =
+      new Gui2Button(windowManager, "btn_forward_team", 0, 0, 36, 4, "Team Management");
+  Gui2Button* btnCalendar =
+      new Gui2Button(windowManager, "btn_forward_calendar", 0, 0, 36, 4, "Calendar / Fixtures");
+  Gui2Button* btnStandings =
+      new Gui2Button(windowManager, "btn_forward_standings", 0, 0, 36, 4, "Standings");
+  Gui2Button* btnManagement =
+      new Gui2Button(windowManager, "btn_forward_management", 0, 0, 36, 4, "Management");
   Gui2Button* btnInbox = new Gui2Button(windowManager, "btn_forward_inbox", 0, 0, 36, 4, "Inbox");
-  Gui2Button* btnSystem = new Gui2Button(windowManager, "btn_forward_system", 0, 0, 36, 4, "System");
-  Gui2Button* btnLeagueHub = new Gui2Button(windowManager, "btn_forward_league", 0, 0, 36, 4, "Back to League Hub");
-  Gui2Button* btnMainMenu = new Gui2Button(windowManager, "btn_forward_mainmenu", 0, 0, 36, 4, "Return to Main Menu");
+  Gui2Button* btnSystem =
+      new Gui2Button(windowManager, "btn_forward_system", 0, 0, 36, 4, "System");
+  Gui2Button* btnLeagueHub =
+      new Gui2Button(windowManager, "btn_forward_league", 0, 0, 36, 4, "Back to League Hub");
+  Gui2Button* btnMainMenu =
+      new Gui2Button(windowManager, "btn_forward_mainmenu", 0, 0, 36, 4, "Return to Main Menu");
 
   btnTeam->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Team); });
   btnCalendar->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Calendar); });
@@ -167,9 +175,8 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   seasonPanel->AddView(seasonTitle);
   seasonTitle->Show();
 
-  Gui2Caption* seasonBody =
-      new Gui2Caption(windowManager, "caption_forward_season_body", 2, 6, 32, 8,
-                      standingsLine + "\nUnread inbox: " + unreadMessages);
+  Gui2Caption* seasonBody = new Gui2Caption(windowManager, "caption_forward_season_body", 2, 6, 32,
+                                            8, standingsLine + "\nUnread inbox: " + unreadMessages);
   seasonPanel->AddView(seasonBody);
   seasonBody->Show();
 
@@ -198,8 +205,7 @@ void LeagueForwardPage::Process() {
   Gui2Page::Process();
 
   if (!league_menu_smoke::HasRoute() || autoAdvanceTriggered ||
-      league_menu_smoke::Now_ms() <
-          pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
+      league_menu_smoke::Now_ms() < pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
     return;
   }
 

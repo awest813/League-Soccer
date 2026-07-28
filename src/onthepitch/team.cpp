@@ -75,13 +75,18 @@ void Team::InitPlayers(boost::intrusive_ptr<Node> fullbodyNode,
   // load all players in the team, even the players who sit on the bench. aww.
   for (int i = 0; i < static_cast<int>(teamData->GetPlayerNum()); i++) {
     PlayerData* playerData = teamData->GetPlayerData(i);
-    auto player = std::make_unique<Player>(this, playerData);
+    auto playerPtr = std::make_unique<Player>(this, playerData);
+    Player* player = playerPtr.get();
+    // Add the player to 'players' before Activate(), since Activate() (via
+    // Player::GetFormationEntry() -> Team::GetFormationEntry(playerID)) looks
+    // the player up by scanning this same vector.
+    players.push_back(std::move(playerPtr));
 
     if (i < activePlayerCount) {
       // activate playerCount players (the starting eleven, usually)
       std::string kitFilename;
       // printf("%i player id\n", player->GetID());
-      if (GetFormationEntry(player->GetID()).role != e_PlayerRole_GK) {
+      if (teamData->GetFormationEntry(i).role != e_PlayerRole_GK) {
         kitFilename = GetTeamData()->GetKitUrl() + "_kit_0" +
                       int_to_str(GetMenuTask()->GetTeamKitNum(GetID())) + ".png";
         if (!std::filesystem::exists(kitFilename))
@@ -95,8 +100,6 @@ void Team::InitPlayers(boost::intrusive_ptr<Node> fullbodyNode,
                 ->Fetch(kitFilename);
       player->Activate(playerNode, fullbodyNode, colorCoords, kit, match->GetAnimCollection());
     }
-
-    players.push_back(std::move(player));
   }
 
   designatedTeamPossessionPlayer = players.at(0).get();
@@ -268,7 +271,7 @@ void Team::ResetSituation(const Vector3& focusPos) {
   lastTouchPlayer = 0;
   lastTouchType = e_TouchType_None;
 
-  designatedTeamPossessionPlayer = players.at(0);
+  designatedTeamPossessionPlayer = players.at(0).get();
 
   for (unsigned int i = 0; i < players.size(); i++) {
     if (players.at(i)->IsActive()) {

@@ -105,6 +105,15 @@ std::string Gui2Pulldown::GetSelected() const {
   return entries.at(selectedEntry).name;
 }
 
+void Gui2Pulldown::SetSelectedByName(const std::string& name) {
+  for (unsigned int i = 0; i < entries.size(); i++) {
+    if (entries.at(i).name == name) {
+      SetSelected(i);
+      return;
+    }
+  }
+}
+
 void Gui2Pulldown::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsEscape()) {
     if (pulledDown)

@@ -106,8 +106,8 @@ public:
   void UpdateControllerSetup();
   void SpamMessage(const std::string& msg, int time_ms = 3000);
   int GetScore(int teamID) { return matchData->GetGoalCount(teamID); }
-  Ball* GetBall() { return ball; }
-  Team* GetTeam(int teamID) { return teams[teamID]; }
+  Ball* GetBall() { return ball.get(); }
+  Team* GetTeam(int teamID) { return teams[teamID].get(); }
   Player* GetPlayer(int playerID);
   void GetAllTeamPlayers(int teamID, std::vector<Player*>& players);
   void GetActiveTeamPlayers(int teamID, std::vector<Player*>& players);
@@ -152,15 +152,15 @@ public:
   int GetLastTouchTeamID() const { return lastTouchTeamID; }
   Team* GetLastTouchTeam(e_TouchType touchType) {
     if (lastTouchTeamIDs[touchType] != -1)
-      return teams[lastTouchTeamIDs[touchType]];
+      return teams[lastTouchTeamIDs[touchType]].get();
     else
       return 0;
   }
   Team* GetLastTouchTeam() {
     if (lastTouchTeamID != -1)
-      return teams[lastTouchTeamID];
+      return teams[lastTouchTeamID].get();
     else
-      return teams[0];
+      return teams[0].get();
   }
   Player* GetLastTouchPlayer(e_TouchType touchType) {
     if (GetLastTouchTeam(touchType))
@@ -314,8 +314,8 @@ protected:
 
   std::unique_ptr<Ball> ball;
 
-  std::vector<std::shared_ptr<MentalImage>> mentalImages;  // [index] == index * 10 ms ago ([0] == now)
-
+  std::vector<std::shared_ptr<MentalImage>>
+      mentalImages;  // [index] == index * 10 ms ago ([0] == now)
 
   std::unique_ptr<Gui2ScoreBoard> scoreboard;
   std::unique_ptr<Gui2Radar> radar;
