@@ -82,12 +82,18 @@ endfunction()
 # plain _LIBRARIES/_INCLUDE_DIRS variables) for older distro packages - e.g.
 # Ubuntu 22.04's libsdl2-image-dev/libsdl2-ttf-dev - that don't ship a CMake
 # config file at all.
-function(gf_find_sdl2_package name)
+# This is a macro (not a function): the classic Find modules set plain
+# variables (e.g. SDL2_IMAGE_LIBRARIES) with a bare set(), no PARENT_SCOPE,
+# so calling find_package() from inside a function() would trap those
+# variables in the function's local scope and silently drop them (they'd
+# never reach the elseif(SDL2_IMAGE_LIBRARIES)/_INCLUDE_DIRS consumers
+# below) - a macro executes in the caller's scope instead.
+macro(gf_find_sdl2_package name)
   find_package(${name} CONFIG QUIET)
   if(NOT ${name}_FOUND)
     find_package(${name} REQUIRED)
   endif()
-endfunction()
+endmacro()
 
 # Find required libraries
 if(GAMEPLAYFOOTBALL_BUILD_GAME)
