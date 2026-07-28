@@ -36,15 +36,25 @@ function(gf_find_boost)
     return()
   endif()
 
-  # Modern vcpkg baselines install each Boost library as its own standalone
-  # CMake config package (e.g. boost_signals2-config.cmake) rather than
-  # always generating an aggregate BoostConfig.cmake, so find_package(Boost)
-  # above can fail even though Boost is fully installed. This project only
-  # uses Boost.Signals2 (plus its Boost.SmartPtr/intrusive_ptr dependency,
-  # which lives in vcpkg's shared per-triplet 'include/boost' directory
-  # right alongside it), so fall back to finding that component directly and
-  # exposing it as the same Boost::headers target the rest of this file
-  # looks for.
+  # Modern vcpkg baselines don't always generate an aggregate
+  # BoostConfig.cmake merely from installing individual boost-* ports (this
+  # project only needs Boost.Signals2, which pulls in Boost.SmartPtr /
+  # intrusive_ptr as a dependency). Their toolchain instead specially
+  # intercepts find_package(Boost ... COMPONENTS ...) calls (see the vcpkg
+  # port's own documented usage: 'find_package(Boost REQUIRED COMPONENTS
+  # signals2)') and resolves each requested component against its own
+  # vcpkg-generated config package under the hood.
+  find_package(Boost QUIET COMPONENTS signals2)
+  if(TARGET Boost::signals2)
+    if(NOT TARGET Boost::headers)
+      add_library(Boost::headers ALIAS Boost::signals2)
+    endif()
+    set(Boost_FOUND TRUE PARENT_SCOPE)
+    return()
+  endif()
+
+  # Other vcpkg baselines instead expose a standalone lower-case CMake
+  # config package per component (e.g. boost_signals2-config.cmake).
   find_package(boost_signals2 CONFIG QUIET)
   foreach(candidate IN ITEMS Boost::signals2 boost_signals2::boost_signals2)
     if(TARGET ${candidate})
