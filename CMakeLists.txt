@@ -32,15 +32,37 @@ endif()
 
 function(gf_find_boost)
   find_package(Boost CONFIG QUIET)
+  if(Boost_FOUND)
+    return()
+  endif()
+
+  # Modern vcpkg baselines install each Boost library as its own standalone
+  # CMake config package (e.g. boost_signals2-config.cmake) rather than
+  # always generating an aggregate BoostConfig.cmake, so find_package(Boost)
+  # above can fail even though Boost is fully installed. This project only
+  # uses Boost.Signals2 (plus its Boost.SmartPtr/intrusive_ptr dependency,
+  # which lives in vcpkg's shared per-triplet 'include/boost' directory
+  # right alongside it), so fall back to finding that component directly and
+  # exposing it as the same Boost::headers target the rest of this file
+  # looks for.
+  find_package(boost_signals2 CONFIG QUIET)
+  foreach(candidate IN ITEMS Boost::signals2 boost_signals2::boost_signals2)
+    if(TARGET ${candidate})
+      if(NOT TARGET Boost::headers)
+        add_library(Boost::headers ALIAS ${candidate})
+      endif()
+      set(Boost_FOUND TRUE PARENT_SCOPE)
+      return()
+    endif()
+  endforeach()
+
+  if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 OLD)
+  endif()
+  find_package(Boost QUIET)
   if(NOT Boost_FOUND)
-    if(POLICY CMP0167)
-      cmake_policy(SET CMP0167 OLD)
-    endif()
-    find_package(Boost QUIET)
-    if(NOT Boost_FOUND)
-      message(FATAL_ERROR
-        "Could not find Boost. Install Boost development packages or configure with a vcpkg toolchain.")
-    endif()
+    message(FATAL_ERROR
+      "Could not find Boost. Install Boost development packages or configure with a vcpkg toolchain.")
   endif()
 endfunction()
 
@@ -54,13 +76,26 @@ function(gf_pick_target out_var)
   set(${out_var} "" PARENT_SCOPE)
 endfunction()
 
+# Prefer each SDL2 package's modern CMake config (as shipped by vcpkg and
+# newer distro packages, which provides proper imported targets), but fall
+# back to the classic FindXxx.cmake modules in CMakeModules/ (which only set
+# plain _LIBRARIES/_INCLUDE_DIRS variables) for older distro packages - e.g.
+# Ubuntu 22.04's libsdl2-image-dev/libsdl2-ttf-dev - that don't ship a CMake
+# config file at all.
+function(gf_find_sdl2_package name)
+  find_package(${name} CONFIG QUIET)
+  if(NOT ${name}_FOUND)
+    find_package(${name} REQUIRED)
+  endif()
+endfunction()
+
 # Find required libraries
 if(GAMEPLAYFOOTBALL_BUILD_GAME)
   gf_find_boost()
   find_package(OpenGL REQUIRED)
-  find_package(SDL2 REQUIRED CONFIG)
-  find_package(SDL2_image REQUIRED CONFIG)
-  find_package(SDL2_ttf REQUIRED CONFIG)
+  gf_find_sdl2_package(SDL2)
+  gf_find_sdl2_package(SDL2_image)
+  gf_find_sdl2_package(SDL2_ttf)
   find_package(SDL2_gfx REQUIRED)
   find_package(OpenAL QUIET)
   find_package(SQLite3 REQUIRED)
@@ -98,9 +133,9 @@ function(gf_target_includes tgt)
     ${PROJECT_SOURCE_DIR}/src
     ${OPENGL_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
-    ${SDL2_IMAGE_DIRS}
-    ${SDL2_TTF_DIRS}
-    ${SDL2_GFX_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}
+    ${SDL2_TTF_INCLUDE_DIRS}
+    ${SDL2_GFX_INCLUDE_DIRS}
     ${GF_BOOST_INCLUDE_DIRS}
     ${SQLite3_INCLUDE_DIRS}
   )
@@ -219,9 +254,13 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
   endif()
   if(GF_SDL2_IMAGE_TARGET)
     list(APPEND LIBRARIES ${GF_SDL2_IMAGE_TARGET})
+  elseif(SDL2_IMAGE_LIBRARIES)
+    list(APPEND LIBRARIES ${SDL2_IMAGE_LIBRARIES})
   endif()
   if(GF_SDL2_TTF_TARGET)
     list(APPEND LIBRARIES ${GF_SDL2_TTF_TARGET})
+  elseif(SDL2_TTF_LIBRARIES)
+    list(APPEND LIBRARIES ${SDL2_TTF_LIBRARIES})
   endif()
   if(GF_OPENGL_TARGET)
     list(APPEND LIBRARIES ${GF_OPENGL_TARGET})
@@ -245,9 +284,9 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
     ${PROJECT_SOURCE_DIR}/src
     ${OPENGL_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
-    ${SDL2_IMAGE_DIRS}
-    ${SDL2_TTF_DIRS}
-    ${SDL2_GFX_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}
+    ${SDL2_TTF_INCLUDE_DIRS}
+    ${SDL2_GFX_INCLUDE_DIRS}
     ${GF_BOOST_INCLUDE_DIRS}
     ${SQLite3_INCLUDE_DIRS}
   )
