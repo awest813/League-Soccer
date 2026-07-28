@@ -313,6 +313,10 @@ void LeagueStartLoadPage::GoLoadSave() {
 LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
                                        const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
+      databaseSelectDialog(nullptr),
+      databaseSelectBrowser(nullptr),
+      previousFocus(nullptr),
+      createSaveDialog(nullptr),
       success(false),
       pageCreatedTime_ms(league_menu_smoke::Now_ms()),
       dialogShownTime_ms(0),

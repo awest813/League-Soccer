@@ -74,13 +74,14 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   std::string standingsLine = "No standings data yet";
   auto standingsResult = GetDB()->Query(
       "SELECT "
-      "  SUM(CASE WHEN (team_id = team1_id AND team1_goals > team2_goals) OR "
-      "              (team_id = team2_id AND team2_goals > team1_goals) THEN 3 "
-      "       WHEN team1_goals = team2_goals THEN 1 ELSE 0 END) AS pts, "
+      "  SUM(CASE WHEN goals_for > goals_against THEN 3 "
+      "       WHEN goals_for = goals_against THEN 1 ELSE 0 END) AS pts, "
       "  COUNT(*) AS played "
-      "FROM (SELECT team1_id AS team_id, team1_goals, team2_goals FROM match_results WHERE played = 1 "
+      "FROM (SELECT team1_id AS team_id, team1_goals AS goals_for, team2_goals AS goals_against "
+      "      FROM match_results WHERE played = 1 "
       "      UNION ALL "
-      "      SELECT team2_id AS team_id, team1_goals, team2_goals FROM match_results WHERE played = 1) "
+      "      SELECT team2_id AS team_id, team2_goals AS goals_for, team1_goals AS goals_against "
+      "      FROM match_results WHERE played = 1) "
       "WHERE team_id = " + teamID);
   if (!standingsResult->data.empty()) {
     standingsLine = SafeValue(standingsResult.get(), 0, 1, "0") + " matches played, " +
