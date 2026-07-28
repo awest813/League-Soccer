@@ -85,7 +85,7 @@ LeagueSystemSavePage::LeagueSystemSavePage(Gui2WindowManager* windowManager,
   info->Show();
 
   Gui2Button* btnSave = new Gui2Button(windowManager, "btn_save_manual", 30, 40, 40, 3, "Manual Save");
-  btnSave->sig_OnClick.connect([this, windowManager](...) {
+  btnSave->sig_OnClick.connect([this, windowManager, frame](...) {
     SaveAutosaveToDatabase();
     Gui2Caption* feedback = new Gui2Caption(windowManager, "caption_save_feedback", 2, 30, 66, 3,
                                              "Save successful!");
@@ -173,7 +173,7 @@ LeagueSystemSettingsPage::LeagueSystemSettingsPage(Gui2WindowManager* windowMana
   pulldownCurrency->AddEntry("Swedish krone", "swekrone");
   pulldownCurrency->AddEntry("Hong Kong dollar", "hongkongdollar");
   pulldownCurrency->AddEntry("Norwegian krone", "norkrone");
-  pulldownCurrency->SetSelected(curCurrency);
+  pulldownCurrency->SetSelectedByName(curCurrency);
   grid->AddView(lblCur, row, 0);
   grid->AddView(pulldownCurrency, row++, 1);
 

@@ -99,7 +99,7 @@ void LeagueCalendarPage::RefreshFixtures() {
   query += "ORDER BY c.timestamp LIMIT 40";
 
   auto result = GetDB()->Query(query);
-  Gui2Caption* fixturesHeader = new Gui2Caption(windowManager, "caption_cal_header", 2, 10, 66, 2,
+  fixturesHeader = new Gui2Caption(windowManager, "caption_cal_header", 2, 10, 66, 2,
                                     "Date              | Home                | Away                | League");
   frame->AddView(fixturesHeader);
   fixturesHeader->Show();
@@ -114,7 +114,7 @@ void LeagueCalendarPage::RefreshFixtures() {
     std::string homeTeam = r.at(2);
     std::string awayTeam = r.at(3);
     Gui2Button* btn = new Gui2Button(windowManager, "btn_fixture_" + std::to_string(row), 0, 0, 86, 2.5, buf);
-    btn->sig_OnClick.connect([this, windowManager, calID, homeTeam, awayTeam](...) {
+    btn->sig_OnClick.connect([this, calID, homeTeam, awayTeam](...) {
       Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_fixture", 25, 25, 50, 50,
                                        homeTeam + " vs " + awayTeam);
       Gui2Text* txt = new Gui2Text(windowManager, "text_fixture", 5, 5, 90, 70, 2.5, 40, "");

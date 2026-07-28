@@ -28,6 +28,9 @@ public:
   void ClearEntries();
   void PullDownOrUp();
   void SetSelected(int selectedEntry);
+  // Selects the entry whose 'name' (the value passed to AddEntry) matches
+  // 'name'. No-op if no matching entry is found.
+  void SetSelectedByName(const std::string& name);
   std::string GetSelected() const;
 
   virtual void ProcessWindowingEvent(WindowingEvent* event);

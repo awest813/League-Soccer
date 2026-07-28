@@ -76,7 +76,7 @@ void LeagueInboxPage::RefreshMessages() {
       std::string label = prefix + "[" + timestamp.substr(0, 10) + "] " + sender + ": " + subject;
 
       Gui2Button* btn = new Gui2Button(windowManager, "btn_msg_" + msgID, 0, 0, 86, 2.5, label);
-      btn->sig_OnClick.connect([this, windowManager, msgID, sender, subject, timestamp](...) {
+      btn->sig_OnClick.connect([this, msgID, sender, subject, timestamp](...) {
         GetDB()->Query("UPDATE inbox_messages SET read = 1 WHERE id = " + msgID);
 
         auto bodyResult = GetDB()->Query(
