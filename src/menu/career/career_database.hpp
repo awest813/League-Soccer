@@ -88,7 +88,14 @@ public:
   void InvestInPrestige(long long amount);
 
   SimulatedMatch SimulateMatchResult(const std::string& opponentName, const std::string& opponentTeamDBID);
+  // Apply a finished match to season W/D/L, goals, board confidence, reputation,
+  // and optional scorer bookkeeping. Shared by sim and 3D result paths.
+  void ApplyMatchResult(int homeGoals, int awayGoals, const std::string& opponentLabel,
+                        const std::vector<std::string>& scorers = {});
   void Process3DMatchResult(int homeGoals, int awayGoals);
+
+  // Estimate a 20-team league finish from a W/D/L record (deterministic).
+  static int EstimateLeaguePosition(int wins, int draws, int losses);
 
   // Reseed the simulation RNG so match results are deterministic and
   // reproducible (used by tests; harmless in normal play).

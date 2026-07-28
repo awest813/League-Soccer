@@ -192,6 +192,7 @@ bool CareerDatabase::CreateNewCareer(const std::string& careerName, const std::s
   m_activeSave->finance.wageBudget = m_activeSave->wageBudget;
   m_activeSave->club.leagueName = "Default League";
   m_activeSave->season.currentSeason = 1;
+  m_activeSave->currentSeason = 1;
   m_activeSave->season.currentWeek = 1;
   m_activeSave->season.inPreseason = true;
   m_activeSave->season.maxWeeks = 38;
@@ -406,6 +407,23 @@ void CareerDatabase::UpdatePlayerValue(PlayerCareerState& player) {
   player.wage = std::max(500LL, player.value / 1200LL);
 }
 
+int CareerDatabase::EstimateLeaguePosition(int wins, int draws, int losses) {
+  const int played = wins + draws + losses;
+  if (played <= 0) return 10;
+  const int points = wins * 3 + draws;
+  // Project points onto a 38-match season, then map onto finish bands.
+  const float projected = (static_cast<float>(points) / static_cast<float>(played)) * 38.0f;
+  if (projected >= 90.0f) return 1;
+  if (projected >= 78.0f) return 2;
+  if (projected >= 70.0f) return 4;
+  if (projected >= 60.0f) return 7;
+  if (projected >= 52.0f) return 10;
+  if (projected >= 45.0f) return 12;
+  if (projected >= 38.0f) return 15;
+  if (projected >= 30.0f) return 17;
+  return 19;
+}
+
 void CareerDatabase::AdvanceSeason() {
   if (!m_activeSave) return;
 
@@ -425,12 +443,13 @@ void CareerDatabase::AdvanceSeason() {
     record.goalsFor = RandomInt(30, 85);
     record.goalsAgainst = RandomInt(20, 70);
   }
-  record.leaguePosition = RandomInt(1, 20);
+  record.leaguePosition = EstimateLeaguePosition(record.wins, record.draws, record.losses);
   record.wonTitle = (record.leaguePosition == 1);
   m_activeSave->history.push_back(record);
 
   for (auto& player : m_activeSave->roster) {
     player.age++;
+    if (player.contract.yearsRemaining > 0) player.contract.yearsRemaining--;
     ProcessPlayerGrowth(player);
     UpdatePlayerValue(player);
     player.matchesPlayed = 0;
@@ -866,6 +885,19 @@ void CareerDatabase::GenerateBoardObjectives() {
 
 void CareerDatabase::EvaluateBoardObjectives() {
   if (!m_activeSave) return;
+
+  // Prefer live W/D/L while the season is still open. After AdvanceSeason the
+  // counters are cleared and history.back() holds the season that just closed.
+  int finishPosition = 20;
+  const int liveMatches =
+      m_activeSave->seasonWins + m_activeSave->seasonDraws + m_activeSave->seasonLosses;
+  if (liveMatches > 0) {
+    finishPosition = EstimateLeaguePosition(m_activeSave->seasonWins, m_activeSave->seasonDraws,
+                                            m_activeSave->seasonLosses);
+  } else if (!m_activeSave->history.empty()) {
+    finishPosition = m_activeSave->history.back().leaguePosition;
+  }
+
   for (auto& objective : m_activeSave->boardObjectives) {
     bool completed = false;
     switch (objective.type) {
@@ -876,9 +908,13 @@ void CareerDatabase::EvaluateBoardObjectives() {
         completed = m_activeSave->fanBase >= 60;
         break;
       case OwnerObjectiveType::PROMOTION:
+        completed = finishPosition <= 10;
+        break;
       case OwnerObjectiveType::AVOID_RELEGATION:
+        completed = finishPosition <= 17;
+        break;
       case OwnerObjectiveType::WIN_TITLE:
-        completed = !m_activeSave->history.empty() && m_activeSave->history.back().leaguePosition <= 10;
+        completed = finishPosition == 1;
         break;
     }
 
@@ -1003,19 +1039,33 @@ void CareerDatabase::SeedRng(unsigned int seed) {
   SeedCareerRng(seed);
 }
 
-void CareerDatabase::Process3DMatchResult(int homeGoals, int awayGoals) {
+void CareerDatabase::ApplyMatchResult(int homeGoals, int awayGoals, const std::string& opponentLabel,
+                                      const std::vector<std::string>& scorers) {
   if (!m_activeSave) return;
-  m_activeSave->seasonWins += (homeGoals > awayGoals) ? 1 : 0;
-  m_activeSave->seasonDraws += (homeGoals == awayGoals) ? 1 : 0;
-  m_activeSave->seasonLosses += (homeGoals < awayGoals) ? 1 : 0;
-  m_activeSave->seasonGoalsFor += homeGoals;
-  m_activeSave->seasonGoalsAgainst += awayGoals;
+
+  const bool isWin = homeGoals > awayGoals;
+  const bool isDraw = homeGoals == awayGoals;
+  m_activeSave->seasonWins += isWin ? 1 : 0;
+  m_activeSave->seasonDraws += isDraw ? 1 : 0;
+  m_activeSave->seasonLosses += (!isWin && !isDraw) ? 1 : 0;
+  m_activeSave->seasonGoalsFor += std::max(0, homeGoals);
+  m_activeSave->seasonGoalsAgainst += std::max(0, awayGoals);
 
   std::string summary = m_activeSave->name + " " + std::to_string(homeGoals) + " - " +
-                        std::to_string(awayGoals) + " (3D match)";
-  AddEvent("matchday", summary,
-           homeGoals > awayGoals ? 1 : (homeGoals == awayGoals ? 0 : -1),
-           homeGoals != awayGoals);
+                        std::to_string(awayGoals);
+  if (!opponentLabel.empty()) summary += " " + opponentLabel;
+  // Draws are reputation-neutral; only decisive results move the needle.
+  const int reputationDelta = isWin ? 1 : (isDraw ? 0 : -1);
+  AddEvent("matchday", summary, reputationDelta, !isDraw);
+  ModifyBoardConfidence(reputationDelta);
+
+  for (const auto& scorerName : scorers) {
+    RecordMatchStats(scorerName, 1, 0);
+  }
+}
+
+void CareerDatabase::Process3DMatchResult(int homeGoals, int awayGoals) {
+  ApplyMatchResult(homeGoals, awayGoals, "(3D match)");
 }
 
 bool CareerDatabase::SaveToFile(const std::string& path) const {
@@ -1317,6 +1367,7 @@ bool CareerDatabase::LoadFromFile(const std::string& path) {
 
   // Keep the mirrored/derived fields consistent with the loaded top-level
   // values so a loaded save matches the state produced by CreateNewCareer.
+  m_activeSave->currentSeason = m_activeSave->season.currentSeason;
   m_activeSave->club.reputation = m_activeSave->reputation;
   m_activeSave->board.confidence = m_activeSave->boardConfidence;
   m_activeSave->finance.transferBudget = m_activeSave->transferBudget;
