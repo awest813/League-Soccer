@@ -4,7 +4,6 @@
 // :)
 
 #include "leaguecode.hpp"
-#include "leaguesetup.hpp"
 
 #define BOOST_FILESYSTEM_VERSION 3
 
@@ -189,11 +188,6 @@ bool PrepareDatabaseForLeague() {
       "VALUES ('League Office', 'Welcome to League Mode', "
       "'Welcome! Your season is about to begin. Check the Calendar for upcoming fixtures, "
       "the Standings to track your position, and the Dashboard for team management.')");
-
-  GetDB()->Query("DELETE FROM calendar");
-  GetDB()->Query("DELETE FROM teams");
-  GetDB()->Query("DELETE FROM leagues");
-  SetupFourLeagues(GetDB());
 
   if (!DatabaseHasColumn(GetDB(), "players", "stats_temporal")) {
     result = GetDB()->Query("ALTER TABLE players ADD COLUMN stats_temporal BLOB");

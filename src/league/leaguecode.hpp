@@ -17,6 +17,5 @@ bool SaveDatabaseToAutosave();
 bool LoadLeague();
 void GenerateSeasonCalendars();
 bool StepLeagueTime();
-void SetupFourLeagues(Database* db);
 
 #endif
