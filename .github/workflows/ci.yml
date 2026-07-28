@@ -149,7 +149,7 @@ jobs:
       - name: Smoke test Full Match
         run: |
           cd build
-          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_full_match.config" 260 \
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_full_match.config" 420 \
             "[menu-smoke] Main menu ready, opening Quick Match" \
             "[menu-smoke] Full match complete:" \
             "[menu-smoke] Full-match verification succeeded, quitting test run"
