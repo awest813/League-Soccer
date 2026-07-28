@@ -26,7 +26,7 @@ jobs:
       - name: Check changed files
         run: |
           BASE="${{ github.event.pull_request.base.sha || 'HEAD~1' }}"
-          FILES=$(git diff --name-only "$BASE"...HEAD -- '*.cpp' '*.hpp' 2>/dev/null || true)
+          FILES=$(git diff --name-only --diff-filter=d "$BASE"...HEAD -- '*.cpp' '*.hpp' 2>/dev/null || true)
           if [ -z "$FILES" ]; then
             echo "No C++ files changed – skipping format check."
             exit 0
@@ -95,7 +95,7 @@ jobs:
       - name: Run clang-tidy on changed files
         run: |
           BASE="${{ github.event.pull_request.base.sha || 'HEAD~1' }}"
-          FILES=$(git diff --name-only "$BASE"...HEAD -- 'src/*.cpp' 'src/**/*.cpp' 2>/dev/null || true)
+          FILES=$(git diff --name-only --diff-filter=d "$BASE"...HEAD -- 'src/*.cpp' 'src/**/*.cpp' 2>/dev/null || true)
           if [ -z "$FILES" ]; then
             echo "No C++ source files changed – skipping clang-tidy."
             exit 0
