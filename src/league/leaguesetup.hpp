@@ -1,7 +1,7 @@
 #ifndef _HPP_LEAGUESETUP
 #define _HPP_LEAGUESETUP
 
-#include "../main.hpp"
+#include "utils/database.hpp"
 
 using namespace blunted;
 

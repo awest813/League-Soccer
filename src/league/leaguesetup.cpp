@@ -1,5 +1,7 @@
 #include "leaguesetup.hpp"
 
+#include "base/utils.hpp"
+
 namespace {
 
 static const char* kLeagueNames[] = {

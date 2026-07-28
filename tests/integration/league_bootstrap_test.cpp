@@ -8,7 +8,6 @@
 
 #include "base/properties.hpp"
 #include "league/leaguecode.hpp"
-#include "main.hpp"
 #include "sqlite3.h"
 #include "utils/database.hpp"
 
