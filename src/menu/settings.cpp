@@ -613,10 +613,10 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->Show();
 
   if (x == 0) {
-    AddSettingsNotice(frame, windowManager, "caption_settings_controller_gamepads_empty", 62,
+    AddSettingsNotice(this, windowManager, "caption_settings_controller_gamepads_empty", 62,
                       "No gamepads detected. Connect one to edit gamepad settings.");
     Gui2Button* backButton =
-        AddSettingsBackButton(frame, windowManager, "button_gamepadsmenu_back");
+        AddSettingsBackButton(this, windowManager, "button_gamepadsmenu_back");
     backButton->SetFocus();
   }
 
@@ -1884,9 +1884,9 @@ LanguagePage::LanguagePage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Grid* grid = new Gui2Grid(windowManager, "languagegrid", 2, 17, 66, 70);
 
   if (langs.empty()) {
-    AddSettingsNotice(frame, windowManager, "caption_language_empty", 40,
+    AddSettingsNotice(this, windowManager, "caption_language_empty", 40,
                       "No language packs were found.");
-    Gui2Button* backButton = AddSettingsBackButton(frame, windowManager, "button_language_back");
+    Gui2Button* backButton = AddSettingsBackButton(this, windowManager, "button_language_back");
     backButton->SetFocus();
     this->Show();
     return;
