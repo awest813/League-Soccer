@@ -36,7 +36,7 @@ void SetupRoster(int playerOvr, int size = 11) {
 // opponents of known relative strength.
 int OpponentRatingForName(const std::string& name) {
   int seed = static_cast<int>(std::hash<std::string>{}(name) % 1000);
-  return 55 + (seed % 21);
+  return 45 + (seed % 44);
 }
 
 TEST(CareerSimTest, SeededResultsAreReproducible) {

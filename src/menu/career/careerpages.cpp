@@ -1566,11 +1566,15 @@ void CareerSeasonPage::AdvanceSeason() {
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
   if (save && save->mode == CareerMode::OWNER) {
     CareerDatabase::GetInstance().ProcessSeasonFinances();
+  }
+  // Record the closed season into history first so board evaluation can read
+  // the finish that was just earned (not the previous season's).
+  CareerDatabase::GetInstance().AdvanceSeason();
+  if (save && save->mode == CareerMode::OWNER) {
     CareerDatabase::GetInstance().EvaluateBoardObjectives();
     CareerDatabase::GetInstance().GenerateSponsorOffers();
     CareerDatabase::GetInstance().GenerateBoardObjectives();
   }
-  CareerDatabase::GetInstance().AdvanceSeason();
 
   if (IsOwnerMode()) {
     CreatePage(e_PageID_OwnerHub);
@@ -1781,8 +1785,9 @@ void CareerMatchdayPage::SimulateMatch(int fixtureIndex) {
     return;
 
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+  const bool isHome = ((m_week + fixtureIndex) % 2) == 0;
   SimulatedMatch res = CareerDatabase::GetInstance().SimulateMatchResult(
-      m_opponents[fixtureIndex], std::to_string(save ? save->club.clubID : 0));
+      m_opponents[fixtureIndex], std::to_string(save ? save->club.clubID : 0), isHome);
   m_results[fixtureIndex] = res;
 
   m_matchesPlayed++;
@@ -1796,26 +1801,8 @@ void CareerMatchdayPage::SimulateMatch(int fixtureIndex) {
   m_goalsAgainst += res.awayGoals;
 
   if (save) {
-    std::string summary = save->name + " " + std::to_string(res.homeGoals) + " - " +
-                          std::to_string(res.awayGoals) + " " + m_opponents[fixtureIndex];
-    bool isWin = res.homeGoals > res.awayGoals;
-    CareerDatabase::GetInstance().AddEvent("matchday", summary, isWin ? 1 : -1,
-                                           res.homeGoals != res.awayGoals);
-    CareerDatabase::GetInstance().ModifyBoardConfidence(
-        isWin ? 1 : (res.homeGoals == res.awayGoals ? 0 : -1));
-
-    if (isWin)
-      save->seasonWins++;
-    else if (res.homeGoals == res.awayGoals)
-      save->seasonDraws++;
-    else
-      save->seasonLosses++;
-    save->seasonGoalsFor += res.homeGoals;
-    save->seasonGoalsAgainst += res.awayGoals;
-
-    for (const auto& scorerName : res.scorers) {
-      CareerDatabase::GetInstance().RecordMatchStats(scorerName, 1, 0);
-    }
+    CareerDatabase::GetInstance().ApplyMatchResult(res.homeGoals, res.awayGoals,
+                                                   m_opponents[fixtureIndex], res.scorers);
   }
 
   PopulateGrid();
@@ -1919,13 +1906,11 @@ void CareerMatchdayPage::UpdateSummary() {
 
 void CareerMatchdayPage::GoBack() {
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+  // Match results are already applied to season W/D/L in SimulateMatch /
+  // ApplyMatchResult. Only advance the calendar week here to avoid double-counting.
   if (save && m_matchesPlayed > 0) {
     save->season.currentWeek++;
-    save->seasonWins += m_wins;
-    save->seasonDraws += m_draws;
-    save->seasonLosses += m_losses;
-    save->seasonGoalsFor += m_goalsFor;
-    save->seasonGoalsAgainst += m_goalsAgainst;
+    CareerDatabase::GetInstance().SaveCareerData();
   }
   this->Exit();
   if (IsOwnerMode()) {
@@ -1947,14 +1932,5 @@ void CareerMatchdayPage::Process3DMatchResult(int homeGoals, int awayGoals) {
   if (save->club.clubID <= 0)
     return;
 
-  save->seasonWins += (homeGoals > awayGoals) ? 1 : 0;
-  save->seasonDraws += (homeGoals == awayGoals) ? 1 : 0;
-  save->seasonLosses += (homeGoals < awayGoals) ? 1 : 0;
-  save->seasonGoalsFor += homeGoals;
-  save->seasonGoalsAgainst += awayGoals;
-  CareerDatabase::GetInstance().AddEvent(
-      "matchday",
-      save->name + " " + std::to_string(homeGoals) + " - " + std::to_string(awayGoals) +
-          " (3D match)",
-      homeGoals > awayGoals ? 1 : (homeGoals == awayGoals ? 0 : -1), homeGoals != awayGoals);
+  CareerDatabase::GetInstance().ApplyMatchResult(homeGoals, awayGoals, "(3D match)");
 }
