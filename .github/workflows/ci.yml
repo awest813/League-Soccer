@@ -83,7 +83,7 @@ jobs:
             libgl1-mesa-dev \
             libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
             libopenal-dev \
-            libboost-system-dev libboost-signals2-dev \
+            libboost-dev \
             libsqlite3-dev
 
       - name: Configure (generate compile_commands.json)
@@ -121,7 +121,7 @@ jobs:
             libgl1-mesa-dev \
             libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
             libopenal-dev \
-            libboost-system-dev libboost-signals2-dev \
+            libboost-dev \
             libsqlite3-dev \
             xvfb
 
@@ -297,7 +297,7 @@ jobs:
         shell: pwsh
         run: |
           & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet $env:VCPKG_DEFAULT_TRIPLET `
-            boost-system boost-thread boost-filesystem `
+            boost-signals2 boost-smart-ptr `
             sdl2 sdl2-image[libjpeg-turbo] sdl2-ttf sdl2-gfx `
             opengl openal-soft sqlite3
 
