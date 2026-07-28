@@ -115,20 +115,17 @@ void CareerMenuPage::GoContinueCareer() {
   if (CareerDatabase::GetInstance().GetActiveSave()) {
     std::string careerName = CareerDatabase::GetInstance().GetActiveSave()->name;
     if (!careerName.empty()) {
-      if (CareerDatabase::GetInstance().LoadCareerSave(careerName)) {
-        m_mode = CareerDatabase::GetInstance().GetActiveSave()->mode == CareerMode::OWNER ? "owner" : "manager";
-        m_selectedTeamID = std::to_string(CareerDatabase::GetInstance().GetActiveSave()->club.clubID);
-        StartCareer();
-        loaded = true;
-      }
+      loaded = CareerDatabase::GetInstance().LoadCareerSave(careerName);
     }
   }
   // Fallback: try default name
-  if (!loaded && CareerDatabase::GetInstance().LoadCareerSave("save")) {
-    m_mode = CareerDatabase::GetInstance().GetActiveSave()->mode == CareerMode::OWNER ? "owner" : "manager";
-    m_selectedTeamID = std::to_string(CareerDatabase::GetInstance().GetActiveSave()->club.clubID);
-    StartCareer();
-  } else if (!loaded) {
+  if (!loaded) {
+    loaded = CareerDatabase::GetInstance().LoadCareerSave("save");
+  }
+  if (loaded) {
+    // The save already exists, just jump straight to the appropriate hub.
+    CreatePage(IsOwnerMode() ? e_PageID_OwnerHub : e_PageID_CareerHub);
+  } else {
     GoCareerMode("manager");
   }
 }
@@ -1014,7 +1011,6 @@ void CareerCustomLeaguePage::CreateCustomLeague() {
   if (save) {
     save->customLeague.leagueName = "Custom League";
     save->customLeague.numDivisions = 2;
-    save->customLeague.teamsPerDivision = 16;
   }
   CreatePage(e_PageID_CareerCustomLeague);
 }

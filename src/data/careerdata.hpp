@@ -378,9 +378,14 @@ struct CareerSave {
   CustomLeagueConfig customLeague;
 };
 
-class CareerDatabase {
+// Standalone multi-save registry (indexed by saveID) with promotion/relegation
+// helpers. This is a distinct concept from blunted::CareerDatabase (the
+// per-session active-save singleton used by the career menu pages) and is
+// intentionally named differently to avoid an ambiguous-symbol clash between
+// the two when both headers are visible in the same translation unit.
+class CareerSaveRegistry {
 public:
-  CareerDatabase() = default;
+  CareerSaveRegistry() = default;
 
   bool Load(const std::string& path);
   bool Save(const std::string& path) const;

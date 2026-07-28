@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "../../data/careerdata.hpp"
 #include "utils/gui2/page.hpp"
 #include "utils/gui2/widgets/button.hpp"
 #include "utils/gui2/widgets/caption.hpp"

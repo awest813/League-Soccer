@@ -4,17 +4,17 @@
 #include <fstream>
 #include <sstream>
 
-bool CareerDatabase::Load(const std::string& /*path*/) {
+bool CareerSaveRegistry::Load(const std::string& /*path*/) {
   // Future: deserialise from JSON/SQLite; currently a no-op stub
   return true;
 }
 
-bool CareerDatabase::Save(const std::string& /*path*/) const {
+bool CareerSaveRegistry::Save(const std::string& /*path*/) const {
   // Future: serialise to JSON/SQLite; currently a no-op stub
   return true;
 }
 
-int CareerDatabase::CreateSave(const CareerSave& save) {
+int CareerSaveRegistry::CreateSave(const CareerSave& save) {
   CareerSave s = save;
   s.saveID = m_nextSaveID++;
   s.budget = s.finance.transferBudget;
@@ -23,7 +23,7 @@ int CareerDatabase::CreateSave(const CareerSave& save) {
   return s.saveID;
 }
 
-CareerSave* CareerDatabase::GetSave(int saveID) {
+CareerSave* CareerSaveRegistry::GetSave(int saveID) {
   for (auto& s : m_saves) {
     if (s.saveID == saveID)
       return &s;
@@ -31,19 +31,19 @@ CareerSave* CareerDatabase::GetSave(int saveID) {
   return nullptr;
 }
 
-void CareerDatabase::DeleteSave(int saveID) {
+void CareerSaveRegistry::DeleteSave(int saveID) {
   m_saves.erase(std::remove_if(m_saves.begin(), m_saves.end(),
                                [saveID](const CareerSave& s) { return s.saveID == saveID; }),
                 m_saves.end());
 }
 
-void CareerDatabase::RecordSeason(int saveID, const SeasonRecord& record) {
+void CareerSaveRegistry::RecordSeason(int saveID, const SeasonRecord& record) {
   CareerSave* s = GetSave(saveID);
   if (s)
     s->history.push_back(record);
 }
 
-void CareerDatabase::AdvanceSeason(int saveID) {
+void CareerSaveRegistry::AdvanceSeason(int saveID) {
   CareerSave* s = GetSave(saveID);
   if (s) {
     s->currentSeason++;
@@ -54,7 +54,7 @@ void CareerDatabase::AdvanceSeason(int saveID) {
 }
 
 // 6.13 – clamp reputation to [0, 100] after applying delta
-void CareerDatabase::ApplyReputationDelta(int saveID, int delta) {
+void CareerSaveRegistry::ApplyReputationDelta(int saveID, int delta) {
   CareerSave* s = GetSave(saveID);
   if (!s)
     return;
@@ -63,7 +63,7 @@ void CareerDatabase::ApplyReputationDelta(int saveID, int delta) {
 }
 
 // 6.16 – replace the league structure stored in a save
-void CareerDatabase::SetLeagueExpansionSettings(int saveID,
+void CareerSaveRegistry::SetLeagueExpansionSettings(int saveID,
                                                 const LeagueExpansionSettings& settings) {
   CareerSave* s = GetSave(saveID);
   if (s)
@@ -74,7 +74,7 @@ void CareerDatabase::SetLeagueExpansionSettings(int saveID,
 // standings[i] is an ordered list of team IDs for division i (best to worst).
 // Returns a list of (divisionIdx, teamID) pairs that are relegated from that
 // division; the caller promotes the top N teams from the division below.
-std::vector<std::pair<int, int>> CareerDatabase::ComputePromotionRelegation(
+std::vector<std::pair<int, int>> CareerSaveRegistry::ComputePromotionRelegation(
     const LeagueExpansionSettings& settings, const std::vector<std::vector<int>>& standings) {
   std::vector<std::pair<int, int>> relegated;
   const int numDivisions = static_cast<int>(settings.divisions.size());
@@ -94,7 +94,7 @@ std::vector<std::pair<int, int>> CareerDatabase::ComputePromotionRelegation(
 }
 
 // 6.17 – attach a custom league configuration to a save
-void CareerDatabase::SetCustomLeague(int saveID, const CustomLeagueConfig& config) {
+void CareerSaveRegistry::SetCustomLeague(int saveID, const CustomLeagueConfig& config) {
   CareerSave* s = GetSave(saveID);
   if (s)
     s->customLeague = config;
