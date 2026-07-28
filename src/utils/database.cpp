@@ -38,7 +38,8 @@ std::unique_ptr<DatabaseResult> Database::Query(const std::string& query) {
   int returnValue = sqlite3_get_table(db, query.c_str(), &result, &rows, &columns, &errorMsg);
   if (errorMsg) {
     std::string errorMsgStr = errorMsg;
-    Log(e_FatalError, "Database", "Query", "SQLite error message: '" + errorMsgStr + "'");
+    Log(e_FatalError, "Database", "Query",
+        "SQLite error message: '" + errorMsgStr + "' for query: '" + query + "'");
     sqlite3_free(errorMsg);
   }
 
