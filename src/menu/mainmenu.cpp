@@ -128,11 +128,14 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid = new Gui2Grid(windowManager, "grid_main", 2, 2, 34, 46);
 
   buttons.push_back(new Gui2Button(windowManager, "button_main_start", 0, 0, 34, 5, "Quick Match"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_league", 0, 0, 34, 5, "League Mode"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_career", 0, 0, 34, 5, "Career Mode"));
+  buttons.push_back(
+      new Gui2Button(windowManager, "button_main_league", 0, 0, 34, 5, "League Mode"));
+  buttons.push_back(
+      new Gui2Button(windowManager, "button_main_career", 0, 0, 34, 5, "Career Mode"));
   buttons.push_back(new Gui2Button(windowManager, "button_main_settings", 0, 0, 34, 5, "Options"));
   buttons.push_back(new Gui2Button(windowManager, "button_main_credits", 0, 0, 34, 5, "Credits"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_quit", 0, 0, 34, 5, "Quit to Desktop"));
+  buttons.push_back(
+      new Gui2Button(windowManager, "button_main_quit", 0, 0, 34, 5, "Quit to Desktop"));
 
   if (!IsReleaseVersion()) {
     buttons.push_back(
@@ -162,37 +165,39 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   navPanel->Show();
 
   Gui2Frame* infoPanel = new Gui2Frame(windowManager, "frame_mm_info", 46, 4, 50, 42, true);
-  Gui2Caption* welcome = new Gui2Caption(windowManager, "caption_mm_welcome", 2, 2, 46, 3,
-    "League Soccer");
+  Gui2Caption* welcome =
+      new Gui2Caption(windowManager, "caption_mm_welcome", 2, 2, 46, 3, "League Soccer");
   infoPanel->AddView(welcome);
   welcome->Show();
-  Gui2Caption* tagline = new Gui2Caption(windowManager, "caption_mm_tagline", 2, 6, 46, 4,
-    "Open-source football simulation with career modes, owner management, and 3D match engine.");
+  Gui2Caption* tagline = new Gui2Caption(
+      windowManager, "caption_mm_tagline", 2, 6, 46, 4,
+      "Open-source football simulation with career modes, owner management, and 3D match engine.");
   infoPanel->AddView(tagline);
   tagline->Show();
   Gui2Caption* modes = new Gui2Caption(windowManager, "caption_mm_modes", 2, 14, 46, 6,
-    "Quick Match: Jump straight into a game.\n"
-    "League Mode: Full season with standings.\n"
-    "Career Mode: Manager, player, GM, coach, or owner.");
+                                       "Quick Match: Jump straight into a game.\n"
+                                       "League Mode: Full season with standings.\n"
+                                       "Career Mode: Coach, GM, Player, Manager, or Owner.");
   infoPanel->AddView(modes);
   modes->Show();
-  Gui2Caption* hint = new Gui2Caption(windowManager, "caption_mm_hint", 2, 26, 46, 4,
-    "Navigate with arrow keys or gamepad. Press Enter or A to select.");
+  Gui2Caption* hint =
+      new Gui2Caption(windowManager, "caption_mm_hint", 2, 26, 46, 4,
+                      "Navigate with arrow keys or gamepad. Press Enter or A to select.");
   infoPanel->AddView(hint);
   hint->Show();
   root->AddView(infoPanel);
   infoPanel->Show();
 
   Gui2Frame* recentPanel = new Gui2Frame(windowManager, "frame_mm_recent", 46, 50, 50, 34, true);
-  Gui2Caption* recentTitle = new Gui2Caption(windowManager, "caption_mm_recent_title", 2, 2, 46, 2,
-    "Recent Updates");
+  Gui2Caption* recentTitle =
+      new Gui2Caption(windowManager, "caption_mm_recent_title", 2, 2, 46, 2, "Recent Updates");
   recentPanel->AddView(recentTitle);
   recentTitle->Show();
   Gui2Caption* recentBody = new Gui2Caption(windowManager, "caption_mm_recent_body", 2, 6, 46, 10,
-    "- Owner mode with stadium, staff, sponsors\n"
-    "- Transfer market with bid negotiations\n"
-    "- Press conferences and board objectives\n"
-    "- Youth academy and scouting network");
+                                            "- Owner mode with stadium, staff, sponsors\n"
+                                            "- Transfer market with bid negotiations\n"
+                                            "- Press conferences and board objectives\n"
+                                            "- Youth academy and scouting network");
   recentPanel->AddView(recentBody);
   recentBody->Show();
   root->AddView(recentPanel);
@@ -435,7 +440,6 @@ void GetPlayerData(Database* namedb, const std::string& firstname, const std::st
     height_ret = 1.8f;
   if (weight_ret == 0.0f)
     weight_ret = 80.0f;
-
 }
 
 /* THIS CODE IMPORTS FM DATABASES, exported with some FM management tool, of which I forgot the
@@ -1115,9 +1119,8 @@ bool MainMenuPage::GoImportDB() {
       while (iter != clubs.at(c).players.end()) {
         if ((*iter).position == "GK") {
           if ((*iter).id != keepers.at(0).id)
-            query +=
-                (std::string)("delete from players where players.id = " + int_to_str((*iter).id) +
-                              ";");
+            query += (std::string)(
+                "delete from players where players.id = " + int_to_str((*iter).id) + ";");
           iter = clubs.at(c).players.erase(iter);
         } else {
           iter++;
@@ -1278,10 +1281,11 @@ age, totalValues, average, median, lowestValue, highestValue);
     }
 
     // average stats per age over multiple ages to smooth out the graph and to fix ages where few
-players are available (>~40 year old) averageStatPerAge = tempAverageStatPerAge; auto tmpIter = tempAverageStatPerAge.begin(); auto iter = averageStatPerAge.begin(); while (tmpIter != tempAverageStatPerAge.end()) { int amount = 1; //
-divide by how many? (for average) float average = tmpIter->second; if (tmpIter !=
-tempAverageStatPerAge.begin()) { // add previous tmpIter--; average += tmpIter->second; amount++;
-        tmpIter++;
+players are available (>~40 year old) averageStatPerAge = tempAverageStatPerAge; auto tmpIter =
+tempAverageStatPerAge.begin(); auto iter = averageStatPerAge.begin(); while (tmpIter !=
+tempAverageStatPerAge.end()) { int amount = 1; // divide by how many? (for average) float average =
+tmpIter->second; if (tmpIter != tempAverageStatPerAge.begin()) { // add previous tmpIter--; average
++= tmpIter->second; amount++; tmpIter++;
       }
       if (std::next(tmpIter) != tempAverageStatPerAge.end()) { // add next
         tmpIter++;

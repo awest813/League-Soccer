@@ -6,6 +6,8 @@
 #include "menutask.hpp"
 
 #include "../onthepitch/match.hpp"
+#include "career/career_database.hpp"
+#include "data/careerdata.hpp"
 #include "framework/scheduler.hpp"
 #include "gametask.hpp"
 #include "ingame/gameover.hpp"
@@ -63,11 +65,12 @@ MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font* defaultFont,
   style->SetFont(e_TextType_ToolTip, defaultFont);
 
   // Ultra-modern minimalist dark theme with vibrant neon accents
-  style->SetColor(e_DecorationType_Dark1, Vector3(10, 10, 12));       // almost pure black (backgrounds)
-  style->SetColor(e_DecorationType_Dark2, Vector3(28, 28, 32));       // charcoal gray (borders/inactive)
+  style->SetColor(e_DecorationType_Dark1, Vector3(10, 10, 12));  // almost pure black (backgrounds)
+  style->SetColor(e_DecorationType_Dark2, Vector3(28, 28, 32));  // charcoal gray (borders/inactive)
   style->SetColor(e_DecorationType_Bright1, Vector3(250, 250, 255));  // crisp cool white (text)
   style->SetColor(e_DecorationType_Bright2, Vector3(0, 220, 255));    // electric cyan (hover/focus)
-  style->SetColor(e_DecorationType_Toggled, Vector3(255, 0, 100));    // vivid magenta (active/toggled)
+  style->SetColor(e_DecorationType_Toggled,
+                  Vector3(255, 0, 100));  // vivid magenta (active/toggled)
 
   windowManager->SetTimeStep_ms(10);
 
@@ -133,7 +136,13 @@ void MenuTask::ProcessPhase() {
     GetGameTask()->Action(e_GameTaskMessage_StartMenuScene);
 
     Properties properties;
-    if (!QuickStart()) {
+    if (GetConfiguration()->GetBool("career_resume_hub", false)) {
+      GetConfiguration()->SetBool("career_resume_hub", false);
+      CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+      const int hubPage = (save && save->mode == CareerMode::OWNER) ? (int)e_PageID_OwnerHub
+                                                                    : (int)e_PageID_CareerHub;
+      windowManager->GetPageFactory()->CreatePage(hubPage, properties, 0);
+    } else if (!QuickStart()) {
       if (!IsReleaseVersion()) {
         windowManager->GetPageFactory()->CreatePage((int)e_PageID_MainMenu, properties, 0);
       } else {

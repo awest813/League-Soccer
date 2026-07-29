@@ -29,6 +29,7 @@ public:
   }
 
   bool Initialize(const std::string& saveDir);
+  bool HasSaveFile() const;
   bool LoadCareerSave(const std::string& saveName);
   bool CreateNewCareer(const std::string& careerName, const std::string& mode,
                        const std::string& managerName);

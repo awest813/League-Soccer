@@ -33,7 +33,7 @@ private:
   void GoCareerMode(const std::string& mode);
 };
 
-// New career setup: pick team and difficulty
+// New career setup: pick team and identity
 class CareerNewGamePage : public Gui2Page {
 public:
   CareerNewGamePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
@@ -221,6 +221,7 @@ protected:
   Gui2Caption* summaryCaption;
   std::vector<Gui2Caption*> fixtureScoreCaps;
   std::vector<std::string> m_opponents;
+  std::vector<bool> m_isHome;
   std::vector<SimulatedMatch> m_results;
   int m_week;
   int m_matchesPlayed;

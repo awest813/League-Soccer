@@ -139,23 +139,20 @@ bool CareerDatabase::Initialize(const std::string& saveDir) {
   return true;
 }
 
+bool CareerDatabase::HasSaveFile() const {
+  if (m_saveDirectory.empty())
+    return false;
+  std::ifstream file(m_saveDirectory + "/career.save");
+  return file.good();
+}
+
 bool CareerDatabase::LoadCareerSave(const std::string& saveName) {
-  if (!m_saveDirectory.empty()) {
-    std::string path = m_saveDirectory + "/career.save";
-    if (LoadFromFile(path)) {
-      printf("[career] Loaded save: %s\n", saveName.c_str());
-      return true;
-    }
-  }
-  m_activeSave = std::make_unique<CareerSave>();
-  m_activeSave->name = saveName;
-  m_activeSave->club.clubName = saveName;
-  m_activeSave->reputation = 65;
-  m_activeSave->club.reputation = 65;
-  m_activeSave->transferBudget = 15000000;
-  m_activeSave->wageBudget = 250000;
-  m_activeSave->finance.transferBudget = m_activeSave->transferBudget;
-  m_activeSave->finance.wageBudget = m_activeSave->wageBudget;
+  if (m_saveDirectory.empty())
+    return false;
+  std::string path = m_saveDirectory + "/career.save";
+  if (!LoadFromFile(path))
+    return false;
+  printf("[career] Loaded save: %s\n", saveName.c_str());
   return true;
 }
 
