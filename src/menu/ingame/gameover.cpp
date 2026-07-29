@@ -49,7 +49,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   frame->AddView(header);
   header->Show();
 
-  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 55, 82, 20, 3, "well then");
+  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 55, 82, 20, 3, "Continue");
   frame->AddView(buttonOkay);
   buttonOkay->Show();
   buttonOkay->sig_OnClick.connect([this](...) { GoMainMenu(); });
@@ -74,7 +74,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
                       int_to_str(round(possession1 / (possession1 + possession2) * 100)) + "%"),
       0, 0);
   grid->AddView(
-      new Gui2Caption(windowManager, "caption_possession_header", 0, 0, 35, 3, "possession"), 0, 1);
+      new Gui2Caption(windowManager, "caption_possession_header", 0, 0, 35, 3, "Possession"), 0, 1);
   grid->AddView(
       new Gui2Caption(windowManager, "caption_possession_t2", 0, 0, 10, 3,
                       int_to_str(round(possession2 / (possession1 + possession2) * 100)) + "%"),
@@ -82,7 +82,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
   grid->AddView(new Gui2Caption(windowManager, "caption_shots_t1", 0, 0, 25, 3, int_to_str(shots1)),
                 1, 0);
-  grid->AddView(new Gui2Caption(windowManager, "caption_shots_header", 0, 0, 35, 3, "shots"), 1, 1);
+  grid->AddView(new Gui2Caption(windowManager, "caption_shots_header", 0, 0, 35, 3, "Shots"), 1, 1);
   grid->AddView(new Gui2Caption(windowManager, "caption_shots_t2", 0, 0, 10, 3, int_to_str(shots2)),
                 1, 2);
 
@@ -95,7 +95,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
                                 shotOnTargetStr(shotsOnTarget1, shots1)),
                 2, 0);
   grid->AddView(
-      new Gui2Caption(windowManager, "caption_sot_header", 0, 0, 35, 3, "shots on target"), 2, 1);
+      new Gui2Caption(windowManager, "caption_sot_header", 0, 0, 35, 3, "Shots on target"), 2, 1);
   grid->AddView(new Gui2Caption(windowManager, "caption_sot_t2", 0, 0, 10, 3,
                                 shotOnTargetStr(shotsOnTarget2, shots2)),
                 2, 2);
@@ -110,14 +110,14 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
                                 passAccStr(passComp1, passes1)),
                 3, 0);
   grid->AddView(
-      new Gui2Caption(windowManager, "caption_passacc_header", 0, 0, 35, 3, "pass accuracy"), 3, 1);
+      new Gui2Caption(windowManager, "caption_passacc_header", 0, 0, 35, 3, "Pass accuracy"), 3, 1);
   grid->AddView(new Gui2Caption(windowManager, "caption_passacc_t2", 0, 0, 10, 3,
                                 passAccStr(passComp2, passes2)),
                 3, 2);
 
   grid->AddView(new Gui2Caption(windowManager, "caption_fouls_t1", 0, 0, 25, 3, int_to_str(fouls1)),
                 4, 0);
-  grid->AddView(new Gui2Caption(windowManager, "caption_fouls_header", 0, 0, 35, 3, "fouls"), 4, 1);
+  grid->AddView(new Gui2Caption(windowManager, "caption_fouls_header", 0, 0, 35, 3, "Fouls"), 4, 1);
   grid->AddView(new Gui2Caption(windowManager, "caption_fouls_t2", 0, 0, 10, 3, int_to_str(fouls2)),
                 4, 2);
 
@@ -166,7 +166,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   }
 
   Gui2Button* buttonHistory =
-      new Gui2Button(windowManager, "button_gameover_history", 25, 82, 20, 3, "match history");
+      new Gui2Button(windowManager, "button_gameover_history", 25, 82, 20, 3, "Match History");
   frame->AddView(buttonHistory);
   buttonHistory->Show();
   buttonHistory->sig_OnClick.connect([this](...) {

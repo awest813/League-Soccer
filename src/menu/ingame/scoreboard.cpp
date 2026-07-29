@@ -51,7 +51,7 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   leagueLogo = new Gui2Image(windowManager, "game_scoreboard_leaguelogo", xOffset[0], 0,
                              height_percent / windowManager->GetAspectRatio(), height_percent);
   this->AddView(leagueLogo);
-  leagueLogo->LoadImage("media/menu/league.png");  // todo: actual league picca
+  leagueLogo->LoadImage("media/menu/league.png");
   leagueLogo->Show();
 
   timeCaption = new Gui2Caption(windowManager, "game_scoreboard_timecaption",

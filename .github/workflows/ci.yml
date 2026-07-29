@@ -196,12 +196,36 @@ jobs:
             "[menu-smoke] System page opening settings" \
             "[menu-smoke] League system settings reached successfully"
 
-      - name: Smoke test Options
+      - name: Smoke test Settings
         run: |
           cd build
           ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_settings.config" 40 \
-            "[menu-smoke] Main menu ready, opening Options" \
-            "[menu-smoke] Options page reached successfully"
+            "[menu-smoke] Main menu ready, opening Settings" \
+            "[menu-smoke] Settings page reached successfully"
+
+      - name: Smoke test Settings Gameplay
+        run: |
+          cd build
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_settings_gameplay.config" 40 \
+            "[menu-smoke] Main menu ready, opening Settings" \
+            "[menu-smoke] Settings page reached, opening Gameplay" \
+            "[menu-smoke] Settings Gameplay page reached successfully"
+
+      - name: Smoke test Settings Graphics
+        run: |
+          cd build
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_settings_graphics.config" 40 \
+            "[menu-smoke] Main menu ready, opening Settings" \
+            "[menu-smoke] Settings page reached, opening Graphics" \
+            "[menu-smoke] Settings Graphics page reached successfully"
+
+      - name: Smoke test Settings Audio
+        run: |
+          cd build
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_settings_audio.config" 40 \
+            "[menu-smoke] Main menu ready, opening Settings" \
+            "[menu-smoke] Settings page reached, opening Audio" \
+            "[menu-smoke] Settings Audio page reached successfully"
 
       - name: Smoke test Credits
         run: |

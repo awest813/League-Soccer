@@ -43,6 +43,7 @@ public:
   GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~GameplayPage();
 
+  virtual void Process();
   virtual void Exit();
 
 protected:
@@ -57,6 +58,9 @@ protected:
   Gui2Slider* slider_Agility;
   Gui2Slider* slider_Acceleration;
   Gui2Slider* slider_Quantization;
+
+  unsigned long pageCreatedTime_ms;
+  bool autoAdvanceTriggered;
 };
 
 class ControllerPage : public Gui2Page {
@@ -186,6 +190,7 @@ class GraphicsPage : public Gui2Page {
 public:
   GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~GraphicsPage();
+  virtual void Process();
 
 protected:
   void SetResolution(int resIndex);
@@ -195,6 +200,9 @@ protected:
   Gui2Frame* bg;
   Gui2Caption *restartCaption1, *restartCaption2, *restartCaption3;
   Gui2CaptureKey* captureKey;
+
+  unsigned long pageCreatedTime_ms;
+  bool autoAdvanceTriggered;
 };
 
 class AudioPage : public Gui2Page {
@@ -202,10 +210,14 @@ public:
   AudioPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~AudioPage();
 
+  virtual void Process();
   virtual void Exit();
 
 protected:
   Gui2Slider* sliderVolume;
+
+  unsigned long pageCreatedTime_ms;
+  bool autoAdvanceTriggered;
 };
 
 class LanguagePage : public Gui2Page {

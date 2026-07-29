@@ -132,7 +132,7 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
       new Gui2Button(windowManager, "button_main_league", 0, 0, 34, 5, "League Mode"));
   buttons.push_back(
       new Gui2Button(windowManager, "button_main_career", 0, 0, 34, 5, "Career Mode"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_settings", 0, 0, 34, 5, "Options"));
+  buttons.push_back(new Gui2Button(windowManager, "button_main_settings", 0, 0, 34, 5, "Settings"));
   buttons.push_back(new Gui2Button(windowManager, "button_main_credits", 0, 0, 34, 5, "Credits"));
   buttons.push_back(
       new Gui2Button(windowManager, "button_main_quit", 0, 0, 34, 5, "Quit to Desktop"));
@@ -188,20 +188,20 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   root->AddView(infoPanel);
   infoPanel->Show();
 
-  Gui2Frame* recentPanel = new Gui2Frame(windowManager, "frame_mm_recent", 46, 50, 50, 34, true);
-  Gui2Caption* recentTitle =
-      new Gui2Caption(windowManager, "caption_mm_recent_title", 2, 2, 46, 2, "Recent Updates");
-  recentPanel->AddView(recentTitle);
-  recentTitle->Show();
-  Gui2Caption* recentBody = new Gui2Caption(windowManager, "caption_mm_recent_body", 2, 6, 46, 10,
-                                            "- Owner mode with stadium, staff, sponsors\n"
-                                            "- Transfer market with bid negotiations\n"
-                                            "- Press conferences and board objectives\n"
-                                            "- Youth academy and scouting network");
-  recentPanel->AddView(recentBody);
-  recentBody->Show();
-  root->AddView(recentPanel);
-  recentPanel->Show();
+  Gui2Frame* tipsPanel = new Gui2Frame(windowManager, "frame_mm_tips", 46, 50, 50, 34, true);
+  Gui2Caption* tipsTitle =
+      new Gui2Caption(windowManager, "caption_mm_tips_title", 2, 2, 46, 2, "Quick Tips");
+  tipsPanel->AddView(tipsTitle);
+  tipsTitle->Show();
+  Gui2Caption* tipsBody = new Gui2Caption(windowManager, "caption_mm_tips_body", 2, 6, 46, 12,
+                                          "Settings: graphics, audio, controls, and language.\n"
+                                          "Pause during a match for camera and visual options.\n"
+                                          "League and Career keep saves under the data folder.\n"
+                                          "Press Escape on most pages to go back.");
+  tipsPanel->AddView(tipsBody);
+  tipsBody->Show();
+  root->AddView(tipsPanel);
+  tipsPanel->Show();
 
   int selectedButtonID = pageData.properties->GetInt("selectedButtonID");
   selectedButtonID = clamp(selectedButtonID, 0, (signed int)buttons.size() - 1);
@@ -231,7 +231,7 @@ void MainMenuPage::Process() {
              EnvironmentManager::GetInstance().GetTime_ms() >=
                  pageCreatedTime_ms + kMenuSmokeAdvanceDelay_ms) {
     autoAdvanceTriggered = true;
-    printf("[menu-smoke] Main menu ready, opening Options\n");
+    printf("[menu-smoke] Main menu ready, opening Settings\n");
     GoSettings();
   } else if (!autoAdvanceTriggered && MenuSmokeCreditsEnabled() &&
              EnvironmentManager::GetInstance().GetTime_ms() >=
