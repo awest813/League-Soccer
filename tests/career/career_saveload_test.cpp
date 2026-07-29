@@ -26,6 +26,17 @@ std::string WriteSaveFile(const std::string& contents) {
 // A save file riddled with non-numeric values in numeric fields must load
 // without throwing: valid fields are kept, bad ones fall back to defaults, and
 // every roster row is still parsed.
+TEST(CareerSaveLoadTest, MissingSaveFileReturnsFalse) {
+  fs::path dir = fs::temp_directory_path() / "league_soccer_missing_save";
+  fs::remove_all(dir);
+  fs::create_directories(dir);
+
+  CareerDatabase& db = CareerDatabase::GetInstance();
+  db.Initialize(dir.string());
+  EXPECT_FALSE(db.HasSaveFile());
+  EXPECT_FALSE(db.LoadCareerSave("Ghost Club"));
+}
+
 TEST(CareerSaveLoadTest, CorruptNumericFieldsDoNotThrow) {
   const std::string contents =
       "# Career Save: My Club\n"
