@@ -97,7 +97,6 @@ void GamePage::Process() {
 }
 
 void GamePage::GoShortReplayPage() {
-  // todo
   CreatePage((int)e_PageID_Replay);
 }
 
@@ -139,7 +138,8 @@ void GamePage::ProcessWindowingEvent(WindowingEvent* event) {
 
 void GamePage::ProcessKeyboardEvent(KeyboardEvent* event) {
   if (event->GetKeyOnce(SDLK_TAB)) {
-    if (match) match->ToggleStatsOverlay();
+    if (match)
+      match->ToggleStatsOverlay();
     return;
   }
 

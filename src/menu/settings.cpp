@@ -21,6 +21,10 @@ bool MenuSmokeSettingsEnabled() {
   return GetConfiguration()->GetBool("menu_smoke_test_settings", false);
 }
 
+std::string MenuSmokeSettingsRoute() {
+  return GetConfiguration()->Get("menu_smoke_test_settings_route", "");
+}
+
 IHIDevice* GetControllerIfAvailable(int controllerID) {
   const std::vector<IHIDevice*>& controllers = GetControllers();
   if (controllerID < 0 || controllerID >= static_cast<int>(controllers.size())) {
@@ -66,27 +70,34 @@ SettingsPage::SettingsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   this->AddView(settingsFrame);
   settingsFrame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_settings", 2, 2, 66, 3, "Configuration Hub");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings", 2, 2, 66, 3,
+                                       Localization::GetInstance().Translate("settings_title"));
   settingsFrame->AddView(title);
   title->Show();
 
   Gui2Button* buttonGameplay =
-      new Gui2Button(windowManager, "button_gameplay", 0, 0, 30, 4, "Gameplay");
+      new Gui2Button(windowManager, "button_gameplay", 0, 0, 30, 4,
+                     Localization::GetInstance().Translate("settings_gameplay"));
   Gui2Button* buttonController =
-      new Gui2Button(windowManager, "button_controller", 0, 0, 30, 4, "Controller");
+      new Gui2Button(windowManager, "button_controller", 0, 0, 30, 4,
+                     Localization::GetInstance().Translate("settings_controller"));
   Gui2Button* buttonGraphics =
       new Gui2Button(windowManager, "button_graphics", 0, 0, 30, 4,
                      Localization::GetInstance().Translate("settings_graphics"));
-  Gui2Button* buttonAudio = new Gui2Button(windowManager, "button_audio", 0, 0, 30, 4, "Audio");
+  Gui2Button* buttonAudio = new Gui2Button(windowManager, "button_audio", 0, 0, 30, 4,
+                                           Localization::GetInstance().Translate("settings_audio"));
   Gui2Button* buttonLanguage =
-      new Gui2Button(windowManager, "button_language", 0, 0, 30, 4, "Language");
+      new Gui2Button(windowManager, "button_language", 0, 0, 30, 4,
+                     Localization::GetInstance().Translate("settings_language"));
+  Gui2Button* buttonBack =
+      new Gui2Button(windowManager, "button_settings_back", 0, 0, 30, 4, "Back");
 
   buttonGameplay->sig_OnClick.connect([this](...) { GoGameplay(); });
   buttonController->sig_OnClick.connect([this](...) { GoController(); });
   buttonGraphics->sig_OnClick.connect([this](...) { GoGraphics(); });
   buttonAudio->sig_OnClick.connect([this](...) { GoAudio(); });
   buttonLanguage->sig_OnClick.connect([this](...) { GoLanguage(); });
+  buttonBack->sig_OnClick.connect([this](...) { GoBack(); });
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "settingsgrid", 2, 8, 66, 58);
 
@@ -95,6 +106,7 @@ SettingsPage::SettingsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->AddView(buttonGraphics, 2, 0);
   grid->AddView(buttonAudio, 3, 0);
   grid->AddView(buttonLanguage, 4, 0);
+  grid->AddView(buttonBack, 5, 0);
 
   grid->UpdateLayout(0.5);
 
@@ -115,7 +127,23 @@ void SettingsPage::Process() {
       EnvironmentManager::GetInstance().GetTime_ms() >=
           pageCreatedTime_ms + kMenuSmokeSettingsQuitDelay_ms) {
     autoAdvanceTriggered = true;
-    printf("[menu-smoke] Options page reached successfully\n");
+    const std::string route = MenuSmokeSettingsRoute();
+    if (route == "gameplay") {
+      printf("[menu-smoke] Settings page reached, opening Gameplay\n");
+      GoGameplay();
+      return;
+    }
+    if (route == "graphics") {
+      printf("[menu-smoke] Settings page reached, opening Graphics\n");
+      GoGraphics();
+      return;
+    }
+    if (route == "audio") {
+      printf("[menu-smoke] Settings page reached, opening Audio\n");
+      GoAudio();
+      return;
+    }
+    printf("[menu-smoke] Settings page reached successfully\n");
     GetMenuTask()->QuitGame();
   }
 }
@@ -143,11 +171,13 @@ void SettingsPage::GoLanguage() {
 // GAMEPLAY MENU
 
 GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
+    : Gui2Page(windowManager, pageData),
+      pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
+      autoAdvanceTriggered(false) {
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_gameplay", 15, 5, 70, 90, true);
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_settings_gameplay", 2, 2, 66, 3, "Gameplay Tweakage");
+      new Gui2Caption(windowManager, "caption_settings_gameplay", 2, 2, 66, 3, "Gameplay");
   frame->AddView(title);
   title->Show();
 
@@ -229,6 +259,11 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
   gridMain->AddView(slider_Acceleration, 8, 0);
   gridMain->AddView(slider_Quantization, 9, 0);
 
+  Gui2Button* backButton =
+      new Gui2Button(windowManager, "button_settings_gameplay_back", 0, 0, 30, 3, "Back");
+  backButton->sig_OnClick.connect([this](...) { GoBack(); });
+  gridMain->AddView(backButton, 10, 0);
+
   gridMain->UpdateLayout(0.5);
   gridMain->Show();
 
@@ -243,6 +278,19 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
 }
 
 GameplayPage::~GameplayPage() {}
+
+void GameplayPage::Process() {
+  Gui2Page::Process();
+
+  if (!autoAdvanceTriggered && MenuSmokeSettingsEnabled() &&
+      MenuSmokeSettingsRoute() == "gameplay" &&
+      EnvironmentManager::GetInstance().GetTime_ms() >=
+          pageCreatedTime_ms + kMenuSmokeSettingsQuitDelay_ms) {
+    autoAdvanceTriggered = true;
+    printf("[menu-smoke] Settings Gameplay page reached successfully\n");
+    GetMenuTask()->QuitGame();
+  }
+}
 
 void GameplayPage::Exit() {
   GetConfiguration()->Set("gameplay_shortpass_autodirection",
@@ -283,22 +331,28 @@ ControllerPage::ControllerPage(Gui2WindowManager* windowManager, const Gui2PageD
   frame->Show();
 
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller", 2, 2, 66, 3,
-                                       "Controller Setup");
+                                       Localization::GetInstance().Translate("controller_title"));
   frame->AddView(title);
   title->Show();
 
   Gui2Button* buttonKeyboard =
-      new Gui2Button(windowManager, "button_keyboard", 0, 0, 30, 4, "Keyboard");
+      new Gui2Button(windowManager, "button_keyboard", 0, 0, 30, 4,
+                     Localization::GetInstance().Translate("controller_keyboard"));
   Gui2Button* buttonGamepads =
-      new Gui2Button(windowManager, "button_gamepads", 0, 0, 30, 4, "Gamepad(s)");
+      new Gui2Button(windowManager, "button_gamepads", 0, 0, 30, 4,
+                     Localization::GetInstance().Translate("controller_gamepads"));
+  Gui2Button* buttonBack =
+      new Gui2Button(windowManager, "button_settings_controller_back", 0, 0, 30, 4, "Back");
 
   buttonKeyboard->sig_OnClick.connect([this](...) { GoKeyboard(); });
   buttonGamepads->sig_OnClick.connect([this](...) { GoGamepads(); });
+  buttonBack->sig_OnClick.connect([this](...) { GoBack(); });
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "controllersettingsgrid", 2, 8, 66, 58);
 
   grid->AddView(buttonKeyboard, 0, 0);
   grid->AddView(buttonGamepads, 1, 0);
+  grid->AddView(buttonBack, 2, 0);
 
   grid->UpdateLayout(0.5);
 
@@ -340,7 +394,7 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   }
 
   Gui2Button* buttonDefaults =
-      new Gui2Button(windowManager, "button_keyboard_defaults", 0, 0, 30, 3, "reset to defaults");
+      new Gui2Button(windowManager, "button_keyboard_defaults", 0, 0, 30, 3, "Reset to defaults");
   buttonDefaults->sig_OnClick.connect([this](...) { SetDefaults(); });
 
   Gui2Caption* captionNorth =
@@ -502,6 +556,11 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   wrapperGrid->AddView(buttonDefaults, 0, 0);
   wrapperGrid->AddView(grid, 1, 0);
 
+  Gui2Button* backButton =
+      new Gui2Button(windowManager, "button_settings_keyboard_back", 0, 0, 30, 3, "Back");
+  backButton->sig_OnClick.connect([this](...) { GoBack(); });
+  wrapperGrid->AddView(backButton, 2, 0);
+
   grid->UpdateLayout(0.5);
   wrapperGrid->UpdateLayout(0.0);
 
@@ -587,7 +646,7 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   frame->Show();
 
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_gamepads", 2, 2,
-                                       66, 3, "Gamepads Setup");
+                                       66, 3, "Gamepads");
   frame->AddView(title);
   title->Show();
   title->SetFocus();
@@ -619,6 +678,12 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
                       "No gamepads detected. Connect one to edit gamepad settings.");
     Gui2Button* backButton = AddSettingsBackButton(this, windowManager, "button_gamepadsmenu_back");
     backButton->SetFocus();
+  } else {
+    Gui2Button* backButton =
+        new Gui2Button(windowManager, "button_gamepadsmenu_back", 0, 0, 30, 3, "Back");
+    backButton->sig_OnClick.connect([this](...) { GoBack(); });
+    grid->AddView(backButton, x, 0);
+    grid->UpdateLayout(0.5);
   }
 
   this->Show();
@@ -1653,7 +1718,9 @@ bool CheckDuplicate(const std::vector<Resolution>& res, int x, int y) {
 }
 
 GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
+    : Gui2Page(windowManager, pageData),
+      pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
+      autoAdvanceTriggered(false) {
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_graphics", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
@@ -1662,7 +1729,11 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
                                        Localization::GetInstance().Translate("graphics_title"));
   frame->AddView(title);
   title->Show();
-  title->SetFocus();
+
+  Gui2Caption* hint = new Gui2Caption(windowManager, "caption_settings_graphics_hint", 2, 6, 66, 3,
+                                      "Choose a resolution. A restart may be required.");
+  frame->AddView(hint);
+  hint->Show();
 
 #ifdef WIN32
   DEVMODE dm;  // = { 0 };
@@ -1764,10 +1835,29 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   frame->AddView(grid);
   grid->Show();
 
+  Gui2Button* backButton =
+      new Gui2Button(windowManager, "button_settings_graphics_back", 20, 92, 30, 3, "Back");
+  backButton->sig_OnClick.connect([this](...) { GoBack(); });
+  this->AddView(backButton);
+  backButton->Show();
+
   this->Show();
 }
 
 GraphicsPage::~GraphicsPage() {}
+
+void GraphicsPage::Process() {
+  Gui2Page::Process();
+
+  if (!autoAdvanceTriggered && MenuSmokeSettingsEnabled() &&
+      MenuSmokeSettingsRoute() == "graphics" &&
+      EnvironmentManager::GetInstance().GetTime_ms() >=
+          pageCreatedTime_ms + kMenuSmokeSettingsQuitDelay_ms) {
+    autoAdvanceTriggered = true;
+    printf("[menu-smoke] Settings Graphics page reached successfully\n");
+    GetMenuTask()->QuitGame();
+  }
+}
 
 void GraphicsPage::SetResolution(int resIndex) {
   GetConfiguration()->SetBool("context_fullscreen", resolutions.at(resIndex).fullscreen);
@@ -1781,9 +1871,9 @@ void GraphicsPage::SetResolution(int resIndex) {
       new Gui2Caption(windowManager, "caption_settings_resolution_info1", 0, 0, 100, 3,
                       Localization::GetInstance().Translate("graphics_restart_note"));
   restartCaption2 = new Gui2Caption(windowManager, "caption_settings_resolution_info2", 0, 0, 100,
-                                    3, "if this resolution doesn't happen to work, you can always");
+                                    3, "If this resolution does not work, you can always");
   restartCaption3 = new Gui2Caption(windowManager, "caption_settings_resolution_info3", 0, 0, 100,
-                                    3, "change it manually by editing the file 'football.config'.");
+                                    3, "change it manually by editing football.config.");
   restartCaption1->SetPosition(50 - restartCaption1->GetTextWidthPercent() * 0.5, 44);
   restartCaption2->SetPosition(50 - restartCaption2->GetTextWidthPercent() * 0.5, 48);
   restartCaption3->SetPosition(50 - restartCaption3->GetTextWidthPercent() * 0.5, 52);
@@ -1810,21 +1900,29 @@ void GraphicsPage::SetResolution(int resIndex) {
 // AUDIO MENU
 
 AudioPage::AudioPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
+    : Gui2Page(windowManager, pageData),
+      pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
+      autoAdvanceTriggered(false) {
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_audio", 15, 15, 70, 70, true);
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_settings_audio", 2, 2, 66, 3, "Audio setup");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_audio", 2, 2, 66, 3,
+                                       Localization::GetInstance().Translate("audio_title"));
   frame->AddView(title);
   title->Show();
 
-  sliderVolume = new Gui2Slider(windowManager, "volumeslider", 0, 0, 30, 6, "volume");
+  sliderVolume = new Gui2Slider(windowManager, "volumeslider", 0, 0, 30, 6,
+                                Localization::GetInstance().Translate("audio_volume"));
+
+  Gui2Button* backButton =
+      new Gui2Button(windowManager, "button_settings_audio_back", 0, 0, 30, 3, "Back");
+  backButton->sig_OnClick.connect([this](...) { GoBack(); });
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "volumegrid", 20, 25, 50, 50);
 
   grid->AddView(sliderVolume, 0, 0);
+  grid->AddView(backButton, 1, 0);
 
   grid->UpdateLayout(0.5);
 
@@ -1838,12 +1936,23 @@ AudioPage::AudioPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
   sliderVolume->SetFocus();
 
   frame->Show();
-  this->AddView(frame);
 
   this->Show();
 }
 
 AudioPage::~AudioPage() {}
+
+void AudioPage::Process() {
+  Gui2Page::Process();
+
+  if (!autoAdvanceTriggered && MenuSmokeSettingsEnabled() && MenuSmokeSettingsRoute() == "audio" &&
+      EnvironmentManager::GetInstance().GetTime_ms() >=
+          pageCreatedTime_ms + kMenuSmokeSettingsQuitDelay_ms) {
+    autoAdvanceTriggered = true;
+    printf("[menu-smoke] Settings Audio page reached successfully\n");
+    GetMenuTask()->QuitGame();
+  }
+}
 
 void AudioPage::Exit() {
   GetConfiguration()->Set("audio_volume", sliderVolume->GetValue());
@@ -1860,12 +1969,13 @@ LanguagePage::LanguagePage(Gui2WindowManager* windowManager, const Gui2PageData&
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_language", 2, 2, 66, 3, "Language");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_language", 2, 2, 66, 3,
+                                       Localization::GetInstance().Translate("language_title"));
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* note =
-      new Gui2Caption(windowManager, "caption_language_note", 2, 8, 66, 3, "Select a language:");
+  Gui2Caption* note = new Gui2Caption(windowManager, "caption_language_note", 2, 8, 66, 3,
+                                      Localization::GetInstance().Translate("language_select"));
   frame->AddView(note);
   note->Show();
 
@@ -1895,6 +2005,11 @@ LanguagePage::LanguagePage(Gui2WindowManager* windowManager, const Gui2PageData&
     if (i == 0)
       btn->SetFocus();
   }
+
+  Gui2Button* backButton =
+      new Gui2Button(windowManager, "button_language_back", 0, 0, 30, 3, "Back");
+  backButton->sig_OnClick.connect([this](...) { GoBack(); });
+  grid->AddView(backButton, static_cast<int>(langs.size()), 0);
 
   grid->UpdateLayout(0.5);
   frame->AddView(grid);

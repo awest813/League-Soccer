@@ -66,7 +66,8 @@ CreditsPage::~CreditsPage() {
 
 void CreditsPage::InitCreditsContents() {
   AddCredit("PROPERLY DECENT presents");
-  AddHeader("GAMEPLAY FOOTBALL");
+  AddHeader("LEAGUE SOCCER");
+  AddSubHeader("Gameplay Football engine");
   AddWhitespace();
   AddWhitespace();
 

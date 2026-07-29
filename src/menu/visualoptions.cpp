@@ -16,11 +16,11 @@ VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_visualoptions", 5, 5, 20, 3, "Visual options");
+      new Gui2Caption(windowManager, "caption_visualoptions", 5, 5, 20, 3, "Visual Options");
   frame->AddView(title);
   title->Show();
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_visualoptions", 5, 15, 70, 15);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_visualoptions", 5, 15, 70, 20);
 
   kitSelectionPulldown[0] =
       new Gui2Pulldown(windowManager, "pulldown_visualoptions_kitselection_t1", 0, 0, 30, 3);
@@ -47,11 +47,16 @@ VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui
       windowManager, "button_visualoptions_randomizesun", 0, 0, 20, 3, "Randomize sun position");
   randomizeSunButton->sig_OnClick.connect([this](...) { OnRandomizeSun(); });
 
+  Gui2Button* backButton =
+      new Gui2Button(windowManager, "button_visualoptions_back", 0, 0, 20, 3, "Back");
+  backButton->sig_OnClick.connect([this](...) { GoBack(); });
+
   grid->AddView(kitSelectionCaption1, 0, 0);
   grid->AddView(kitSelectionPulldown[0], 0, 1);
   grid->AddView(kitSelectionCaption2, 1, 0);
   grid->AddView(kitSelectionPulldown[1], 1, 1);
   grid->AddView(randomizeSunButton, 2, 1);
+  grid->AddView(backButton, 3, 1);
 
   frame->AddView(grid);
   grid->UpdateLayout(2.0f);

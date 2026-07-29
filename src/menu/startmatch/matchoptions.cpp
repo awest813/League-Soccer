@@ -45,11 +45,13 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
   Gui2Grid* grid = new Gui2Grid(windowManager, "matchoptions_grid", 2, 10, 46, 60);
 
   difficultySlider = new Gui2Slider(windowManager, "matchoptions_slider_difficulty", 0, 0, 29, 6,
-                                    "difficulty (when HUMAN vs CPU)");
+                                    "Difficulty (HUMAN vs CPU)");
   matchDurationSlider = new Gui2Slider(windowManager, "matchoptions_slider_matchduration", 0, 0, 29,
-                                       6, "match duration (5 minutes .. 25 min.)");
+                                       6, "Match duration (5–25 minutes)");
   buttonStart =
-      new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 29, 3, "Start match");
+      new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 29, 3, "Start Match");
+  Gui2Button* buttonBack =
+      new Gui2Button(windowManager, "matchoptions_button_back", 0, 0, 29, 3, "Back");
 
   float difficulty = GetConfiguration()->GetReal("match_difficulty", _default_Difficulty);
   float matchDuration = GetConfiguration()->GetReal("match_duration", _default_MatchDuration);
@@ -59,12 +61,14 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
   grid->AddView(difficultySlider, 0, 0);
   grid->AddView(matchDurationSlider, 1, 0);
   grid->AddView(buttonStart, 2, 0);
+  grid->AddView(buttonBack, 3, 0);
   grid->UpdateLayout(0.5);
 
   frame->AddView(grid);
   grid->Show();
 
   buttonStart->sig_OnClick.connect([this](...) { GoLoadingMatchPage(); });
+  buttonBack->sig_OnClick.connect([this](...) { GoBack(); });
 
   buttonStart->SetFocus();
 

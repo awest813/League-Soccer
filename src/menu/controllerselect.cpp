@@ -57,7 +57,8 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
   inGame = pageData.properties->GetBool("isInGame");
 
   // Elegant semi-transparent background frame
-  Gui2Frame* ctrlFrame = new Gui2Frame(windowManager, "frame_controllerselect", 10, 5, 80, 85, true);
+  Gui2Frame* ctrlFrame =
+      new Gui2Frame(windowManager, "frame_controllerselect", 10, 5, 80, 85, true);
   this->AddView(ctrlFrame);
   ctrlFrame->Show();
 
@@ -80,9 +81,8 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
   if (controllers.empty()) {
     AddControllerSelectNotice(this, windowManager, "caption_controllerselect_noinput", 44,
                               "No input devices detected.");
-    AddControllerSelectNotice(
-        this, windowManager, "caption_controllerselect_noinput_hint", 49,
-        "Connect a keyboard or gamepad before starting a match.");
+    AddControllerSelectNotice(this, windowManager, "caption_controllerselect_noinput_hint", 49,
+                              "Connect a keyboard or gamepad before starting a match.");
     Gui2Button* backButton =
         AddControllerSelectBackButton(this, windowManager, "button_controllerselect_back");
     backButton->SetFocus();
@@ -127,6 +127,13 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
   }
 
   SetImagePositions();
+
+  Gui2Button* backButton =
+      AddControllerSelectBackButton(this, windowManager, "button_controllerselect_back", 88.0f);
+  if (!MenuSmokeAutoQuickMatchEnabled()) {
+    // Keep focus on the page for side selection; Back remains clickable.
+    (void)backButton;
+  }
 
   this->Show();
 }

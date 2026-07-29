@@ -174,26 +174,29 @@ LeagueStartPage::LeagueStartPage(Gui2WindowManager* windowManager, const Gui2Pag
     : Gui2Page(windowManager, pageData),
       pageCreatedTime_ms(league_menu_smoke::Now_ms()),
       autoAdvanceTriggered(false) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "bg_league_start", 30, 35, 40, 30, true);
+  Gui2Frame* frame = new Gui2Frame(windowManager, "bg_league_start", 30, 30, 40, 40, true);
   this->AddView(frame);
   frame->Show();
-  // bg->Redraw();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_start", 5, 5, 20, 3, "Start/load league");
+      new Gui2Caption(windowManager, "caption_league_start", 5, 4, 30, 3, "League Mode");
   frame->AddView(title);
   title->Show();
 
   Gui2Button* buttonLoad = new Gui2Button(windowManager, "button_league_start_load", 0, 0, 30, 3,
-                                          "Continue saved league");
+                                          "Continue Saved League");
   buttonLoad->sig_OnClick.connect([this](...) { GoLoad(); });
   Gui2Button* buttonNew =
-      new Gui2Button(windowManager, "button_league_start_new", 0, 0, 30, 3, "Start new league");
+      new Gui2Button(windowManager, "button_league_start_new", 0, 0, 30, 3, "Start New League");
   buttonNew->sig_OnClick.connect([this](...) { GoNew(); });
+  Gui2Button* buttonBack =
+      new Gui2Button(windowManager, "button_league_start_back", 0, 0, 30, 3, "Back");
+  buttonBack->sig_OnClick.connect([this](...) { GoBack(); });
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_start_choices", 5, 10, 90, 80);
   grid->AddView(buttonLoad, 0, 0);
   grid->AddView(buttonNew, 1, 0);
+  grid->AddView(buttonBack, 2, 0);
   grid->UpdateLayout(0.5);
   frame->AddView(grid);
   grid->Show();
