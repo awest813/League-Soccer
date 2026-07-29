@@ -143,7 +143,7 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
   gf_find_sdl2_package(SDL2)
   gf_find_sdl2_package(SDL2_image)
   gf_find_sdl2_package(SDL2_ttf)
-  find_package(SDL2_gfx REQUIRED)
+  gf_find_sdl2_package(SDL2_gfx)
   find_package(OpenAL QUIET)
   find_package(SQLite3 REQUIRED)
 else()
@@ -167,8 +167,19 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
   gf_pick_target(GF_SDL2MAIN_TARGET SDL2::SDL2main)
   gf_pick_target(GF_SDL2_IMAGE_TARGET SDL2_image::SDL2_image SDL2_image::SDL2_image-static)
   gf_pick_target(GF_SDL2_TTF_TARGET SDL2_ttf::SDL2_ttf SDL2_ttf::SDL2_ttf-static)
+  gf_pick_target(GF_SDL2_GFX_TARGET SDL2_gfx::SDL2_gfx SDL2_gfx::SDL2_gfx-static)
   gf_pick_target(GF_OPENGL_TARGET OpenGL::GL)
   gf_pick_target(GF_OPENAL_TARGET OpenAL::OpenAL)
+  # Config packages (vcpkg) often omit the classic *_INCLUDE_DIRS variables that
+  # OBJECT libraries still consume via gf_target_includes(). Pull them from the
+  # imported target when needed.
+  if(GF_SDL2_GFX_TARGET AND NOT SDL2_GFX_INCLUDE_DIRS)
+    get_target_property(_gf_sdl2_gfx_inc ${GF_SDL2_GFX_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+    if(_gf_sdl2_gfx_inc)
+      set(SDL2_GFX_INCLUDE_DIRS ${_gf_sdl2_gfx_inc})
+    endif()
+    unset(_gf_sdl2_gfx_inc)
+  endif()
 endif()
 
 # Source files
@@ -289,8 +300,12 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
   gf_target_includes(datalib)
 
   set(LIBRARIES gamelib hidlib menulib datalib leaguelib blunted2
-     SQLite::SQLite3
-     ${SDL2_GFX_LIBRARIES})
+     SQLite::SQLite3)
+  if(GF_SDL2_GFX_TARGET)
+    list(APPEND LIBRARIES ${GF_SDL2_GFX_TARGET})
+  elseif(SDL2_GFX_LIBRARIES)
+    list(APPEND LIBRARIES ${SDL2_GFX_LIBRARIES})
+  endif()
   if(GF_SDL2MAIN_TARGET AND NOT WIN32)
     list(APPEND LIBRARIES ${GF_SDL2MAIN_TARGET})
   endif()
@@ -362,6 +377,19 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
       $<TARGET_FILE_DIR:gameplayfootball>/data/locale
     COMMENT "Copying runtime assets for gameplayfootball"
   )
+  # On Windows + modern CMake, copy imported shared-library DLLs next to the
+  # executable so local runs and CI packaging find SDL/OpenAL/SQLite without
+  # requiring PATH edits. Falls back to scripts/package_windows.ps1 for
+  # classic Find-module builds that lack TARGET_RUNTIME_DLLS metadata.
+  if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
+    add_custom_command(TARGET gameplayfootball POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_RUNTIME_DLLS:gameplayfootball>
+        $<TARGET_FILE_DIR:gameplayfootball>
+      COMMAND_EXPAND_LISTS
+      COMMENT "Copying runtime DLLs beside gameplayfootball"
+    )
+  endif()
 endif()
 
 if(BUILD_TESTING)

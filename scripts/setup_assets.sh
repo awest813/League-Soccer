@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
-# scripts/setup_assets.sh – copy (or symlink) the data/ directory into the
-# build directory so the game executable can find its runtime assets.
+# scripts/setup_assets.sh – install runtime assets next to the game executable.
+#
+# The game looks for paths relative to the process working directory:
+#   football.config, media/, databases/, locale/
+# CMake POST_BUILD already copies these beside gameplayfootball.  Use this
+# script when you need a manual install (Docker, packaging, symlink workflow).
 #
 # Usage:
 #   scripts/setup_assets.sh [--build-dir <path>] [--symlink] [--force] [--help]
 #
 # Options:
-#   --build-dir <path>   Target build directory.  Default: ./build
-#   --symlink            Create a symbolic link instead of copying files.
-#                        Useful during development so asset edits are
-#                        immediately reflected without re-running the script.
-#   --force              Remove and replace an existing data/ installation.
+#   --build-dir <path>   Target directory (where the executable lives).
+#                        Default: ./build
+#   --symlink            Symlink media/databases/locale instead of copying.
+#                        Useful in development so asset edits apply immediately.
+#   --force              Remove and replace existing asset installs.
 #   --help               Show this message and exit.
 #
-# The script is safe to re-run; it will not overwrite an already-present
-# data/ symlink or directory in the build folder unless --force is passed.
-#
-# Example (typical development workflow):
+# Example:
 #   cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 #   cmake --build build --parallel
-#   scripts/setup_assets.sh --build-dir build --symlink
-#   ./build/gameplayfootball
+#   scripts/setup_assets.sh --build-dir build --symlink --force
+#   (cd build && ./gameplayfootball)
 
 set -euo pipefail
 
@@ -49,13 +50,10 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DATA_SRC="${REPO_ROOT}/data"
-DATA_DST="${BUILD_DIR}/data"
 
-# Resolve BUILD_DIR relative to the caller's working directory
 if [[ "${BUILD_DIR}" != /* ]]; then
   BUILD_DIR="${PWD}/${BUILD_DIR}"
 fi
-DATA_DST="${BUILD_DIR}/data"
 
 # ── pre-flight checks ─────────────────────────────────────────────────────────
 if [[ ! -d "${DATA_SRC}" ]]; then
@@ -65,33 +63,48 @@ fi
 
 if [[ ! -d "${BUILD_DIR}" ]]; then
   echo "Build directory does not exist: ${BUILD_DIR}"
-  echo "Create it first with:  cmake -S . -B ${BUILD_DIR}"
+  echo "Create it first with:  cmake -S . -B <build-dir>"
   exit 1
 fi
 
-# ── detect existing installation ──────────────────────────────────────────────
-if [[ -e "${DATA_DST}" || -L "${DATA_DST}" ]]; then
-  if [[ "${FORCE}" == true ]]; then
-    echo "Removing existing: ${DATA_DST}"
-    rm -rf "${DATA_DST}"
-  else
-    echo "Assets already present at: ${DATA_DST}"
-    echo "Pass --force to overwrite."
-    exit 0
-  fi
-fi
+install_path() {
+  local name="$1"
+  local src="$2"
+  local dst="$3"
 
-# ── install ───────────────────────────────────────────────────────────────────
-if [[ "${USE_SYMLINK}" == true ]]; then
-  echo "Creating symlink: ${DATA_DST} -> ${DATA_SRC}"
-  ln -s "${DATA_SRC}" "${DATA_DST}"
-  echo "Done.  Asset changes in data/ will be visible immediately."
-else
-  echo "Copying assets to: ${DATA_DST}"
-  cp -R "${DATA_SRC}" "${DATA_DST}"
-  echo "Done.  $(find "${DATA_DST}" -type f | wc -l) files copied."
-fi
+  if [[ -e "${dst}" || -L "${dst}" ]]; then
+    if [[ "${FORCE}" == true ]]; then
+      rm -rf "${dst}"
+    else
+      echo "Already present: ${dst} (pass --force to replace)"
+      return 0
+    fi
+  fi
+
+  mkdir -p "$(dirname "${dst}")"
+  if [[ "${USE_SYMLINK}" == true && -d "${src}" ]]; then
+    echo "Symlink ${name}: ${dst} -> ${src}"
+    ln -s "${src}" "${dst}"
+  elif [[ -d "${src}" ]]; then
+    echo "Copy ${name}: ${dst}"
+    cp -R "${src}" "${dst}"
+  else
+    echo "Copy ${name}: ${dst}"
+    cp -f "${src}" "${dst}"
+  fi
+}
+
+# Layout mirrors CMakeLists.txt POST_BUILD for gameplayfootball.
+install_path "football.config" "${DATA_SRC}/football.config" "${BUILD_DIR}/football.config"
+install_path "media"           "${DATA_SRC}/media"           "${BUILD_DIR}/media"
+install_path "databases"       "${DATA_SRC}/databases"       "${BUILD_DIR}/databases"
+install_path "locale"          "${DATA_SRC}/locale"          "${BUILD_DIR}/locale"
+
+# Compatibility copies under data/ (some loaders and tools expect both).
+mkdir -p "${BUILD_DIR}/data"
+install_path "data/football.config" "${DATA_SRC}/football.config" "${BUILD_DIR}/data/football.config"
+install_path "data/locale"          "${DATA_SRC}/locale"          "${BUILD_DIR}/data/locale"
 
 echo ""
-echo "You can now run the game from the build directory:"
+echo "Assets ready. Run the game from the build directory:"
 echo "  cd ${BUILD_DIR} && ./gameplayfootball"

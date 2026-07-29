@@ -45,12 +45,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install minimal dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            cmake build-essential \
-            libboost-dev \
-            libsqlite3-dev
+        run: bash scripts/setup_linux_deps.sh --minimal
 
       - name: Configure (tests only, no game build)
         run: |
@@ -76,15 +71,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            cmake build-essential clang-tidy \
-            libgl1-mesa-dev \
-            libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
-            libopenal-dev \
-            libboost-dev \
-            libsqlite3-dev
+        run: bash scripts/setup_linux_deps.sh --with-tools
 
       - name: Configure (generate compile_commands.json)
         run: |
@@ -114,16 +101,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            cmake build-essential \
-            libgl1-mesa-dev \
-            libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
-            libopenal-dev \
-            libboost-dev \
-            libsqlite3-dev \
-            xvfb
+        run: bash scripts/setup_linux_deps.sh
 
       - name: Configure (Debug)
         run: |
@@ -240,6 +218,23 @@ jobs:
       - name: Build (Release)
         run: cmake --build build-release --parallel $(nproc)
 
+      - name: Stage Linux release package
+        run: |
+          mkdir -p dist/linux-x64
+          cp build-release/gameplayfootball dist/linux-x64/
+          cp build-release/football.config dist/linux-x64/
+          cp -R build-release/media build-release/databases build-release/locale dist/linux-x64/
+          mkdir -p dist/linux-x64/data
+          cp build-release/data/football.config dist/linux-x64/data/
+          cp -R build-release/data/locale dist/linux-x64/data/
+
+      - name: Upload Linux release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gameplayfootball-linux-x64
+          path: dist/linux-x64/
+          if-no-files-found: error
+
   build-macos:
     name: Build (macOS 14)
     runs-on: macos-14
@@ -293,13 +288,16 @@ jobs:
           git clone https://github.com/microsoft/vcpkg $env:VCPKG_ROOT
           & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
 
-      - name: Install dependencies (vcpkg)
-        shell: pwsh
-        run: |
-          & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet $env:VCPKG_DEFAULT_TRIPLET `
-            boost-signals2 boost-smart-ptr `
-            sdl2 sdl2-image[libjpeg-turbo] sdl2-ttf sdl2-gfx `
-            opengl openal-soft sqlite3
+      - name: Cache vcpkg packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.VCPKG_ROOT }}/downloads
+            ${{ github.workspace }}/build-win/vcpkg_installed
+          key: vcpkg-win-${{ hashFiles('vcpkg.json') }}-${{ env.VCPKG_DEFAULT_TRIPLET }}
+          restore-keys: |
+            vcpkg-win-${{ hashFiles('vcpkg.json') }}-
+            vcpkg-win-
 
       - name: Configure
         shell: pwsh
@@ -321,12 +319,22 @@ jobs:
         shell: pwsh
         run: cmake --build build-win --config Release --parallel
 
+      - name: Package runnable Windows build
+        shell: pwsh
+        run: |
+          .\scripts\package_windows.ps1 `
+            -BuildDir "build-win\Release" `
+            -OutDir "dist\windows-x64" `
+            -VcpkgRoot $env:VCPKG_ROOT `
+            -Triplet $env:VCPKG_DEFAULT_TRIPLET `
+            -RepoRoot $env:GITHUB_WORKSPACE
+
       - name: Upload Windows release artifact
         uses: actions/upload-artifact@v4
         with:
           name: gameplayfootball-windows-x64
-          path: build-win/Release/gameplayfootball.exe
-          if-no-files-found: warn
+          path: dist/windows-x64/
+          if-no-files-found: error
 
   # Task 5.1: build Doxygen HTML docs and upload as a CI artifact
   docs:
