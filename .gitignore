@@ -6,3 +6,6 @@ docs/html/
 Doxyfile
 build-win/
 build-*/
+vcpkg/
+vcpkg_installed/
+dist/

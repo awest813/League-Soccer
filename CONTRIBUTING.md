@@ -20,7 +20,7 @@ Thank you for taking the time to contribute!
 
 1. Fork the repository and clone your fork.
 2. Follow the [README](README.md) build instructions for your platform.
-3. Create a feature branch from `main`:
+3. Create a feature branch from `master`:
    ```bash
    git checkout -b feature/my-improvement
    ```
@@ -50,15 +50,17 @@ Thank you for taking the time to contribute!
 
 ```bash
 # 1. Configure (from repo root)
-mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-# 2. Build
-make -j$(nproc)
-# 3. Run
-./gameplayfootball
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+# 2. Build (POST_BUILD copies runtime assets beside the binary)
+cmake --build build --parallel
+# 3. Run from the build directory
+(cd build && ./gameplayfootball)
 ```
 
-For iterative development, rebuild with `make -j$(nproc)` after changes.
+On Linux you can install packages with `scripts/setup_linux_deps.sh`.
+On Windows use `scripts/setup_windows_deps.ps1` (vcpkg + `vcpkg.json`).
+
+For iterative development, rebuild with `cmake --build build --parallel` after changes.
 
 ---
 
@@ -113,7 +115,7 @@ docs(readme): update macOS build instructions
 
 ## Pull Request Guidelines
 
-1. Target the `main` branch.
+1. Target the `master` branch.
 2. Keep PRs focused – one feature or fix per PR.
 3. Make sure the build passes (CI must be green).
 4. Update `ROADMAP.md` if your PR completes a roadmap item.

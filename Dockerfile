@@ -52,9 +52,6 @@ WORKDIR /workspace
 # Copy project source
 COPY . .
 
-# Set up data assets so the executable can find them inside the container
-RUN bash scripts/setup_assets.sh --build-dir /workspace/build 2>/dev/null || true
-
 # Pre-configure a Debug build (useful for IDE attach / container-based dev loops)
 RUN cmake -S . -B build \
       -G Ninja \
@@ -63,7 +60,7 @@ RUN cmake -S . -B build \
       -DBUILD_TESTING=ON \
       -DGAMEPLAYFOOTBALL_BUILD_GAME=ON
 
-# Build the project (cached layer – re-run `docker build` to update)
+# Build the project (POST_BUILD copies media/databases/locale beside the binary)
 RUN cmake --build build --parallel "$(nproc)"
 
 # Default command: run the test suite inside Xvfb then drop to a shell

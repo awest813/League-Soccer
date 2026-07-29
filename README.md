@@ -18,8 +18,9 @@ This repository merges those upstream improvements with contributions from the b
 2. [Platform Support](#platform-support)
 3. [Building from Source](#building-from-source)
    - [Linux](#linux)
-   - [macOS](#macos-work-in-progress)
-   - [Windows](#windows-work-in-progress)
+   - [macOS](#macos)
+   - [Windows](#windows)
+   - [Docker](#docker)
 4. [Controls](#controls)
 5. [Developer Quick-Start](#developer-quick-start)
 6. [Project Structure](#project-structure)
@@ -37,7 +38,7 @@ This repository merges those upstream improvements with contributions from the b
 - 🗄️ **SQLite-backed** team and player data
 - 🧩 **Modular C++17 codebase** – easy to extend
 - 🖥️ **Modern dark UI** with vertical main menu and centered HUD
-- 🔁 **Continuous Integration** on every commit (Ubuntu/Linux)
+- 🔁 **Continuous Integration** on Linux, Windows, and macOS
 
 See [ROADMAP.md](ROADMAP.md) for planned features including replay systems, career modes, and improved AI.
 
@@ -47,9 +48,9 @@ See [ROADMAP.md](ROADMAP.md) for planned features including replay systems, care
 
 | Platform | Builds | Runs | Notes |
 |----------|--------|------|-------|
-| Linux    | ✅     | ✅   | Fully supported |
-| macOS    | ✅     | ⚠️   | Compiles; OpenGL main-thread fix pending ([ROADMAP 4.1](ROADMAP.md)) |
-| Windows  | ✅     | ✅   | Build via MSVC + vcpkg |
+| Linux    | ✅     | ✅   | Fully supported (apt or Docker) |
+| macOS    | ✅     | ✅   | Homebrew + CI on macOS 14 |
+| Windows  | ✅     | ✅   | MSVC + vcpkg; runnable CI artifact |
 
 ---
 
@@ -57,7 +58,7 @@ See [ROADMAP.md](ROADMAP.md) for planned features including replay systems, care
 
 ### Linux
 
-Install required dependencies:
+Install required dependencies (or run `scripts/setup_linux_deps.sh`):
 ```bash
 sudo apt-get install git cmake build-essential libgl1-mesa-dev \
   libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
@@ -71,34 +72,29 @@ Clone, configure, and build:
 git clone https://github.com/awest813/League-Soccer.git
 cd League-Soccer
 
-# Copy assets into the build directory
-cp -R data/. build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
 
-cd build
-cmake ..
-make -j$(nproc)
+# Runtime assets (media/, databases/, locale/, football.config) are copied
+# next to the binary by CMake POST_BUILD. For a manual/symlink install:
+#   scripts/setup_assets.sh --build-dir build --symlink --force
 
-./gameplayfootball
+(cd build && ./gameplayfootball)
 ```
 
-### macOS (Work in Progress)
-
-> **Note**: The game compiles on macOS but does not yet run because OpenGL
-> rendering must happen on the main thread.  This is tracked in
-> [ROADMAP 4.1](ROADMAP.md).
+### macOS
 
 Install [Homebrew](https://brew.sh/), then:
 
 ```bash
-brew install git cmake sdl2 sdl2_image sdl2_ttf sdl2_gfx boost openal-soft
+brew install git cmake sdl2 sdl2_image sdl2_ttf sdl2_gfx boost openal-soft sqlite
 
 git clone https://github.com/awest813/League-Soccer.git
 cd League-Soccer
-cp -R data/. build
 
-cd build
-cmake ..
-make -j$(nproc)
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+(cd build && ./gameplayfootball)
 ```
 
 ### Windows
@@ -108,38 +104,54 @@ make -j$(nproc)
 - [Git](https://git-scm.com/download/win)
 - [CMake](https://cmake.org/download/) – add to `PATH`
 
-**Set up vcpkg:**
-```bat
+**Set up vcpkg** (or run `scripts/setup_windows_deps.ps1`):
+```powershell
 cd C:\dev
 git clone https://github.com/microsoft/vcpkg
 .\vcpkg\bootstrap-vcpkg.bat
 ```
 
-**Install dependencies:**
-```bat
-.\vcpkg\vcpkg.exe install --triplet x64-windows ^
-  boost-signals2 boost-smart-ptr sdl2 sdl2-image[libjpeg-turbo] ^
-  sdl2-ttf sdl2-gfx opengl openal-soft sqlite3
+Dependencies are declared in [`vcpkg.json`](vcpkg.json). With the vcpkg toolchain file,
+CMake installs them automatically (manifest mode). Classic install is still supported:
+
+```powershell
+.\vcpkg\vcpkg.exe install --triplet x64-windows
 ```
 
 **Clone and build:**
-```bat
+```powershell
 cd C:\dev
 git clone https://github.com/awest813/League-Soccer.git
 cd League-Soccer
 
-xcopy /e /i data build-win\Debug
-xcopy /e /i data build-win\Release
-
-cmake -S . -B build-win -G "Visual Studio 17 2022" -A x64 ^
-  -DCMAKE_TOOLCHAIN_FILE=C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake ^
+cmake -S . -B build-win -G "Visual Studio 17 2022" -A x64 `
+  -DCMAKE_TOOLCHAIN_FILE=C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake `
   -DVCPKG_TARGET_TRIPLET=x64-windows
 
 cmake --build build-win --parallel --config Release
 ```
 
-Run `build-win\Release\gameplayfootball.exe`. This mirrors the configuration
-validated by the `build-windows` job in [CI](.github/workflows/ci.yml).
+CMake copies assets and (on CMake ≥ 3.21) runtime DLLs beside the executable.
+Run `build-win\Release\gameplayfootball.exe`.
+
+To assemble a distributable folder (exe + DLLs + assets):
+
+```powershell
+.\scripts\package_windows.ps1 -BuildDir build-win\Release -OutDir dist\windows-x64 `
+  -VcpkgRoot C:\dev\vcpkg -Triplet x64-windows
+```
+
+This mirrors the `build-windows` job in [CI](.github/workflows/ci.yml).
+
+### Docker
+
+```bash
+docker build -t gameplayfootball-dev .
+# or: docker compose up
+```
+
+The image configures and builds a Debug tree under `/workspace/build`. See
+[`Dockerfile`](Dockerfile) and [`docker-compose.yml`](docker-compose.yml).
 
 ---
 
@@ -174,9 +186,8 @@ validated by the `build-windows` job in [CI](.github/workflows/ci.yml).
 
 ```bash
 # Debug build with compile-commands for IDE/clangd support
-mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-make -j$(nproc)
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake --build build --parallel
 ```
 
 Code style is enforced by [`.clang-format`](.clang-format) (Google/C++17 style). Format before committing:
@@ -205,6 +216,8 @@ League-Soccer/
 │   ├── systems/      # Audio, input, physics subsystems
 │   └── managers/     # High-level game-state managers
 ├── data/             # Assets (textures, models, sounds, config)
+├── scripts/          # Linux/Windows setup and packaging helpers
+├── vcpkg.json        # Windows dependency manifest
 ├── CMakeLists.txt    # Build configuration
 ├── ROADMAP.md        # Planned improvements
 └── CONTRIBUTING.md   # Contribution guide
