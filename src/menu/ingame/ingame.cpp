@@ -51,30 +51,28 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   frame->AddView(scoreLine);
   scoreLine->Show();
 
+  // All selectable buttons live in ONE grid so arrow-key navigation flows
+  // continuously across every section (the previous layout used four separate
+  // grids, which trapped focus inside a single section).
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_ingame", 2, 12, 56, 80);
+  int row = 0;
+
   Gui2Caption* tacticsLabel =
-      new Gui2Caption(windowManager, "caption_ingame_section_tactics", 2, 12, 56, 2, "-- Tactics --");
-  frame->AddView(tacticsLabel);
-  tacticsLabel->Show();
+      new Gui2Caption(windowManager, "caption_ingame_section_tactics", 0, 0, 56, 2, "-- Tactics --");
+  grid->AddView(tacticsLabel, row++, 0);
 
   Gui2Button* buttonGamePlan =
       new Gui2Button(windowManager, "button_gameplan", 0, 0, 56, 3, "Game Plan");
   Gui2Button* buttonSetPieces =
       new Gui2Button(windowManager, "button_setpieces", 0, 0, 56, 3, "Set Pieces");
-
   buttonGamePlan->sig_OnClick.connect([this](...) { GoGamePlan(); });
   buttonSetPieces->sig_OnClick.connect([this](...) { GoSetPieceEditor(); });
-
-  Gui2Grid* gridTactics = new Gui2Grid(windowManager, "grid_tactics", 2, 15, 56, 12);
-  gridTactics->AddView(buttonGamePlan, 0, 0);
-  gridTactics->AddView(buttonSetPieces, 1, 0);
-  gridTactics->UpdateLayout(0.5);
-  frame->AddView(gridTactics);
-  gridTactics->Show();
+  grid->AddView(buttonGamePlan, row++, 0);
+  grid->AddView(buttonSetPieces, row++, 0);
 
   Gui2Caption* settingsLabel =
-      new Gui2Caption(windowManager, "caption_ingame_section_settings", 2, 32, 56, 2, "-- Settings --");
-  frame->AddView(settingsLabel);
-  settingsLabel->Show();
+      new Gui2Caption(windowManager, "caption_ingame_section_settings", 0, 0, 56, 2, "-- Settings --");
+  grid->AddView(settingsLabel, row++, 0);
 
   Gui2Button* buttonControllerSelect =
       new Gui2Button(windowManager, "button_controllerselect", 0, 0, 56, 3, "Controller Select");
@@ -84,60 +82,43 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
       new Gui2Button(windowManager, "button_visualoptions", 0, 0, 56, 3, "Visual Options");
   Gui2Button* buttonSystemSettings =
       new Gui2Button(windowManager, "button_systemsettings", 0, 0, 56, 3, "System Settings");
-
   buttonControllerSelect->sig_OnClick.connect([this](...) { GoControllerSelect(); });
   buttonCameraSettings->sig_OnClick.connect([this](...) { GoCameraSettings(); });
   buttonVisualOptions->sig_OnClick.connect([this](...) { GoVisualOptions(); });
   buttonSystemSettings->sig_OnClick.connect([this](...) { GoSystemSettings(); });
-
-  Gui2Grid* gridSettings = new Gui2Grid(windowManager, "grid_settings", 2, 35, 56, 20);
-  gridSettings->AddView(buttonControllerSelect, 0, 0);
-  gridSettings->AddView(buttonCameraSettings, 1, 0);
-  gridSettings->AddView(buttonVisualOptions, 2, 0);
-  gridSettings->AddView(buttonSystemSettings, 3, 0);
-  gridSettings->UpdateLayout(0.5);
-  frame->AddView(gridSettings);
-  gridSettings->Show();
+  grid->AddView(buttonControllerSelect, row++, 0);
+  grid->AddView(buttonCameraSettings, row++, 0);
+  grid->AddView(buttonVisualOptions, row++, 0);
+  grid->AddView(buttonSystemSettings, row++, 0);
 
   Gui2Caption* mediaLabel =
-      new Gui2Caption(windowManager, "caption_ingame_section_media", 2, 60, 56, 2, "-- Media --");
-  frame->AddView(mediaLabel);
-  mediaLabel->Show();
+      new Gui2Caption(windowManager, "caption_ingame_section_media", 0, 0, 56, 2, "-- Media --");
+  grid->AddView(mediaLabel, row++, 0);
 
   Gui2Button* buttonReplay = new Gui2Button(windowManager, "button_replay", 0, 0, 56, 3, "Replay");
-
   buttonReplay->sig_OnClick.connect([this](...) { GoReplay(); });
-
-  Gui2Grid* gridMedia = new Gui2Grid(windowManager, "grid_media", 2, 63, 56, 6);
-  gridMedia->AddView(buttonReplay, 0, 0);
-  gridMedia->UpdateLayout(0.5);
-  frame->AddView(gridMedia);
-  gridMedia->Show();
+  grid->AddView(buttonReplay, row++, 0);
 
   Gui2Caption* exitLabel =
-      new Gui2Caption(windowManager, "caption_ingame_section_exit", 2, 74, 56, 2, "-- Match --");
-  frame->AddView(exitLabel);
-  exitLabel->Show();
+      new Gui2Caption(windowManager, "caption_ingame_section_exit", 0, 0, 56, 2, "-- Match --");
+  grid->AddView(exitLabel, row++, 0);
 
   Gui2Button* buttonResume =
       new Gui2Button(windowManager, "button_resume", 0, 0, 56, 3, "Resume Match");
   Gui2Button* buttonPreQuit =
       new Gui2Button(windowManager, "button_quit", 0, 0, 56, 3, "Forfeit Match");
-
   buttonResume->sig_OnClick.connect([this](...) {
     GetMenuTask()->ReleaseAllButtons();
     GetGameTask()->GetMatch()->Pause(false);
-    this->Exit();
-    delete this;
+    GoBack();  // reconstructs the GamePage, which restores GUI focus
   });
   buttonPreQuit->sig_OnClick.connect([this](...) { GoPreQuit(); });
+  grid->AddView(buttonResume, row++, 0);
+  grid->AddView(buttonPreQuit, row++, 0);
 
-  Gui2Grid* gridExit = new Gui2Grid(windowManager, "grid_exit", 2, 77, 56, 12);
-  gridExit->AddView(buttonResume, 0, 0);
-  gridExit->AddView(buttonPreQuit, 1, 0);
-  gridExit->UpdateLayout(0.5);
-  frame->AddView(gridExit);
-  gridExit->Show();
+  grid->UpdateLayout(0.5);
+  frame->AddView(grid);
+  grid->Show();
 
   Gui2Caption* hintCaption =
       new Gui2Caption(windowManager, "caption_ingame_hint", 2, 92, 56, 2,
