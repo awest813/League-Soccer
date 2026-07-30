@@ -48,7 +48,7 @@ See [ROADMAP.md](ROADMAP.md) for planned features including replay systems, care
 
 | Platform | Builds | Runs | Notes |
 |----------|--------|------|-------|
-| Linux    | ✅     | ✅   | Fully supported (apt or Docker) |
+| Linux    | ✅     | ✅   | Debian/Fedora/Arch/openSUSE + Docker; one-shot `./build.sh` |
 | macOS    | ✅     | ✅   | Homebrew + CI on macOS 14 |
 | Windows  | ✅     | ✅   | MSVC + vcpkg; runnable CI artifact |
 
@@ -58,19 +58,28 @@ See [ROADMAP.md](ROADMAP.md) for planned features including replay systems, care
 
 ### Linux
 
-Install required dependencies (or run `scripts/setup_linux_deps.sh`):
-```bash
-sudo apt-get install git cmake build-essential libgl1-mesa-dev \
-  libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
-  libopenal-dev \
-  libboost-dev \
-  libsqlite3-dev xvfb
-```
+The quickest way to get playing is the two helper scripts, which install the
+right dependencies for your distro and then build + run the game:
 
-Clone, configure, and build:
 ```bash
 git clone https://github.com/awest813/League-Soccer.git
 cd League-Soccer
+
+./build.sh          # installs deps (apt/dnf/pacman/zypper) + builds the game
+./run.sh            # launches it
+```
+
+`build.sh` options: `--debug`, `--clean`, `--no-deps` (skip the dep install),
+`--jobs N`. Run `./build.sh --help` for the full list. Dependencies are
+detected automatically for **Debian/Ubuntu/Mint**, **Fedora/RHEL**,
+**Arch/Manjaro**, and **openSUSE**; on other distros see the manual steps below.
+
+<details>
+<summary>Manual build (advanced)</summary>
+
+```bash
+# Install dependencies yourself, or:
+bash scripts/setup_linux_deps.sh          # detects distro + package manager
 
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
@@ -81,6 +90,8 @@ cmake --build build --parallel
 
 (cd build && ./gameplayfootball)
 ```
+
+</details>
 
 ### macOS
 
@@ -217,6 +228,8 @@ League-Soccer/
 │   └── managers/     # High-level game-state managers
 ├── data/             # Assets (textures, models, sounds, config)
 ├── scripts/          # Linux/Windows setup and packaging helpers
+├── build.sh          # One-shot Linux build (deps + configure + compile)
+├── run.sh            # Launch the built game with its assets
 ├── vcpkg.json        # Windows dependency manifest
 ├── CMakeLists.txt    # Build configuration
 ├── ROADMAP.md        # Planned improvements
