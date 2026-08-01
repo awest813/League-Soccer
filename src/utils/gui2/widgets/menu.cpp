@@ -63,8 +63,12 @@ void Gui2Menu::Deactivate() {
 
 void Gui2Menu::Reactivate() {
   // show all child widgets
-  lastFocus->SetFocus();
   this->Show();
+  if (lastFocus && lastFocus->IsVisible()) {
+    lastFocus->SetFocus();
+  } else {
+    this->SetFocus();
+  }
 }
 
 void Gui2Menu::ProcessWindowingEvent(WindowingEvent* event) {
