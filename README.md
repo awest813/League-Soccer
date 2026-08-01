@@ -238,7 +238,7 @@ ctest --test-dir build --output-on-failure
 
 - See **[ROADMAP.md](ROADMAP.md)** for the full list of planned features across six phases (modernization, testing, gameplay, platform, developer experience, career modes).
 - See **[CONTRIBUTING.md](CONTRIBUTING.md)** for coding style, branch naming, commit conventions, and PR guidelines.
-- Found a bug or have an idea?  [Open an issue](../../issues).
+- Found a bug or have an idea? Open an issue.
 
 PRs are always welcome — pick any 📋 item from the roadmap, open an issue to discuss, then send a pull request.
 
