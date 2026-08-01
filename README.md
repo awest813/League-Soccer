@@ -1,97 +1,78 @@
-# League-Soccer (Gameplay Football)
+# League-Soccer
 
 [![CI](https://github.com/awest813/League-Soccer/actions/workflows/ci.yml/badge.svg)](https://github.com/awest813/League-Soccer/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Public_Domain-blue)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)](CMakeLists.txt)
 
-A revived and actively developed football (soccer) game, forked from the discontinued [GameplayFootball](https://github.com/BazkieBumpercar/GameplayFootball) originally written by [Bastiaan Konings Schuiling](http://www.properlydecent.com/).
+League-Soccer is a revived, open-source football (soccer) game project built around a modern C++17 engine. It started as a fork of the discontinued GameplayFootball project and carries forward the original game design while modernizing the build system, tooling, and cross-platform support.
 
-In 2019, Google Brain adopted the engine to build [Google Research Football](https://github.com/google-research/football), a Reinforcement Learning environment. They modernised the underlying libraries but stripped out everything not needed for RL (menus, audio, full gameplay, etc.).
+The repository focuses on a playable match experience with AI opponents, menus, match simulation, audio, and data-driven game content. It is also structured in a way that makes it approachable for contributors who want to work on gameplay systems, rendering, UI, or engine internals.
 
-This repository merges those upstream improvements with contributions from the broader community to produce **a fully playable game** that compiles and runs on as many platforms as possible.
+## What you will find here
 
----
+- A playable football game with multiple UI screens and match flow
+- A modular C++ codebase organized around gameplay, rendering, input, menus, and data
+- Cross-platform CMake builds for Linux, macOS, and Windows
+- A testable architecture that supports headless unit and integration testing
+- Developer-friendly tooling such as clang-format, Doxygen, and CI workflows
 
-## Table of Contents
+## Project highlights
 
-1. [Features](#features)
-2. [Platform Support](#platform-support)
-3. [Building from Source](#building-from-source)
-   - [Linux](#linux)
-   - [macOS](#macos)
-   - [Windows](#windows)
-   - [Docker](#docker)
-4. [Controls](#controls)
-5. [Developer Quick-Start](#developer-quick-start)
-6. [Project Structure](#project-structure)
-7. [Roadmap & Contributing](#roadmap--contributing)
-8. [Acknowledgements](#acknowledgements)
+- ⚽ Match simulation and AI-driven gameplay
+- 🎮 Keyboard and gamepad input support
+- 🏟️ 3D rendering with OpenGL and supporting graphics systems
+- 🔊 Audio support via OpenAL (with a fallback path when unavailable)
+- 🗄️ SQLite-backed data handling for teams, players, and match state
+- 🧪 GoogleTest-based test infrastructure for core game logic
 
----
+## Quick start
 
-## Features
+### Prerequisites
 
-- ⚽ **Playable single-match football game** with AI opponents
-- 🎮 **Keyboard & gamepad support**
-- 🔊 **Spatial audio** via OpenAL
-- 🏟️ **3D stadium rendering** with OpenGL shaders
-- 🗄️ **SQLite-backed** team and player data
-- 🧩 **Modular C++17 codebase** – easy to extend
-- 🖥️ **Modern dark UI** with vertical main menu and centered HUD
-- 🔁 **Continuous Integration** on Linux, Windows, and macOS
+You will need:
 
-See [ROADMAP.md](ROADMAP.md) for planned features including replay systems, career modes, and improved AI.
+- CMake 3.14 or newer
+- A modern C++17 compiler
+- SDL2, SDL2_image, SDL2_ttf, SDL2_gfx, Boost, SQLite3
+- OpenGL and, optionally, OpenAL development packages
 
----
+The repository provides helper scripts for common setups:
 
-## Platform Support
-
-| Platform | Builds | Runs | Notes |
-|----------|--------|------|-------|
-| Linux    | ✅     | ✅   | Fully supported (apt or Docker) |
-| macOS    | ✅     | ✅   | Homebrew + CI on macOS 14 |
-| Windows  | ✅     | ✅   | MSVC + vcpkg; runnable CI artifact |
-
----
-
-## Building from Source
+- `scripts/setup_linux_deps.sh`
+- `scripts/setup_windows_deps.ps1`
 
 ### Linux
 
-Install required dependencies (or run `scripts/setup_linux_deps.sh`):
+Install dependencies (Ubuntu/Debian example):
+
 ```bash
-sudo apt-get install git cmake build-essential libgl1-mesa-dev \
-  libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev \
-  libopenal-dev \
-  libboost-dev \
-  libsqlite3-dev xvfb
+sudo apt-get update
+sudo apt-get install -y git cmake build-essential \
+  libgl1-mesa-dev libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev \
+  libsdl2-gfx-dev libopenal-dev libboost-dev libsqlite3-dev xvfb
 ```
 
-Clone, configure, and build:
-```bash
-git clone https://github.com/awest813/League-Soccer.git
-cd League-Soccer
+Configure and build:
 
+```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
+```
 
-# Runtime assets (media/, databases/, locale/, football.config) are copied
-# next to the binary by CMake POST_BUILD. For a manual/symlink install:
-#   scripts/setup_assets.sh --build-dir build --symlink --force
+Run the game from the build directory:
 
+```bash
 (cd build && ./gameplayfootball)
 ```
 
+The build system copies runtime assets next to the executable automatically.
+
 ### macOS
 
-Install [Homebrew](https://brew.sh/), then:
+Using Homebrew:
 
 ```bash
 brew install git cmake sdl2 sdl2_image sdl2_ttf sdl2_gfx boost openal-soft sqlite
-
-git clone https://github.com/awest813/League-Soccer.git
-cd League-Soccer
-
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 (cd build && ./gameplayfootball)
@@ -99,153 +80,124 @@ cmake --build build --parallel
 
 ### Windows
 
-**Prerequisites:**
-- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) – *Desktop development with C++* workload
-- [Git](https://git-scm.com/download/win)
-- [CMake](https://cmake.org/download/) – add to `PATH`
-
-**Set up vcpkg** (or run `scripts/setup_windows_deps.ps1`):
-```powershell
-cd C:\dev
-git clone https://github.com/microsoft/vcpkg
-.\vcpkg\bootstrap-vcpkg.bat
-```
-
-Dependencies are declared in [`vcpkg.json`](vcpkg.json). With the vcpkg toolchain file,
-CMake installs them automatically (manifest mode). Classic install is still supported:
+Windows builds are supported through Visual Studio 2022 and vcpkg.
 
 ```powershell
-.\vcpkg\vcpkg.exe install --triplet x64-windows
-```
-
-**Clone and build:**
-```powershell
-cd C:\dev
-git clone https://github.com/awest813/League-Soccer.git
-cd League-Soccer
-
 cmake -S . -B build-win -G "Visual Studio 17 2022" -A x64 `
   -DCMAKE_TOOLCHAIN_FILE=C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake `
   -DVCPKG_TARGET_TRIPLET=x64-windows
-
 cmake --build build-win --parallel --config Release
 ```
 
-CMake copies assets and (on CMake ≥ 3.21) runtime DLLs beside the executable.
-Run `build-win\Release\gameplayfootball.exe`.
-
-To assemble a distributable folder (exe + DLLs + assets):
+Run the executable from the build output directory:
 
 ```powershell
-.\scripts\package_windows.ps1 -BuildDir build-win\Release -OutDir dist\windows-x64 `
-  -VcpkgRoot C:\dev\vcpkg -Triplet x64-windows
+build-win\Release\gameplayfootball.exe
 ```
-
-This mirrors the `build-windows` job in [CI](.github/workflows/ci.yml).
 
 ### Docker
 
+A Dockerfile and compose file are included for container-based development:
+
 ```bash
 docker build -t gameplayfootball-dev .
-# or: docker compose up
+# or
+docker compose up
 ```
 
-The image configures and builds a Debug tree under `/workspace/build`. See
-[`Dockerfile`](Dockerfile) and [`docker-compose.yml`](docker-compose.yml).
+## Project layout
 
----
+```text
+League-Soccer/
+├── src/                # Core C++ sources
+│   ├── base/           # Math, geometry, logging, utilities
+│   ├── framework/      # Engine framework and task scheduling
+│   ├── managers/       # Global managers and service registries
+│   ├── menu/           # Menus and UI systems
+│   ├── onthepitch/     # Match simulation, players, AI, ball physics
+│   ├── scene/          # Scene graph and object model
+│   ├── systems/        # Rendering, audio, physics subsystems
+│   └── utils/          # Shared helpers and data utilities
+├── data/               # Assets, config, databases, locale, and media
+├── tests/              # GoogleTest suites
+├── scripts/            # Setup and packaging helpers
+├── CMakeLists.txt      # Build configuration
+└── ARCHITECTURE.md     # Higher-level engine overview
+```
 
-## Controls
+## Building for development
 
-> Default keyboard layout.  Gamepad support is also available.
-
-### In-Game
-
-| Action | Key |
-|--------|-----|
-| Move player | Arrow keys / WASD |
-| Sprint | Hold **Shift** |
-| Short pass | **A** |
-| Long pass / Cross | **S** |
-| Shoot | **D** |
-| Tackle / Press | **F** |
-| Switch player | **Space** |
-| Pause | **Escape** |
-
-### Menu Navigation
-
-| Action | Key |
-|--------|-----|
-| Navigate | Arrow keys |
-| Confirm | **Enter** |
-| Back | **Escape** |
-
----
-
-## Developer Quick-Start
+For a debug build with IDE-friendly compile commands:
 
 ```bash
-# Debug build with compile-commands for IDE/clangd support
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build build --parallel
 ```
 
-Code style is enforced by [`.clang-format`](.clang-format) (Google/C++17 style). Format before committing:
+For headless tests (no SDL/OpenGL runtime required):
 
 ```bash
-# Format a single file
-clang-format -i src/my_file.cpp
+cmake -S . -B build-test -DCMAKE_BUILD_TYPE=Debug \
+  -DBUILD_TESTING=ON -DGAMEPLAYFOOTBALL_BUILD_GAME=OFF
+cmake --build build-test --parallel
+ctest --test-dir build-test --output-on-failure
+```
 
-# Format all C++ sources
+## Controls
+
+The game uses a keyboard-first control scheme, with gamepad support available as well.
+
+### In-game
+
+| Action | Key |
+| --- | --- |
+| Move player | Arrow keys / WASD |
+| Sprint | Shift |
+| Short pass | A |
+| Long pass / cross | S |
+| Shoot | D |
+| Tackle / press | F |
+| Switch player | Space |
+| Pause | Escape |
+
+### Menu navigation
+
+| Action | Key |
+| --- | --- |
+| Navigate | Arrow keys |
+| Confirm | Enter |
+| Back | Escape |
+
+## Documentation
+
+Helpful project documents are included alongside the code:
+
+- `ARCHITECTURE.md` – overview of the engine, subsystems, and design patterns
+- `ROADMAP.md` – planned improvements and completed milestones
+- `CONTRIBUTING.md` – contribution workflow, coding style, and PR expectations
+
+## Contributing
+
+Contributions are welcome. If you want to help:
+
+1. Fork the repository and create a branch for your change.
+2. Build and test locally.
+3. Follow the existing C++17 and clang-format conventions.
+4. Open a pull request with context for the change.
+
+For formatting, run:
+
+```bash
 find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i
 ```
 
-CI will fail if any committed file doesn't match the formatter.
+## License and acknowledgements
 
----
+This project is released under the Public Domain license. It is a modernized continuation of the original GameplayFootball work by Bastiaan Konings Schuiling and builds on contributions from the broader open-source community.
 
-## Project Structure
+For more details, see:
 
-```
-League-Soccer/
-├── src/              # C++ source code
-│   ├── base/         # Math, geometry, utilities
-│   ├── framework/    # Engine core (scene graph, renderer)
-│   ├── onthepitch/   # Match simulation & player AI
-│   ├── menu/         # UI screens and menus
-│   ├── systems/      # Audio, input, physics subsystems
-│   └── managers/     # High-level game-state managers
-├── data/             # Assets (textures, models, sounds, config)
-├── scripts/          # Linux/Windows setup and packaging helpers
-├── vcpkg.json        # Windows dependency manifest
-├── CMakeLists.txt    # Build configuration
-├── ROADMAP.md        # Planned improvements
-└── CONTRIBUTING.md   # Contribution guide
-```
-
-Run the unit tests:
-
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON \
-  -DGAMEPLAYFOOTBALL_BUILD_GAME=OFF
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
-```
-
----
-
-## Roadmap & Contributing
-
-- See **[ROADMAP.md](ROADMAP.md)** for the full list of planned features across six phases (modernization, testing, gameplay, platform, developer experience, career modes).
-- See **[CONTRIBUTING.md](CONTRIBUTING.md)** for coding style, branch naming, commit conventions, and PR guidelines.
-- Found a bug or have an idea? Open an issue.
-
-PRs are always welcome — pick any 📋 item from the roadmap, open an issue to discuss, then send a pull request.
-
----
-
-## Acknowledgements
-
-- **[Bastiaan Konings Schuiling](http://www.properlydecent.com/)** – original author of GameplayFootball.  If you'd like to support his work, his Bitcoin address is `1JHnTe2QQj8RL281fXFiyvK9igj2VhPh2t`.
-- **[Google Brain / Google Research Football](https://github.com/google-research/football)** – library modernisation and CMake improvements.
-- All community contributors who have submitted fixes and enhancements.
+- [LICENSE](LICENSE)
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [ROADMAP.md](ROADMAP.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
