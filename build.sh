@@ -46,13 +46,36 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Pick a sensible default parallelism if --jobs was not given.
-if [[ -z "${JOBS}" ]]; then
+# Pick a safe default number of parallel compile jobs when --jobs was not
+# given. Each compiler process can use ~1-3 GB of RAM on the Boost-heavy
+# translation units in this project, so naively using `nproc` can exhaust
+# memory and hang the machine on low-RAM laptops. Allow ~3 GB per job based on
+# the system's total physical RAM, and never exceed the CPU count.
+#   8 GB  -> 2 jobs   16 GB -> 5 jobs   64 GB -> 21 jobs
+default_jobs() {
+  local cpus=4 mem_kb=0 jobs
   if command -v nproc >/dev/null 2>&1; then
-    JOBS="$(nproc)"
-  else
-    JOBS=4
+    cpus="$(nproc)"
   fi
+  if [[ -r /proc/meminfo ]]; then
+    mem_kb="$(awk '/^MemTotal:/ {print $2}' /proc/meminfo 2>/dev/null || echo 0)"
+  elif command -v sysctl >/dev/null 2>&1; then
+    mem_kb="$(( $(sysctl -n hw.memsize 2>/dev/null || echo 0) / 1024 ))"
+  fi
+  local mem_mb=$(( mem_kb / 1024 ))   # convert KiB -> MiB
+  if (( mem_mb >= 3072 )); then
+    jobs="$(( mem_mb / 3072 ))"       # ~3 GiB per job
+  else
+    jobs=1
+  fi
+  (( jobs > cpus )) && jobs="$cpus"
+  (( jobs < 1 )) && jobs=1
+  echo "$jobs"
+}
+
+if [[ -z "${JOBS}" ]]; then
+  JOBS="$(default_jobs)"
+  echo "==> No --jobs given; using ${JOBS} parallel job(s) (memory-aware)."
 fi
 
 cd "${SCRIPT_DIR}"

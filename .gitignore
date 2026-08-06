@@ -9,3 +9,4 @@ build-*/
 vcpkg/
 vcpkg_installed/
 dist/
+.zcode/

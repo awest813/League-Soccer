@@ -55,7 +55,7 @@ jobs:
             -DBUILD_TESTING=ON
 
       - name: Build tests
-        run: cmake --build build-headless --parallel $(nproc)
+        run: cmake --build build-headless --parallel 2
 
       - name: Run tests (headless – no DISPLAY needed)
         run: ctest --test-dir build-headless --output-on-failure
@@ -110,7 +110,7 @@ jobs:
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Build (Debug)
-        run: cmake --build build --parallel $(nproc)
+        run: cmake --build build --parallel 3
 
       - name: Test (Debug)
         run: ctest --test-dir build --output-on-failure
@@ -240,7 +240,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release
 
       - name: Build (Release)
-        run: cmake --build build-release --parallel $(nproc)
+        run: cmake --build build-release --parallel 3
 
       - name: Stage Linux release package
         run: |
@@ -333,7 +333,7 @@ jobs:
 
       - name: Build (Debug)
         shell: pwsh
-        run: cmake --build build-win --config Debug --parallel
+        run: cmake --build build-win --config Debug --parallel 4
 
       - name: Test (Debug)
         shell: pwsh
@@ -341,7 +341,7 @@ jobs:
 
       - name: Build (Release)
         shell: pwsh
-        run: cmake --build build-win --config Release --parallel
+        run: cmake --build build-win --config Release --parallel 4
 
       - name: Package runnable Windows build
         shell: pwsh

@@ -4,7 +4,7 @@
 #
 # Detects your distribution and uses the right package manager:
 #   apt (Debian/Ubuntu/Mint), dnf/yum (Fedora/RHEL), pacman (Arch),
-#   zypper (openSUSE).
+#   zypper (openSUSE), xbps (Void).
 #
 # Usage:
 #   scripts/setup_linux_deps.sh [--minimal] [--with-tools] [--help]
@@ -50,6 +50,8 @@ detect_pm() {
     echo pacman
   elif command -v zypper >/dev/null 2>&1; then
     echo zypper
+  elif command -v xbps-install >/dev/null 2>&1; then
+    echo xbps
   else
     echo unknown
   fi
@@ -59,7 +61,7 @@ PM="$(detect_pm)"
 
 if [[ "${PM}" == "unknown" ]]; then
   echo "ERROR: could not find a supported package manager" >&2
-  echo "(apt, dnf/yum, pacman, or zypper). Please install the build" >&2
+  echo "(apt, dnf/yum, pacman, zypper, or xbps). Please install the build" >&2
   echo "dependencies manually — see README 'Building from Source'." >&2
   exit 1
 fi
@@ -81,9 +83,13 @@ install() {
     zypper)
       "${SUDO[@]}" zypper --non-interactive install "$@"
       ;;
+    xbps)
+      # -S refreshes the repository index, -y answers yes to prompts.
+      "${SUDO[@]}" xbps-install -Sy "$@"
+      ;;
     *)
       echo "ERROR: could not find a supported package manager" >&2
-      echo "(apt, dnf/yum, pacman, or zypper). Please install the" >&2
+      echo "(apt, dnf/yum, pacman, zypper, or xbps). Please install the" >&2
       echo "build dependencies manually — see README 'Building from Source'." >&2
       exit 1
       ;;
@@ -115,6 +121,12 @@ case "${PM}" in
     CORE_PKGS=(cmake gcc-c++ make libboost_headers-devel sqlite3-devel)
     GAME_PKGS=(Mesa-libGL-devel libSDL2-devel libSDL2_image-devel \
                libSDL2_ttf-devel libSDL2_gfx-devel libopenal-devel xorg-x11-Xvfb)
+    TOOLS_PKGS=(ninja clang clang-tools-extra doxygen graphviz)
+    ;;
+  xbps)
+    CORE_PKGS=(cmake base-devel boost-devel sqlite-devel pkg-config)
+    GAME_PKGS=(SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_gfx-devel \
+               MesaLib-devel libopenal-devel xorg-server-xvfb)
     TOOLS_PKGS=(ninja clang clang-tools-extra doxygen graphviz)
     ;;
   *)
