@@ -79,6 +79,9 @@ protected:
   bool mousePressed[8];
 
   SDL_Joystick* joystick[_JOYSTICK_MAX];
+  // Stable mapping: joystickInstanceNow[slot] holds the SDL instance ID that
+  // currently occupies each dense slot (see note below on why slots are used).
+  SDL_JoystickID joystickInstanceNow[_JOYSTICK_MAX];
   bool joyButtonPressed[_JOYSTICK_MAX][_JOYSTICK_MAXBUTTONS];
   float joyAxis[_JOYSTICK_MAX][_JOYSTICK_MAXAXES];
   float joyAxisCalibration[_JOYSTICK_MAX][_JOYSTICK_MAXAXES][3];  // min, max, rest
@@ -86,6 +89,16 @@ protected:
   mutable std::mutex keyPressedMutex;
   mutable std::mutex mousePressedMutex;
   mutable std::mutex joyButtonPressedMutex;
+
+  // Resolve the dense slot that currently owns the given SDL joystick instance
+  // ID, or -1 if it is not tracked.
+  int FindJoystickSlot(SDL_JoystickID instance) const;
+  // First unused dense slot, or -1 when all slots are taken.
+  int FindFreeJoystickSlot() const;
+  // Shift every joystick above `removedSlot` down by one (both handles and
+  // sampled state), keeping the slots densely packed 0..count-1. Must be called
+  // after the removed joystick has been closed and its slot emptied.
+  void CompactJoystickSlots(int removedSlot);
 };
 
 }  // namespace blunted

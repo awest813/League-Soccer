@@ -300,23 +300,33 @@ const std::vector<IHIDevice*>& GetControllers() {
   return controllers;
 }
 
-void AddGamepad(int deviceIndex) {
+void AddGamepad(int deviceIndex, int gamepadID) {
   if (deviceIndex < 0 || deviceIndex >= SDL_NumJoysticks())
     return;
-  HIDGamepad* gamepad = new HIDGamepad(deviceIndex);
+  HIDGamepad* gamepad = new HIDGamepad(deviceIndex, gamepadID);
   controllers.push_back(gamepad);
-  printf("[main] Gamepad added: index %d, total controllers: %zu\n", deviceIndex,
-         controllers.size());
+  printf("[main] Gamepad added: index %d (slot %d), total controllers: %zu\n", deviceIndex,
+         gamepadID, controllers.size());
 }
 
-void RemoveGamepad(int deviceIndex) {
+void RemoveGamepad(int gamepadID) {
   for (auto it = controllers.begin() + 1; it != controllers.end(); ++it) {
     HIDGamepad* gp = dynamic_cast<HIDGamepad*>(*it);
-    if (gp && gp->GetGamepadID() == deviceIndex) {
+    if (gp && gp->GetGamepadID() == gamepadID) {
       controllers.erase(it);
-      printf("[main] Gamepad removed: index %d, total controllers: %zu\n", deviceIndex,
+      printf("[main] Gamepad removed: slot %d, total controllers: %zu\n", gamepadID,
              controllers.size());
-      return;
+      break;
+    }
+  }
+
+  // Dense-slot renumbering: UserEventManager packs the remaining joystick slots
+  // down on removal (see CompactJoystickSlots), so any gamepad that lived in a
+  // higher slot must track its new, one-lower slot.
+  for (IHIDevice* device : controllers) {
+    HIDGamepad* gp = dynamic_cast<HIDGamepad*>(device);
+    if (gp && gp->GetGamepadID() > gamepadID) {
+      gp->SetGamepadID(gp->GetGamepadID() - 1);
     }
   }
 }
@@ -504,7 +514,7 @@ int main(int argc, const char** argv) {
   HIDKeyboard* keyboard = new HIDKeyboard();
   controllers.push_back(keyboard);
   for (int i = 0; i < SDL_NumJoysticks(); i++) {
-    HIDGamepad* gamepad = new HIDGamepad(i);
+    HIDGamepad* gamepad = new HIDGamepad(i, i);
     controllers.push_back(gamepad);
   }
 

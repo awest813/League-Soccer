@@ -20,8 +20,8 @@
 
 #include "environmentmanager.hpp"
 
-extern void AddGamepad(int deviceIndex);
-extern void RemoveGamepad(int deviceIndex);
+extern void AddGamepad(int deviceIndex, int gamepadID);
+extern void RemoveGamepad(int gamepadID);
 
 namespace blunted {
 
@@ -39,6 +39,8 @@ UserEventManager::UserEventManager() {
   }
 
   for (int j = 0; j < _JOYSTICK_MAX; j++) {
+    joystick[j] = nullptr;
+    joystickInstanceNow[j] = -1;
     for (int i = 0; i < _JOYSTICK_MAXBUTTONS; i++) {
       joyButtonPressed[j][i] = false;
     }
@@ -58,6 +60,8 @@ UserEventManager::UserEventManager() {
   SDL_Init(SDL_INIT_JOYSTICK);
   for (int i = 0; i < SDL_NumJoysticks(); i++) {
     joystick[i] = SDL_JoystickOpen(i);
+    if (joystick[i])
+      joystickInstanceNow[i] = SDL_JoystickInstanceID(joystick[i]);
   }
   // SDL_JoystickEventState(SDL_IGNORE); // doesn't seem to work? bug?
   SDL_JoystickEventState(SDL_ENABLE);
@@ -74,21 +78,59 @@ UserEventManager::~UserEventManager() {
 void UserEventManager::Exit() {}
 
 void UserEventManager::InputSDLEvent(const SDL_Event& event) {
-  int joyID = 0;
   switch (event.type) {
-    case SDL_JOYDEVICEADDED:
+    case SDL_JOYDEVICEADDED: {
+      // SDL_JOYDEVICEADDED reports the *device index* for the new joystick,
+      // suitable for SDL_JoystickOpen(). Allocate the next free dense slot and
+      // remember the joystick's stable instance ID there.
       printf("[userevent] Gamepad connected: %d\n", event.jdevice.which);
-      joystick[event.jdevice.which] = SDL_JoystickOpen(event.jdevice.which);
-      AddGamepad(event.jdevice.which);
-      break;
-    case SDL_JOYDEVICEREMOVED:
-      printf("[userevent] Gamepad disconnected: %d\n", event.jdevice.which);
-      RemoveGamepad(event.jdevice.which);
-      if (joystick[event.jdevice.which]) {
-        SDL_JoystickClose(joystick[event.jdevice.which]);
-        joystick[event.jdevice.which] = nullptr;
+      SDL_Joystick* joy = SDL_JoystickOpen(event.jdevice.which);
+      if (!joy)
+        break;
+      std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
+      int slot = FindFreeJoystickSlot();
+      if (slot < 0) {
+        SDL_JoystickClose(joy);
+        break;
       }
+      joystick[slot] = joy;
+      joystickInstanceNow[slot] = SDL_JoystickInstanceID(joy);
+      for (int i = 0; i < _JOYSTICK_MAXBUTTONS; i++)
+        joyButtonPressed[slot][i] = false;
+      for (int i = 0; i < _JOYSTICK_MAXAXES; i++) {
+        joyAxis[slot][i] = 0.0;
+        joyAxisCalibration[slot][i][0] = -32768.0;
+        joyAxisCalibration[slot][i][1] = 32767.0;
+        joyAxisCalibration[slot][i][2] = 0.0;
+      }
+      lock.unlock();
+      // Constructing the HIDGamepad reloads its config, which re-enters the
+      // UserEventManager (SetJoystickAxisCalibration), so add it unlocked.
+      AddGamepad(event.jdevice.which, slot);
       break;
+    }
+    case SDL_JOYDEVICEREMOVED: {
+      // SDL_JOYDEVICEREMOVED reports the *instance ID* (not a device index).
+      // Resolve it back to our dense slot, close the handle, drop it from the
+      // controller list, then pack the remaining joysticks down so the slots
+      // stay densely 0..count-1 (this is what avoids the index renumbering bug
+      // that previously left stale device indices pointing at the wrong data).
+      printf("[userevent] Gamepad disconnected: %d\n", event.jdevice.which);
+      std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
+      int slot = FindJoystickSlot(event.jdevice.which);
+      if (slot < 0)
+        break;
+      if (joystick[slot]) {
+        SDL_JoystickClose(joystick[slot]);
+        joystick[slot] = nullptr;
+      }
+      joystickInstanceNow[slot] = -1;
+      lock.unlock();
+      RemoveGamepad(slot);
+      lock.lock();
+      CompactJoystickSlots(slot);
+      break;
+    }
     case SDL_KEYDOWN:
       keyPressedMutex.lock();
       keyPressed[event.key.keysym.sym].pressTime_ms =
@@ -111,23 +153,69 @@ void UserEventManager::InputSDLEvent(const SDL_Event& event) {
       mousePressed[event.button.button] = false;
       mousePressedMutex.unlock();
       break;
-    case SDL_JOYAXISMOTION:
-      joyButtonPressedMutex.lock();
-      joyAxis[event.jaxis.which][event.jaxis.axis] = event.jaxis.value;
-      joyButtonPressedMutex.unlock();
+    case SDL_JOYAXISMOTION: {
+      std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
+      int joyID = FindJoystickSlot(event.jaxis.which);
+      if (joyID >= 0)
+        joyAxis[joyID][event.jaxis.axis] = event.jaxis.value;
       break;
-    case SDL_JOYBUTTONDOWN:
-      joyButtonPressedMutex.lock();
-      joyID = event.jaxis.which;
-      joyButtonPressed[joyID][event.jbutton.button] = true;
-      joyButtonPressedMutex.unlock();
+    }
+    case SDL_JOYBUTTONDOWN: {
+      std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
+      int joyID = FindJoystickSlot(event.jbutton.which);
+      if (joyID >= 0)
+        joyButtonPressed[joyID][event.jbutton.button] = true;
       break;
-    case SDL_JOYBUTTONUP:
-      joyButtonPressedMutex.lock();
-      joyID = event.jaxis.which;
-      joyButtonPressed[joyID][event.jbutton.button] = false;
-      joyButtonPressedMutex.unlock();
+    }
+    case SDL_JOYBUTTONUP: {
+      std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
+      int joyID = FindJoystickSlot(event.jbutton.which);
+      if (joyID >= 0)
+        joyButtonPressed[joyID][event.jbutton.button] = false;
       break;
+    }
+  }
+}
+
+int UserEventManager::FindJoystickSlot(SDL_JoystickID instance) const {
+  for (int s = 0; s < _JOYSTICK_MAX; s++) {
+    if (joystickInstanceNow[s] == instance)
+      return s;
+  }
+  return -1;
+}
+
+int UserEventManager::FindFreeJoystickSlot() const {
+  for (int s = 0; s < _JOYSTICK_MAX; s++) {
+    if (joystickInstanceNow[s] == -1)
+      return s;
+  }
+  return -1;
+}
+
+void UserEventManager::CompactJoystickSlots(int removedSlot) {
+  for (int s = removedSlot; s + 1 < _JOYSTICK_MAX; s++) {
+    joystick[s] = joystick[s + 1];
+    joystickInstanceNow[s] = joystickInstanceNow[s + 1];
+    for (int i = 0; i < _JOYSTICK_MAXBUTTONS; i++)
+      joyButtonPressed[s][i] = joyButtonPressed[s + 1][i];
+    for (int i = 0; i < _JOYSTICK_MAXAXES; i++) {
+      joyAxis[s][i] = joyAxis[s + 1][i];
+      joyAxisCalibration[s][i][0] = joyAxisCalibration[s + 1][i][0];
+      joyAxisCalibration[s][i][1] = joyAxisCalibration[s + 1][i][1];
+      joyAxisCalibration[s][i][2] = joyAxisCalibration[s + 1][i][2];
+    }
+  }
+  int top = _JOYSTICK_MAX - 1;
+  joystick[top] = nullptr;
+  joystickInstanceNow[top] = -1;
+  for (int i = 0; i < _JOYSTICK_MAXBUTTONS; i++)
+    joyButtonPressed[top][i] = false;
+  for (int i = 0; i < _JOYSTICK_MAXAXES; i++) {
+    joyAxis[top][i] = 0.0;
+    joyAxisCalibration[top][i][0] = -32768.0;
+    joyAxisCalibration[top][i][1] = 32767.0;
+    joyAxisCalibration[top][i][2] = 0.0;
   }
 }
 

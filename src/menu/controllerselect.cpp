@@ -6,6 +6,8 @@
 #include "controllerselect.hpp"
 
 #include "../main.hpp"
+#include "hid/gamepad.hpp"
+#include "hid/keyboard.hpp"
 #include "mainmenu.hpp"
 #include "managers/usereventmanager.hpp"
 #include "pagefactory.hpp"
@@ -182,22 +184,28 @@ void ControllerSelectPage::Process() {
     ConfirmSelection();
   }
 
-  // Move the keyboard side selection by polling the HID state directly. This is
-  // deliberate: the keyboard must not depend on the GUI focus for receiving
-  // events (it otherwise stays stuck on its default side when focus is held by
-  // another widget), and it mirrors the focus-independent gamepad handling below.
+  // Move the side selection by polling each device's HID state directly here in
+  // Process(). This is deliberate: input must not depend on GUI focus (the
+  // keyboard otherwise stays stuck on its default side when focus is held by
+  // another widget), and it must not depend on SDL event delivery (a still
+  // gamepad in a deadzone generates no joystick events). Polling every device
+  // each frame puts the keyboard and every gamepad on equal, focus-independent
+  // footing.
   const std::vector<IHIDevice*>& controllers = GetControllers();
   if (controllers.empty() || sides.empty() || delay.empty()) {
     return;
   }
   unsigned long now_ms = EnvironmentManager::GetInstance().GetTime_ms();
   for (unsigned int i = 0; i < controllers.size() && i < sides.size() && i < delay.size(); i++) {
-    if (controllers.at(i)->GetDeviceType() != e_HIDeviceType_Keyboard) {
+    if (delay.at(i) >= now_ms - 250) {
       continue;
     }
-    if (delay.at(i) < now_ms - 250) {
-      HIDKeyboard* keyboard = static_cast<HIDKeyboard*>(controllers.at(i));
-      bool moved = false;
+
+    IHIDevice* controller = controllers.at(i);
+    bool moved = false;
+
+    if (controller->GetDeviceType() == e_HIDeviceType_Keyboard) {
+      HIDKeyboard* keyboard = static_cast<HIDKeyboard*>(controller);
       if (keyboard->GetButtonValue(e_ButtonFunction_Left) > 0.5) {
         sides.at(i).side -= 1;
         moved = true;
@@ -216,11 +224,22 @@ void ControllerSelectPage::Process() {
         sides.at(i).side = 1;
         moved = true;
       }
-      if (moved) {
-        delay.at(i) = now_ms;
+    } else if (controller->GetDeviceType() == e_HIDeviceType_Gamepad) {
+      HIDGamepad* gamepad = static_cast<HIDGamepad*>(controller);
+      if (gamepad->GetButtonValue(e_ButtonFunction_Left) > 0.5) {
+        sides.at(i).side -= 1;
+        moved = true;
+      }
+      if (gamepad->GetButtonValue(e_ButtonFunction_Right) > 0.5) {
+        sides.at(i).side += 1;
+        moved = true;
       }
     }
-    sides.at(i).side = clamp(sides.at(i).side, -1, 1);
+
+    if (moved) {
+      sides.at(i).side = clamp(sides.at(i).side, -1, 1);
+      delay.at(i) = now_ms;
+    }
   }
 
   SetImagePositions();
@@ -232,27 +251,10 @@ void ControllerSelectPage::ProcessKeyboardEvent(KeyboardEvent* event) {
   (void)event;
 }
 
-void ControllerSelectPage::ProcessJoystickEvent(JoystickEvent*) {
-  const std::vector<IHIDevice*>& controllers = GetControllers();
-  for (unsigned int i = 1; i < controllers.size() && i < sides.size() && i < delay.size(); i++) {
-    if (controllers.at(i)->GetDeviceType() != e_HIDeviceType_Gamepad) {
-      continue;
-    }
-    if (delay.at(i) < EnvironmentManager::GetInstance().GetTime_ms() - 250) {
-      HIDGamepad* gamepad = static_cast<HIDGamepad*>(controllers.at(i));
-      if (gamepad->GetButtonValue(e_ButtonFunction_Left) > 0.5) {
-        sides.at(i).side -= 1;
-        delay.at(i) = EnvironmentManager::GetInstance().GetTime_ms();
-      }
-      if (gamepad->GetButtonValue(e_ButtonFunction_Right) > 0.5) {
-        sides.at(i).side += 1;
-        delay.at(i) = EnvironmentManager::GetInstance().GetTime_ms();
-      }
-      sides.at(i).side = clamp(sides.at(i).side, -1, 1);
-    }
-  }
-
-  SetImagePositions();
+void ControllerSelectPage::ProcessJoystickEvent(JoystickEvent* event) {
+  // Gamepad side selection is also handled by polling in Process(), exactly
+  // like the keyboard, so it does not rely on joystick events being delivered.
+  (void)event;
 }
 
 void ControllerSelectPage::ProcessWindowingEvent(WindowingEvent* event) {

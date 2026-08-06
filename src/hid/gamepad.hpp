@@ -13,7 +13,12 @@ using namespace blunted;
 
 class HIDGamepad : public IHIDevice {
 public:
-  HIDGamepad(int gamepadID);
+  // deviceIndex: SDL device index at connect time (used only for naming / the
+  //   config key, so it stays stable within a connection and across the
+  //   slot renumbering that happens on hotplug).
+  // gamepadID: the dense slot in UserEventManager used to sample this joystick.
+  //   This is kept dense 0..count-1 and renumbered when a device is removed.
+  HIDGamepad(int deviceIndex, int gamepadID);
   virtual ~HIDGamepad();
 
   virtual void LoadConfig();
@@ -45,8 +50,10 @@ public:
   }
 
   int GetGamepadID() { return gamepadID; }
+  void SetGamepadID(int id) { gamepadID = id; }
 
 protected:
+  int deviceIndex;
   int gamepadID;
   float controllerButtonState[e_ControllerButton_Size];
   float previousControllerButtonState[e_ControllerButton_Size];

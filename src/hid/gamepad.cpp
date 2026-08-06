@@ -9,9 +9,10 @@
 #include "base/utils.hpp"
 #include "managers/usereventmanager.hpp"
 
-HIDGamepad::HIDGamepad(int gamepadID) : gamepadID(gamepadID) {
+HIDGamepad::HIDGamepad(int deviceIndex, int gamepadID) : deviceIndex(deviceIndex),
+                                                         gamepadID(gamepadID) {
   deviceType = e_HIDeviceType_Gamepad;
-  identifier = std::string(SDL_JoystickNameForIndex(gamepadID)) + " #" + int_to_str(gamepadID);
+  identifier = std::string(SDL_JoystickNameForIndex(deviceIndex)) + " #" + int_to_str(deviceIndex);
 
   LoadConfig();
 }
