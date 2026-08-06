@@ -27,6 +27,10 @@ bool MenuSmokeFullMatchEnabled() {
   return GetConfiguration()->GetBool("menu_smoke_test_full_match", false);
 }
 
+bool MenuSmokeGamepadMatchEnabled() {
+  return GetConfiguration()->GetBool("menu_smoke_test_gamepad_match", false);
+}
+
 bool MenuSmokeAutoQuickMatchEnabled() {
   return MenuSmokeQuickMatchEnabled() || MenuSmokeFullMatchEnabled();
 }
@@ -154,11 +158,26 @@ void ControllerSelectPage::ConfirmSelection() {
     }
 
     if (MenuSmokeFullMatchEnabled()) {
-      for (auto& side : sides) {
-        side.side = 0;
+      if (MenuSmokeGamepadMatchEnabled()) {
+        // "gamepad controls" smoke: the scripted controller is Player 1, the
+        // other team is CPU. This drives the real HumanController path from a
+        // scripted HID device for the whole match.
+        const std::vector<IHIDevice*>& controllers = GetControllers();
+        for (auto& side : sides) {
+          bool scripted = side.controllerID >= 0 &&
+                          side.controllerID < static_cast<int>(controllers.size()) &&
+                          controllers.at(side.controllerID)->IsScriptedInput();
+          side.side = scripted ? -1 : 0;
+        }
+        SetImagePositions();
+        printf("[menu-smoke] Controller select: scripted gamepad drives Player 1, other team CPU\n");
+      } else {
+        for (auto& side : sides) {
+          side.side = 0;
+        }
+        SetImagePositions();
+        printf("[menu-smoke] Controller select switched to CPU vs CPU for full-match verification\n");
       }
-      SetImagePositions();
-      printf("[menu-smoke] Controller select switched to CPU vs CPU for full-match verification\n");
     }
 
     GetMenuTask()->SetControllerSetup(sides);

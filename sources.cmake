@@ -472,11 +472,13 @@ set(HID_HEADERS
    src/hid/gamepad.hpp
    src/hid/ihidevice.hpp
    src/hid/keyboard.hpp
+   src/hid/scriptedgamepad.hpp
 )
 
 set(HID_SOURCES
    src/hid/gamepad.cpp
    src/hid/keyboard.cpp
+   src/hid/scriptedgamepad.cpp
 )
 
 set(MENU_HEADERS

@@ -23,6 +23,7 @@
 #include "base/math/bluntmath.hpp"
 #include "base/utils.hpp"
 #include "framework/scheduler.hpp"
+#include "hid/scriptedgamepad.hpp"
 #include "main.hpp"
 #include "managers/resourcemanagerpool.hpp"
 #include "managers/scenemanager.hpp"
@@ -518,6 +519,14 @@ int main(int argc, const char** argv) {
     controllers.push_back(gamepad);
   }
 
+  // Headless "gamepad controls" smoke match: inject an autonomous scripted
+  // controller that drives a human team through the real input pipeline.
+  if (config->GetBool("menu_smoke_test_gamepad_match", false)) {
+    controllers.push_back(new ScriptedGamepad());
+    printf("[main] Scripted gamepad controller injected (%zu total controllers)\n",
+           controllers.size());
+  }
+
   // sequences
 
   std::mutex
@@ -539,10 +548,16 @@ int main(int argc, const char** argv) {
   TTF_SetFontOutline(defaultOutlineFont, 2);
   menuTask =
       std::shared_ptr<MenuTask>(new MenuTask(5.0f / 4.0f, 0, defaultFont, defaultOutlineFont));
-  if (controllers.size() > 1)
-    menuTask->SetEventJoyButtons(
-        static_cast<HIDGamepad*>(controllers.at(1))->GetControllerMapping(e_ControllerButton_A),
-        static_cast<HIDGamepad*>(controllers.at(1))->GetControllerMapping(e_ControllerButton_B));
+  // The first device after the keyboard is typically the primary gamepad that
+  // drives menu navigation. Guard against it not being a real HIDGamepad (e.g.
+  // when the scripted test controller is the only non-keyboard device).
+  if (controllers.size() > 1) {
+    HIDGamepad* menuGamepad = dynamic_cast<HIDGamepad*>(controllers.at(1));
+    if (menuGamepad) {
+      menuTask->SetEventJoyButtons(menuGamepad->GetControllerMapping(e_ControllerButton_A),
+                                   menuGamepad->GetControllerMapping(e_ControllerButton_B));
+    }
+  }
 
   gameSequence = std::shared_ptr<TaskSequence>(new TaskSequence("game", timeStep_ms, false));
 

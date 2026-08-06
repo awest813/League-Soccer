@@ -10,7 +10,7 @@
 
 using namespace blunted;
 
-enum e_HIDeviceType { e_HIDeviceType_Keyboard, e_HIDeviceType_Gamepad };
+enum e_HIDeviceType { e_HIDeviceType_Keyboard, e_HIDeviceType_Gamepad, e_HIDeviceType_Scripted };
 
 enum e_ButtonFunction {
   e_ButtonFunction_Up,
@@ -69,6 +69,10 @@ public:
 
   e_HIDeviceType GetDeviceType() const { return deviceType; }
   std::string GetIdentifier() const { return identifier; }
+
+  // True for the autonomous test controller (ScriptedGamepad) used by the
+  // headless "gamepad controls" smoke match. Real keyboards/gamepads are false.
+  virtual bool IsScriptedInput() const { return false; }
 
 protected:
   e_HIDeviceType deviceType;
