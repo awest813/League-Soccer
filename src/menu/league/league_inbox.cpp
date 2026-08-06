@@ -26,14 +26,6 @@ LeagueInboxPage::LeagueInboxPage(Gui2WindowManager* windowManager, const Gui2Pag
 
   RefreshMessages();
 
-  Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_inbox_back", 25, 92, 50, 3, "Back to Dashboard");
-  btnBack->sig_OnClick.connect([this](...) { GoBack(); });
-  frame->AddView(btnBack);
-  btnBack->Show();
-
-  btnBack->SetFocus();
-
   this->Show();
 }
 
@@ -58,13 +50,13 @@ void LeagueInboxPage::RefreshMessages() {
 
   messageGrid = new Gui2Grid(windowManager, "grid_inbox", 2, 9, 66, 78);
 
+  int row = 0;
   if (result->data.empty()) {
     Gui2Caption* emptyCap =
         new Gui2Caption(windowManager, "caption_inbox_empty", 0, 0, 86, 3,
                         "No messages yet. Messages will appear as you play matches.");
-    messageGrid->AddView(emptyCap, 0, 0);
+    messageGrid->AddView(emptyCap, row++, 0);
   } else {
-    int row = 0;
     for (const auto& r : result->data) {
       std::string msgID = r.at(0);
       std::string sender = r.at(1);
@@ -106,9 +98,19 @@ void LeagueInboxPage::RefreshMessages() {
     }
   }
 
+  // Back lives in the same grid so keyboard/gamepad can reach it too.
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_inbox_back", 0, 0, 86, 2.5, "Back to Dashboard");
+  btnBack->sig_OnClick.connect([this](...) { GoBack(); });
+  messageGrid->AddView(btnBack, row, 0);
+
   messageGrid->UpdateLayout(0.5);
   frame->AddView(messageGrid);
   messageGrid->Show();
+
+  if (messageGrid->IsSelectable()) {
+    messageGrid->SetFocus();
+  }
 }
 
 void LeagueInboxPage::DeleteMessage(int msgID) {

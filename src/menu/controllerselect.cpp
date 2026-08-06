@@ -7,6 +7,7 @@
 
 #include "../main.hpp"
 #include "mainmenu.hpp"
+#include "managers/usereventmanager.hpp"
 #include "pagefactory.hpp"
 #include "startmatch/teamselect.hpp"
 
@@ -99,12 +100,15 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
     if (inGame && i < sides.size()) {
       side.side = sides.at(i).side;
     } else {
+      // Always start on No Team (side 0): no device should auto-participate.
+      // Only the first gamepad is auto-selected as Player 1; the keyboard never
+      // is, so it is not forced into every match (think gamepad-only testing).
       side.side = 0;
-      if (i == 0 && controllers.size() < 2)
-        side.side = -1;  // autoselect 1st player == team 0 (side -1)
-      else if (i == 1)
-        side.side = -1;  // if more than 1 controller, we're likely to have a gamepad on id > 0, so
-                         // pick this one as auto p1 instead
+      if (!autoAssignedPlayerOne &&
+          controllers.at(i)->GetDeviceType() == e_HIDeviceType_Gamepad) {
+        side.side = -1;
+        autoAssignedPlayerOne = true;
+      }
     }
     side.controllerImage =
         new Gui2Image(windowManager, "image_controller" + int_to_str(i), 0, 0, 14, 10);
@@ -177,27 +181,55 @@ void ControllerSelectPage::Process() {
     autoAdvanceTriggered = true;
     ConfirmSelection();
   }
+
+  // Move the keyboard side selection by polling the HID state directly. This is
+  // deliberate: the keyboard must not depend on the GUI focus for receiving
+  // events (it otherwise stays stuck on its default side when focus is held by
+  // another widget), and it mirrors the focus-independent gamepad handling below.
+  const std::vector<IHIDevice*>& controllers = GetControllers();
+  if (controllers.empty() || sides.empty() || delay.empty()) {
+    return;
+  }
+  unsigned long now_ms = EnvironmentManager::GetInstance().GetTime_ms();
+  for (unsigned int i = 0; i < controllers.size() && i < sides.size() && i < delay.size(); i++) {
+    if (controllers.at(i)->GetDeviceType() != e_HIDeviceType_Keyboard) {
+      continue;
+    }
+    if (delay.at(i) < now_ms - 250) {
+      HIDKeyboard* keyboard = static_cast<HIDKeyboard*>(controllers.at(i));
+      bool moved = false;
+      if (keyboard->GetButtonValue(e_ButtonFunction_Left) > 0.5) {
+        sides.at(i).side -= 1;
+        moved = true;
+      }
+      if (keyboard->GetButtonValue(e_ButtonFunction_Right) > 0.5) {
+        sides.at(i).side += 1;
+        moved = true;
+      }
+      // One-keystroke hotkeys: jump straight to a team instead of tapping arrows.
+      // "1" = Team 1, "2" = Team 2. Most useful for keyboard-only players who now
+      // start on No Team by default.
+      if (UserEventManager::GetInstance().GetKeyboardState(SDLK_1)) {
+        sides.at(i).side = -1;
+        moved = true;
+      } else if (UserEventManager::GetInstance().GetKeyboardState(SDLK_2)) {
+        sides.at(i).side = 1;
+        moved = true;
+      }
+      if (moved) {
+        delay.at(i) = now_ms;
+      }
+    }
+    sides.at(i).side = clamp(sides.at(i).side, -1, 1);
+  }
+
+  SetImagePositions();
 }
 
 void ControllerSelectPage::ProcessKeyboardEvent(KeyboardEvent* event) {
-  const std::vector<IHIDevice*>& controllers = GetControllers();
-  if (controllers.empty() || sides.empty()) {
-    return;
-  }
-  IHIDevice* controller = controllers.at(0);
-  if (controller->GetDeviceType() != e_HIDeviceType_Keyboard) {
-    return;
-  }
-  HIDKeyboard* keyboard = static_cast<HIDKeyboard*>(controller);
-  if (event->GetKeyOnce(keyboard->GetFunctionMapping(e_ButtonFunction_Left))) {
-    sides.at(0).side -= 1;
-  }
-  if (event->GetKeyOnce(keyboard->GetFunctionMapping(e_ButtonFunction_Right))) {
-    sides.at(0).side += 1;
-  }
-  sides.at(0).side = clamp(sides.at(0).side, -1, 1);
-
-  SetImagePositions();
+  // Keyboard side selection is handled by polling the HID state in Process() so
+  // that it works regardless of GUI focus. Nothing to do with the event itself.
+  (void)event;
 }
 
 void ControllerSelectPage::ProcessJoystickEvent(JoystickEvent*) {

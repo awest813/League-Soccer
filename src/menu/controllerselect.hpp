@@ -34,6 +34,7 @@ protected:
   std::vector<SideSelection> sides;
   std::vector<unsigned long> delay;
   bool inGame;
+  bool autoAssignedPlayerOne = false;
   unsigned long pageCreatedTime_ms;
   bool autoAdvanceTriggered;
 };

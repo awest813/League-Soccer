@@ -1711,18 +1711,6 @@ CareerMatchdayPage::CareerMatchdayPage(Gui2WindowManager* windowManager,
   frame->AddView(subtitle);
   subtitle->Show();
 
-  Gui2Button* btnSimAll =
-      new Gui2Button(windowManager, "btn_md_simall", 50, 9, 38, 2, "Simulate All");
-  btnSimAll->sig_OnClick.connect([this](...) { SimulateAll(); });
-  frame->AddView(btnSimAll);
-  btnSimAll->Show();
-
-  Gui2Button* btnPlay =
-      new Gui2Button(windowManager, "btn_md_play", 2, 9, 46, 2, "Play Match (3D)");
-  btnPlay->sig_OnClick.connect([this](...) { PlayMatch(); });
-  frame->AddView(btnPlay);
-  btnPlay->Show();
-
   Gui2Caption* hint =
       new Gui2Caption(windowManager, "caption_matchday_hint", 2, 12, 88, 2,
                       "One league fixture per visit. Simulate for instant results, or Play Match "
@@ -1731,9 +1719,9 @@ CareerMatchdayPage::CareerMatchdayPage(Gui2WindowManager* windowManager,
   hint->Show();
 
   fixtureGrid = new Gui2Grid(windowManager, "grid_matchday", 2, 15, 88, 60);
-  frame->AddView(fixtureGrid);
-  fixtureGrid->Show();
-
+  // Primary actions, fixture controls and Back all live in this one grid so
+  // keyboard/gamepad direction keys can reach every control (a standalone
+  // button held focus before, keeping the grid out of keyboard reach).
   BuildFixtures();
   PopulateGrid();
 
@@ -1743,13 +1731,6 @@ CareerMatchdayPage::CareerMatchdayPage(Gui2WindowManager* windowManager,
 
   UpdateSummary();
 
-  Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_matchday_back", 30, 88, 40, 3, "Back to Hub");
-  btnBack->sig_OnClick.connect([this](...) { GoBack(); });
-  frame->AddView(btnBack);
-  btnBack->Show();
-
-  btnSimAll->SetFocus();
   this->Show();
 }
 
@@ -1801,8 +1782,20 @@ void CareerMatchdayPage::PopulateGrid() {
 
   fixtureGrid = new Gui2Grid(windowManager, "grid_matchday", 2, 15, 88, 60);
 
-  int numFixtures = static_cast<int>(m_opponents.size());
   int row = 0;
+
+  // Top action row: everything reachable by arrow keys / d-pad.
+  Gui2Button* btnPlayTop =
+      new Gui2Button(windowManager, "btn_md_playtop", 0, 0, 42, 2.5, "Play Match (3D)");
+  btnPlayTop->sig_OnClick.connect([this](...) { PlayMatch(); });
+  fixtureGrid->AddView(btnPlayTop, row, 0);
+
+  Gui2Button* btnSimAllTop =
+      new Gui2Button(windowManager, "btn_md_simalltop", 0, 0, 42, 2.5, "Simulate All");
+  btnSimAllTop->sig_OnClick.connect([this](...) { SimulateAll(); });
+  fixtureGrid->AddView(btnSimAllTop, row++, 1);
+
+  int numFixtures = static_cast<int>(m_opponents.size());
   for (int i = 0; i < numFixtures; i++) {
     const auto& res = m_results[i];
     const bool isHome = (i < static_cast<int>(m_isHome.size())) ? m_isHome[i] : true;
@@ -1861,9 +1854,17 @@ void CareerMatchdayPage::PopulateGrid() {
     }
   }
 
+  // Last row: Back to Hub, reachable by the same navigation as everything else.
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_matchday_back", 0, 0, 42, 2.5, "Back to Hub");
+  btnBack->sig_OnClick.connect([this](...) { GoBack(); });
+  fixtureGrid->AddView(btnBack, row++, 0);
+
   fixtureGrid->UpdateLayout(0.5);
   frame->AddView(fixtureGrid);
   fixtureGrid->Show();
+
+  btnPlayTop->SetFocus();
 
   UpdateSummary();
 }

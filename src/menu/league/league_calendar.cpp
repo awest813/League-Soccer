@@ -49,13 +49,6 @@ LeagueCalendarPage::LeagueCalendarPage(Gui2WindowManager* windowManager,
 
   RefreshFixtures();
 
-  Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_cal_back", 30, 92, 40, 3, "Back to Dashboard");
-  btnBack->sig_OnClick.connect([this](...) { GoBack(); });
-  frame->AddView(btnBack);
-  btnBack->Show();
-
-  this->SetFocus();
   this->Show();
 }
 
@@ -181,9 +174,19 @@ void LeagueCalendarPage::RefreshFixtures() {
     });
     fixturesGrid->AddView(btn, row++, 0);
   }
+  // Back lives in the same grid so keyboard/gamepad can reach it too.
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_cal_back", 0, 0, 86, 2.5, "Back to Dashboard");
+  btnBack->sig_OnClick.connect([this](...) { GoBack(); });
+  fixturesGrid->AddView(btnBack, row, 0);
+
   fixturesGrid->UpdateLayout(0.5);
   frame->AddView(fixturesGrid);
   fixturesGrid->Show();
+
+  if (fixturesGrid->IsSelectable()) {
+    fixturesGrid->SetFocus();
+  }
 }
 
 void LeagueCalendarPage::GoBack() {
