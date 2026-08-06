@@ -94,24 +94,27 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
     grid->AddView(btnWp, row, 6);
   }
 
+  // Keep Save and Back inside the same grid so keyboard/gamepad navigation can
+  // reach them (before, a standalone button beside the grid held focus and arrow
+  // keys never crossed into the +/- steppers).
+  const int footerRow = kNumPieces + 1;
+  Gui2Button* btnSave =
+      new Gui2Button(windowManager, "spe_save", 0, 0, 100, 3, "save");
+  btnSave->sig_OnClick.connect([this](...) { Save(); });
+  grid->AddView(btnSave, footerRow, 0);
+
+  Gui2Button* backBtn =
+      new Gui2Button(windowManager, "spe_back", 0, 0, 100, 3, "back");
+  backBtn->sig_OnClick.connect([this](...) { GoBack(); });
+  grid->AddView(backBtn, footerRow, 1);
+
   grid->UpdateLayout(0.5);
   this->AddView(grid);
   grid->Show();
 
   UpdateCaptions();
 
-  Gui2Button* btnSave =
-      new Gui2Button(windowManager, "spe_save", 30, 82, 20, 3, "save");
-  this->AddView(btnSave);
-  btnSave->Show();
-  btnSave->sig_OnClick.connect([this](...) { Save(); });
   btnSave->SetFocus();
-
-  Gui2Button* btnBack =
-      new Gui2Button(windowManager, "spe_back", 55, 82, 20, 3, "back");
-  this->AddView(btnBack);
-  btnBack->Show();
-  btnBack->sig_OnClick.connect([this](...) { GoBack(); });
 
   this->Show();
 }

@@ -226,9 +226,9 @@ LeagueTeamPlayerSelectionPage::LeagueTeamPlayerSelectionPage(Gui2WindowManager* 
   auto result = GetDB()->Query(
       "SELECT p.id, p.firstname, p.lastname, p.role FROM players p, teams t, settings s "
       "WHERE p.team_id = t.id AND t.id = s.team_id ORDER BY p.formationorder");
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_playersel", 2, 8, 66, 80);
+  int row = 0;
   if (!result->data.empty()) {
-    Gui2Grid* grid = new Gui2Grid(windowManager, "grid_playersel", 2, 8, 66, 80);
-    int row = 0;
     for (const auto& r : result->data) {
       std::string playerID = r.at(0);
       std::string label = r.at(1) + " " + r.at(2) + " (" + r.at(3) + ")";
@@ -256,21 +256,31 @@ LeagueTeamPlayerSelectionPage::LeagueTeamPlayerSelectionPage(Gui2WindowManager* 
       });
       grid->AddView(btn, row++, 0);
     }
-    grid->UpdateLayout(0.5);
-    frame->AddView(grid);
-    grid->Show();
+  } else {
+    Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_playersel_empty", 0, 0, 86, 3,
+                                            "No players in the squad.");
+    grid->AddView(emptyCap, row++, 0);
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playersel_back", 30, 90, 40, 3, "Back");
+  // Back lives in the same grid so keyboard/gamepad can reach it too.
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_playersel_back", 0, 0, 86, 2.5, "Back");
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
     windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Team), properties, 0);
     delete this;
   });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  this->SetFocus();
+  grid->AddView(btnBack, row, 0);
+
+  grid->UpdateLayout(0.5);
+  frame->AddView(grid);
+  grid->Show();
+
+  if (grid->IsSelectable()) {
+    grid->SetFocus();
+  }
+
   this->Show();
 }
 

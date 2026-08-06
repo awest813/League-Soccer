@@ -253,11 +253,9 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
     Gui2Button* btn = new Gui2Button(windowManager, "btn_table_" + tr.id, 0, 0, 90, 2.5, buf);
     grid->AddView(btn, row++, 0);
   }
-  grid->UpdateLayout(0.5);
-  frame->AddView(grid);
-  grid->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_table_back", 30, 92, 40, 3, "Back");
+  // Back lives in the same grid so keyboard/gamepad can reach it too.
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_table_back", 0, 0, 90, 2.5, "Back");
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -265,9 +263,16 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
                                                 properties, 0);
     delete this;
   });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  this->SetFocus();
+  grid->AddView(btnBack, row, 0);
+
+  grid->UpdateLayout(0.5);
+  frame->AddView(grid);
+  grid->Show();
+
+  if (grid->IsSelectable()) {
+    grid->SetFocus();
+  }
+
   this->Show();
 }
 

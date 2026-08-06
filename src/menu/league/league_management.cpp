@@ -154,9 +154,10 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
       "SELECT p.firstname, p.lastname, p.role, p.age FROM players p "
       "JOIN teams t ON p.team_id = t.id JOIN settings s ON t.id = s.team_id "
       "ORDER BY p.formationorder");
+
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_contracts", 2, 10, 66, 75);
+  int row = 0;
   if (!result->data.empty()) {
-    Gui2Grid* grid = new Gui2Grid(windowManager, "grid_contracts", 2, 10, 66, 75);
-    int row = 0;
     for (const auto& r : result->data) {
       std::string fullName = r.at(0) + " " + r.at(1);
       char buf[256];
@@ -193,21 +194,29 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
       });
       grid->AddView(btn, row++, 0);
     }
-    grid->UpdateLayout(0.5);
-    frame->AddView(grid);
-    grid->Show();
+  } else {
+    Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_contracts_empty", 0, 0, 86, 3,
+                                            "No players listed.");
+    grid->AddView(emptyCap, row++, 0);
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_contracts_back", 30, 92, 40, 3, "Back");
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
+  // Back lives in the same grid so keyboard/gamepad can reach it too.
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_contracts_back", 0, 0, 86, 2.5, "Back");
+  btnBack->sig_OnClick.connect([windowManager](...) {
     Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management), properties, 0);
-    delete this;
+    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management),
+                                                properties, 0);
   });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  this->SetFocus();
+  grid->AddView(btnBack, row, 0);
+
+  grid->UpdateLayout(0.5);
+  frame->AddView(grid);
+  grid->Show();
+
+  if (grid->IsSelectable()) {
+    grid->SetFocus();
+  }
+
   this->Show();
 }
 
@@ -296,22 +305,26 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
   } else {
     Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_transfers_empty", 0, 0, 86, 3,
                                             "No players available in the transfer market.");
-    grid->AddView(emptyCap, 0, 0);
+    grid->AddView(emptyCap, row++, 0);
   }
+
+  // Back lives in the same grid so keyboard/gamepad can reach it too.
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_transfers_back", 0, 0, 86, 2.5, "Back");
+  btnBack->sig_OnClick.connect([windowManager](...) {
+    Properties properties;
+    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management),
+                                                properties, 0);
+  });
+  grid->AddView(btnBack, row, 0);
+
   grid->UpdateLayout(0.5);
   frame->AddView(grid);
   grid->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_transfers_back", 25, 92, 50, 3, "Back");
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
-    Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management), properties, 0);
-    delete this;
-  });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
+  if (grid->IsSelectable()) {
+    grid->SetFocus();
+  }
+
   this->Show();
 }
 

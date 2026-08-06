@@ -138,40 +138,6 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
     root->AddView(infFrame);
     infFrame->Show();
-
-    Gui2Frame* quickFrame =
-        new Gui2Frame(windowManager, "frame_oh_quick", contentX, 55, contentW, 24, true);
-    Gui2Caption* quickTitle =
-        new Gui2Caption(windowManager, "cap_oh_quicktitle", 2, 1, contentW - 4, 2, "Quick Actions");
-    quickFrame->AddView(quickTitle);
-    quickTitle->Show();
-
-    Gui2Grid* quickGrid = new Gui2Grid(windowManager, "oh_quick_grid", 2, 4, contentW - 4, 18);
-    Gui2Button* btnQuickStadium =
-        new Gui2Button(windowManager, "btn_oh_q_stadium", 0, 0, 26, 3, "Upgrade Stadium");
-    Gui2Button* btnQuickFan =
-        new Gui2Button(windowManager, "btn_oh_q_fan", 0, 0, 26, 3, "Open Finances");
-    Gui2Button* btnQuickPrestige =
-        new Gui2Button(windowManager, "btn_oh_q_prestige", 0, 0, 26, 3, "Open Board Room");
-    Gui2Button* btnQuickSeason =
-        new Gui2Button(windowManager, "btn_oh_q_season", 0, 0, 26, 3, "Season Review");
-    Gui2Button* btnQuickMatchday =
-        new Gui2Button(windowManager, "btn_oh_q_matchday", 0, 0, 26, 3, "Play Matchday");
-    btnQuickStadium->sig_OnClick.connect([this](...) { GoStadium(); });
-    btnQuickFan->sig_OnClick.connect([this](...) { GoFinances(); });
-    btnQuickPrestige->sig_OnClick.connect([this](...) { GoBoardRoom(); });
-    btnQuickSeason->sig_OnClick.connect([this](...) { GoSeason(); });
-    btnQuickMatchday->sig_OnClick.connect([this](...) { GoMatchday(); });
-    quickGrid->AddView(btnQuickMatchday, 0, 0);
-    quickGrid->AddView(btnQuickSeason, 0, 1);
-    quickGrid->AddView(btnQuickStadium, 1, 0);
-    quickGrid->AddView(btnQuickFan, 1, 1);
-    quickGrid->AddView(btnQuickPrestige, 2, 0);
-    quickGrid->UpdateLayout(0.5);
-    quickFrame->AddView(quickGrid);
-    quickGrid->Show();
-    root->AddView(quickFrame);
-    quickFrame->Show();
   }
 
   Gui2Frame* navFrame = new Gui2Frame(windowManager, "frame_oh_nav", 3, 13, 25, 66, true);
@@ -206,6 +172,10 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
       new Gui2Button(windowManager, "btn_oh_season", 0, 0, 25, 4, "Advance Season");
   Gui2Button* btnMatchday =
       new Gui2Button(windowManager, "btn_oh_matchday", 0, 0, 25, 4, "Play Matchday");
+
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_oh_back_main", 0, 0, 25, 4, "Back to Career Modes");
+  btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerMenu); });
 
   btnStadium->sig_OnClick.connect([this](...) { GoStadium(); });
   btnFinances->sig_OnClick.connect([this](...) { GoFinances(); });
@@ -243,18 +213,15 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
   navGrid->AddView(btnSeason, row++, 0);
   navGrid->AddView(btnMatchday, row++, 0);
 
+  // Back lives in the same grid so it is reachable by arrows/d-pad too.
+  navGrid->AddView(btnBack, row++, 0);
+
   navGrid->UpdateLayout(0.5);
   navFrame->AddView(navGrid);
   navGrid->Show();
 
   root->AddView(navFrame);
   navFrame->Show();
-
-  Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_oh_back_main", 3, 83, 25, 3, "Back to Career Modes");
-  btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerMenu); });
-  root->AddView(btnBack);
-  btnBack->Show();
 
   btnMatchday->SetFocus();
   this->Show();
