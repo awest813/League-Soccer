@@ -17,9 +17,8 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
   this->AddView(bg);
   bg->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_matchhistory_title", 0, 8, 100, 4,
-                      Localization::GetInstance().Translate("matchhistory_title"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_matchhistory_title", 0, 8, 100, 4,
+                                       Localization::GetInstance().Translate("matchhistory_title"));
   title->SetPosition(50 - title->GetTextWidthPercent() / 2, 8);
   this->AddView(title);
   title->Show();
@@ -72,9 +71,8 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
   this->AddView(grid);
   grid->Show();
 
-  Gui2Button* buttonBack =
-      new Gui2Button(windowManager, "button_matchhistory_back", 40, 90, 20, 3,
-                     Localization::GetInstance().Translate("action_back"));
+  Gui2Button* buttonBack = new Gui2Button(windowManager, "button_matchhistory_back", 40, 90, 20, 3,
+                                          Localization::GetInstance().Translate("action_back"));
   this->AddView(buttonBack);
   buttonBack->Show();
   buttonBack->sig_OnClick.connect([this](...) { GoBack(); });

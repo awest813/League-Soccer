@@ -51,7 +51,8 @@ CameraPage::CameraPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
       new Gui2Button(windowManager, "cam_preset_widescreen", 0, 0, 30, 3, "Widescreen (16:9)");
   Gui2Button* buttonPresetUltrawide =
       new Gui2Button(windowManager, "cam_preset_ultrawide", 0, 0, 30, 3, "Ultrawide (21:9)");
-  Gui2Button* backButton = new Gui2Button(windowManager, "cam_button_back", 0, 0, 30, 3, Localization::GetInstance().Translate("action_back"));
+  Gui2Button* backButton = new Gui2Button(windowManager, "cam_button_back", 0, 0, 30, 3,
+                                          Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
 
   buttonPresetStandard->sig_OnClick.connect([this](...) { ApplyPreset(0.5f, 0.3f, 0.4f, 0.0f); });

@@ -4,7 +4,6 @@
 // :)
 
 #include "league.hpp"
-#include "utils/localization.hpp"
 
 #include <cctype>
 #include <chrono>
@@ -20,6 +19,7 @@
 #include "utils/gui2/widgets/frame.hpp"
 #include "utils/gui2/widgets/root.hpp"
 #include "utils/gui2/widgets/text.hpp"
+#include "utils/localization.hpp"
 
 namespace {
 
@@ -190,8 +190,8 @@ LeagueStartPage::LeagueStartPage(Gui2WindowManager* windowManager, const Gui2Pag
   Gui2Button* buttonNew =
       new Gui2Button(windowManager, "button_league_start_new", 0, 0, 30, 3, "Start New League");
   buttonNew->sig_OnClick.connect([this](...) { GoNew(); });
-  Gui2Button* buttonBack =
-      new Gui2Button(windowManager, "button_league_start_back", 0, 0, 30, 3, Localization::GetInstance().Translate("action_back"));
+  Gui2Button* buttonBack = new Gui2Button(windowManager, "button_league_start_back", 0, 0, 30, 3,
+                                          Localization::GetInstance().Translate("action_back"));
   buttonBack->sig_OnClick.connect([this](...) { GoBack(); });
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_start_choices", 5, 10, 90, 80);

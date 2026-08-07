@@ -55,24 +55,21 @@ MatchPhasePage::MatchPhasePage(Gui2WindowManager* windowManager, const Gui2PageD
   else if (nextPhase == e_MatchPhase_Penalties)
     phaseName = Localization::GetInstance().Translate("phase_penalties");
 
-  std::string phaseLabel =
-      Localization::GetInstance().Translate("phase_begin") + " " + phaseName;
+  std::string phaseLabel = Localization::GetInstance().Translate("phase_begin") + " " + phaseName;
 
   Gui2Frame* bgPanel = new Gui2Frame(windowManager, "bg_phase", 25, 25, 50, 50, true);
   this->AddView(bgPanel);
   bgPanel->Show();
 
-  Gui2Caption* phaseTitle =
-      new Gui2Caption(windowManager, "caption_phase", 2, 2, 46, 3,
-                      phaseName.empty() ? Localization::GetInstance().Translate("phase_match_phase")
-                                        : phaseName);
+  Gui2Caption* phaseTitle = new Gui2Caption(
+      windowManager, "caption_phase", 2, 2, 46, 3,
+      phaseName.empty() ? Localization::GetInstance().Translate("phase_match_phase") : phaseName);
   bgPanel->AddView(phaseTitle);
   phaseTitle->Show();
 
   buttonNext = new Gui2Button(windowManager, "button_next", 0, 0, 44, 4, phaseLabel);
-  Gui2Button* button1 = new Gui2Button(
-      windowManager, "button1", 0, 0, 44, 4,
-      Localization::GetInstance().Translate("phase_game_plan"));
+  Gui2Button* button1 = new Gui2Button(windowManager, "button1", 0, 0, 44, 4,
+                                       Localization::GetInstance().Translate("phase_game_plan"));
 
   buttonNext->sig_OnClick.connect([this](...) { ContinueGame(); });
   button1->sig_OnClick.connect([this](...) { GoGamePlan(); });

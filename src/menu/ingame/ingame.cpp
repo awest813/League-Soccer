@@ -31,19 +31,19 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
 
   unsigned long matchTime_ms = match->GetMatchTime_ms();
   int matchMinute = static_cast<int>(matchTime_ms / 60000);
-  if (matchMinute > 90) matchMinute = 90;
+  if (matchMinute > 90)
+    matchMinute = 90;
 
   char scoreBuf[256];
-  snprintf(scoreBuf, sizeof(scoreBuf), "%s  %d - %d  %s  (%d')",
-           team0Name.c_str(), score0, score1, team1Name.c_str(), matchMinute);
+  snprintf(scoreBuf, sizeof(scoreBuf), "%s  %d - %d  %s  (%d')", team0Name.c_str(), score0, score1,
+           team1Name.c_str(), matchMinute);
 
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_ingame", 20, 8, 60, 84, true);
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_ingame_title", 2, 2, 56, 3,
-                      Localization::GetInstance().Translate("ingame_pause"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_ingame_title", 2, 2, 56, 3,
+                                       Localization::GetInstance().Translate("ingame_pause"));
   frame->AddView(title);
   title->Show();
 
@@ -105,9 +105,8 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
                       Localization::GetInstance().Translate("ingame_section_media"));
   grid->AddView(mediaLabel, row++, 0);
 
-  Gui2Button* buttonReplay = new Gui2Button(
-      windowManager, "button_replay", 0, 0, 56, 3,
-      Localization::GetInstance().Translate("ingame_replay"));
+  Gui2Button* buttonReplay = new Gui2Button(windowManager, "button_replay", 0, 0, 56, 3,
+                                            Localization::GetInstance().Translate("ingame_replay"));
   buttonReplay->sig_OnClick.connect([this](...) { GoReplay(); });
   grid->AddView(buttonReplay, row++, 0);
 
@@ -135,9 +134,8 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   frame->AddView(grid);
   grid->Show();
 
-  Gui2Caption* hintCaption =
-      new Gui2Caption(windowManager, "caption_ingame_hint", 2, 92, 56, 2,
-                      Localization::GetInstance().Translate("ingame_hint"));
+  Gui2Caption* hintCaption = new Gui2Caption(windowManager, "caption_ingame_hint", 2, 92, 56, 2,
+                                             Localization::GetInstance().Translate("ingame_hint"));
   frame->AddView(hintCaption);
   hintCaption->Show();
 
@@ -208,9 +206,8 @@ PreQuitPage::PreQuitPage(Gui2WindowManager* windowManager, const Gui2PageData& p
   Gui2Caption* restartCaption =
       new Gui2Caption(windowManager, "caption_prequit_info", 0, 0, 100, 3,
                       Localization::GetInstance().Translate("ingame_forfeit_confirm"));
-  Gui2Button* okButton =
-      new Gui2Button(windowManager, "button_prequit_ok", 10, 0, 30, 3,
-                     Localization::GetInstance().Translate("ingame_forfeit"));
+  Gui2Button* okButton = new Gui2Button(windowManager, "button_prequit_ok", 10, 0, 30, 3,
+                                        Localization::GetInstance().Translate("ingame_forfeit"));
   Gui2Button* cancelButton =
       new Gui2Button(windowManager, "button_prequit_cancel", 10, 0, 30, 3,
                      Localization::GetInstance().Translate("ingame_continue_match"));

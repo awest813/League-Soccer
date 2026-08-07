@@ -24,8 +24,7 @@ GamePlanPage::GamePlanPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
   Gui2Caption* header = new Gui2Caption(
       windowManager, "gameplan_header", xOffset, 11, 35, 3,
-      Localization::GetInstance().Translate("gameplan_header") + " " +
-          int_to_str(teamID + 1));
+      Localization::GetInstance().Translate("gameplan_header") + " " + int_to_str(teamID + 1));
   grid = new Gui2Grid(windowManager, "gameplan_grid", xOffset, 15, 0, 0);
   gridNav = new Gui2Grid(windowManager, "gameplan_grid_navigation", xOffset, 0, 0, 0);
 
@@ -171,9 +170,9 @@ void GamePlanPage::SaveLineup() {
       unsigned int formationorder = i;
 
       // find player
-      auto result = namedb->Query(
-          "select id from playernames where fakefirstname = \"" + playerData->GetFirstName() +
-          "\" and fakelastname = \"" + playerData->GetLastName() + "\" limit 1;");
+      auto result = namedb->Query("select id from playernames where fakefirstname = \"" +
+                                  playerData->GetFirstName() + "\" and fakelastname = \"" +
+                                  playerData->GetLastName() + "\" limit 1;");
       int playerDatabaseID = -1;
       if (result->data.size() > 0) {
         playerDatabaseID = atoi(result->data.at(0).at(0).c_str());
@@ -250,7 +249,7 @@ void GamePlanPage::SaveTactics() {
 
     // find club
     auto result = namedb->Query("select id from clubnames where faketargetname = \"" +
-                                           teamData->GetName() + "\" limit 1;");
+                                teamData->GetName() + "\" limit 1;");
     int teamDatabaseID = -1;
     if (result->data.size() > 0) {
       teamDatabaseID = atoi(result->data.at(0).at(0).c_str());

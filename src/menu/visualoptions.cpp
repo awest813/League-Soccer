@@ -48,8 +48,8 @@ VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui
       windowManager, "button_visualoptions_randomizesun", 0, 0, 20, 3, "Randomize sun position");
   randomizeSunButton->sig_OnClick.connect([this](...) { OnRandomizeSun(); });
 
-  Gui2Button* backButton =
-      new Gui2Button(windowManager, "button_visualoptions_back", 0, 0, 20, 3, Localization::GetInstance().Translate("action_back"));
+  Gui2Button* backButton = new Gui2Button(windowManager, "button_visualoptions_back", 0, 0, 20, 3,
+                                          Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
 
   grid->AddView(kitSelectionCaption1, 0, 0);

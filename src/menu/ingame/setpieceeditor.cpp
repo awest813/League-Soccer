@@ -48,13 +48,11 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
     int row = i + 1;
     std::string sfx = std::to_string(i);
 
-    grid->AddView(
-        new Gui2Caption(windowManager, "spe_name_" + sfx, 0, 0, 20, 3, kPieceNames[i]),
-        row, 0);
+    grid->AddView(new Gui2Caption(windowManager, "spe_name_" + sfx, 0, 0, 20, 3, kPieceNames[i]),
+                  row, 0);
 
     // Depth - button
-    Gui2Button* btnDm =
-        new Gui2Button(windowManager, "spe_dm_" + sfx, 0, 0, 6, 3, "-");
+    Gui2Button* btnDm = new Gui2Button(windowManager, "spe_dm_" + sfx, 0, 0, 6, 3, "-");
     btnDm->sig_OnClick.connect([this, i](...) {
       params[i].formation_depth = std::max(0.05f, params[i].formation_depth - 0.05f);
       UpdateCaptions();
@@ -65,8 +63,7 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
     grid->AddView(depthCaption[i], row, 2);
 
     // Depth + button
-    Gui2Button* btnDp =
-        new Gui2Button(windowManager, "spe_dp_" + sfx, 0, 0, 6, 3, "+");
+    Gui2Button* btnDp = new Gui2Button(windowManager, "spe_dp_" + sfx, 0, 0, 6, 3, "+");
     btnDp->sig_OnClick.connect([this, i](...) {
       params[i].formation_depth = std::min(1.0f, params[i].formation_depth + 0.05f);
       UpdateCaptions();
@@ -74,8 +71,7 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
     grid->AddView(btnDp, row, 3);
 
     // Width - button
-    Gui2Button* btnWm =
-        new Gui2Button(windowManager, "spe_wm_" + sfx, 0, 0, 6, 3, "-");
+    Gui2Button* btnWm = new Gui2Button(windowManager, "spe_wm_" + sfx, 0, 0, 6, 3, "-");
     btnWm->sig_OnClick.connect([this, i](...) {
       params[i].formation_width = std::max(0.05f, params[i].formation_width - 0.05f);
       UpdateCaptions();
@@ -86,8 +82,7 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
     grid->AddView(widthCaption[i], row, 5);
 
     // Width + button
-    Gui2Button* btnWp =
-        new Gui2Button(windowManager, "spe_wp_" + sfx, 0, 0, 6, 3, "+");
+    Gui2Button* btnWp = new Gui2Button(windowManager, "spe_wp_" + sfx, 0, 0, 6, 3, "+");
     btnWp->sig_OnClick.connect([this, i](...) {
       params[i].formation_width = std::min(1.0f, params[i].formation_width + 0.05f);
       UpdateCaptions();
@@ -99,14 +94,12 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
   // reach them (before, a standalone button beside the grid held focus and arrow
   // keys never crossed into the +/- steppers).
   const int footerRow = kNumPieces + 1;
-  Gui2Button* btnSave =
-      new Gui2Button(windowManager, "spe_save", 0, 0, 100, 3, "save");
+  Gui2Button* btnSave = new Gui2Button(windowManager, "spe_save", 0, 0, 100, 3, "save");
   btnSave->sig_OnClick.connect([this](...) { Save(); });
   grid->AddView(btnSave, footerRow, 0);
 
-  Gui2Button* backBtn =
-      new Gui2Button(windowManager, "spe_back", 0, 0, 100, 3,
-                     Localization::GetInstance().Translate("action_back"));
+  Gui2Button* backBtn = new Gui2Button(windowManager, "spe_back", 0, 0, 100, 3,
+                                       Localization::GetInstance().Translate("action_back"));
   backBtn->sig_OnClick.connect([this](...) { GoBack(); });
   grid->AddView(backBtn, footerRow, 1);
 

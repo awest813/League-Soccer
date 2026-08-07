@@ -1,14 +1,14 @@
 #include "league_management.hpp"
-#include "utils/localization.hpp"
 
 #include <string>
 
 #include "../../main.hpp"
-#include "menu_smoke.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
+#include "menu_smoke.hpp"
 #include "utils/gui2/widgets/dialog.hpp"
 #include "utils/gui2/widgets/text.hpp"
+#include "utils/localization.hpp"
 
 LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
                                            const Gui2PageData& pageData)
@@ -32,7 +32,7 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_league_management", 8, 5, 84, 90, true);
   this->AddView(frame);
   frame->Show();
- 
+
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_league_management", 3, 2, 36, 3, "Management");
   frame->AddView(title);
@@ -44,7 +44,8 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   frame->AddView(subtitle);
   subtitle->Show();
 
-  Gui2Frame* actionPanel = new Gui2Frame(windowManager, "frame_management_actions", 3, 14, 38, 62, true);
+  Gui2Frame* actionPanel =
+      new Gui2Frame(windowManager, "frame_management_actions", 3, 14, 38, 62, true);
   frame->AddView(actionPanel);
   actionPanel->Show();
 
@@ -53,9 +54,12 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   actionPanel->AddView(actionTitle);
   actionTitle->Show();
 
-  Gui2Button* btnContracts = new Gui2Button(windowManager, "btn_management_contracts", 0, 0, 60, 3, "Contracts");
-  Gui2Button* btnTransfers = new Gui2Button(windowManager, "btn_management_transfers", 0, 0, 60, 3, "Transfers");
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_management_back", 0, 0, 60, 3, "Back to Dashboard");
+  Gui2Button* btnContracts =
+      new Gui2Button(windowManager, "btn_management_contracts", 0, 0, 60, 3, "Contracts");
+  Gui2Button* btnTransfers =
+      new Gui2Button(windowManager, "btn_management_transfers", 0, 0, 60, 3, "Transfers");
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_management_back", 0, 0, 60, 3, "Back to Dashboard");
 
   btnContracts->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Management_Contracts); });
   btnTransfers->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Management_Transfers); });
@@ -69,7 +73,8 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   actionPanel->AddView(grid);
   grid->Show();
 
-  Gui2Frame* summaryPanel = new Gui2Frame(windowManager, "frame_management_summary", 45, 14, 36, 27, true);
+  Gui2Frame* summaryPanel =
+      new Gui2Frame(windowManager, "frame_management_summary", 45, 14, 36, 27, true);
   frame->AddView(summaryPanel);
   summaryPanel->Show();
 
@@ -84,7 +89,8 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   summaryPanel->AddView(summaryBody);
   summaryBody->Show();
 
-  Gui2Frame* marketPanel = new Gui2Frame(windowManager, "frame_management_market", 45, 45, 36, 31, true);
+  Gui2Frame* marketPanel =
+      new Gui2Frame(windowManager, "frame_management_market", 45, 45, 36, 31, true);
   frame->AddView(marketPanel);
   marketPanel->Show();
 
@@ -93,9 +99,9 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   marketPanel->AddView(marketTitle);
   marketTitle->Show();
 
-  Gui2Caption* marketBody =
-      new Gui2Caption(windowManager, "caption_management_market_body", 2, 6, 30, 10,
-                      marketTargets + " external players in the database\nStart with the highest-rated options");
+  Gui2Caption* marketBody = new Gui2Caption(
+      windowManager, "caption_management_market_body", 2, 6, 30, 10,
+      marketTargets + " external players in the database\nStart with the highest-rated options");
   marketPanel->AddView(marketBody);
   marketBody->Show();
 
@@ -109,8 +115,7 @@ void LeagueManagementPage::Process() {
   Gui2Page::Process();
 
   if (autoAdvanceTriggered ||
-      league_menu_smoke::Now_ms() <
-          pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
+      league_menu_smoke::Now_ms() < pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
     return;
   }
 
@@ -140,9 +145,9 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_league_contracts", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
- 
+
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_management_contracts", 2, 2,
-                                        66, 3, "Contracts");
+                                       66, 3, "Contracts");
   frame->AddView(title);
   title->Show();
 
@@ -162,19 +167,23 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
     for (const auto& r : result->data) {
       std::string fullName = r.at(0) + " " + r.at(1);
       char buf[256];
-      snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s",
-               fullName.c_str(), r.at(2).c_str(), r.at(3).c_str());
+      snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s", fullName.c_str(), r.at(2).c_str(),
+               r.at(3).c_str());
       std::string btnLabel(buf);
-      Gui2Button* btn = new Gui2Button(windowManager, "btn_contract_" + std::to_string(row), 0, 0, 86, 2.5, btnLabel);
+      Gui2Button* btn = new Gui2Button(windowManager, "btn_contract_" + std::to_string(row), 0, 0,
+                                       86, 2.5, btnLabel);
       btn->sig_OnClick.connect([this, windowManager, fullName](...) {
         auto detail = GetDB()->Query(
             "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
             "FROM players p JOIN teams t ON p.team_id = t.id "
             "JOIN settings s ON t.id = s.team_id "
-            "WHERE p.firstname || ' ' || p.lastname = '" + fullName + "' LIMIT 1");
-        Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_contract_detail", 25, 20, 50, 60, fullName);
+            "WHERE p.firstname || ' ' || p.lastname = '" +
+            fullName + "' LIMIT 1");
+        Gui2Dialog* dlg =
+            new Gui2Dialog(windowManager, "dialog_contract_detail", 25, 20, 50, 60, fullName);
         if (!detail->data.empty()) {
-          Gui2Text* txt = new Gui2Text(windowManager, "text_contract_detail", 5, 5, 90, 80, 2.5, 40, "");
+          Gui2Text* txt =
+              new Gui2Text(windowManager, "text_contract_detail", 5, 5, 90, 80, 2.5, 40, "");
           const auto& d = detail->data.at(0);
           txt->AddText("Name: " + d.at(0) + " " + d.at(1));
           txt->AddText("Role: " + d.at(2));
@@ -202,7 +211,8 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
   }
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_contracts_back", 0, 0, 86, 2.5, Localization::GetInstance().Translate("action_back"));
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_contracts_back", 0, 0, 86, 2.5,
+                                       Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([windowManager](...) {
     Properties properties;
     windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management),
@@ -227,8 +237,7 @@ void LeagueManagementContractsPage::Process() {
   Gui2Page::Process();
 
   if (!league_menu_smoke::RouteEnabled("management_contracts") || autoAdvanceTriggered ||
-      league_menu_smoke::Now_ms() <
-          pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
+      league_menu_smoke::Now_ms() < pageCreatedTime_ms + league_menu_smoke::kQuitDelay_ms) {
     return;
   }
 
@@ -238,19 +247,20 @@ void LeagueManagementContractsPage::Process() {
 }
 
 LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* windowManager,
-                                                              const Gui2PageData& pageData)
+                                                             const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_league_transfers", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
- 
+
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_management_transfers", 2, 2,
-                                        66, 3, "Transfer Market");
+                                       66, 3, "Transfer Market");
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* header = new Gui2Caption(windowManager, "caption_transfers_header", 2, 6, 66, 2,
-                                        "Name                  | Role                | Age | Stat | Team");
+  Gui2Caption* header =
+      new Gui2Caption(windowManager, "caption_transfers_header", 2, 6, 66, 2,
+                      "Name                  | Role                | Age | Stat | Team");
   frame->AddView(header);
   header->Show();
 
@@ -268,21 +278,22 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
       std::string playerID = r.at(0);
       std::string fullName = r.at(1) + " " + r.at(2);
       char buf[256];
-      snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s | %3s  | %s",
-               fullName.c_str(), r.at(3).c_str(), r.at(4).c_str(), r.at(5).c_str(), r.at(6).c_str());
+      snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s | %3s  | %s", fullName.c_str(),
+               r.at(3).c_str(), r.at(4).c_str(), r.at(5).c_str(), r.at(6).c_str());
       std::string btnLabel(buf);
-      Gui2Button* btn = new Gui2Button(windowManager, "btn_transfer_" + std::to_string(row),
-                                       0, 0, 86, 2.5, btnLabel);
+      Gui2Button* btn = new Gui2Button(windowManager, "btn_transfer_" + std::to_string(row), 0, 0,
+                                       86, 2.5, btnLabel);
       btn->sig_OnClick.connect([this, windowManager, playerID, fullName](...) {
         auto detail = GetDB()->Query(
             "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
             "FROM players p JOIN teams t ON p.team_id = t.id "
-            "WHERE p.id = " + playerID);
-        Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_transfer_" + playerID,
-                                         20, 15, 60, 70, fullName);
+            "WHERE p.id = " +
+            playerID);
+        Gui2Dialog* dlg =
+            new Gui2Dialog(windowManager, "dialog_transfer_" + playerID, 20, 15, 60, 70, fullName);
         if (!detail->data.empty()) {
-          Gui2Text* txt = new Gui2Text(windowManager, "text_transfer_" + playerID,
-                                        5, 5, 90, 60, 2.5, 40, "");
+          Gui2Text* txt =
+              new Gui2Text(windowManager, "text_transfer_" + playerID, 5, 5, 90, 60, 2.5, 40, "");
           const auto& d = detail->data.at(0);
           txt->AddText("Name: " + d.at(0) + " " + d.at(1));
           txt->AddText("Role: " + d.at(2));
@@ -310,7 +321,8 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
   }
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_transfers_back", 0, 0, 86, 2.5, Localization::GetInstance().Translate("action_back"));
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_transfers_back", 0, 0, 86, 2.5,
+                                       Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([windowManager](...) {
     Properties properties;
     windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management),

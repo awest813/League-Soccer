@@ -8,9 +8,9 @@
 #include <filesystem>
 
 #include "../../main.hpp"
-#include "utils/localization.hpp"
 #include "../pagefactory.hpp"
 #include "utils/database.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -70,9 +70,8 @@ int AddTeams(Gui2IconSelector* selector, const std::string& competition_id) {
     return 0;
   }
 
-  auto result = GetDB()->Query(
-      "select id, name, logo_url, kit_url from teams where league_id = " + competition_id +
-      " order by name");
+  auto result = GetDB()->Query("select id, name, logo_url, kit_url from teams where league_id = " +
+                               competition_id + " order by name");
   int teamCount = 0;
 
   for (unsigned int r = 0; r < result->data.size(); r++) {
@@ -133,9 +132,8 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
                                      "Team select");
   buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 29, 3, "Ready");
   buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 29, 3, "Ready");
-  Gui2Button* buttonBack =
-      new Gui2Button(windowManager, "teamselect_button_back", 0, 0, 29, 3,
-                     Localization::GetInstance().Translate("action_back"));
+  Gui2Button* buttonBack = new Gui2Button(windowManager, "teamselect_button_back", 0, 0, 29, 3,
+                                          Localization::GetInstance().Translate("action_back"));
 
   competitionSelect1->sig_OnClick.connect([this](...) { FocusTeamSelect1(); });
   teamSelect1->sig_OnClick.connect([this](...) { FocusStart1(); });

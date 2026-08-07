@@ -48,7 +48,8 @@ Gui2Caption* AddControllerSelectNotice(Gui2Page* page, Gui2WindowManager* window
 
 Gui2Button* AddControllerSelectBackButton(Gui2Page* page, Gui2WindowManager* windowManager,
                                           const std::string& name, float yPercent = 72.0f) {
-  Gui2Button* backButton = new Gui2Button(windowManager, name, 38, yPercent, 24, 3, Localization::GetInstance().Translate("action_back"));
+  Gui2Button* backButton = new Gui2Button(windowManager, name, 38, yPercent, 24, 3,
+                                          Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([page](...) { page->GoBack(); });
   page->AddView(backButton);
   backButton->Show();
@@ -170,13 +171,15 @@ void ControllerSelectPage::ConfirmSelection() {
           side.side = scripted ? -1 : 0;
         }
         SetImagePositions();
-        printf("[menu-smoke] Controller select: scripted gamepad drives Player 1, other team CPU\n");
+        printf(
+            "[menu-smoke] Controller select: scripted gamepad drives Player 1, other team CPU\n");
       } else {
         for (auto& side : sides) {
           side.side = 0;
         }
         SetImagePositions();
-        printf("[menu-smoke] Controller select switched to CPU vs CPU for full-match verification\n");
+        printf(
+            "[menu-smoke] Controller select switched to CPU vs CPU for full-match verification\n");
       }
     }
 

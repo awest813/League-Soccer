@@ -87,9 +87,8 @@ void ReplayPage::UpdateTimeLabel() {
   unsigned long elapsed_ms = actualTime_ms - minTime_ms;
   float positionPct = (replaySize_ms > 0) ? (elapsed_ms * 100.0f / replaySize_ms) : 0.0f;
   unsigned long secsAgo = (maxTime_ms - actualTime_ms) / 1000;
-  std::string label = std::string(slowMotion ? "[0.5x] " : "") +
-                      int_to_str(elapsed_ms / 1000) + "s / " +
-                      int_to_str(replaySize_ms / 1000) + "s  (" +
+  std::string label = std::string(slowMotion ? "[0.5x] " : "") + int_to_str(elapsed_ms / 1000) +
+                      "s / " + int_to_str(replaySize_ms / 1000) + "s  (" +
                       int_to_str(static_cast<int>(round(positionPct))) + "%)  -" +
                       int_to_str(secsAgo) + "s";
   timeLabel->SetCaption(label);
@@ -169,9 +168,8 @@ void ReplayPage::ProcessJoystickEvent(JoystickEvent* event) {
       event->GetButton(0, gamepad->GetControllerMapping(gamepad->GetFunctionMapping(
                               e_ButtonFunction_Shot)));  // need 2 options because maybe the first
                                                          // is set to gui's 'escape' function
-  bool slowMo =
-      event->GetButton(0, gamepad->GetControllerMapping(
-                              gamepad->GetFunctionMapping(e_ButtonFunction_Sprint)));
+  bool slowMo = event->GetButton(
+      0, gamepad->GetControllerMapping(gamepad->GetFunctionMapping(e_ButtonFunction_Sprint)));
 
   Vector3 direction;
   direction.coords[0] = event->GetAxis(0, 0);

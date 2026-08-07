@@ -44,7 +44,8 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   resetNetting = false;
   nettingHasChanged = false;
 
-  matchDurationFactor = GetConfiguration()->GetReal("match_duration", _default_MatchDuration) * 0.2f + 0.05f;
+  matchDurationFactor =
+      GetConfiguration()->GetReal("match_duration", _default_MatchDuration) * 0.2f + 0.05f;
   matchTimeScale = std::max(1.0f, GetConfiguration()->GetReal("menu_smoke_match_time_scale", 1.0f));
   matchDifficulty = GetConfiguration()->GetReal("match_difficulty", _default_Difficulty);
 

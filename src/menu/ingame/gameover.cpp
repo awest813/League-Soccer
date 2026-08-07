@@ -79,10 +79,9 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->AddView(new Gui2Caption(windowManager, "caption_possession_t1", 0, 0, 25, 3,
                                 int_to_str(possession1Pct) + "%"),
                 0, 0);
-  grid->AddView(
-      new Gui2Caption(windowManager, "caption_possession_header", 0, 0, 35, 3,
-                      Localization::GetInstance().Translate("gameover_possession")),
-      0, 1);
+  grid->AddView(new Gui2Caption(windowManager, "caption_possession_header", 0, 0, 35, 3,
+                                Localization::GetInstance().Translate("gameover_possession")),
+                0, 1);
   grid->AddView(new Gui2Caption(windowManager, "caption_possession_t2", 0, 0, 10, 3,
                                 int_to_str(possession2Pct) + "%"),
                 0, 2);
