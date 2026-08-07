@@ -48,7 +48,7 @@ See [ROADMAP.md](ROADMAP.md) for planned features including replay systems, care
 
 | Platform | Builds | Runs | Notes |
 |----------|--------|------|-------|
-| Linux    | ✅     | ✅   | Debian/Fedora/Arch/openSUSE + Docker; one-shot `./build.sh` |
+| Linux    | ✅     | ✅   | Debian/Ubuntu/Mint, Fedora/RHEL, Arch/Manjaro, openSUSE, Void, Alpine, Gentoo, NixOS + Docker; one-shot `./build.sh` |
 | macOS    | ✅     | ✅   | Homebrew + CI on macOS 14 |
 | Windows  | ✅     | ✅   | MSVC + vcpkg; runnable CI artifact |
 
@@ -65,15 +65,24 @@ right dependencies for your distro and then build + run the game:
 git clone https://github.com/awest813/League-Soccer.git
 cd League-Soccer
 
-./build.sh          # installs deps (apt/dnf/pacman/zypper) + builds the game
+./build.sh          # installs deps (auto-detects your package manager) + builds
 ./run.sh            # launches it
 ```
 On Windows the equivalent is `.\build.ps1` then `.\run.ps1` — see [Windows](#windows).
 
 `build.sh` options: `--debug`, `--clean`, `--no-deps` (skip the dep install),
 `--jobs N`. Run `./build.sh --help` for the full list. Dependencies are
-detected automatically for **Debian/Ubuntu/Mint**, **Fedora/RHEL**,
-**Arch/Manjaro**, and **openSUSE**; on other distros see the manual steps below.
+detected automatically (via `/etc/os-release`) for **Debian/Ubuntu/Mint/Devuan**,
+**Fedora/RHEL**, **Arch/Manjaro**, **openSUSE**, **Void**, **Alpine**, and
+**Gentoo**; on other distros see the manual steps below.
+
+**NixOS** is declarative, so the script instead points you to a ready-made
+dev-shell rather than installing system packages:
+
+```bash
+nix develop      # or: nix-shell
+./build.sh --no-deps
+```
 
 <details>
 <summary>Manual build (advanced)</summary>

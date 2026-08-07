@@ -13,7 +13,7 @@
 #   --debug      Debug build with assertions
 #   --clean      Remove build/ before building
 #   --no-deps    Skip the dependency-install step (use the system libraries)
-#   --jobs N     Parallel compile jobs (default: number of CPUs)
+#   --jobs N     Parallel compile jobs (default: memory-aware, ~3 GiB/job)
 #   --help, -h   Show this message
 #
 # Examples:

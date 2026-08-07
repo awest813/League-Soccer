@@ -9,7 +9,7 @@
 #   ./run.sh [options] [-- extra args passed to the game]
 #
 # Options:
-#   --debug      Run the Debug binary (build/gameplayfootball in either layout)
+#   --debug      Prefer the Debug binary (build/Debug/) when built
 #   --help, -h   Show this message
 
 set -euo pipefail
@@ -21,9 +21,10 @@ usage() {
   exit 0
 }
 
+DEBUG=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --debug|-d) shift ;;
+    --debug|-d) DEBUG=true; shift ;;
     --help|-h)  usage ;;
     --)         shift; break ;;
     *)          break ;;
@@ -35,10 +36,23 @@ EXTRA_ARGS=("$@")
 
 # Locate the executable + assets. The CMake POST_BUILD step copies assets
 # beside the binary, so wherever gameplayfootball is, the assets are too.
+# With --debug, prefer the nested Debug layout (used by multi-config
+# generators); otherwise prefer a plain layout from build.sh.
 BIN=""
-for candidate in \
-    "${SCRIPT_DIR}/build/gameplayfootball" \
-    "${SCRIPT_DIR}/build/Debug/gameplayfootball"; do
+if [[ "${DEBUG}" == true ]]; then
+  candidates=(
+    "${SCRIPT_DIR}/build/Debug/gameplayfootball"
+    "${SCRIPT_DIR}/build/gameplayfootball"
+    "${SCRIPT_DIR}/build/Release/gameplayfootball"
+  )
+else
+  candidates=(
+    "${SCRIPT_DIR}/build/gameplayfootball"
+    "${SCRIPT_DIR}/build/Debug/gameplayfootball"
+    "${SCRIPT_DIR}/build/Release/gameplayfootball"
+  )
+fi
+for candidate in "${candidates[@]}"; do
   if [[ -x "${candidate}" ]]; then
     BIN="${candidate}"
     break
