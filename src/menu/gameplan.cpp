@@ -7,6 +7,7 @@
 
 #include "../main.hpp"
 #include "mainmenu.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -21,24 +22,31 @@ GamePlanPage::GamePlanPage(Gui2WindowManager* windowManager, const Gui2PageData&
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* header = new Gui2Caption(windowManager, "gameplan_header", xOffset, 11, 35, 3,
-                                        "Team " + int_to_str(teamID + 1) + " game plan");
+  Gui2Caption* header = new Gui2Caption(
+      windowManager, "gameplan_header", xOffset, 11, 35, 3,
+      Localization::GetInstance().Translate("gameplan_header") + " " +
+          int_to_str(teamID + 1));
   grid = new Gui2Grid(windowManager, "gameplan_grid", xOffset, 15, 0, 0);
   gridNav = new Gui2Grid(windowManager, "gameplan_grid_navigation", xOffset, 0, 0, 0);
 
   map = new Gui2PlanMap(windowManager, "gameplan_planmap", 0, 0, 35, 28, teamData);
-  buttonLineup = new Gui2Button(windowManager, "gameplan_button_lineup", 0, 0, 34, 3, "Line-up");
-  buttonTactics = new Gui2Button(windowManager, "gameplan_button_tactics", 0, 0, 34, 3, "Tactics");
+  buttonLineup = new Gui2Button(windowManager, "gameplan_button_lineup", 0, 0, 34, 3,
+                                Localization::GetInstance().Translate("gameplan_lineup"));
+  buttonTactics = new Gui2Button(windowManager, "gameplan_button_tactics", 0, 0, 34, 3,
+                                 Localization::GetInstance().Translate("gameplan_tactics"));
   Gui2Button* buttonFormation =
-      new Gui2Button(windowManager, "gameplan_button_formation", 0, 0, 34, 3, "Formation");
+      new Gui2Button(windowManager, "gameplan_button_formation", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("gameplan_formation"));
 
   buttonLineup->sig_OnClick.connect([this](...) { GoLineupMenu(); });
   buttonTactics->sig_OnClick.connect([this](...) { GoTacticsMenu(); });
 
   if (IsReleaseVersion()) {
     buttonLineup->SetActive(false);
-    buttonFormation->SetActive(false);
   }
+  // "Formation" has no handler (dead button); keep it visibly disabled in every
+  // build so it never reads as actionable.
+  buttonFormation->SetActive(false);
 
   this->sig_OnClose.connect([this](...) { OnClose(); });
 
@@ -84,6 +92,9 @@ void GamePlanPage::Reactivate() {
   grid->AddView(gridNav, 1, 0);
   grid->UpdateLayout(0.0);
   gridNav->Show();
+  // Restore keyboard/gamepad focus after returning from a sub-menu, otherwise
+  // navigation can be left dangling.
+  buttonTactics->SetFocus();
 }
 
 Vector3 GamePlanPage::GetButtonColor(int id) {

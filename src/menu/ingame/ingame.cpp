@@ -13,6 +13,7 @@
 #include "../settings.hpp"
 #include "main.hpp"
 #include "replaymenu.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -31,7 +32,6 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   unsigned long matchTime_ms = match->GetMatchTime_ms();
   int matchMinute = static_cast<int>(matchTime_ms / 60000);
   if (matchMinute > 90) matchMinute = 90;
-  else if (matchMinute > 45) matchMinute = 45 + (matchMinute - 45);
 
   char scoreBuf[256];
   snprintf(scoreBuf, sizeof(scoreBuf), "%s  %d - %d  %s  (%d')",
@@ -42,7 +42,8 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_ingame_title", 2, 2, 56, 3, "PAUSE");
+      new Gui2Caption(windowManager, "caption_ingame_title", 2, 2, 56, 3,
+                      Localization::GetInstance().Translate("ingame_pause"));
   frame->AddView(title);
   title->Show();
 
@@ -58,30 +59,38 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   int row = 0;
 
   Gui2Caption* tacticsLabel =
-      new Gui2Caption(windowManager, "caption_ingame_section_tactics", 0, 0, 56, 2, "-- Tactics --");
+      new Gui2Caption(windowManager, "caption_ingame_section_tactics", 0, 0, 56, 2,
+                      Localization::GetInstance().Translate("ingame_section_tactics"));
   grid->AddView(tacticsLabel, row++, 0);
 
   Gui2Button* buttonGamePlan =
-      new Gui2Button(windowManager, "button_gameplan", 0, 0, 56, 3, "Game Plan");
+      new Gui2Button(windowManager, "button_gameplan", 0, 0, 56, 3,
+                     Localization::GetInstance().Translate("ingame_game_plan"));
   Gui2Button* buttonSetPieces =
-      new Gui2Button(windowManager, "button_setpieces", 0, 0, 56, 3, "Set Pieces");
+      new Gui2Button(windowManager, "button_setpieces", 0, 0, 56, 3,
+                     Localization::GetInstance().Translate("ingame_set_pieces"));
   buttonGamePlan->sig_OnClick.connect([this](...) { GoGamePlan(); });
   buttonSetPieces->sig_OnClick.connect([this](...) { GoSetPieceEditor(); });
   grid->AddView(buttonGamePlan, row++, 0);
   grid->AddView(buttonSetPieces, row++, 0);
 
   Gui2Caption* settingsLabel =
-      new Gui2Caption(windowManager, "caption_ingame_section_settings", 0, 0, 56, 2, "-- Settings --");
+      new Gui2Caption(windowManager, "caption_ingame_section_settings", 0, 0, 56, 2,
+                      Localization::GetInstance().Translate("ingame_section_settings"));
   grid->AddView(settingsLabel, row++, 0);
 
   Gui2Button* buttonControllerSelect =
-      new Gui2Button(windowManager, "button_controllerselect", 0, 0, 56, 3, "Controller Select");
+      new Gui2Button(windowManager, "button_controllerselect", 0, 0, 56, 3,
+                     Localization::GetInstance().Translate("ingame_controller_select"));
   Gui2Button* buttonCameraSettings =
-      new Gui2Button(windowManager, "button_camerasettings", 0, 0, 56, 3, "Camera Settings");
+      new Gui2Button(windowManager, "button_camerasettings", 0, 0, 56, 3,
+                     Localization::GetInstance().Translate("ingame_camera_settings"));
   Gui2Button* buttonVisualOptions =
-      new Gui2Button(windowManager, "button_visualoptions", 0, 0, 56, 3, "Visual Options");
+      new Gui2Button(windowManager, "button_visualoptions", 0, 0, 56, 3,
+                     Localization::GetInstance().Translate("ingame_visual_options"));
   Gui2Button* buttonSystemSettings =
-      new Gui2Button(windowManager, "button_systemsettings", 0, 0, 56, 3, "System Settings");
+      new Gui2Button(windowManager, "button_systemsettings", 0, 0, 56, 3,
+                     Localization::GetInstance().Translate("ingame_system_settings"));
   buttonControllerSelect->sig_OnClick.connect([this](...) { GoControllerSelect(); });
   buttonCameraSettings->sig_OnClick.connect([this](...) { GoCameraSettings(); });
   buttonVisualOptions->sig_OnClick.connect([this](...) { GoVisualOptions(); });
@@ -92,21 +101,27 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   grid->AddView(buttonSystemSettings, row++, 0);
 
   Gui2Caption* mediaLabel =
-      new Gui2Caption(windowManager, "caption_ingame_section_media", 0, 0, 56, 2, "-- Media --");
+      new Gui2Caption(windowManager, "caption_ingame_section_media", 0, 0, 56, 2,
+                      Localization::GetInstance().Translate("ingame_section_media"));
   grid->AddView(mediaLabel, row++, 0);
 
-  Gui2Button* buttonReplay = new Gui2Button(windowManager, "button_replay", 0, 0, 56, 3, "Replay");
+  Gui2Button* buttonReplay = new Gui2Button(
+      windowManager, "button_replay", 0, 0, 56, 3,
+      Localization::GetInstance().Translate("ingame_replay"));
   buttonReplay->sig_OnClick.connect([this](...) { GoReplay(); });
   grid->AddView(buttonReplay, row++, 0);
 
   Gui2Caption* exitLabel =
-      new Gui2Caption(windowManager, "caption_ingame_section_exit", 0, 0, 56, 2, "-- Match --");
+      new Gui2Caption(windowManager, "caption_ingame_section_exit", 0, 0, 56, 2,
+                      Localization::GetInstance().Translate("ingame_section_match"));
   grid->AddView(exitLabel, row++, 0);
 
   Gui2Button* buttonResume =
-      new Gui2Button(windowManager, "button_resume", 0, 0, 56, 3, "Resume Match");
+      new Gui2Button(windowManager, "button_resume", 0, 0, 56, 3,
+                     Localization::GetInstance().Translate("ingame_resume_match"));
   Gui2Button* buttonPreQuit =
-      new Gui2Button(windowManager, "button_quit", 0, 0, 56, 3, "Forfeit Match");
+      new Gui2Button(windowManager, "button_quit", 0, 0, 56, 3,
+                     Localization::GetInstance().Translate("ingame_forfeit_match"));
   buttonResume->sig_OnClick.connect([this](...) {
     GetMenuTask()->ReleaseAllButtons();
     GetGameTask()->GetMatch()->Pause(false);
@@ -122,7 +137,7 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
 
   Gui2Caption* hintCaption =
       new Gui2Caption(windowManager, "caption_ingame_hint", 2, 92, 56, 2,
-                      "Press ESC to resume");
+                      Localization::GetInstance().Translate("ingame_hint"));
   frame->AddView(hintCaption);
   hintCaption->Show();
 
@@ -190,12 +205,15 @@ PreQuitPage::PreQuitPage(Gui2WindowManager* windowManager, const Gui2PageData& p
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* restartCaption = new Gui2Caption(windowManager, "caption_prequit_info", 0, 0, 100, 3,
-                                                "Are you sure you want to forfeit this match?");
+  Gui2Caption* restartCaption =
+      new Gui2Caption(windowManager, "caption_prequit_info", 0, 0, 100, 3,
+                      Localization::GetInstance().Translate("ingame_forfeit_confirm"));
   Gui2Button* okButton =
-      new Gui2Button(windowManager, "button_prequit_ok", 10, 0, 30, 3, "Forfeit");
+      new Gui2Button(windowManager, "button_prequit_ok", 10, 0, 30, 3,
+                     Localization::GetInstance().Translate("ingame_forfeit"));
   Gui2Button* cancelButton =
-      new Gui2Button(windowManager, "button_prequit_cancel", 10, 0, 30, 3, "Continue Match");
+      new Gui2Button(windowManager, "button_prequit_cancel", 10, 0, 30, 3,
+                     Localization::GetInstance().Translate("ingame_continue_match"));
   okButton->sig_OnClick.connect([this](...) { GoMenu(); });
   cancelButton->sig_OnClick.connect([this](...) { GoBack(); });
 

@@ -1,4 +1,5 @@
 #include "league_standings.hpp"
+#include "utils/localization.hpp"
 
 #include <algorithm>
 #include <map>
@@ -255,7 +256,7 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
   }
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_table_back", 0, 0, 90, 2.5, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_table_back", 0, 0, 90, 2.5, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -346,7 +347,7 @@ LeagueStandingsLeagueStatsPage::LeagueStandingsLeagueStatsPage(Gui2WindowManager
   grid->Show();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_league_stats_back", 30, 92, 40, 3, "Back");
+      new Gui2Button(windowManager, "btn_league_stats_back", 30, 92, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -380,7 +381,7 @@ LeagueStandingsNCupPage::LeagueStandingsNCupPage(Gui2WindowManager* windowManage
   frame->AddView(info);
   info->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_ncup_back", 30, 92, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_ncup_back", 30, 92, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings); });
   frame->AddView(btnBack);
   btnBack->Show();
@@ -415,7 +416,7 @@ LeagueStandingsNCupTreePage::LeagueStandingsNCupTreePage(Gui2WindowManager* wind
   frame->AddView(info);
   info->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_ncup_tree_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_ncup_tree_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -450,7 +451,7 @@ LeagueStandingsNCupStatsPage::LeagueStandingsNCupStatsPage(Gui2WindowManager* wi
   frame->AddView(info);
   info->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_ncup_stats_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_ncup_stats_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -484,7 +485,7 @@ LeagueStandingsICup1Page::LeagueStandingsICup1Page(Gui2WindowManager* windowMana
   frame->AddView(info);
   info->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings); });
   frame->AddView(btnBack);
   btnBack->Show();
@@ -520,7 +521,7 @@ LeagueStandingsICup1GroupTablePage::LeagueStandingsICup1GroupTablePage(
   frame->AddView(info);
   info->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_gt_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_gt_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -555,7 +556,7 @@ LeagueStandingsICup1TreePage::LeagueStandingsICup1TreePage(Gui2WindowManager* wi
   frame->AddView(info);
   info->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_tree_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_tree_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -591,7 +592,7 @@ LeagueStandingsICup1StatsPage::LeagueStandingsICup1StatsPage(Gui2WindowManager* 
   info->Show();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_icup1_stats_back", 30, 90, 40, 3, "Back");
+      new Gui2Button(windowManager, "btn_icup1_stats_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -625,7 +626,7 @@ LeagueStandingsICup2Page::LeagueStandingsICup2Page(Gui2WindowManager* windowMana
   frame->AddView(info);
   info->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings); });
   frame->AddView(btnBack);
   btnBack->Show();
@@ -661,7 +662,7 @@ LeagueStandingsICup2GroupTablePage::LeagueStandingsICup2GroupTablePage(
   frame->AddView(info);
   info->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_gt_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_gt_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -696,7 +697,7 @@ LeagueStandingsICup2TreePage::LeagueStandingsICup2TreePage(Gui2WindowManager* wi
   frame->AddView(info);
   info->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_tree_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_tree_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -732,7 +733,7 @@ LeagueStandingsICup2StatsPage::LeagueStandingsICup2StatsPage(Gui2WindowManager* 
   info->Show();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_icup2_stats_back", 30, 90, 40, 3, "Back");
+      new Gui2Button(windowManager, "btn_icup2_stats_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;

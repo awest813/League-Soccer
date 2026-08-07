@@ -11,6 +11,8 @@
 #include "../career/career_database.hpp"
 #include "../pagefactory.hpp"
 #include "main.hpp"
+#include "utils/gui2/events.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -49,7 +51,8 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   frame->AddView(header);
   header->Show();
 
-  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 55, 82, 20, 3, "Continue");
+  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 55, 82, 20, 3,
+                              Localization::GetInstance().Translate("gameover_continue"));
   frame->AddView(buttonOkay);
   buttonOkay->Show();
   buttonOkay->sig_OnClick.connect([this](...) { GoMainMenu(); });
@@ -69,20 +72,26 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_gameover_stats", 15, 25, 70, 50);
 
+  float totalPossession = possession1 + possession2;
+  int possession1Pct = (totalPossession > 0) ? round(possession1 / totalPossession * 100) : 50;
+  int possession2Pct = (totalPossession > 0) ? round(possession2 / totalPossession * 100) : 50;
+
+  grid->AddView(new Gui2Caption(windowManager, "caption_possession_t1", 0, 0, 25, 3,
+                                int_to_str(possession1Pct) + "%"),
+                0, 0);
   grid->AddView(
-      new Gui2Caption(windowManager, "caption_possession_t1", 0, 0, 25, 3,
-                      int_to_str(round(possession1 / (possession1 + possession2) * 100)) + "%"),
-      0, 0);
-  grid->AddView(
-      new Gui2Caption(windowManager, "caption_possession_header", 0, 0, 35, 3, "Possession"), 0, 1);
-  grid->AddView(
-      new Gui2Caption(windowManager, "caption_possession_t2", 0, 0, 10, 3,
-                      int_to_str(round(possession2 / (possession1 + possession2) * 100)) + "%"),
-      0, 2);
+      new Gui2Caption(windowManager, "caption_possession_header", 0, 0, 35, 3,
+                      Localization::GetInstance().Translate("gameover_possession")),
+      0, 1);
+  grid->AddView(new Gui2Caption(windowManager, "caption_possession_t2", 0, 0, 10, 3,
+                                int_to_str(possession2Pct) + "%"),
+                0, 2);
 
   grid->AddView(new Gui2Caption(windowManager, "caption_shots_t1", 0, 0, 25, 3, int_to_str(shots1)),
                 1, 0);
-  grid->AddView(new Gui2Caption(windowManager, "caption_shots_header", 0, 0, 35, 3, "Shots"), 1, 1);
+  grid->AddView(new Gui2Caption(windowManager, "caption_shots_header", 0, 0, 35, 3,
+                                Localization::GetInstance().Translate("gameover_shots")),
+                1, 1);
   grid->AddView(new Gui2Caption(windowManager, "caption_shots_t2", 0, 0, 10, 3, int_to_str(shots2)),
                 1, 2);
 
@@ -94,8 +103,9 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->AddView(new Gui2Caption(windowManager, "caption_sot_t1", 0, 0, 25, 3,
                                 shotOnTargetStr(shotsOnTarget1, shots1)),
                 2, 0);
-  grid->AddView(
-      new Gui2Caption(windowManager, "caption_sot_header", 0, 0, 35, 3, "Shots on target"), 2, 1);
+  grid->AddView(new Gui2Caption(windowManager, "caption_sot_header", 0, 0, 35, 3,
+                                Localization::GetInstance().Translate("gameover_shots_on_target")),
+                2, 1);
   grid->AddView(new Gui2Caption(windowManager, "caption_sot_t2", 0, 0, 10, 3,
                                 shotOnTargetStr(shotsOnTarget2, shots2)),
                 2, 2);
@@ -109,15 +119,18 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->AddView(new Gui2Caption(windowManager, "caption_passacc_t1", 0, 0, 25, 3,
                                 passAccStr(passComp1, passes1)),
                 3, 0);
-  grid->AddView(
-      new Gui2Caption(windowManager, "caption_passacc_header", 0, 0, 35, 3, "Pass accuracy"), 3, 1);
+  grid->AddView(new Gui2Caption(windowManager, "caption_passacc_header", 0, 0, 35, 3,
+                                Localization::GetInstance().Translate("gameover_pass_accuracy")),
+                3, 1);
   grid->AddView(new Gui2Caption(windowManager, "caption_passacc_t2", 0, 0, 10, 3,
                                 passAccStr(passComp2, passes2)),
                 3, 2);
 
   grid->AddView(new Gui2Caption(windowManager, "caption_fouls_t1", 0, 0, 25, 3, int_to_str(fouls1)),
                 4, 0);
-  grid->AddView(new Gui2Caption(windowManager, "caption_fouls_header", 0, 0, 35, 3, "Fouls"), 4, 1);
+  grid->AddView(new Gui2Caption(windowManager, "caption_fouls_header", 0, 0, 35, 3,
+                                Localization::GetInstance().Translate("gameover_fouls")),
+                4, 1);
   grid->AddView(new Gui2Caption(windowManager, "caption_fouls_t2", 0, 0, 10, 3, int_to_str(fouls2)),
                 4, 2);
 
@@ -128,8 +141,11 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
   buttonOkay->SetFocus();
 
-  // Auto-save match result to history
-  {
+  // Auto-save match result to history. Guarded so re-entering this page (e.g.
+  // returning from Match History) does not append a duplicate record.
+  if (!match->GetMatchData()->IsHistorySaved()) {
+    match->GetMatchData()->SetHistorySaved(true);
+
     float poss1 = match->GetMatchData()->GetPossessionTime_ms(0);
     float poss2 = match->GetMatchData()->GetPossessionTime_ms(1);
     float totalPoss = poss1 + poss2;
@@ -166,7 +182,8 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   }
 
   Gui2Button* buttonHistory =
-      new Gui2Button(windowManager, "button_gameover_history", 25, 82, 20, 3, "Match History");
+      new Gui2Button(windowManager, "button_gameover_history", 25, 82, 20, 3,
+                     Localization::GetInstance().Translate("gameover_match_history"));
   frame->AddView(buttonHistory);
   buttonHistory->Show();
   buttonHistory->sig_OnClick.connect([this](...) {
@@ -192,6 +209,17 @@ void GameOverPage::Process() {
            match->GetTeam(1)->GetTeamData()->GetName().c_str());
     printf("[menu-smoke] Full-match verification succeeded, quitting test run\n");
     EnvironmentManager::GetInstance().SignalQuit();
+  }
+}
+
+void GameOverPage::ProcessWindowingEvent(WindowingEvent* event) {
+  if (event->IsEscape()) {
+    // The match is over; ESC should return to the main menu like "Continue"
+    // rather than walking back into the (now finished) match/game flow.
+    GoMainMenu();
+    return;
+  } else {
+    event->Ignore();
   }
 }
 

@@ -30,6 +30,7 @@ MatchData::MatchData(int team1DatabaseID, int team2DatabaseID) {
   foulsCommitted[1] = 0;
 
   possession60seconds = 0.0f;
+  historySaved = false;
 }
 
 void MatchData::AddPossessionTime_10ms(int teamID) {

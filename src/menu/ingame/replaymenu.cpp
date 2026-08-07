@@ -5,6 +5,7 @@
 
 #include "replaymenu.hpp"
 
+#include "../../hid/gamepad.hpp"
 #include "../../hid/keyboard.hpp"
 #include "framework/scheduler.hpp"
 #include "main.hpp"
@@ -104,7 +105,16 @@ void ReplayPage::Process() {
 
 void ReplayPage::ProcessKeyboardEvent(KeyboardEvent* event) {
   const std::vector<IHIDevice*>& controllers = GetControllers();
-  HIDKeyboard* keyboard = static_cast<HIDKeyboard*>(controllers.at(0));
+  HIDKeyboard* keyboard = nullptr;
+  for (IHIDevice* c : controllers) {
+    if (c && c->GetDeviceType() == e_HIDeviceType_Keyboard) {
+      keyboard = static_cast<HIDKeyboard*>(c);
+      break;
+    }
+  }
+  if (!keyboard) {
+    return;
+  }
 
   bool button1 = false;
   bool button2 = false;
@@ -132,8 +142,20 @@ void ReplayPage::ProcessKeyboardEvent(KeyboardEvent* event) {
 void ReplayPage::ProcessJoystickEvent(JoystickEvent* event) {
   int controllerID = 0;
   const std::vector<IHIDevice*>& controllers = GetControllers();
-  HIDGamepad* gamepad = static_cast<HIDGamepad*>(controllers.at(
-      controllerID + 1));  // todo: check if we can be sure this is actually a joystick/gamepad
+
+  // Find the gamepad driving Player 1. Do not assume the keyboard is at index 0
+  // and a gamepad at index 1 - with no pad connected that cast would be OOB.
+  HIDGamepad* gamepad = nullptr;
+  for (IHIDevice* c : controllers) {
+    if (c && c->GetDeviceType() == e_HIDeviceType_Gamepad) {
+      gamepad = static_cast<HIDGamepad*>(c);
+      break;
+    }
+  }
+  if (!gamepad) {
+    return;
+  }
+
   bool button1 =
       event->GetButton(0, gamepad->GetControllerMapping(
                               gamepad->GetFunctionMapping(e_ButtonFunction_LongPass))) ||

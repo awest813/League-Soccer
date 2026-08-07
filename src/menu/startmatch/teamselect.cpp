@@ -8,6 +8,7 @@
 #include <filesystem>
 
 #include "../../main.hpp"
+#include "utils/localization.hpp"
 #include "../pagefactory.hpp"
 #include "utils/database.hpp"
 
@@ -132,6 +133,9 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
                                      "Team select");
   buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 29, 3, "Ready");
   buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 29, 3, "Ready");
+  Gui2Button* buttonBack =
+      new Gui2Button(windowManager, "teamselect_button_back", 0, 0, 29, 3,
+                     Localization::GetInstance().Translate("action_back"));
 
   competitionSelect1->sig_OnClick.connect([this](...) { FocusTeamSelect1(); });
   teamSelect1->sig_OnClick.connect([this](...) { FocusStart1(); });
@@ -139,6 +143,7 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
   competitionSelect2->sig_OnClick.connect([this](...) { FocusTeamSelect2(); });
   teamSelect2->sig_OnClick.connect([this](...) { FocusStart2(); });
   buttonStart2->sig_OnClick.connect([this](...) { GoOptionsMenu(); });
+  buttonBack->sig_OnClick.connect([this](...) { StepBack(); });
 
   competitionSelect1->sig_OnChange.connect([this](...) { SetupTeamSelect1(); });
   competitionSelect2->sig_OnChange.connect([this](...) { SetupTeamSelect2(); });
@@ -149,6 +154,7 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
   grid1->AddView(competitionSelect1, 0, 0);
   grid1->AddView(teamSelect1, 1, 0);
   grid1->AddView(buttonStart1, 2, 0);
+  grid1->AddView(buttonBack, 3, 0);
   grid1->UpdateLayout(0.5);
   grid1->Show();
 
@@ -294,6 +300,32 @@ void TeamSelectPage::GoOptionsMenu() {
   windowManager->GetPageFactory()->CreatePage((int)e_PageID_MatchOptions, properties, 0);
 
   delete this;
+}
+
+void TeamSelectPage::StepBack() {
+  // Mirrors the Escape key walk in ProcessWindowingEvent() so the visible
+  // "Back" button behaves identically: step up one focus level, and leave the
+  // page (to ControllerSelect) when already at the first selection.
+  Gui2View* focus = windowManager->GetFocus();
+  if (focus == competitionSelect1) {
+    GoBack();
+  } else if (focus == teamSelect1) {
+    windowManager->SetFocus(competitionSelect1);
+  } else if (focus == buttonStart1) {
+    windowManager->SetFocus(teamSelect1);
+  } else if (focus == competitionSelect2) {
+    windowManager->SetFocus(buttonStart1);
+    p2->Hide();
+    grid2->Hide();
+    frame2->Hide();
+    SetActiveController(-1, true);
+  } else if (focus == teamSelect2) {
+    windowManager->SetFocus(competitionSelect2);
+  } else if (focus == buttonStart2) {
+    windowManager->SetFocus(teamSelect2);
+  } else {
+    GoBack();
+  }
 }
 
 void TeamSelectPage::ProcessWindowingEvent(WindowingEvent* event) {

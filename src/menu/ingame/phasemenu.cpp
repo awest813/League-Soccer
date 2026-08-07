@@ -8,6 +8,7 @@
 #include "../gameplan.hpp"
 #include "../pagefactory.hpp"
 #include "main.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -46,15 +47,16 @@ MatchPhasePage::MatchPhasePage(Gui2WindowManager* windowManager, const Gui2PageD
 
   std::string phaseName;
   if (nextPhase == e_MatchPhase_2ndHalf)
-    phaseName = "second half";
+    phaseName = Localization::GetInstance().Translate("phase_2nd_half");
   else if (nextPhase == e_MatchPhase_1stExtraTime)
-    phaseName = "1st extra time";
+    phaseName = Localization::GetInstance().Translate("phase_1st_extra_time");
   else if (nextPhase == e_MatchPhase_2ndExtraTime)
-    phaseName = "2nd extra time";
+    phaseName = Localization::GetInstance().Translate("phase_2nd_extra_time");
   else if (nextPhase == e_MatchPhase_Penalties)
-    phaseName = "penalties";
+    phaseName = Localization::GetInstance().Translate("phase_penalties");
 
-  std::string phaseLabel = "begin " + phaseName;
+  std::string phaseLabel =
+      Localization::GetInstance().Translate("phase_begin") + " " + phaseName;
 
   Gui2Frame* bgPanel = new Gui2Frame(windowManager, "bg_phase", 25, 25, 50, 50, true);
   this->AddView(bgPanel);
@@ -62,12 +64,15 @@ MatchPhasePage::MatchPhasePage(Gui2WindowManager* windowManager, const Gui2PageD
 
   Gui2Caption* phaseTitle =
       new Gui2Caption(windowManager, "caption_phase", 2, 2, 46, 3,
-                      phaseName.empty() ? "Match Phase" : phaseName);
+                      phaseName.empty() ? Localization::GetInstance().Translate("phase_match_phase")
+                                        : phaseName);
   bgPanel->AddView(phaseTitle);
   phaseTitle->Show();
 
   buttonNext = new Gui2Button(windowManager, "button_next", 0, 0, 44, 4, phaseLabel);
-  Gui2Button* button1 = new Gui2Button(windowManager, "button1", 0, 0, 44, 4, "game plan");
+  Gui2Button* button1 = new Gui2Button(
+      windowManager, "button1", 0, 0, 44, 4,
+      Localization::GetInstance().Translate("phase_game_plan"));
 
   buttonNext->sig_OnClick.connect([this](...) { ContinueGame(); });
   button1->sig_OnClick.connect([this](...) { GoGamePlan(); });

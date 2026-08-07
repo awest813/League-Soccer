@@ -53,7 +53,7 @@ Gui2Caption* AddSettingsNotice(Gui2Page* page, Gui2WindowManager* windowManager,
 
 Gui2Button* AddSettingsBackButton(Gui2Page* page, Gui2WindowManager* windowManager,
                                   const std::string& name, float yPercent = 78.0f) {
-  Gui2Button* backButton = new Gui2Button(windowManager, name, 38, yPercent, 24, 3, "Back");
+  Gui2Button* backButton = new Gui2Button(windowManager, name, 38, yPercent, 24, 3, Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([page](...) { page->GoBack(); });
   page->AddView(backButton);
   backButton->Show();
@@ -90,7 +90,7 @@ SettingsPage::SettingsPage(Gui2WindowManager* windowManager, const Gui2PageData&
       new Gui2Button(windowManager, "button_language", 0, 0, 30, 4,
                      Localization::GetInstance().Translate("settings_language"));
   Gui2Button* buttonBack =
-      new Gui2Button(windowManager, "button_settings_back", 0, 0, 30, 4, "Back");
+      new Gui2Button(windowManager, "button_settings_back", 0, 0, 30, 4, Localization::GetInstance().Translate("action_back"));
 
   buttonGameplay->sig_OnClick.connect([this](...) { GoGameplay(); });
   buttonController->sig_OnClick.connect([this](...) { GoController(); });
@@ -260,7 +260,7 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
   gridMain->AddView(slider_Quantization, 9, 0);
 
   Gui2Button* backButton =
-      new Gui2Button(windowManager, "button_settings_gameplay_back", 0, 0, 30, 3, "Back");
+      new Gui2Button(windowManager, "button_settings_gameplay_back", 0, 0, 30, 3, Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
   gridMain->AddView(backButton, 10, 0);
 
@@ -342,7 +342,7 @@ ControllerPage::ControllerPage(Gui2WindowManager* windowManager, const Gui2PageD
       new Gui2Button(windowManager, "button_gamepads", 0, 0, 30, 4,
                      Localization::GetInstance().Translate("controller_gamepads"));
   Gui2Button* buttonBack =
-      new Gui2Button(windowManager, "button_settings_controller_back", 0, 0, 30, 4, "Back");
+      new Gui2Button(windowManager, "button_settings_controller_back", 0, 0, 30, 4, Localization::GetInstance().Translate("action_back"));
 
   buttonKeyboard->sig_OnClick.connect([this](...) { GoKeyboard(); });
   buttonGamepads->sig_OnClick.connect([this](...) { GoGamepads(); });
@@ -557,7 +557,7 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   wrapperGrid->AddView(grid, 1, 0);
 
   Gui2Button* backButton =
-      new Gui2Button(windowManager, "button_settings_keyboard_back", 0, 0, 30, 3, "Back");
+      new Gui2Button(windowManager, "button_settings_keyboard_back", 0, 0, 30, 3, Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
   wrapperGrid->AddView(backButton, 2, 0);
 
@@ -649,7 +649,6 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
                                        66, 3, "Gamepads");
   frame->AddView(title);
   title->Show();
-  title->SetFocus();
 
   const std::vector<IHIDevice*>& controllers = GetControllers();
 
@@ -680,7 +679,7 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
     backButton->SetFocus();
   } else {
     Gui2Button* backButton =
-        new Gui2Button(windowManager, "button_gamepadsmenu_back", 0, 0, 30, 3, "Back");
+        new Gui2Button(windowManager, "button_gamepadsmenu_back", 0, 0, 30, 3, Localization::GetInstance().Translate("action_back"));
     backButton->sig_OnClick.connect([this](...) { GoBack(); });
     grid->AddView(backButton, x, 0);
     grid->UpdateLayout(0.5);
@@ -1211,8 +1210,12 @@ void GamepadMappingPage::SetGpbuttonDone(int buttonID) {
   // printf("clickah! %i\n", value);
   if (captureGpbutton->GetInputType() == e_JoystickInputType_Button) {
     int value = captureGpbutton->GetButtonID();
-    if (value == -1)
-      value = 0;
+    if (value == -1) {
+      // ESC cancels the capture (Gui2CaptureJoy emits sig_OnJoy on ESC without
+      // setting a button). Leave the mapping untouched and just close the
+      // overlay rather than corrupting the assignment to button 0.
+      goto cleanup;
+    }
     gpbuttonButtons[buttonID]->GetCaptionWidget()->SetCaption(int_to_str(value));
     gpbuttonIDs[buttonID] = value;
   } else if (captureGpbutton->GetInputType() == e_JoystickInputType_Axis) {
@@ -1227,6 +1230,7 @@ void GamepadMappingPage::SetGpbuttonDone(int buttonID) {
     gpbuttonIDs[buttonID] = value;
   }
 
+cleanup:
   gpbuttonButtons[buttonID]->SetFocus();
 
   bg->Exit();
@@ -1836,7 +1840,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->Show();
 
   Gui2Button* backButton =
-      new Gui2Button(windowManager, "button_settings_graphics_back", 20, 92, 30, 3, "Back");
+      new Gui2Button(windowManager, "button_settings_graphics_back", 20, 92, 30, 3, Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
   this->AddView(backButton);
   backButton->Show();
@@ -1916,7 +1920,7 @@ AudioPage::AudioPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
                                 Localization::GetInstance().Translate("audio_volume"));
 
   Gui2Button* backButton =
-      new Gui2Button(windowManager, "button_settings_audio_back", 0, 0, 30, 3, "Back");
+      new Gui2Button(windowManager, "button_settings_audio_back", 0, 0, 30, 3, Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "volumegrid", 20, 25, 50, 50);
@@ -2007,7 +2011,7 @@ LanguagePage::LanguagePage(Gui2WindowManager* windowManager, const Gui2PageData&
   }
 
   Gui2Button* backButton =
-      new Gui2Button(windowManager, "button_language_back", 0, 0, 30, 3, "Back");
+      new Gui2Button(windowManager, "button_language_back", 0, 0, 30, 3, Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
   grid->AddView(backButton, static_cast<int>(langs.size()), 0);
 

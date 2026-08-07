@@ -1,4 +1,5 @@
 #include "league_management.hpp"
+#include "utils/localization.hpp"
 
 #include <string>
 
@@ -201,7 +202,7 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
   }
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_contracts_back", 0, 0, 86, 2.5, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_contracts_back", 0, 0, 86, 2.5, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([windowManager](...) {
     Properties properties;
     windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management),
@@ -309,7 +310,7 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
   }
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_transfers_back", 0, 0, 86, 2.5, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_transfers_back", 0, 0, 86, 2.5, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([windowManager](...) {
     Properties properties;
     windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management),

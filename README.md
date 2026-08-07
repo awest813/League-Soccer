@@ -68,6 +68,7 @@ cd League-Soccer
 ./build.sh          # installs deps (apt/dnf/pacman/zypper) + builds the game
 ./run.sh            # launches it
 ```
+On Windows the equivalent is `.\build.ps1` then `.\run.ps1` — see [Windows](#windows).
 
 `build.sh` options: `--debug`, `--clean`, `--no-deps` (skip the dep install),
 `--jobs N`. Run `./build.sh --help` for the full list. Dependencies are
@@ -110,40 +111,33 @@ cmake --build build --parallel
 
 ### Windows
 
-**Prerequisites:**
+**Prerequisites (one-time):**
 - [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) – *Desktop development with C++* workload
 - [Git](https://git-scm.com/download/win)
 - [CMake](https://cmake.org/download/) – add to `PATH`
 
-**Set up vcpkg** (or run `scripts/setup_windows_deps.ps1`):
-```powershell
-cd C:\dev
-git clone https://github.com/microsoft/vcpkg
-.\vcpkg\bootstrap-vcpkg.bat
-```
-
-Dependencies are declared in [`vcpkg.json`](vcpkg.json). With the vcpkg toolchain file,
-CMake installs them automatically (manifest mode). Classic install is still supported:
+The quickest way to get playing is the two helper scripts, which mirror the
+Linux `build.sh` / `run.sh`. They bootstrap [vcpkg](https://github.com/microsoft/vcpkg),
+install the dependencies declared in [`vcpkg.json`](vcpkg.json) (manifest mode),
+then configure + build + run the game:
 
 ```powershell
-.\vcpkg\vcpkg.exe install --triplet x64-windows
-```
-
-**Clone and build:**
-```powershell
-cd C:\dev
 git clone https://github.com/awest813/League-Soccer.git
 cd League-Soccer
 
-cmake -S . -B build-win -G "Visual Studio 17 2022" -A x64 `
-  -DCMAKE_TOOLCHAIN_FILE=C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake `
-  -DVCPKG_TARGET_TRIPLET=x64-windows
+# First run only — if PowerShell refuses to run the scripts, allow them for
+# this terminal session:
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
-cmake --build build-win --parallel --config Release
+.\build.ps1          # bootstraps vcpkg + installs deps + builds (Release)
+.\run.ps1            # launches the game
 ```
 
-CMake copies assets and (on CMake ≥ 3.21) runtime DLLs beside the executable.
-Run `build-win\Release\gameplayfootball.exe`.
+`build.ps1` options: `-DebugBuild`, `-Clean`, `-NoDeps` (skip the vcpkg/deps
+step), `-Jobs N`, `-VcpkgRoot <path>`, `-Triplet <name>`. Run `.\build.ps1 -Help`
+for the full list. CMake copies assets and (on CMake ≥ 3.21) runtime DLLs beside
+the executable, so `run.ps1` finds everything without `PATH` edits. (PowerShell
+reserves the `-Debug` common parameter, so the debug build flag is `-DebugBuild`.)
 
 To assemble a distributable folder (exe + DLLs + assets):
 
@@ -153,6 +147,36 @@ To assemble a distributable folder (exe + DLLs + assets):
 ```
 
 This mirrors the `build-windows` job in [CI](.github/workflows/ci.yml).
+
+<details>
+<summary>Manual build (advanced)</summary>
+
+If you prefer to drive vcpkg and CMake by hand:
+
+```powershell
+# Set up vcpkg (or let scripts\setup_windows_deps.ps1 do it for you)
+cd C:\dev
+git clone https://github.com/microsoft/vcpkg
+.\vcpkg\bootstrap-vcpkg.bat
+
+cd C:\dev\League-Soccer
+
+# Manifest mode installs vcpkg.json deps automatically via the toolchain file.
+cmake -S . -B build-win -G "Visual Studio 17 2022" -A x64 `
+  -DCMAKE_TOOLCHAIN_FILE=C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake `
+  -DVCPKG_TARGET_TRIPLET=x64-windows
+
+cmake --build build-win --parallel --config Release
+.\build-win\Release\gameplayfootball.exe
+```
+
+Classic (non-manifest) vcpkg install is also supported:
+
+```powershell
+.\vcpkg\vcpkg.exe install --triplet x64-windows
+```
+
+</details>
 
 ### Docker
 
@@ -230,6 +254,8 @@ League-Soccer/
 ├── scripts/          # Linux/Windows setup and packaging helpers
 ├── build.sh          # One-shot Linux build (deps + configure + compile)
 ├── run.sh            # Launch the built game with its assets
+├── build.ps1         # One-shot Windows build (vcpkg + deps + configure + compile)
+├── run.ps1           # Launch the built game (Windows)
 ├── vcpkg.json        # Windows dependency manifest
 ├── CMakeLists.txt    # Build configuration
 ├── ROADMAP.md        # Planned improvements

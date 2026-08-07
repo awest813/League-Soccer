@@ -1,4 +1,5 @@
 #include "league_team.hpp"
+#include "utils/localization.hpp"
 
 #include <string>
 
@@ -196,7 +197,7 @@ LeagueTeamFormationPage::LeagueTeamFormationPage(Gui2WindowManager* windowManage
     formationText->Show();
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_formation_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_formation_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -264,7 +265,7 @@ LeagueTeamPlayerSelectionPage::LeagueTeamPlayerSelectionPage(Gui2WindowManager* 
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_playersel_back", 0, 0, 86, 2.5, "Back");
+      new Gui2Button(windowManager, "btn_playersel_back", 0, 0, 86, 2.5, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -319,7 +320,7 @@ LeagueTeamTacticsPage::LeagueTeamTacticsPage(Gui2WindowManager* windowManager,
     tacticsText->Show();
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_tactics_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_tactics_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -399,7 +400,7 @@ LeagueTeamPlayerOverviewPage::LeagueTeamPlayerOverviewPage(Gui2WindowManager* wi
     grid->Show();
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerovr_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerovr_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -510,7 +511,7 @@ LeagueTeamPlayerDevelopmentPage::LeagueTeamPlayerDevelopmentPage(Gui2WindowManag
     info->Show();
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerdev_back", 25, 92, 50, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerdev_back", 25, 92, 50, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -600,7 +601,7 @@ LeagueTeamSetupPage::LeagueTeamSetupPage(Gui2WindowManager* windowManager,
   frame->AddView(summaryCap);
   summaryCap->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_setup_back", 25, 92, 50, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_setup_back", 25, 92, 50, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;

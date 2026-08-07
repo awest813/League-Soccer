@@ -50,6 +50,10 @@ public:
   void AddFoul(int teamID) { foulsCommitted[teamID]++; }
   int GetFouls(int teamID) const { return foulsCommitted[teamID]; }
 
+  // whether this match's result has already been written to match history
+  bool IsHistorySaved() const { return historySaved; }
+  void SetHistorySaved(bool value) { historySaved = value; }
+
 protected:
   std::array<std::unique_ptr<TeamData>, 2> teamData;
 
@@ -65,6 +69,8 @@ protected:
   int pendingPassTeamID;
 
   int foulsCommitted[2];
+
+  bool historySaved;
 };
 
 #endif

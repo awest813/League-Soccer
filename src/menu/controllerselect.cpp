@@ -12,6 +12,7 @@
 #include "managers/usereventmanager.hpp"
 #include "pagefactory.hpp"
 #include "startmatch/teamselect.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -47,7 +48,7 @@ Gui2Caption* AddControllerSelectNotice(Gui2Page* page, Gui2WindowManager* window
 
 Gui2Button* AddControllerSelectBackButton(Gui2Page* page, Gui2WindowManager* windowManager,
                                           const std::string& name, float yPercent = 72.0f) {
-  Gui2Button* backButton = new Gui2Button(windowManager, name, 38, yPercent, 24, 3, "Back");
+  Gui2Button* backButton = new Gui2Button(windowManager, name, 38, yPercent, 24, 3, Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([page](...) { page->GoBack(); });
   page->AddView(backButton);
   backButton->Show();
@@ -110,8 +111,7 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
       // Only the first gamepad is auto-selected as Player 1; the keyboard never
       // is, so it is not forced into every match (think gamepad-only testing).
       side.side = 0;
-      if (!autoAssignedPlayerOne &&
-          controllers.at(i)->GetDeviceType() == e_HIDeviceType_Gamepad) {
+      if (!autoAssignedPlayerOne && controllers.at(i)->GetDeviceType() == e_HIDeviceType_Gamepad) {
         side.side = -1;
         autoAssignedPlayerOne = true;
       }
@@ -201,6 +201,12 @@ void ControllerSelectPage::Process() {
           pageCreatedTime_ms + kMenuSmokeAdvanceDelay_ms) {
     autoAdvanceTriggered = true;
     ConfirmSelection();
+    // ConfirmSelection() transitions to the next page via CreatePage(), which
+    // does `delete this` (see Gui2Page::CreatePage). We must not touch any
+    // member of this page after that point, so stop here instead of falling
+    // through to the input-polling loop below — doing so was a use-after-free
+    // that deterministically segfaulted the headless smoke tests on Linux.
+    return;
   }
 
   // Move the side selection by polling each device's HID state directly here in

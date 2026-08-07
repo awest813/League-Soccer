@@ -7,6 +7,7 @@
 
 #include "../pagefactory.hpp"
 #include "main.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -51,7 +52,7 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
   buttonStart =
       new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 29, 3, "Start Match");
   Gui2Button* buttonBack =
-      new Gui2Button(windowManager, "matchoptions_button_back", 0, 0, 29, 3, "Back");
+      new Gui2Button(windowManager, "matchoptions_button_back", 0, 0, 29, 3, Localization::GetInstance().Translate("action_back"));
 
   float difficulty = GetConfiguration()->GetReal("match_difficulty", _default_Difficulty);
   float matchDuration = GetConfiguration()->GetReal("match_duration", _default_MatchDuration);

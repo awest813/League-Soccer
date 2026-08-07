@@ -33,6 +33,7 @@ public:
   void SetupTeamSelect2();
   void UpdateReadyButtons();
   void GoOptionsMenu();
+  void StepBack();
 
   virtual void Process();
   virtual void ProcessWindowingEvent(WindowingEvent* event);

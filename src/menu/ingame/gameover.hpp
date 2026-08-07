@@ -22,6 +22,7 @@ public:
   virtual ~GameOverPage();
 
   virtual void Process();
+  virtual void ProcessWindowingEvent(WindowingEvent* event);
   void GoRematch();
   void GoMainMenu();
 

@@ -1,4 +1,5 @@
 #include "league_system.hpp"
+#include "utils/localization.hpp"
 
 #include "../../league/leaguecode.hpp"
 #include "../../main.hpp"
@@ -96,7 +97,7 @@ LeagueSystemSavePage::LeagueSystemSavePage(Gui2WindowManager* windowManager,
   frame->AddView(btnSave);
   btnSave->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_save_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_save_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -208,7 +209,7 @@ LeagueSystemSettingsPage::LeagueSystemSettingsPage(Gui2WindowManager* windowMana
   frame->AddView(grid);
   grid->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_settings_back", 30, 90, 40, 3, "Back");
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_settings_back", 30, 90, 40, 3, Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;

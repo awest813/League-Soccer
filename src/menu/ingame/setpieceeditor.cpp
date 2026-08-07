@@ -3,6 +3,7 @@
 #include "../../onthepitch/match.hpp"
 #include "../pagefactory.hpp"
 #include "main.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -104,7 +105,8 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
   grid->AddView(btnSave, footerRow, 0);
 
   Gui2Button* backBtn =
-      new Gui2Button(windowManager, "spe_back", 0, 0, 100, 3, "back");
+      new Gui2Button(windowManager, "spe_back", 0, 0, 100, 3,
+                     Localization::GetInstance().Translate("action_back"));
   backBtn->sig_OnClick.connect([this](...) { GoBack(); });
   grid->AddView(backBtn, footerRow, 1);
 

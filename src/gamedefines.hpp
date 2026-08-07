@@ -25,8 +25,8 @@ const float _default_CameraHeight = 0.3f;
 const float _default_CameraFOV = 0.4f;
 const float _default_CameraAngleFactor = 0.0f;
 
-const float _default_Difficulty = 0.6f;
-const float _default_MatchDuration = 0.4f;
+const float _default_Difficulty = 0.8f;
+const float _default_MatchDuration = 1.0f;
 
 const float _default_QuantizedDirectionBias = 0.0f;
 

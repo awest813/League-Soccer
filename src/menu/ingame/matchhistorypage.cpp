@@ -7,6 +7,7 @@
 #include "utils/gui2/widgets/caption.hpp"
 #include "utils/gui2/widgets/grid.hpp"
 #include "utils/gui2/widgets/image.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -17,7 +18,8 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
   bg->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_matchhistory_title", 0, 8, 100, 4, "Match History");
+      new Gui2Caption(windowManager, "caption_matchhistory_title", 0, 8, 100, 4,
+                      Localization::GetInstance().Translate("matchhistory_title"));
   title->SetPosition(50 - title->GetTextWidthPercent() / 2, 8);
   this->AddView(title);
   title->Show();
@@ -27,10 +29,18 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_matchhistory", 8, 16, 84, 72);
 
   // Header row
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_date", 0, 0, 22, 3, "Date"), 0, 0);
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_match", 0, 0, 40, 3, "Match"), 0, 1);
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_score", 0, 0, 12, 3, "Score"), 0, 2);
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_poss", 0, 0, 20, 3, "Possession"), 0, 3);
+  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_date", 0, 0, 22, 3,
+                                Localization::GetInstance().Translate("matchhistory_date")),
+                0, 0);
+  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_match", 0, 0, 40, 3,
+                                Localization::GetInstance().Translate("matchhistory_match")),
+                0, 1);
+  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_score", 0, 0, 12, 3,
+                                Localization::GetInstance().Translate("matchhistory_score")),
+                0, 2);
+  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_poss", 0, 0, 20, 3,
+                                Localization::GetInstance().Translate("matchhistory_possession")),
+                0, 3);
 
   for (int i = 0; i < (int)entries.size(); i++) {
     const MatchHistoryEntry& e = entries[i];
@@ -53,8 +63,9 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
   }
 
   if (entries.empty()) {
-    grid->AddView(
-        new Gui2Caption(windowManager, "mh_empty", 0, 0, 84, 3, "No matches recorded yet."), 1, 0);
+    grid->AddView(new Gui2Caption(windowManager, "mh_empty", 0, 0, 84, 3,
+                                  Localization::GetInstance().Translate("matchhistory_empty")),
+                  1, 0);
   }
 
   grid->UpdateLayout(0.5);
@@ -62,7 +73,8 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
   grid->Show();
 
   Gui2Button* buttonBack =
-      new Gui2Button(windowManager, "button_matchhistory_back", 40, 90, 20, 3, "Back");
+      new Gui2Button(windowManager, "button_matchhistory_back", 40, 90, 20, 3,
+                     Localization::GetInstance().Translate("action_back"));
   this->AddView(buttonBack);
   buttonBack->Show();
   buttonBack->sig_OnClick.connect([this](...) { GoBack(); });
