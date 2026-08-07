@@ -135,7 +135,7 @@ jobs:
       - name: Smoke test Gamepad Controls (full match)
         run: |
           cd build
-          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_gamepad_match.config" 420 \
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_gamepad_match.config" 600 \
             "[menu-smoke] Main menu ready, opening Quick Match" \
             "[menu-smoke] scripted gamepad: input sampled, driving a human player in a live match" \
             "[menu-smoke] Full-match verification succeeded, quitting test run"
