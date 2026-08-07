@@ -29,20 +29,21 @@ Thank you for taking the time to contribute!
 
 ## How to Report a Bug
 
-- Search existing [issues](../../issues) to avoid duplicates.
-- Open a new issue and fill in the bug report template, including:
-  - Operating system and compiler version.
-  - Steps to reproduce.
-  - Expected vs. actual behaviour.
-  - Any relevant logs or screenshots.
+> **Note:** the GitHub Issues tab is **not active** for this project, so bugs
+> are best reported via a pull request. Include enough detail for us to
+> reproduce the problem in your PR description:
+> - Operating system and compiler version.
+> - Steps to reproduce.
+> - Expected vs. actual behaviour.
+> - Any relevant logs or screenshots.
 
 ---
 
 ## How to Request a Feature
 
 - Check the [ROADMAP](ROADMAP.md) – the item may already be planned.
-- Open an issue labelled **enhancement** with a clear description of the
-  motivation and proposed solution.
+- Open a pull request implementing the feature, or describe your proposal in a
+  PR with a clear motivation and suggested approach.
 
 ---
 
