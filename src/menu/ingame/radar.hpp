@@ -33,6 +33,11 @@ protected:
   std::vector<Gui2Image*> team2avatars;
   Gui2Image* ball;
 
+  float radarWidthPercent;
+  float radarXOffsetPercent;
+  float ballWidthPercent;
+  float avatarWidthPercent;
+
   Match* match;
 
   Vector3 color1_1, color1_2, color2_1, color2_2;

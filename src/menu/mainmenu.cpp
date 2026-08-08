@@ -47,26 +47,45 @@ bool MenuSmokeAutoQuickMatchEnabled() {
   return MenuSmokeQuickMatchEnabled() || MenuSmokeFullMatchEnabled();
 }
 
+void AddMainMenuCaption(Gui2WindowManager* windowManager, Gui2View* panel,
+                        const std::string& name, float y_percent, float height_percent,
+                        const std::string& text) {
+  Gui2Caption* caption =
+      new Gui2Caption(windowManager, name, 2, y_percent, 46, height_percent, text);
+  panel->AddView(caption);
+  caption->Show();
+}
+
 }  // namespace
 
 IntroPage::IntroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
-  windowManager->BlackoutBackground(true);
+  constexpr float kLogoAspectRatio = 512.0f / 180.0f;
+  constexpr float kLogoHeight = 18.0f;
+  const float logoWidth =
+      windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
+  Gui2Image* logo = new Gui2Image(windowManager, "image_intro_logo",
+                                  50.0f - logoWidth * 0.5f, 10, logoWidth, kLogoHeight);
+  logo->LoadImage("media/menu/main/title01.png");
+  this->AddView(logo);
+  logo->Show();
 
-  bg = new Gui2Image(windowManager, "image_intro", 0, 0, 100, 100);
-  bg->LoadImage("media/menu/backgrounds/intro01.png");
-
-  this->AddView(bg);
-  bg->Show();
+  Gui2Frame* promptPanel =
+      new Gui2Frame(windowManager, "frame_intro_prompt", 32, 86, 36, 8, true);
+  this->AddView(promptPanel);
+  promptPanel->Show();
+  Gui2Caption* prompt = new Gui2Caption(windowManager, "caption_intro_prompt", 0, 2.5f, 32, 3,
+                                        "Press Enter or A to Continue");
+  prompt->SetPosition(18.0f - prompt->GetTextWidthPercent() * 0.5f, 2.5f);
+  promptPanel->AddView(prompt);
+  prompt->Show();
 
   this->SetFocus();
 
   this->Show();
 }
 
-IntroPage::~IntroPage() {
-  windowManager->BlackoutBackground(false);
-}
+IntroPage::~IntroPage() {}
 
 void IntroPage::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsEscape() || event->IsActivate()) {
@@ -75,28 +94,48 @@ void IntroPage::ProcessWindowingEvent(WindowingEvent* event) {
   }
 }
 
-void IntroPage::ProcessKeyboardEvent(KeyboardEvent*) {
-  CreatePage((int)e_PageID_MainMenu, 0);
+void IntroPage::ProcessKeyboardEvent(KeyboardEvent* event) {
+  if (event->GetKeyOnce(SDLK_RETURN) || event->GetKeyOnce(SDLK_KP_ENTER)) {
+    CreatePage((int)e_PageID_MainMenu, 0);
+    return;
+  }
+  event->Ignore();
 }
 
 OutroPage::OutroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
-  windowManager->BlackoutBackground(true);
+  constexpr float kLogoAspectRatio = 512.0f / 180.0f;
+  constexpr float kLogoHeight = 18.0f;
+  const float logoWidth =
+      windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
+  Gui2Image* logo = new Gui2Image(windowManager, "image_outro_logo",
+                                  50.0f - logoWidth * 0.5f, 20, logoWidth, kLogoHeight);
+  logo->LoadImage("media/menu/main/title01.png");
+  this->AddView(logo);
+  logo->Show();
 
-  bg = new Gui2Image(windowManager, "image_outro", 0, 0, 100, 100);
-  bg->LoadImage("media/menu/backgrounds/outro01.png");
-
-  this->AddView(bg);
-  bg->Show();
+  Gui2Frame* messagePanel =
+      new Gui2Frame(windowManager, "frame_outro_message", 32, 70, 36, 16, true);
+  this->AddView(messagePanel);
+  messagePanel->Show();
+  Gui2Caption* message =
+      new Gui2Caption(windowManager, "caption_outro_message", 0, 3, 32, 3,
+                      "Thanks for playing League Soccer");
+  message->SetPosition(18.0f - message->GetTextWidthPercent() * 0.5f, 3);
+  messagePanel->AddView(message);
+  message->Show();
+  Gui2Caption* prompt =
+      new Gui2Caption(windowManager, "caption_outro_prompt", 0, 9, 32, 3,
+                      "Press Enter, A, or Escape to Exit");
+  prompt->SetPosition(18.0f - prompt->GetTextWidthPercent() * 0.5f, 9);
+  messagePanel->AddView(prompt);
+  prompt->Show();
 
   this->SetFocus();
-
   this->Show();
 }
 
-OutroPage::~OutroPage() {
-  windowManager->BlackoutBackground(false);
-}
+OutroPage::~OutroPage() {}
 
 void OutroPage::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsEscape() || event->IsActivate()) {
@@ -104,8 +143,12 @@ void OutroPage::ProcessWindowingEvent(WindowingEvent* event) {
   }
 }
 
-void OutroPage::ProcessKeyboardEvent(KeyboardEvent*) {
-  GetMenuTask()->QuitGame();
+void OutroPage::ProcessKeyboardEvent(KeyboardEvent* event) {
+  if (event->GetKeyOnce(SDLK_RETURN) || event->GetKeyOnce(SDLK_KP_ENTER)) {
+    GetMenuTask()->QuitGame();
+    return;
+  }
+  event->Ignore();
 }
 
 MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
@@ -117,7 +160,12 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   root->Show();
 
   Gui2Frame* titlePanel = new Gui2Frame(windowManager, "frame_mm_title", 4, 2, 38, 24, true);
-  Gui2Image* title = new Gui2Image(windowManager, "image_main_title", 2, 2, 34, 18);
+  constexpr float kLogoAspectRatio = 512.0f / 180.0f;
+  constexpr float kLogoHeight = 18.0f;
+  const float logoWidth =
+      windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
+  Gui2Image* title = new Gui2Image(windowManager, "image_main_title",
+                                   19.0f - logoWidth * 0.5f, 2, logoWidth, kLogoHeight);
   title->LoadImage("media/menu/main/title01.png");
   titlePanel->AddView(title);
   title->Show();
@@ -165,41 +213,34 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   navPanel->Show();
 
   Gui2Frame* infoPanel = new Gui2Frame(windowManager, "frame_mm_info", 46, 4, 50, 42, true);
-  Gui2Caption* welcome =
-      new Gui2Caption(windowManager, "caption_mm_welcome", 2, 2, 46, 3, "League Soccer");
-  infoPanel->AddView(welcome);
-  welcome->Show();
-  Gui2Caption* tagline = new Gui2Caption(
-      windowManager, "caption_mm_tagline", 2, 6, 46, 4,
-      "Open-source football simulation with career modes, owner management, and 3D match engine.");
-  infoPanel->AddView(tagline);
-  tagline->Show();
-  Gui2Caption* modes = new Gui2Caption(windowManager, "caption_mm_modes", 2, 14, 46, 6,
-                                       "Quick Match: Jump straight into a game.\n"
-                                       "League Mode: Full season with standings.\n"
-                                       "Career Mode: Coach, GM, Player, Manager, or Owner.");
-  infoPanel->AddView(modes);
-  modes->Show();
-  Gui2Caption* hint =
-      new Gui2Caption(windowManager, "caption_mm_hint", 2, 26, 46, 4,
-                      "Navigate with arrow keys or gamepad. Press Enter or A to select.");
-  infoPanel->AddView(hint);
-  hint->Show();
+  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_welcome", 2, 3, "League Soccer");
+  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_tagline_1", 6, 2.2f,
+                     "Open-source football simulation with career modes,");
+  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_tagline_2", 9, 2.2f,
+                     "owner management, and a 3D match engine.");
+  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_quick", 14, 2.3f,
+                     "Quick Match: Jump straight into a game.");
+  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_league", 18, 2.3f,
+                     "League Mode: Full season with standings.");
+  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_career", 22, 2.2f,
+                     "Career Mode: Coach, GM, Player, Manager, or Owner.");
+  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_hint_1", 28, 2.2f,
+                     "Arrow keys or gamepad to navigate.");
+  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_hint_2", 31, 2.2f,
+                     "Press Enter or A to select.");
   root->AddView(infoPanel);
   infoPanel->Show();
 
   Gui2Frame* tipsPanel = new Gui2Frame(windowManager, "frame_mm_tips", 46, 50, 50, 34, true);
-  Gui2Caption* tipsTitle =
-      new Gui2Caption(windowManager, "caption_mm_tips_title", 2, 2, 46, 2, "Quick Tips");
-  tipsPanel->AddView(tipsTitle);
-  tipsTitle->Show();
-  Gui2Caption* tipsBody = new Gui2Caption(windowManager, "caption_mm_tips_body", 2, 6, 46, 12,
-                                          "Settings: graphics, audio, controls, and language.\n"
-                                          "Pause during a match for camera and visual options.\n"
-                                          "League and Career keep saves under the data folder.\n"
-                                          "Press Escape on most pages to go back.");
-  tipsPanel->AddView(tipsBody);
-  tipsBody->Show();
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_title", 2, 2, "Quick Tips");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_settings", 6, 2.2f,
+                     "Settings: graphics, audio, controls, and language.");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_pause", 10, 2.2f,
+                     "Pause during a match for camera and visual options.");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_saves", 14, 2.2f,
+                     "League and Career keep saves under the data folder.");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_escape", 18, 2.2f,
+                     "Press Escape on most pages to go back.");
   root->AddView(tipsPanel);
   tipsPanel->Show();
 

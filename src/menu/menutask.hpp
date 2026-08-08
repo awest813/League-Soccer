@@ -17,6 +17,8 @@ class MatchData;
 
 using namespace blunted;
 
+constexpr float kMenuAspectRatio = 16.0f / 9.0f;
+
 enum e_MenuAction {
   e_MenuAction_Menu,  // start main menu
   e_MenuAction_Game,  // start game
@@ -95,6 +97,7 @@ public:
 protected:
   e_MenuAction menuAction;
 
+  Gui2Image* menuBackground;
   Lockable<QueuedFixture> queuedFixture;  // todo: we can probably unlock this stuff
 };
 

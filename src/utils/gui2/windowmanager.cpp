@@ -58,7 +58,7 @@ Gui2WindowManager::Gui2WindowManager(std::shared_ptr<Scene2D> scene2D, float asp
       ObjectFactory::GetInstance().CreateObject("gui2_blackoutbackground", e_ObjectType_Image2D));
   scene2D->CreateSystemObjects(blackoutBackground);
   blackoutBackground->SetImage(resource);
-  blackoutBackground->DrawRectangle(0, 0, contextW, contextH, Vector3(0, 0, 0), 200); // Sleek translucent blackout overlay
+  blackoutBackground->DrawRectangle(0, 0, contextW, contextH, Vector3(0, 0, 0), 255);
   blackoutBackground->OnChange();
 
   blackoutBackground->SetPosition(0, 0);

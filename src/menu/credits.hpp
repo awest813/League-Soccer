@@ -50,8 +50,6 @@ protected:
   unsigned int previousStartIndex;
 
   std::vector<CreditsContents> credits;
-
-  Gui2Image* bg;
 };
 
 #endif

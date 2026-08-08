@@ -35,6 +35,14 @@ public:
   int GetHeightPixels(float percentage);
   float GetWidthPercent(int pixels);
   float GetHeightPercent(int pixels);
+  float GetWidthPercentForHeight(float height_percent, float contentAspectRatio) const {
+    assert(contentAspectRatio > 0.0f);
+    return height_percent * contentAspectRatio / aspectRatio;
+  }
+  float GetHeightPercentForWidth(float width_percent, float contentAspectRatio) const {
+    assert(contentAspectRatio > 0.0f);
+    return width_percent * aspectRatio / contentAspectRatio;
+  }
   boost::intrusive_ptr<Image2D> CreateImage2D(const std::string& name, int width, int height,
                                               bool sceneRegister = false);
   void UpdateImagePosition(Gui2View* view) const;

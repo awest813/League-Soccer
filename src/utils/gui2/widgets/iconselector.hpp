@@ -52,6 +52,9 @@ public:
 protected:
   boost::intrusive_ptr<Image2D> image;
 
+  float iconWidthPercent;
+  float iconHeightPercent;
+
   std::string caption;
 
   std::vector<Gui2IconSelectorEntry> entries;

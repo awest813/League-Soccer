@@ -16,7 +16,7 @@ using namespace blunted;
 
 namespace {
 
-const char* kSelectorFallbackImage = "media/textures/orange.jpg";
+const char* kSelectorFallbackImage = "media/menu/league.png";
 constexpr unsigned long kMenuSmokeAdvanceDelay_ms = 250;
 
 bool MenuSmokeQuickMatchEnabled() {
@@ -107,14 +107,14 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
   frame2 = new Gui2Frame(windowManager, "teamselect_frame2", 51, 18, 34, 52, true);
   this->AddView(frame2);
 
-  Gui2Caption* teamEmblemCredits =
-      new Gui2Caption(windowManager, "teamselect_emblemcredits", 19, 70, 28, 3,
-                      "Team emblems by TureckiRumun, broxopios, balder, and NLP !");
-  this->AddView(teamEmblemCredits);
-  teamEmblemCredits->SetColor(Vector3(200, 200, 200));
-  teamEmblemCredits->SetTransparency(0.5f);
-  teamEmblemCredits->SetPosition(50 - teamEmblemCredits->GetTextWidthPercent() / 2, 70);
-  teamEmblemCredits->Show();
+  Gui2Caption* brandingNotice =
+      new Gui2Caption(windowManager, "teamselect_brandingnotice", 19, 73, 28, 3,
+                      "Original League Soccer team branding");
+  this->AddView(brandingNotice);
+  brandingNotice->SetColor(Vector3(200, 200, 200));
+  brandingNotice->SetTransparency(0.6f);
+  brandingNotice->SetPosition(50.0f - brandingNotice->GetTextWidthPercent() * 0.5f, 73);
+  brandingNotice->Show();
 
   Gui2Caption* p1 =
       new Gui2Caption(windowManager, "teamselect_caption_p1", 2, 2, 30, 3, "Player 1");

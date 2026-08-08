@@ -7,10 +7,12 @@
 
 #include "../main.hpp"
 #include "base/utils.hpp"
+#include "utils/gui2/widgets/frame.hpp"
 
 namespace {
 
 constexpr unsigned long kMenuSmokeCreditsQuitDelay_ms = 1000;
+constexpr float kCreditsBallHeightPercent = 5.0f;
 
 bool MenuSmokeCreditsEnabled() {
   return GetConfiguration()->GetBool("menu_smoke_test_credits", false);
@@ -22,15 +24,12 @@ CreditsPage::CreditsPage(Gui2WindowManager* windowManager, const Gui2PageData& p
     : Gui2Page(windowManager, pageData),
       pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
       autoAdvanceTriggered(false) {
-  windowManager->BlackoutBackground(true);
+  Gui2Frame* creditsPanel =
+      new Gui2Frame(windowManager, "frame_credits_panel", 10, 0, 70, 100, true);
+  this->AddView(creditsPanel);
+  creditsPanel->Show();
 
   this->SetFocus();
-
-  bg = new Gui2Image(windowManager, "image_credits_bg", 0, 0, 100, 100);
-  bg->LoadImage("media/menu/credits/bg.png");
-  this->AddView(bg);
-  bg->Show();
-
   float textHeight = 60 / float(numtexts - 1);
 
   for (int i = 0; i < numtexts; i++) {
@@ -40,14 +39,15 @@ CreditsPage::CreditsPage(Gui2WindowManager* windowManager, const Gui2PageData& p
     text[i]->Show();
   }
 
+  const float ballWidthPercent =
+      windowManager->GetWidthPercentForHeight(kCreditsBallHeightPercent, 1.0f);
   for (int i = 0; i < numballs; i++) {
-    balls[i] = new Gui2Image(windowManager, "ball" + int_to_str(i), ballPos[i].coords[0],
-                             ballPos[i].coords[1], 4, 5);
-    this->AddView(balls[i]);
-    balls[i]->LoadImage("media/menu/credits/ball.png");
     ballPos[i] = Vector3(random(60, 90), random(-60, -5), 0);
     ballMov[i] = Vector3(random(-3, 7), random(-40, -10), 0);
-    balls[i]->SetPosition(ballPos[i].coords[0], ballPos[i].coords[1]);
+    balls[i] = new Gui2Image(windowManager, "ball" + int_to_str(i), ballPos[i].coords[0],
+                             ballPos[i].coords[1], ballWidthPercent, kCreditsBallHeightPercent);
+    this->AddView(balls[i]);
+    balls[i]->LoadImage("media/menu/credits/ball.png");
     balls[i]->Show();
   }
 
@@ -60,9 +60,7 @@ CreditsPage::CreditsPage(Gui2WindowManager* windowManager, const Gui2PageData& p
   this->Show();
 }
 
-CreditsPage::~CreditsPage() {
-  windowManager->BlackoutBackground(false);
-}
+CreditsPage::~CreditsPage() {}
 
 void CreditsPage::InitCreditsContents() {
   AddCredit("PROPERLY DECENT presents");
@@ -354,19 +352,22 @@ void CreditsPage::Process() {
 
   // BALLS
 
+  const float ballWidthPercent =
+      windowManager->GetWidthPercentForHeight(kCreditsBallHeightPercent, 1.0f);
   for (int i = 0; i < numballs; i++) {
-    ballMov[i].coords[1] += 0.25;  // gravity
-    if (ballPos[i].coords[0] > 100 - 4 && ballMov[i].coords[0] > 0)
-      ballMov[i].coords[0] = -ballMov[i].coords[0] * 0.7;
+    ballMov[i].coords[1] += 0.25f;  // gravity
+    if (ballPos[i].coords[0] > 100.0f - ballWidthPercent && ballMov[i].coords[0] > 0)
+      ballMov[i].coords[0] = -ballMov[i].coords[0] * 0.7f;
     if (ballPos[i].coords[0] < 0 && ballMov[i].coords[0] < 0)
-      ballMov[i].coords[0] = -ballMov[i].coords[0] * 0.7;
-    if (ballPos[i].coords[1] > 100 - 5 && ballMov[i].coords[1] > 20)
-      ballMov[i].coords[1] = -ballMov[i].coords[1] * 0.6;
-    if (ballPos[i].coords[1] > 100) {
+      ballMov[i].coords[0] = -ballMov[i].coords[0] * 0.7f;
+    if (ballPos[i].coords[1] > 100.0f - kCreditsBallHeightPercent &&
+        ballMov[i].coords[1] > 20)
+      ballMov[i].coords[1] = -ballMov[i].coords[1] * 0.6f;
+    if (ballPos[i].coords[1] > 100.0f) {
       ballPos[i] = Vector3(random(60, 90), random(-60, -5), 0);
       ballMov[i] = Vector3(random(-3, 7), random(-40, -10), 0);
     }
-    ballPos[i] += ballMov[i] * 0.05;
+    ballPos[i] += ballMov[i] * 0.05f;
     balls[i]->SetPosition(ballPos[i].coords[0], ballPos[i].coords[1]);
   }
 

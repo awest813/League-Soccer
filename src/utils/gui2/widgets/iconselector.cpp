@@ -17,6 +17,8 @@ Gui2IconSelector::Gui2IconSelector(Gui2WindowManager* windowManager, const std::
     : Gui2View(windowManager, name, x_percent, y_percent, width_percent, height_percent),
       caption(caption) {
   isSelectable = true;
+  iconHeightPercent = 10.0f;
+  iconWidthPercent = windowManager->GetWidthPercentForHeight(iconHeightPercent, 1.0f);
 
   int x, y, w, h;
   windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
@@ -99,11 +101,10 @@ void Gui2IconSelector::Redraw() {
     float xpos = width_percent * 0.5;
     if (position > 0.5 * -pi && position < 0.5 * pi) {
       float size = fabs(cos(position));
-      float width = 8.0 * size;
-      float height = 10.0 * size;
       xpos += sin(position) * width_percent * 0.4;
       // only resize internals, for speed (no texture recreate)
-      entries.at(i).icon->SetPosition(xpos - 8.0 * 0.5, height_percent * 0.5 - 10.0 * 0.5);
+      entries.at(i).icon->SetPosition(xpos - iconWidthPercent * 0.5f,
+                                      height_percent * 0.5f - iconHeightPercent * 0.5f);
       entries.at(i).icon->SetZoom(size, size);
     } else {
       entries.at(i).icon->SetPosition(100, 100);
@@ -137,7 +138,8 @@ void Gui2IconSelector::AddEntry(const std::string& id, const std::string& captio
   Gui2IconSelectorEntry entry;
   entry.caption = caption;
   entry.id = id;
-  entry.icon = new Gui2Image(windowManager, name + "_entry_" + id, 0, 0, 8, 10);
+  entry.icon = new Gui2Image(windowManager, name + "_entry_" + id, 0, 0, iconWidthPercent,
+                             iconHeightPercent);
   entry.icon->LoadImage(imageFile);
   AddView(entry.icon);
   entry.icon->Show();

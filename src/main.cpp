@@ -546,8 +546,8 @@ int main(int argc, const char** argv) {
     Log(e_FatalError, "football", "main", "Could not load font " + fontfilename);
   TTF_Font* defaultOutlineFont = TTF_OpenFont(fontfilename.c_str(), 32);
   TTF_SetFontOutline(defaultOutlineFont, 2);
-  menuTask =
-      std::shared_ptr<MenuTask>(new MenuTask(5.0f / 4.0f, 0, defaultFont, defaultOutlineFont));
+  menuTask = std::shared_ptr<MenuTask>(
+      new MenuTask(kMenuAspectRatio, 0, defaultFont, defaultOutlineFont));
   // The first device after the keyboard is typically the primary gamepad that
   // drives menu navigation. Guard against it not being a real HIDGamepad (e.g.
   // when the scripted test controller is the only non-keyboard device).

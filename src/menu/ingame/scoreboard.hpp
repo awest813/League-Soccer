@@ -28,11 +28,6 @@ public:
   void SetGoalCount(int teamID, int goalCount);
 
 protected:
-  boost::intrusive_ptr<Image2D> image;
-
-  int w, h;
-  float content_yOffset;
-
   Match* match;
 
   std::string timeStr;

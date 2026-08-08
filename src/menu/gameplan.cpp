@@ -15,7 +15,7 @@ GamePlanPage::GamePlanPage(Gui2WindowManager* windowManager, const Gui2PageData&
     : Gui2Page(windowManager, pageData) {
   teamID = pageData.properties->GetInt("teamID", 0);
 
-  int xOffset = 32.5;  // 14;
+  constexpr float xOffset = 32.5f;
   teamData = GetGameTask()->GetMatch()->GetTeam(teamID)->GetTeamData();
 
   Gui2Frame* frame = new Gui2Frame(windowManager, "gameplan_frame", xOffset, 10, 35, 82, true);

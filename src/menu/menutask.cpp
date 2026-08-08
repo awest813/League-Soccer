@@ -55,7 +55,7 @@ void SetActiveController(int side, bool keyboard) {
 
 MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font* defaultFont,
                    TTF_Font* defaultOutlineFont)
-    : Gui2Task(GetScene2D(), aspectRatio, margin) {
+    : Gui2Task(GetScene2D(), aspectRatio, margin), menuBackground(nullptr) {
   Gui2Style* style = windowManager->GetStyle();
 
   style->SetFont(e_TextType_Default, defaultFont);
@@ -76,6 +76,12 @@ MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font* defaultFont,
 
   Gui2Root* root = windowManager->GetRoot();
   root->Show();
+
+  menuBackground =
+      new Gui2Image(windowManager, "image_menu_background", 0, 0, 100, 100);
+  menuBackground->LoadImage("media/menu/backgrounds/stadium01.png");
+  root->AddView(menuBackground);
+  menuBackground->Show();
 
   PageFactory* pageFactory = new PageFactory();
   windowManager->SetPageFactory(pageFactory);
@@ -133,8 +139,9 @@ void MenuTask::ProcessPhase() {
     windowManager->GetPagePath()->Clear();
 
     GetGameTask()->Action(e_GameTaskMessage_StopMatch);
-    GetGameTask()->Action(e_GameTaskMessage_StartMenuScene);
+    GetGameTask()->Action(e_GameTaskMessage_StopMenuScene);
 
+    menuBackground->Show();
     Properties properties;
     if (GetConfiguration()->GetBool("career_resume_hub", false)) {
       GetConfiguration()->SetBool("career_resume_hub", false);
@@ -153,6 +160,7 @@ void MenuTask::ProcessPhase() {
     }
 
   } else if (menuAction == e_MenuAction_Game) {
+    menuBackground->Hide();
     GetGameTask()->Action(e_GameTaskMessage_StopMenuScene);
     GetGameTask()->Action(e_GameTaskMessage_StartMatch);
   }

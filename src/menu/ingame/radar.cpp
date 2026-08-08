@@ -14,6 +14,13 @@
 #include "utils/gui2/windowmanager.hpp"
 
 namespace blunted {
+namespace {
+
+constexpr float kRadarAspectRatio = 550.0f / 360.0f;
+constexpr float kBallHeightPercent = 1.2f;
+constexpr float kAvatarHeightPercent = 1.6f;
+
+}  // namespace
 
 Gui2Radar::Gui2Radar(Gui2WindowManager* windowManager, const std::string& name, float x_percent,
                      float y_percent, float width_percent, float height_percent, Match* match,
@@ -27,12 +34,20 @@ Gui2Radar::Gui2Radar(Gui2WindowManager* windowManager, const std::string& name, 
       color2_2(color2_2) {
   // todo: use colors!
 
-  bg = new Gui2Image(windowManager, "bg_radar", 0, 0, width_percent, height_percent);
+  radarWidthPercent =
+      windowManager->GetWidthPercentForHeight(height_percent, kRadarAspectRatio);
+  radarXOffsetPercent = (width_percent - radarWidthPercent) * 0.5f;
+  ballWidthPercent = windowManager->GetWidthPercentForHeight(kBallHeightPercent, 1.0f);
+  avatarWidthPercent = windowManager->GetWidthPercentForHeight(kAvatarHeightPercent, 1.0f);
+
+  bg = new Gui2Image(windowManager, "bg_radar", radarXOffsetPercent, 0, radarWidthPercent,
+                     height_percent);
   this->AddView(bg);
   bg->LoadImage("media/menu/radar/radar.png");
   bg->Show();
 
-  ball = new Gui2Image(windowManager, "radar_ball", 0, 0, 1, 1.2);
+  ball = new Gui2Image(windowManager, "radar_ball", 0, 0, ballWidthPercent,
+                       kBallHeightPercent);
   this->AddView(ball);
   ball->LoadImage("media/menu/radar/ball.png");
   ball->Show();
@@ -52,7 +67,7 @@ void Gui2Radar::ReloadAvatars(int teamID, unsigned int playerCount) {
     for (unsigned int i = 0; i < playerCount; i++) {
       Gui2Image* avatar =
           new Gui2Image(windowManager, "radar_avatar_" + int_to_str(teamID) + "_" + int_to_str(i),
-                        0, 0, 1.2, 1.6);
+                        0, 0, avatarWidthPercent, kAvatarHeightPercent);
       this->AddView(avatar);
       avatar->LoadImage("media/menu/radar/p1.png");
       avatar->Show();
@@ -70,7 +85,7 @@ void Gui2Radar::ReloadAvatars(int teamID, unsigned int playerCount) {
     for (unsigned int i = 0; i < playerCount; i++) {
       Gui2Image* avatar =
           new Gui2Image(windowManager, "radar_avatar_" + int_to_str(teamID) + "_" + int_to_str(i),
-                        0, 0, 1.2, 1.6);
+                        0, 0, avatarWidthPercent, kAvatarHeightPercent);
       this->AddView(avatar);
       avatar->LoadImage("media/menu/radar/p2.png");
       avatar->Show();
@@ -86,8 +101,9 @@ void Gui2Radar::Put() {
   Vector3 pos2d = position * Vector3(1 / (pitchHalfW * 2), -(1 / (pitchHalfH * 2)), 0);
   pos2d = pos2d + Vector3(0.5, 0.5, 0);
   pos2d = pos2d * Vector3(0.96f, 0.96f, 0) + Vector3(0.02f, 0.02f, 0);  // margin
-  ball->SetPosition(pos2d.coords[0] * width_percent - 0.5f,
-                    pos2d.coords[1] * height_percent - 0.6f);
+  ball->SetPosition(radarXOffsetPercent + pos2d.coords[0] * radarWidthPercent -
+                        ballWidthPercent * 0.5f,
+                    pos2d.coords[1] * height_percent - kBallHeightPercent * 0.5f);
 
   // get player positions
   std::vector<Player*> team1players;
@@ -107,8 +123,9 @@ void Gui2Radar::Put() {
     pos2d = pos2d + Vector3(0.5, 0.5, 0);
     pos2d = pos2d * Vector3(0.96f, 0.96f, 0) + Vector3(0.02f, 0.02f, 0);  // margin
 
-    team1avatars.at(i)->SetPosition(pos2d.coords[0] * width_percent - 0.6f,
-                                    pos2d.coords[1] * height_percent - 0.8f);
+    team1avatars.at(i)->SetPosition(
+        radarXOffsetPercent + pos2d.coords[0] * radarWidthPercent - avatarWidthPercent * 0.5f,
+        pos2d.coords[1] * height_percent - kAvatarHeightPercent * 0.5f);
   }
 
   for (unsigned int i = 0; i < team2players.size(); i++) {
@@ -117,8 +134,9 @@ void Gui2Radar::Put() {
     pos2d = pos2d + Vector3(0.5, 0.5, 0);
     pos2d = pos2d * Vector3(0.96f, 0.96f, 0) + Vector3(0.02f, 0.02f, 0);  // margin
 
-    team2avatars.at(i)->SetPosition(pos2d.coords[0] * width_percent - 0.6f,
-                                    pos2d.coords[1] * height_percent - 0.8f);
+    team2avatars.at(i)->SetPosition(
+        radarXOffsetPercent + pos2d.coords[0] * radarWidthPercent - avatarWidthPercent * 0.5f,
+        pos2d.coords[1] * height_percent - kAvatarHeightPercent * 0.5f);
   }
 }
 

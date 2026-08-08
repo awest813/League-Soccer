@@ -5,8 +5,6 @@
 
 #include "scoreboard.hpp"
 
-#include <SDL2/SDL.h>
-
 #include "../../onthepitch/match.hpp"
 #include "utils/gui2/windowmanager.hpp"
 
@@ -24,32 +22,33 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
 
   goalCount[0] = 0;
   goalCount[1] = 0;
-  int x, y, w, h;
-  windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
 
   // percentages – score panel centered around 50%
-  float xOffset[9];
+  float xOffset[8];
   xOffset[0] = 1;   // league logo (far left)
   xOffset[1] = 5;   // time (near left)
-  xOffset[2] = 33;  // t1 logo
-  xOffset[3] = 37;  // t1 name
-  xOffset[4] = 43;  // t1 score
-  xOffset[5] = 47;  // t2 logo
-  xOffset[6] = 51;  // t2 name
-  xOffset[7] = 57;  // t2 score
-  xOffset[8] = 61;  // end
-  content_yOffset = 0.2f;
+  xOffset[2] = 34;  // t1 logo
+  xOffset[3] = 38;  // t1 name
+  xOffset[4] = 44;  // t1 score
+  xOffset[5] = 48;  // t2 logo
+  xOffset[6] = 52;  // t2 name
+  xOffset[7] = 58;  // t2 score
   float content_xOffset = 0.2f;
 
-  // Background covers the centered score panel (from ~32% to ~62%)
-  Gui2Image* bg =
-      new Gui2Image(windowManager, "image_scoreboard_bg", 32, 0, xOffset[8] - 31, height_percent);
+  constexpr float kScoreboardBackgroundAspectRatio = 1024.0f / 64.0f;
+  const float scoreboardBackgroundWidth = windowManager->GetWidthPercentForHeight(
+      height_percent, kScoreboardBackgroundAspectRatio);
+  const float scoreboardBackgroundX = (width_percent - scoreboardBackgroundWidth) * 0.5f;
+  Gui2Image* bg = new Gui2Image(windowManager, "image_scoreboard_bg",
+                                scoreboardBackgroundX, 0, scoreboardBackgroundWidth,
+                                height_percent);
   bg->LoadImage("media/menu/scoreboard_bg.png");
   this->AddView(bg);
   bg->Show();
 
+  const float squareLogoWidth = windowManager->GetWidthPercentForHeight(height_percent, 1.0f);
   leagueLogo = new Gui2Image(windowManager, "game_scoreboard_leaguelogo", xOffset[0], 0,
-                             height_percent / windowManager->GetAspectRatio(), height_percent);
+                             squareLogoWidth, height_percent);
   this->AddView(leagueLogo);
   leagueLogo->LoadImage("media/menu/league.png");
   leagueLogo->Show();
@@ -80,10 +79,9 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   goalCountCaption[1]->SetColor(textColor);
   goalCountCaption[1]->SetOutlineColor(textOutlineColor);
 
-  tvLogo =
-      new Gui2Image(windowManager, "game_scoreboard_tvlogo",
-                    width_percent - (height_percent * 2.0f) / windowManager->GetAspectRatio(), 0,
-                    (height_percent * 2.0f) / windowManager->GetAspectRatio(), height_percent);
+  const float tvLogoWidth = windowManager->GetWidthPercentForHeight(height_percent, 2.0f);
+  tvLogo = new Gui2Image(windowManager, "game_scoreboard_tvlogo",
+                         width_percent - tvLogoWidth, 0, tvLogoWidth, height_percent);
   this->AddView(tvLogo);
   tvLogo->LoadImage("media/menu/tvlogo.png");
   tvLogo->Show();
@@ -103,13 +101,13 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   SetGoalCount(1, 0);
 
   teamLogo[0] = new Gui2Image(windowManager, "game_scoreboard_team1logo", xOffset[2], 0,
-                              height_percent / windowManager->GetAspectRatio(), height_percent);
+                              squareLogoWidth, height_percent);
   this->AddView(teamLogo[0]);
   teamLogo[0]->LoadImage(match->GetTeam(0)->GetTeamData()->GetLogoUrl());
   teamLogo[0]->Show();
 
   teamLogo[1] = new Gui2Image(windowManager, "game_scoreboard_team2logo", xOffset[5], 0,
-                              height_percent / windowManager->GetAspectRatio(), height_percent);
+                              squareLogoWidth, height_percent);
   this->AddView(teamLogo[1]);
   teamLogo[1]->LoadImage(match->GetTeam(1)->GetTeamData()->GetLogoUrl());
   teamLogo[1]->Show();

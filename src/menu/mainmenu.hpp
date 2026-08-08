@@ -71,8 +71,6 @@ public:
   virtual void ProcessWindowingEvent(WindowingEvent* event);
   virtual void ProcessKeyboardEvent(KeyboardEvent* event);
 
-protected:
-  Gui2Image* bg;
 };
 
 class OutroPage : public Gui2Page {
@@ -83,8 +81,6 @@ public:
   virtual void ProcessWindowingEvent(WindowingEvent* event);
   virtual void ProcessKeyboardEvent(KeyboardEvent* event);
 
-protected:
-  Gui2Image* bg;
 };
 
 class MainMenuPage : public Gui2Page {

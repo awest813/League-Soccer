@@ -16,6 +16,8 @@
 namespace {
 
 constexpr unsigned long kMenuSmokeSettingsQuitDelay_ms = 500;
+constexpr float kControllerDiagramAspectRatio = 128.0f / 148.0f;
+constexpr float kControllerDiagramHeight = 30.0f;
 
 bool MenuSmokeSettingsEnabled() {
   return GetConfiguration()->GetBool("menu_smoke_test_settings", false);
@@ -929,11 +931,15 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
   this->AddView(title);
   title->Show();
 
-  Gui2Image* controller_left = new Gui2Image(windowManager, "image_controller_left", 0, 0, 20, 30);
+  const float controllerDiagramWidth = windowManager->GetWidthPercentForHeight(
+      kControllerDiagramHeight, kControllerDiagramAspectRatio);
+  Gui2Image* controller_left = new Gui2Image(windowManager, "image_controller_left", 0, 0,
+                                             controllerDiagramWidth, kControllerDiagramHeight);
   controller_left->LoadImage("media/menu/controller/controller_left.png");
 
   Gui2Image* controller_right =
-      new Gui2Image(windowManager, "image_controller_right", 0, 0, 20, 30);
+      new Gui2Image(windowManager, "image_controller_right", 0, 0, controllerDiagramWidth,
+                    kControllerDiagramHeight);
   controller_right->LoadImage("media/menu/controller/controller_right.png");
 
   std::string gpbuttonIDs_string[e_ControllerButton_Size];
@@ -1272,14 +1278,18 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   this->AddView(title);
   title->Show();
 
-  Gui2Image* controller_left =
-      new Gui2Image(windowManager, "image_controller_left", 50, 15, 20, 30);
+  const float controllerDiagramWidth = windowManager->GetWidthPercentForHeight(
+      kControllerDiagramHeight, kControllerDiagramAspectRatio);
+  Gui2Image* controller_left = new Gui2Image(
+      windowManager, "image_controller_left", 60.0f - controllerDiagramWidth * 0.5f, 15,
+      controllerDiagramWidth, kControllerDiagramHeight);
   this->AddView(controller_left);
   controller_left->LoadImage("media/menu/controller/controller_left.png");
   controller_left->Show();
 
-  Gui2Image* controller_right =
-      new Gui2Image(windowManager, "image_controller_right", 70, 15, 20, 30);
+  Gui2Image* controller_right = new Gui2Image(
+      windowManager, "image_controller_right", 80.0f - controllerDiagramWidth * 0.5f, 15,
+      controllerDiagramWidth, kControllerDiagramHeight);
   this->AddView(controller_right);
   controller_right->LoadImage("media/menu/controller/controller_right.png");
   controller_right->Show();
@@ -1723,6 +1733,18 @@ bool CheckDuplicate(const std::vector<Resolution>& res, int x, int y) {
   return false;
 }
 
+bool Is16By9Resolution(int x, int y) {
+  if (x <= 0 || y <= 0) {
+    return false;
+  }
+
+  int difference = x * 9 - y * 16;
+  if (difference < 0) {
+    difference = -difference;
+  }
+  return difference * 100 <= y * 9;
+}
+
 GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
       pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
@@ -1737,7 +1759,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   title->Show();
 
   Gui2Caption* hint = new Gui2Caption(windowManager, "caption_settings_graphics_hint", 2, 6, 66, 3,
-                                      "Choose a resolution. A restart may be required.");
+                                       "Choose a 16:9 resolution. A restart may be required.");
   frame->AddView(hint);
   hint->Show();
 
@@ -1752,9 +1774,9 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
     res.bpp = dm.dmBitsPerPel;
     res.fullscreen = false;
     // cout << "Mode #" << iModeNum << " = " << dm.dmPelsWidth << "x" << dm.dmPelsHeight << endl;
-    if (res.bpp == 32)
-      if (!CheckDuplicate(resolutions, res.x, res.y))
-        resolutions.push_back(res);
+    if (res.bpp == 32 && Is16By9Resolution(res.x, res.y) &&
+        !CheckDuplicate(resolutions, res.x, res.y))
+      resolutions.push_back(res);
   }
 #else
   int display = 0;
@@ -1767,7 +1789,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
     res.y = mode.h;
     res.bpp = SDL_BITSPERPIXEL(mode.format);
     res.fullscreen = false;
-    if (!CheckDuplicate(resolutions, res.x, res.y))
+    if (Is16By9Resolution(res.x, res.y) && !CheckDuplicate(resolutions, res.x, res.y))
       resolutions.push_back(res);
   }
 #endif
@@ -1776,10 +1798,10 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
     Resolution fallback;
     fallback.x = GetConfiguration()->GetInt("context_x", 1280);
     fallback.y = GetConfiguration()->GetInt("context_y", 720);
-    if (fallback.x <= 0)
+    if (!Is16By9Resolution(fallback.x, fallback.y)) {
       fallback.x = 1280;
-    if (fallback.y <= 0)
       fallback.y = 720;
+    }
     fallback.bpp = 32;
     fallback.fullscreen = false;
     resolutions.push_back(fallback);

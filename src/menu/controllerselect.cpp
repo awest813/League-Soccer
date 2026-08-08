@@ -18,6 +18,9 @@ using namespace blunted;
 
 namespace {
 
+constexpr float kControllerThumbnailAspectRatio = 300.0f / 200.0f;
+constexpr float kControllerThumbnailHeight = 10.0f;
+
 constexpr unsigned long kMenuSmokeAdvanceDelay_ms = 250;
 
 bool MenuSmokeQuickMatchEnabled() {
@@ -117,8 +120,10 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
         autoAssignedPlayerOne = true;
       }
     }
-    side.controllerImage =
-        new Gui2Image(windowManager, "image_controller" + int_to_str(i), 0, 0, 14, 10);
+    const float controllerImageWidth = windowManager->GetWidthPercentForHeight(
+        kControllerThumbnailHeight, kControllerThumbnailAspectRatio);
+    side.controllerImage = new Gui2Image(windowManager, "image_controller" + int_to_str(i), 0, 0,
+                                         controllerImageWidth, kControllerThumbnailHeight);
     this->AddView(side.controllerImage);
     if (controllers.at(i)->GetDeviceType() == e_HIDeviceType_Gamepad) {
       side.controllerImage->LoadImage("media/menu/controller/controller_small.png");
@@ -191,8 +196,10 @@ void ControllerSelectPage::ConfirmSelection() {
 
 void ControllerSelectPage::SetImagePositions() {
   for (unsigned int i = 0; i < sides.size(); i++) {
-    int x = 43 + sides.at(i).side * 25;
-    sides.at(i).controllerImage->SetPosition(x, 20 + i * 15);
+    const float controllerImageWidth = windowManager->GetWidthPercentForHeight(
+        kControllerThumbnailHeight, kControllerThumbnailAspectRatio);
+    const float centerX = 50.0f + sides.at(i).side * 25.0f;
+    sides.at(i).controllerImage->SetPosition(centerX - controllerImageWidth * 0.5f, 20 + i * 15);
   }
 }
 
