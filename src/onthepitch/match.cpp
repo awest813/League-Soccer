@@ -778,10 +778,9 @@ void Match::UpdateCrowdAudio() {
       Team* possessionTeam = teams[GetBestPossessionTeamID()].get();
       Player* possessionPlayer = GetPlayer(possessionTeam->GetBestPossessionPlayerID());
       if (possessionPlayer) {
-        float distance =
-            (Vector3(pitchHalfW * -possessionTeam->GetSide(), 0, 0) -
-             possessionPlayer->GetPosition())
-                .GetLength();
+        float distance = (Vector3(pitchHalfW * -possessionTeam->GetSide(), 0, 0) -
+                          possessionPlayer->GetPosition())
+                             .GetLength();
         distance = clamp(distance / 80.0f, 0.3f, 0.7f);
         currentExcitement = pow(1.0f - distance, 1.2f);
       }
@@ -802,15 +801,12 @@ void Match::UpdateCrowdAudio() {
   }
 
   const float effectiveExcitement = clamp(excitement + excitementEventBoost, 0.0f, 1.0f);
-  const float masterVolume =
-      clamp(GetConfiguration()->GetReal("audio_volume", 0.5f), 0.0f, 1.0f);
+  const float masterVolume = clamp(GetConfiguration()->GetReal("audio_volume", 0.5f), 0.0f, 1.0f);
   const bool crowdMuted = masterVolume == 0.0f;
   const float pauseFactor = pause ? 0.22f : 1.0f;
-  const float targetGain01 =
-      (0.18f + effectiveExcitement * 0.42f) * masterVolume * pauseFactor;
+  const float targetGain01 = (0.18f + effectiveExcitement * 0.42f) * masterVolume * pauseFactor;
   const float targetGain02 =
-      clamp((effectiveExcitement - 0.22f) / 0.78f, 0.0f, 1.0f) * 0.62f *
-      masterVolume * pauseFactor;
+      clamp((effectiveExcitement - 0.22f) / 0.78f, 0.0f, 1.0f) * 0.62f * masterVolume * pauseFactor;
 
   if (crowdMuted) {
     crowdAmbientGain = 0.0f;
@@ -2104,8 +2100,7 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
                   tripType = 1;  // was 2
                 p2->TripMe(tripVec, tripType);
                 referee->TripNotice(p2, p1, tripType);
-                AddExcitementBoost(tripType == 3 ? 0.55f : 0.35f,
-                                   tripType == 3 ? 2200 : 1500);
+                AddExcitementBoost(tripType == 3 ? 0.55f : 0.35f, tripType == 3 ? 2200 : 1500);
               }
             }
             if (tackle == 2) {
@@ -2116,8 +2111,7 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
                   tripType = 1;  // was 2
                 p1->TripMe(tripVec, tripType);
                 referee->TripNotice(p1, p2, tripType);
-                AddExcitementBoost(tripType == 3 ? 0.55f : 0.35f,
-                                   tripType == 3 ? 2200 : 1500);
+                AddExcitementBoost(tripType == 3 ? 0.55f : 0.35f, tripType == 3 ? 2200 : 1500);
               }
             }
             break;

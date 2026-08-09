@@ -376,9 +376,8 @@ LeagueStandingsNCupPage::LeagueStandingsNCupPage(Gui2WindowManager* windowManage
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_ncup_info", 2, 10, 66, 8,
-      "National Cup tournaments are planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_ncup_info", 2, 10, 66, 8,
+                                      "National Cup tournaments are planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -412,9 +411,8 @@ LeagueStandingsNCupTreePage::LeagueStandingsNCupTreePage(Gui2WindowManager* wind
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_ncup_tree_info", 2, 10, 66, 8,
-      "National Cup tournaments are planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_ncup_tree_info", 2, 10, 66, 8,
+                                      "National Cup tournaments are planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -448,9 +446,8 @@ LeagueStandingsNCupStatsPage::LeagueStandingsNCupStatsPage(Gui2WindowManager* wi
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_ncup_stats_info", 2, 10, 66, 8,
-      "National Cup tournaments are planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_ncup_stats_info", 2, 10, 66, 8,
+                                      "National Cup tournaments are planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -478,14 +475,13 @@ LeagueStandingsICup1Page::LeagueStandingsICup1Page(Gui2WindowManager* windowMana
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup1", 2, 2, 66,
-                                       3, "International Cup 1");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup1", 2, 2, 66, 3,
+                                       "International Cup 1");
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_icup1_info", 2, 10, 66, 8,
-      "International Cup 1 is planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup1_info", 2, 10, 66, 8,
+                                      "International Cup 1 is planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -520,9 +516,8 @@ LeagueStandingsICup1GroupTablePage::LeagueStandingsICup1GroupTablePage(
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_icup1_gt_info", 2, 10, 66, 8,
-      "International Cup 1 is planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup1_gt_info", 2, 10, 66, 8,
+                                      "International Cup 1 is planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -556,9 +551,8 @@ LeagueStandingsICup1TreePage::LeagueStandingsICup1TreePage(Gui2WindowManager* wi
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_icup1_tree_info", 2, 10, 66, 8,
-      "International Cup 1 is planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup1_tree_info", 2, 10, 66, 8,
+                                      "International Cup 1 is planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -592,9 +586,8 @@ LeagueStandingsICup1StatsPage::LeagueStandingsICup1StatsPage(Gui2WindowManager* 
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_icup1_stats_info", 2, 10, 66, 8,
-      "International Cup 1 is planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup1_stats_info", 2, 10, 66, 8,
+                                      "International Cup 1 is planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -622,14 +615,13 @@ LeagueStandingsICup2Page::LeagueStandingsICup2Page(Gui2WindowManager* windowMana
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup2", 2, 2, 66,
-                                       3, "International Cup 2");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup2", 2, 2, 66, 3,
+                                       "International Cup 2");
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_icup2_info", 2, 10, 66, 8,
-      "International Cup 2 is planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup2_info", 2, 10, 66, 8,
+                                      "International Cup 2 is planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -664,9 +656,8 @@ LeagueStandingsICup2GroupTablePage::LeagueStandingsICup2GroupTablePage(
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_icup2_gt_info", 2, 10, 66, 8,
-      "International Cup 2 is planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup2_gt_info", 2, 10, 66, 8,
+                                      "International Cup 2 is planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -700,9 +691,8 @@ LeagueStandingsICup2TreePage::LeagueStandingsICup2TreePage(Gui2WindowManager* wi
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_icup2_tree_info", 2, 10, 66, 8,
-      "International Cup 2 is planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup2_tree_info", 2, 10, 66, 8,
+                                      "International Cup 2 is planned for a future update.");
   frame->AddView(info);
   info->Show();
 
@@ -736,9 +726,8 @@ LeagueStandingsICup2StatsPage::LeagueStandingsICup2StatsPage(Gui2WindowManager* 
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_icup2_stats_info", 2, 10, 66, 8,
-      "International Cup 2 is planned for a future update.");
+  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup2_stats_info", 2, 10, 66, 8,
+                                      "International Cup 2 is planned for a future update.");
   frame->AddView(info);
   info->Show();
 

@@ -1819,7 +1819,7 @@ void CareerMatchdayPage::PopulateGrid() {
       scoreLabel = buf;
     }
     Gui2Caption* scoreCap = new Gui2Caption(windowManager, "cap_md_score_" + std::to_string(i), 0,
-                                             0, 42, 2, scoreLabel);
+                                            0, 42, 2, scoreLabel);
     fixtureGrid->AddView(scoreCap, row++, 0);
     fixtureScoreCaps[i] = scoreCap;
 
@@ -1837,7 +1837,7 @@ void CareerMatchdayPage::PopulateGrid() {
       snprintf(statsBuf, sizeof(statsBuf), "  Shots: %d-%d | Possession: %d%% | %s", res.homeShots,
                res.awayShots, res.homePossession, scorersStr.c_str());
       Gui2Caption* statsCap = new Gui2Caption(windowManager, "cap_md_stats_" + std::to_string(i), 0,
-                                               0, 42, 2, statsBuf);
+                                              0, 42, 2, statsBuf);
       fixtureGrid->AddView(statsCap, row++, 0);
     }
 

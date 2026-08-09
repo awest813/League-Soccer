@@ -937,9 +937,8 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
                                              controllerDiagramWidth, kControllerDiagramHeight);
   controller_left->LoadImage("media/menu/controller/controller_left.png");
 
-  Gui2Image* controller_right =
-      new Gui2Image(windowManager, "image_controller_right", 0, 0, controllerDiagramWidth,
-                    kControllerDiagramHeight);
+  Gui2Image* controller_right = new Gui2Image(windowManager, "image_controller_right", 0, 0,
+                                              controllerDiagramWidth, kControllerDiagramHeight);
   controller_right->LoadImage("media/menu/controller/controller_right.png");
 
   std::string gpbuttonIDs_string[e_ControllerButton_Size];
@@ -1280,16 +1279,16 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
 
   const float controllerDiagramWidth = windowManager->GetWidthPercentForHeight(
       kControllerDiagramHeight, kControllerDiagramAspectRatio);
-  Gui2Image* controller_left = new Gui2Image(
-      windowManager, "image_controller_left", 60.0f - controllerDiagramWidth * 0.5f, 15,
-      controllerDiagramWidth, kControllerDiagramHeight);
+  Gui2Image* controller_left =
+      new Gui2Image(windowManager, "image_controller_left", 60.0f - controllerDiagramWidth * 0.5f,
+                    15, controllerDiagramWidth, kControllerDiagramHeight);
   this->AddView(controller_left);
   controller_left->LoadImage("media/menu/controller/controller_left.png");
   controller_left->Show();
 
-  Gui2Image* controller_right = new Gui2Image(
-      windowManager, "image_controller_right", 80.0f - controllerDiagramWidth * 0.5f, 15,
-      controllerDiagramWidth, kControllerDiagramHeight);
+  Gui2Image* controller_right =
+      new Gui2Image(windowManager, "image_controller_right", 80.0f - controllerDiagramWidth * 0.5f,
+                    15, controllerDiagramWidth, kControllerDiagramHeight);
   this->AddView(controller_right);
   controller_right->LoadImage("media/menu/controller/controller_right.png");
   controller_right->Show();
@@ -1759,7 +1758,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   title->Show();
 
   Gui2Caption* hint = new Gui2Caption(windowManager, "caption_settings_graphics_hint", 2, 6, 66, 3,
-                                       "Choose a 16:9 resolution. A restart may be required.");
+                                      "Choose a 16:9 resolution. A restart may be required.");
   frame->AddView(hint);
   hint->Show();
 

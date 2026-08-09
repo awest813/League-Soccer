@@ -83,8 +83,9 @@ int AddTeams(Gui2IconSelector* selector, const std::string& competition_id) {
     return 0;
   }
 
-  auto result = GetDB()->Query("select id, name, logo_url from teams where league_id = " +
-                               competition_id + " order by name");
+  auto result =
+      GetDB()->Query("select id, name, logo_url from teams where league_id = " + competition_id +
+                     " order by name");
   int teamCount = 0;
 
   for (unsigned int r = 0; r < result->data.size(); r++) {
@@ -120,9 +121,8 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
   frame2 = new Gui2Frame(windowManager, "teamselect_frame2", 51, 18, 34, 52, true);
   this->AddView(frame2);
 
-  Gui2Caption* brandingNotice =
-      new Gui2Caption(windowManager, "teamselect_brandingnotice", 19, 73, 28, 3,
-                      "Original League Soccer team branding");
+  Gui2Caption* brandingNotice = new Gui2Caption(windowManager, "teamselect_brandingnotice", 19, 73,
+                                                28, 3, "Original League Soccer team branding");
   this->AddView(brandingNotice);
   brandingNotice->SetColor(Vector3(200, 200, 200));
   brandingNotice->SetTransparency(0.6f);
@@ -279,8 +279,7 @@ void TeamSelectPage::SetupTeamSelect1() {
 void TeamSelectPage::SetupTeamSelect2() {
   teamSelect2->ClearEntries();
   const int teamCount = AddTeams(teamSelect2, competitionSelect2->GetSelectedEntryID());
-  if (teamCount > 1 &&
-      teamSelect2->GetSelectedEntryID() == teamSelect1->GetSelectedEntryID()) {
+  if (teamCount > 1 && teamSelect2->GetSelectedEntryID() == teamSelect1->GetSelectedEntryID()) {
     teamSelect2->SetSelectedEntryIndex(1);
   }
   UpdateReadyButtons();
@@ -308,8 +307,7 @@ void TeamSelectPage::GoOptionsMenu() {
   GetMenuTask()->SetTeamIDs(teamSelect1->GetSelectedEntryID(), teamSelect2->GetSelectedEntryID());
   if (MenuSmokeAutoQuickMatchEnabled()) {
     printf("[menu-smoke] Selected fixture: team %s vs team %s\n",
-           teamSelect1->GetSelectedEntryID().c_str(),
-           teamSelect2->GetSelectedEntryID().c_str());
+           teamSelect1->GetSelectedEntryID().c_str(), teamSelect2->GetSelectedEntryID().c_str());
   }
   // printf("teams: %i vs %i\n", atoi(teamSelect1->GetSelectedEntryID().c_str()),
   // atoi(teamSelect2->GetSelectedEntryID().c_str()));
