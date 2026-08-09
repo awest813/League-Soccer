@@ -514,10 +514,6 @@ int main(int argc, const char** argv) {
 
   HIDKeyboard* keyboard = new HIDKeyboard();
   controllers.push_back(keyboard);
-  for (int i = 0; i < SDL_NumJoysticks(); i++) {
-    HIDGamepad* gamepad = new HIDGamepad(i, i);
-    controllers.push_back(gamepad);
-  }
 
   // Headless "gamepad controls" smoke match: inject an autonomous scripted
   // controller that drives a human team through the real input pipeline.
