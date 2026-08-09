@@ -937,9 +937,8 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
                                              controllerDiagramWidth, kControllerDiagramHeight);
   controller_left->LoadImage("media/menu/controller/controller_left.png");
 
-  Gui2Image* controller_right =
-      new Gui2Image(windowManager, "image_controller_right", 0, 0, controllerDiagramWidth,
-                    kControllerDiagramHeight);
+  Gui2Image* controller_right = new Gui2Image(windowManager, "image_controller_right", 0, 0,
+                                              controllerDiagramWidth, kControllerDiagramHeight);
   controller_right->LoadImage("media/menu/controller/controller_right.png");
 
   std::string gpbuttonIDs_string[e_ControllerButton_Size];
@@ -1280,16 +1279,16 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
 
   const float controllerDiagramWidth = windowManager->GetWidthPercentForHeight(
       kControllerDiagramHeight, kControllerDiagramAspectRatio);
-  Gui2Image* controller_left = new Gui2Image(
-      windowManager, "image_controller_left", 60.0f - controllerDiagramWidth * 0.5f, 15,
-      controllerDiagramWidth, kControllerDiagramHeight);
+  Gui2Image* controller_left =
+      new Gui2Image(windowManager, "image_controller_left", 60.0f - controllerDiagramWidth * 0.5f,
+                    15, controllerDiagramWidth, kControllerDiagramHeight);
   this->AddView(controller_left);
   controller_left->LoadImage("media/menu/controller/controller_left.png");
   controller_left->Show();
 
-  Gui2Image* controller_right = new Gui2Image(
-      windowManager, "image_controller_right", 80.0f - controllerDiagramWidth * 0.5f, 15,
-      controllerDiagramWidth, kControllerDiagramHeight);
+  Gui2Image* controller_right =
+      new Gui2Image(windowManager, "image_controller_right", 80.0f - controllerDiagramWidth * 0.5f,
+                    15, controllerDiagramWidth, kControllerDiagramHeight);
   this->AddView(controller_right);
   controller_right->LoadImage("media/menu/controller/controller_right.png");
   controller_right->Show();
@@ -1759,7 +1758,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   title->Show();
 
   Gui2Caption* hint = new Gui2Caption(windowManager, "caption_settings_graphics_hint", 2, 6, 66, 3,
-                                       "Choose a 16:9 resolution. A restart may be required.");
+                                      "Choose a 16:9 resolution. A restart may be required.");
   frame->AddView(hint);
   hint->Show();
 
@@ -1815,7 +1814,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
     resolutions.push_back(res);
   }
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_settings_graphics_reslist", 20, 15, 60, 75);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_settings_graphics_reslist", 2, 10, 66, 75);
 
   int context_width, context_height, context_bpp;
   GetScene2D()->GetContextSize(context_width, context_height, context_bpp);
@@ -1864,7 +1863,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->Show();
 
   Gui2Button* backButton =
-      new Gui2Button(windowManager, "button_settings_graphics_back", 20, 92, 30, 3,
+      new Gui2Button(windowManager, "button_settings_graphics_back", 35, 92, 30, 3,
                      Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
   this->AddView(backButton);

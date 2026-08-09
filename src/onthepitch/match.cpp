@@ -23,6 +23,7 @@
 const unsigned int replaySize_ms = 10000;
 const unsigned int camPosSize = 150;           // 180; //130
 const float excitementEventDecayRate = 0.99f;  // per 10ms tick
+const float crowdGainUpdateThreshold = 0.001f;
 
 Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
     : matchData(matchData), controllers(controllers) {
@@ -371,6 +372,8 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   excitement = 0.0f;
   excitementEventBoost = 0.0f;
   excitementEventTimer_ms = 0;
+  crowdAmbientGain = 0.0f;
+  crowdReactionGain = 0.0f;
 
   lastBodyBallCollisionTime_ms = 0;
 
@@ -635,9 +638,11 @@ void Match::UpdateControllerSetup() {
   // add new
   const std::vector<SideSelection> sides = menuTask->GetControllerSetup();
   for (unsigned int i = 0; i < sides.size(); i++) {
-    if (sides.at(i).side != 0) {
+    const int controllerID = sides.at(i).controllerID;
+    if ((sides.at(i).side == -1 || sides.at(i).side == 1) && controllerID >= 0 &&
+        controllerID < static_cast<int>(controllers.size())) {
       int teamID = int(round(sides.at(i).side * 0.5 + 0.5));
-      teams[teamID]->AddHumanGamer(controllers.at(sides.at(i).controllerID),
+      teams[teamID]->AddHumanGamer(controllers.at(controllerID),
                                    (e_PlayerColor)i);  // todo: proper color
       // printf("team id %i, %i\n", teamID, sides.at(i).controllerID);
     }
@@ -755,10 +760,70 @@ void Match::GameOver() {
 }
 
 void Match::AddExcitementBoost(float amount, int duration_ms) {
+  if (amount <= 0.0f || duration_ms <= 0)
+    return;
+  amount = clamp(amount, 0.0f, 1.0f);
   if (amount > excitementEventBoost)
     excitementEventBoost = amount;
   if (duration_ms > excitementEventTimer_ms)
     excitementEventTimer_ms = duration_ms;
+}
+
+void Match::UpdateCrowdAudio() {
+  if (!pause) {
+    float currentExcitement = 0.15f;
+    if (IsGoalScored()) {
+      currentExcitement = 1.0f;
+    } else if (IsInPlay() && GetBestPossessionTeamID() != -1) {
+      Team* possessionTeam = teams[GetBestPossessionTeamID()].get();
+      Player* possessionPlayer = GetPlayer(possessionTeam->GetBestPossessionPlayerID());
+      if (possessionPlayer) {
+        float distance = (Vector3(pitchHalfW * -possessionTeam->GetSide(), 0, 0) -
+                          possessionPlayer->GetPosition())
+                             .GetLength();
+        distance = clamp(distance / 80.0f, 0.3f, 0.7f);
+        currentExcitement = pow(1.0f - distance, 1.2f);
+      }
+    }
+
+    if (currentExcitement > excitement) {
+      excitement = clamp(excitement * 0.97f + currentExcitement * 0.03f, 0.0f, 1.0f);
+    } else {
+      excitement = clamp(excitement * 0.997f + currentExcitement * 0.003f, 0.0f, 1.0f);
+    }
+
+    if (excitementEventTimer_ms > 0) {
+      excitementEventTimer_ms = std::max(0, excitementEventTimer_ms - 10);
+      excitementEventBoost *= excitementEventDecayRate;
+      if (excitementEventTimer_ms == 0)
+        excitementEventBoost = 0.0f;
+    }
+  }
+
+  const float effectiveExcitement = clamp(excitement + excitementEventBoost, 0.0f, 1.0f);
+  const float masterVolume = clamp(GetConfiguration()->GetReal("audio_volume", 0.5f), 0.0f, 1.0f);
+  const bool crowdMuted = masterVolume == 0.0f;
+  const float pauseFactor = pause ? 0.22f : 1.0f;
+  const float targetGain01 = (0.18f + effectiveExcitement * 0.42f) * masterVolume * pauseFactor;
+  const float targetGain02 =
+      clamp((effectiveExcitement - 0.22f) / 0.78f, 0.0f, 1.0f) * 0.62f * masterVolume * pauseFactor;
+
+  if (crowdMuted) {
+    crowdAmbientGain = 0.0f;
+    crowdReactionGain = 0.0f;
+  } else {
+    const float ambientSmoothing = targetGain01 > crowdAmbientGain ? 0.12f : 0.025f;
+    const float reactionSmoothing = targetGain02 > crowdReactionGain ? 0.16f : 0.035f;
+    crowdAmbientGain += (targetGain01 - crowdAmbientGain) * ambientSmoothing;
+    crowdReactionGain += (targetGain02 - crowdReactionGain) * reactionSmoothing;
+  }
+
+  if ((crowdMuted && crowd01->GetGain() != 0.0f) ||
+      fabs(crowd01->GetGain() - crowdAmbientGain) >= crowdGainUpdateThreshold)
+    crowd01->SetGain(crowdAmbientGain);
+  if ((crowdMuted && crowd02->GetGain() != 0.0f) ||
+      fabs(crowd02->GetGain() - crowdReactionGain) >= crowdGainUpdateThreshold)
+    crowd02->SetGain(crowdReactionGain);
 }
 
 void Match::ToggleStatsOverlay() {
@@ -1004,50 +1069,6 @@ void Match::Process() {
 
     CheckHumanoidCollisions();  // todo: should not read geoms during process
 
-    // crowd excitement
-
-    if (GetBestPossessionTeamID() != -1) {
-      float cur_excitement;
-      if (!IsGoalScored()) {
-        if (IsInPlay()) {
-          float distance =
-              (Vector3(pitchHalfW * -teams[GetBestPossessionTeamID()]->GetSide(), 0, 0) -
-               GetPlayer(teams[GetBestPossessionTeamID()]->GetBestPossessionPlayerID())
-                   ->GetPosition())
-                  .GetLength();
-          distance = clamp(distance / 80.0f, 0.3f, 0.7f);
-          cur_excitement = 1.0f - distance;
-          cur_excitement = pow(cur_excitement, 1.2f);
-        } else {
-          cur_excitement = 0.2f;
-        }
-      } else {
-        cur_excitement = 1.0f;
-      }
-      if (cur_excitement > excitement) {
-        // fast rise
-        excitement = clamp(excitement * 0.98f + cur_excitement * 0.02f, 0.0f, 1.0f);
-      } else {
-        // slow decay
-        excitement = clamp(excitement * 0.998f + cur_excitement * 0.002f, 0.0f, 1.0f);
-      }
-      // apply transient event boost (e.g. foul) on top of base excitement
-      if (excitementEventTimer_ms > 0) {
-        excitementEventTimer_ms -= 10;
-        if (excitementEventTimer_ms < 0)
-          excitementEventTimer_ms = 0;
-        // decay boost toward zero as timer runs down
-        excitementEventBoost *= excitementEventDecayRate;
-        if (excitementEventTimer_ms == 0)
-          excitementEventBoost = 0.0f;
-      }
-      float effectiveExcitement = clamp(excitement + excitementEventBoost, 0.0f, 1.0f);
-      crowd01->SetGain(effectiveExcitement * 0.5f *
-                       GetConfiguration()->GetReal("audio_volume", 0.5f));
-      crowd02->SetGain(clamp((effectiveExcitement - 0.3f) * 1.43f, 0.0f, 1.0f) * 0.5f *
-                       GetConfiguration()->GetReal("audio_volume", 0.5f));
-    }
-
     // time
 
     if (IsInPlay() && !IsInSetPiece())
@@ -1085,6 +1106,8 @@ void Match::Process() {
         teams[0]->GetController()->UpdateTactics();
       }
       if (t1goal || t2goal) {
+        AddExcitementBoost(1.0f, 5000);
+
         // find out who scored
         bool ownGoal = true;
         if (GetLastTouchTeamID(e_TouchType_Intentional_Kicked) == GetLastGoalTeamID() ||
@@ -1143,6 +1166,8 @@ void Match::Process() {
     }
 
   }  // end if !pause
+
+  UpdateCrowdAudio();
 
   if (autoUpdateIngameCamera)
     UpdateIngameCamera();
@@ -1978,9 +2003,7 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
           referee->TripNotice(p1, p2, tripType);
           matchData->AddFoul(p2->GetTeamID());
           p1->Injure(tripType * 0.04f);
-          // crowd reacts to foul with brief excitement boost
-          excitementEventBoost = 0.5f + tripType * 0.1f;
-          excitementEventTimer_ms = 3000;
+          AddExcitementBoost(0.5f + tripType * 0.1f, 3000);
         }
       }
       if (p2sensitivity > trip0threshold) {
@@ -1996,9 +2019,7 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
           referee->TripNotice(p2, p1, tripType);
           matchData->AddFoul(p1->GetTeamID());
           p2->Injure(tripType * 0.04f);
-          // crowd reacts to foul with brief excitement boost
-          excitementEventBoost = 0.5f + tripType * 0.1f;
-          excitementEventTimer_ms = 3000;
+          AddExcitementBoost(0.5f + tripType * 0.1f, 3000);
         }
       }
 
@@ -2079,6 +2100,7 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
                   tripType = 1;  // was 2
                 p2->TripMe(tripVec, tripType);
                 referee->TripNotice(p2, p1, tripType);
+                AddExcitementBoost(tripType == 3 ? 0.55f : 0.35f, tripType == 3 ? 2200 : 1500);
               }
             }
             if (tackle == 2) {
@@ -2089,6 +2111,7 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
                   tripType = 1;  // was 2
                 p1->TripMe(tripVec, tripType);
                 referee->TripNotice(p1, p2, tripType);
+                AddExcitementBoost(tripType == 3 ? 0.55f : 0.35f, tripType == 3 ? 2200 : 1500);
               }
             }
             break;
@@ -2119,6 +2142,7 @@ void Match::CheckBallCollisions() {
   float bias = 0.0;
   int bounceCount =
       0;  // this shit is shit, average properly in combination with bias or something like that
+  float tackleBallExcitement = 0.0f;
 
   // printf("lasttouchbias: %f, isnul?: %s\n", GetLastTouchBias(200), GetLastTouchBias(200) == 0.0f
   // ? "true" : "false");
@@ -2214,6 +2238,10 @@ void Match::CheckBallCollisions() {
                              players[i]->GetMovement() * (1.0f - movementBias);
                 bounceCount++;
                 players[i]->GetTeam()->SetLastTouchPlayer(players[i], e_TouchType_Accidental);
+                if (players[i]->GetCurrentFunctionType() == e_FunctionType_Sliding)
+                  tackleBallExcitement = std::max(tackleBallExcitement, 0.35f);
+                else if (players[i]->GetCurrentFunctionType() == e_FunctionType_Interfere)
+                  tackleBallExcitement = std::max(tackleBallExcitement, 0.22f);
                 Vector3 aabbCenter;
                 objAABB.GetCenter(aabbCenter);
                 bias += (1.0f - clamp(((ball->Predict(0) - aabbCenter).GetLength() - ballRadius) /
@@ -2251,6 +2279,9 @@ void Match::CheckBallCollisions() {
     ball->Touch(resultVector);
     ball->SetRotation(random(-30, 30), random(-30, 30), random(-30, 30), 0.5f * bias);
     ball->TriggerBallTouchSound(pow(NormalizedClamp(resultVector.GetLength(), 4.0f, 40.0f), 0.7f));
+
+    if (tackleBallExcitement > 0.0f)
+      AddExcitementBoost(tackleBallExcitement, 1400);
 
     lastBodyBallCollisionTime_ms = actualTime_ms;
   }

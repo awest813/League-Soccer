@@ -272,6 +272,7 @@ protected:
   bool CheckForGoal(signed int side);
 
   void CalculateBestPossessionTeamID();
+  void UpdateCrowdAudio();
   void CheckHumanoidCollisions();
   void CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBounce>& p1Bounce,
                               std::vector<PlayerBounce>& p2Bounce);
@@ -402,6 +403,8 @@ protected:
   float excitement;
   float excitementEventBoost;
   int excitementEventTimer_ms;
+  float crowdAmbientGain;
+  float crowdReactionGain;
 
   Vector3 previousBallPos;
 

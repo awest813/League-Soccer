@@ -26,9 +26,9 @@ enum e_MenuAction {
 };
 
 struct SideSelection {
-  int controllerID;
-  Gui2Image* controllerImage;
-  int side;  // -1, 0, 1
+  int controllerID = -1;
+  Gui2Image* controllerImage = nullptr;
+  int side = 0;  // -1, 0, 1
 };
 
 // todo: just load match-, team-, and playerdata before starting match

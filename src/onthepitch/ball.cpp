@@ -303,6 +303,7 @@ BallSpatialInfo Ball::CalculatePrediction() {
         goalpostsound->SetGain(clamp(momentumPredict.GetLength() * 0.05f, 0.01f, 1.0f) * 0.5f *
                                GetConfiguration()->GetReal("audio_volume", 0.5f));
         goalpostsound->Poke(e_SystemType_Audio);
+        match->AddExcitementBoost(0.85f, 3000);
       }
     }
 

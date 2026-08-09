@@ -12,16 +12,16 @@ using namespace blunted;
 
 VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_visualoptions", 15, 50, 70, 40, true);
+  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_visualoptions", 20, 25, 60, 50, true);
   this->AddView(frame);
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_visualoptions", 5, 5, 20, 3, "Visual Options");
+      new Gui2Caption(windowManager, "caption_visualoptions", 2, 2, 56, 3, "Visual Options");
   frame->AddView(title);
   title->Show();
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_visualoptions", 5, 15, 70, 20);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_visualoptions", 2, 8, 56, 36);
 
   kitSelectionPulldown[0] =
       new Gui2Pulldown(windowManager, "pulldown_visualoptions_kitselection_t1", 0, 0, 30, 3);
@@ -60,7 +60,7 @@ VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui
   grid->AddView(backButton, 3, 1);
 
   frame->AddView(grid);
-  grid->UpdateLayout(2.0f);
+  grid->UpdateLayout(0.5f);
   grid->Show();
 
   kitSelectionPulldown[0]->SetFocus();

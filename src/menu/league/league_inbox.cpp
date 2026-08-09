@@ -53,7 +53,7 @@ void LeagueInboxPage::RefreshMessages() {
   int row = 0;
   if (result->data.empty()) {
     Gui2Caption* emptyCap =
-        new Gui2Caption(windowManager, "caption_inbox_empty", 0, 0, 86, 3,
+        new Gui2Caption(windowManager, "caption_inbox_empty", 0, 0, 65, 3,
                         "No messages yet. Messages will appear as you play matches.");
     messageGrid->AddView(emptyCap, row++, 0);
   } else {
@@ -66,7 +66,7 @@ void LeagueInboxPage::RefreshMessages() {
       std::string prefix = isRead ? "  " : "* ";
       std::string label = prefix + "[" + timestamp.substr(0, 10) + "] " + sender + ": " + subject;
 
-      Gui2Button* btn = new Gui2Button(windowManager, "btn_msg_" + msgID, 0, 0, 86, 2.5, label);
+      Gui2Button* btn = new Gui2Button(windowManager, "btn_msg_" + msgID, 0, 0, 65, 2.5, label);
       btn->sig_OnClick.connect([this, msgID, sender, subject, timestamp](...) {
         GetDB()->Query("UPDATE inbox_messages SET read = 1 WHERE id = " + msgID);
 
@@ -100,7 +100,7 @@ void LeagueInboxPage::RefreshMessages() {
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_inbox_back", 0, 0, 86, 2.5, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_inbox_back", 0, 0, 65, 2.5, "Back to Dashboard");
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   messageGrid->AddView(btnBack, row, 0);
 

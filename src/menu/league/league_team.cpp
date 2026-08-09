@@ -57,18 +57,18 @@ LeagueTeamPage::LeagueTeamPage(Gui2WindowManager* windowManager, const Gui2PageD
   actionTitle->Show();
 
   Gui2Button* btnFormation =
-      new Gui2Button(windowManager, "btn_team_formation", 0, 0, 60, 3, "Formation");
+      new Gui2Button(windowManager, "btn_team_formation", 0, 0, 34, 3, "Formation");
   Gui2Button* btnPlayerSel =
-      new Gui2Button(windowManager, "btn_team_playersel", 0, 0, 60, 3, "Player Selection");
+      new Gui2Button(windowManager, "btn_team_playersel", 0, 0, 34, 3, "Player Selection");
   Gui2Button* btnTactics =
-      new Gui2Button(windowManager, "btn_team_tactics", 0, 0, 60, 3, "Tactics");
+      new Gui2Button(windowManager, "btn_team_tactics", 0, 0, 34, 3, "Tactics");
   Gui2Button* btnPlayerOvr =
-      new Gui2Button(windowManager, "btn_team_playerovr", 0, 0, 60, 3, "Player Overview");
+      new Gui2Button(windowManager, "btn_team_playerovr", 0, 0, 34, 3, "Player Overview");
   Gui2Button* btnPlayerDev =
-      new Gui2Button(windowManager, "btn_team_playerdev", 0, 0, 60, 3, "Player Development");
-  Gui2Button* btnSetup = new Gui2Button(windowManager, "btn_team_setup", 0, 0, 60, 3, "Team Setup");
+      new Gui2Button(windowManager, "btn_team_playerdev", 0, 0, 34, 3, "Player Development");
+  Gui2Button* btnSetup = new Gui2Button(windowManager, "btn_team_setup", 0, 0, 34, 3, "Team Setup");
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_team_back", 0, 0, 60, 3, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_team_back", 0, 0, 34, 3, "Back to Dashboard");
 
   btnFormation->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Team_Formation); });
   btnPlayerSel->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Team_PlayerSelection); });
@@ -200,7 +200,7 @@ LeagueTeamFormationPage::LeagueTeamFormationPage(Gui2WindowManager* windowManage
     formationText->Show();
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_formation_back", 30, 90, 40, 3,
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_formation_back", 15, 86, 40, 3,
                                        Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
@@ -240,7 +240,7 @@ LeagueTeamPlayerSelectionPage::LeagueTeamPlayerSelectionPage(Gui2WindowManager* 
       std::string playerID = r.at(0);
       std::string label = r.at(1) + " " + r.at(2) + " (" + r.at(3) + ")";
       Gui2Button* btn =
-          new Gui2Button(windowManager, "btn_player_" + r.at(0), 0, 0, 86, 2.5, label);
+          new Gui2Button(windowManager, "btn_player_" + r.at(0), 0, 0, 65, 2.5, label);
       btn->sig_OnClick.connect([this, windowManager, playerID, label](...) {
         auto detail = GetDB()->Query(
             "SELECT firstname, lastname, role, age, base_stat FROM players WHERE id = " + playerID);
@@ -267,13 +267,13 @@ LeagueTeamPlayerSelectionPage::LeagueTeamPlayerSelectionPage(Gui2WindowManager* 
       grid->AddView(btn, row++, 0);
     }
   } else {
-    Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_playersel_empty", 0, 0, 86, 3,
+    Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_playersel_empty", 0, 0, 65, 3,
                                             "No players in the squad.");
     grid->AddView(emptyCap, row++, 0);
   }
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playersel_back", 0, 0, 86, 2.5,
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playersel_back", 0, 0, 65, 2.5,
                                        Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
@@ -329,7 +329,7 @@ LeagueTeamTacticsPage::LeagueTeamTacticsPage(Gui2WindowManager* windowManager,
     tacticsText->Show();
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_tactics_back", 30, 90, 40, 3,
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_tactics_back", 15, 86, 40, 3,
                                        Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
@@ -381,7 +381,7 @@ LeagueTeamPlayerOverviewPage::LeagueTeamPlayerOverviewPage(Gui2WindowManager* wi
                r.at(3).c_str(), r.at(4).c_str());
       std::string btnLabel(buf);
       Gui2Button* btn =
-          new Gui2Button(windowManager, "btn_povr_" + std::to_string(row), 0, 0, 86, 2.5, btnLabel);
+          new Gui2Button(windowManager, "btn_povr_" + std::to_string(row), 0, 0, 65, 2.5, btnLabel);
       btn->sig_OnClick.connect([this, windowManager, fullName](...) {
         auto detail = GetDB()->Query(
             "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
@@ -416,7 +416,7 @@ LeagueTeamPlayerOverviewPage::LeagueTeamPlayerOverviewPage(Gui2WindowManager* wi
     grid->Show();
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerovr_back", 30, 90, 40, 3,
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerovr_back", 15, 86, 40, 3,
                                        Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
@@ -481,7 +481,7 @@ LeagueTeamPlayerDevelopmentPage::LeagueTeamPlayerDevelopmentPage(Gui2WindowManag
                r.at(4).c_str(), r.at(5).c_str());
       std::string btnLabel(buf);
       Gui2Button* btn =
-          new Gui2Button(windowManager, "btn_pdev_" + std::to_string(row), 0, 0, 86, 2.5, btnLabel);
+          new Gui2Button(windowManager, "btn_pdev_" + std::to_string(row), 0, 0, 65, 2.5, btnLabel);
       btn->sig_OnClick.connect([this, windowManager, playerID, fullName](...) {
         auto detail = GetDB()->Query(
             "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat FROM players "
@@ -530,7 +530,7 @@ LeagueTeamPlayerDevelopmentPage::LeagueTeamPlayerDevelopmentPage(Gui2WindowManag
     info->Show();
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerdev_back", 25, 92, 50, 3,
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerdev_back", 10, 86, 50, 3,
                                        Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
@@ -608,7 +608,7 @@ LeagueTeamSetupPage::LeagueTeamSetupPage(Gui2WindowManager* windowManager,
       snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s", (r.at(0) + " " + r.at(1)).c_str(),
                r.at(2).c_str(), r.at(3).c_str());
       Gui2Caption* cap = new Gui2Caption(windowManager, "caption_setup_p_" + std::to_string(row), 0,
-                                         0, 86, 2.5, buf);
+                                         0, 65, 2.5, buf);
       grid->AddView(cap, row++, 0);
     }
     grid->UpdateLayout(0.5);
@@ -622,11 +622,11 @@ LeagueTeamSetupPage::LeagueTeamSetupPage(Gui2WindowManager* windowManager,
   snprintf(summaryBuf, sizeof(summaryBuf), "Squad: %d players | Average age: %d", squadCount,
            avgAge);
   Gui2Caption* summaryCap =
-      new Gui2Caption(windowManager, "caption_setup_summary", 2, 84, 66, 2.5, summaryBuf);
+      new Gui2Caption(windowManager, "caption_setup_summary", 2, 82, 66, 2.5, summaryBuf);
   frame->AddView(summaryCap);
   summaryCap->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_setup_back", 25, 92, 50, 3,
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_setup_back", 10, 86, 50, 3,
                                        Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
