@@ -60,8 +60,10 @@ UserEventManager::UserEventManager() {
   SDL_Init(SDL_INIT_JOYSTICK);
   for (int i = 0; i < SDL_NumJoysticks(); i++) {
     joystick[i] = SDL_JoystickOpen(i);
-    if (joystick[i])
+    if (joystick[i]) {
       joystickInstanceNow[i] = SDL_JoystickInstanceID(joystick[i]);
+      AddGamepad(i, i);
+    }
   }
   // SDL_JoystickEventState(SDL_IGNORE); // doesn't seem to work? bug?
   SDL_JoystickEventState(SDL_ENABLE);
@@ -80,6 +82,9 @@ void UserEventManager::Exit() {}
 void UserEventManager::InputSDLEvent(const SDL_Event& event) {
   switch (event.type) {
     case SDL_JOYDEVICEADDED: {
+      if (FindJoystickSlot(SDL_JoystickGetDeviceInstanceID(event.jdevice.which)) >= 0)
+        break;
+
       // SDL_JOYDEVICEADDED reports the *device index* for the new joystick,
       // suitable for SDL_JoystickOpen(). Allocate the next free dense slot and
       // remember the joystick's stable instance ID there.
