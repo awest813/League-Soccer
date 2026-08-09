@@ -148,6 +148,19 @@ void Gui2IconSelector::AddEntry(const std::string& id, const std::string& captio
   Redraw();
 }
 
+bool Gui2IconSelector::SetSelectedEntryIndex(int entryIndex) {
+  if (entryIndex < 0 || entryIndex >= static_cast<int>(entries.size()))
+    return false;
+
+  if (selectedEntry != entryIndex) {
+    selectedEntry = entryIndex;
+    visibleSelectedEntry = static_cast<float>(entryIndex);
+    Redraw();
+    sig_OnChange();
+  }
+  return true;
+}
+
 void Gui2IconSelector::ProcessWindowingEvent(WindowingEvent* event) {
   event->Ignore();
 

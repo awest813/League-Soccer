@@ -40,6 +40,7 @@ public:
   }
   void ClearEntries();
   void AddEntry(const std::string& id, const std::string& caption, const std::string& imageFile);
+  bool SetSelectedEntryIndex(int entryIndex);
 
   virtual void ProcessWindowingEvent(WindowingEvent* event);
 

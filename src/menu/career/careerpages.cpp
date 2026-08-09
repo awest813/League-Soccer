@@ -1802,7 +1802,7 @@ void CareerMatchdayPage::PopulateGrid() {
     const std::string venue = isHome ? "HOME" : "AWAY";
 
     Gui2Caption* header =
-        new Gui2Caption(windowManager, "cap_md_hdr_" + std::to_string(i), 0, 0, 88, 2,
+        new Gui2Caption(windowManager, "cap_md_hdr_" + std::to_string(i), 0, 0, 42, 2,
                         "--- " + venue + ": " + save->name + " vs " + m_opponents[i] + " ---");
     fixtureGrid->AddView(header, row++, 0);
 
@@ -1819,7 +1819,7 @@ void CareerMatchdayPage::PopulateGrid() {
       scoreLabel = buf;
     }
     Gui2Caption* scoreCap = new Gui2Caption(windowManager, "cap_md_score_" + std::to_string(i), 0,
-                                            0, 88, 2, scoreLabel);
+                                             0, 42, 2, scoreLabel);
     fixtureGrid->AddView(scoreCap, row++, 0);
     fixtureScoreCaps[i] = scoreCap;
 
@@ -1837,7 +1837,7 @@ void CareerMatchdayPage::PopulateGrid() {
       snprintf(statsBuf, sizeof(statsBuf), "  Shots: %d-%d | Possession: %d%% | %s", res.homeShots,
                res.awayShots, res.homePossession, scorersStr.c_str());
       Gui2Caption* statsCap = new Gui2Caption(windowManager, "cap_md_stats_" + std::to_string(i), 0,
-                                              0, 88, 2, statsBuf);
+                                               0, 42, 2, statsBuf);
       fixtureGrid->AddView(statsCap, row++, 0);
     }
 
@@ -1936,11 +1936,9 @@ void CareerMatchdayPage::PlayMatch() {
     }
   }
 
-  std::vector<SideSelection> sides(2);
+  std::vector<SideSelection> sides(1);
   sides[0].controllerID = 0;
   sides[0].side = -1;
-  sides[1].controllerID = -1;
-  sides[1].side = 1;
   GetMenuTask()->SetControllerSetup(sides);
   GetMenuTask()->SetTeamIDs(std::to_string(teamDBID), std::to_string(opponentDBID));
 
@@ -1975,11 +1973,9 @@ void CareerMatchdayPage::PlayMatchFixture(int fixtureIndex) {
     }
   }
 
-  std::vector<SideSelection> sides(2);
+  std::vector<SideSelection> sides(1);
   sides[0].controllerID = 0;
   sides[0].side = -1;
-  sides[1].controllerID = -1;
-  sides[1].side = 1;
   GetMenuTask()->SetControllerSetup(sides);
   GetMenuTask()->SetTeamIDs(std::to_string(teamDBID), std::to_string(opponentDBID));
 

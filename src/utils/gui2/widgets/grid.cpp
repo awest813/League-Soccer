@@ -28,8 +28,11 @@ Gui2Grid::Gui2Grid(Gui2WindowManager* windowManager, const std::string& name, fl
   maxVisibleRows = 10000;
 
   quickScroll = false;
-  rowWrap = true;
-  colWrap = true;
+  // At an edge, let the event bubble to Gui2Page so focus can move into a
+  // neighbouring panel or a standalone footer action. Pages that intentionally
+  // need wrapping can still opt in with SetWrapping().
+  rowWrap = false;
+  colWrap = false;
   hasSelectables = false;
 
   margin_left_percent = 0.5f;

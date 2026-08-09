@@ -19,6 +19,19 @@ namespace {
 const char* kSelectorFallbackImage = "media/menu/league.png";
 constexpr unsigned long kMenuSmokeAdvanceDelay_ms = 250;
 
+std::string ResolveDatabaseImage(const std::string& relativePath) {
+  std::filesystem::path imageRoot = "databases/default";
+  if (!GetActiveSaveDirectory().empty())
+    imageRoot = std::filesystem::path("saves") / GetActiveSaveDirectory();
+
+  std::filesystem::path imagePath = imageRoot / relativePath;
+  if (!std::filesystem::exists(imagePath) &&
+      imageRoot != std::filesystem::path("databases/default")) {
+    imagePath = std::filesystem::path("databases/default") / relativePath;
+  }
+  return imagePath.generic_string();
+}
+
 bool MenuSmokeQuickMatchEnabled() {
   return GetConfiguration()->GetBool("menu_smoke_test_quick_match", false);
 }
@@ -50,7 +63,7 @@ int AddCompetitions(Gui2IconSelector* selector) {
     std::string name = result->data.at(r).at(1).c_str();
     std::string logo_url = result->data.at(r).at(2).c_str();
 
-    std::string logoPath = "databases/default/" + logo_url;
+    std::string logoPath = ResolveDatabaseImage(logo_url);
     if (!std::filesystem::exists(logoPath))
       logoPath = kSelectorFallbackImage;
     selector->AddEntry(int_to_str(id), name, logoPath);
@@ -70,7 +83,7 @@ int AddTeams(Gui2IconSelector* selector, const std::string& competition_id) {
     return 0;
   }
 
-  auto result = GetDB()->Query("select id, name, logo_url, kit_url from teams where league_id = " +
+  auto result = GetDB()->Query("select id, name, logo_url from teams where league_id = " +
                                competition_id + " order by name");
   int teamCount = 0;
 
@@ -79,7 +92,7 @@ int AddTeams(Gui2IconSelector* selector, const std::string& competition_id) {
     std::string name = result->data.at(r).at(1).c_str();
     std::string logo_url = result->data.at(r).at(2).c_str();
 
-    std::string logoPath = "databases/default/" + logo_url;
+    std::string logoPath = ResolveDatabaseImage(logo_url);
     if (!std::filesystem::exists(logoPath))
       logoPath = kSelectorFallbackImage;
     selector->AddEntry(int_to_str(id), name, logoPath);
@@ -265,7 +278,11 @@ void TeamSelectPage::SetupTeamSelect1() {
 
 void TeamSelectPage::SetupTeamSelect2() {
   teamSelect2->ClearEntries();
-  AddTeams(teamSelect2, competitionSelect2->GetSelectedEntryID());
+  const int teamCount = AddTeams(teamSelect2, competitionSelect2->GetSelectedEntryID());
+  if (teamCount > 1 &&
+      teamSelect2->GetSelectedEntryID() == teamSelect1->GetSelectedEntryID()) {
+    teamSelect2->SetSelectedEntryIndex(1);
+  }
   UpdateReadyButtons();
 
   // hax lol, well doesn't seem to work :(
@@ -289,6 +306,11 @@ void TeamSelectPage::GoOptionsMenu() {
   }
 
   GetMenuTask()->SetTeamIDs(teamSelect1->GetSelectedEntryID(), teamSelect2->GetSelectedEntryID());
+  if (MenuSmokeAutoQuickMatchEnabled()) {
+    printf("[menu-smoke] Selected fixture: team %s vs team %s\n",
+           teamSelect1->GetSelectedEntryID().c_str(),
+           teamSelect2->GetSelectedEntryID().c_str());
+  }
   // printf("teams: %i vs %i\n", atoi(teamSelect1->GetSelectedEntryID().c_str()),
   // atoi(teamSelect2->GetSelectedEntryID().c_str()));
 

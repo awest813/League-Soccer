@@ -134,7 +134,7 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   frame->AddView(grid);
   grid->Show();
 
-  Gui2Caption* hintCaption = new Gui2Caption(windowManager, "caption_ingame_hint", 2, 92, 56, 2,
+  Gui2Caption* hintCaption = new Gui2Caption(windowManager, "caption_ingame_hint", 2, 79, 56, 2,
                                              Localization::GetInstance().Translate("ingame_hint"));
   frame->AddView(hintCaption);
   hintCaption->Show();
@@ -204,12 +204,12 @@ PreQuitPage::PreQuitPage(Gui2WindowManager* windowManager, const Gui2PageData& p
   frame->Show();
 
   Gui2Caption* restartCaption =
-      new Gui2Caption(windowManager, "caption_prequit_info", 0, 0, 100, 3,
+      new Gui2Caption(windowManager, "caption_prequit_info", 0, 0, 44, 3,
                       Localization::GetInstance().Translate("ingame_forfeit_confirm"));
-  Gui2Button* okButton = new Gui2Button(windowManager, "button_prequit_ok", 10, 0, 30, 3,
+  Gui2Button* okButton = new Gui2Button(windowManager, "button_prequit_ok", 0, 0, 44, 3,
                                         Localization::GetInstance().Translate("ingame_forfeit"));
   Gui2Button* cancelButton =
-      new Gui2Button(windowManager, "button_prequit_cancel", 10, 0, 30, 3,
+      new Gui2Button(windowManager, "button_prequit_cancel", 0, 0, 44, 3,
                      Localization::GetInstance().Translate("ingame_continue_match"));
   okButton->sig_OnClick.connect([this](...) { GoMenu(); });
   cancelButton->sig_OnClick.connect([this](...) { GoBack(); });

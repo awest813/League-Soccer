@@ -11,6 +11,7 @@
 #include "main.hpp"
 #include "managers/environmentmanager.hpp"
 #include "utils/gui2/widgets/caption.hpp"
+#include "utils/gui2/widgets/frame.hpp"
 
 using namespace blunted;
 
@@ -36,9 +37,25 @@ ReplayPage::ReplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   stayInReplay = true;
   closeWhenAutorunCompletes = false;
 
-  // Timeline label: shows current replay position at bottom centre of screen
-  timeLabel = new Gui2Caption(windowManager, "caption_replay_time", 35, 95, 30, 3, "");
-  this->AddView(timeLabel);
+  Gui2Frame* header = new Gui2Frame(windowManager, "frame_replay_header", 36, 2, 28, 7, true);
+  this->AddView(header);
+  header->Show();
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "caption_replay_title", 2, 2, 24, 3, "INSTANT REPLAY");
+  header->AddView(title);
+  title->Show();
+
+  Gui2Frame* footer = new Gui2Frame(windowManager, "frame_replay_footer", 20, 89, 60, 9, true);
+  this->AddView(footer);
+  footer->Show();
+  Gui2Caption* help = new Gui2Caption(
+      windowManager, "caption_replay_help", 2, 1, 56, 2,
+      "Left/Right: scrub | Up/Down: camera | Pass: change camera | Shoot: play/pause");
+  footer->AddView(help);
+  help->Show();
+
+  timeLabel = new Gui2Caption(windowManager, "caption_replay_time", 2, 4, 56, 3, "");
+  footer->AddView(timeLabel);
   timeLabel->Show();
   UpdateTimeLabel();
 

@@ -22,7 +22,7 @@ CameraPage::CameraPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   sliderFOV->AddHelperValue(Vector3(80, 80, 250), "default", _default_CameraFOV);
   sliderAngleFactor->AddHelperValue(Vector3(80, 80, 250), "default", _default_CameraAngleFactor);
 
-  Gui2Frame* frame = new Gui2Frame(windowManager, "camframe", 25, 20, 60, 60, true);
+  Gui2Frame* frame = new Gui2Frame(windowManager, "camframe", 20, 20, 60, 60, true);
   this->AddView(frame);
   frame->Show();
 

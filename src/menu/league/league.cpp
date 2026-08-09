@@ -246,11 +246,11 @@ LeagueStartLoadPage::LeagueStartLoadPage(Gui2WindowManager* windowManager,
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_start_load", 2, 2, 66, 3, "Load saved league");
+      new Gui2Caption(windowManager, "caption_league_start_load", 2, 2, 76, 3, "Load Saved League");
   frame->AddView(title);
   title->Show();
 
-  browser = new Gui2FileBrowser(windowManager, "filebrowser_league_start_load", 2, 10, 90, 75,
+  browser = new Gui2FileBrowser(windowManager, "filebrowser_league_start_load", 2, 10, 76, 75,
                                 "./saves", e_DirEntryType_Directory);
   frame->AddView(browser);
   browser->Show();
@@ -440,8 +440,8 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
                            "your league will be based on; any changes to the foundation database later on won't affect your league save (or the other way round).");
   explanationText->AddEmptyLine();
   explanationText->AddText((std::string)
-                           "You can find the foundation database(s) in the 'databases' subdirectory of your Gameplay Football installation, and the " +
-                           "saved leagues and cups in the 'save' directory.");
+                           "Foundation databases are stored in the 'databases' subdirectory of your League Soccer installation. " +
+                           "Saved leagues and cups are stored in the 'saves' directory.");
 
   frame->AddView(explanationText);
   explanationText->Show();
@@ -570,10 +570,10 @@ void LeagueStartNewPage::GoProceed() {
     Gui2Text* explanationText =
         new Gui2Text(windowManager, "text_league_start_new_createsave", 5, 5, 90, 75, 2.5, 60, "");
     explanationText->AddText((std::string)
-                             "Successfully created new database directory. If you want to backup your save directory, you can find it here: '<game directory>/saves/" + saveNameInput->GetText() + "/'");
+                             "League save created successfully. To make a backup, copy: '<game directory>/saves/" + saveNameInput->GetText() + "/'");
     createSaveDialog->AddContent(explanationText);
 
-    (createSaveDialog->AddSingleButton("Yippee!"))->SetFocus();
+    (createSaveDialog->AddSingleButton("Continue"))->SetFocus();
     createSaveDialog->sig_OnPositive.connect([this](...) { CloseCreateSaveDialog(); });
 
     success = true;
@@ -587,25 +587,25 @@ void LeagueStartNewPage::GoProceed() {
             "exist?";
         break;
       case 2:
-        errorString = "Could not copy database file. Disk full?";
+        errorString = "Could not copy the database file. Check disk space and file permissions.";
         break;
       case 3:
-        errorString = "Could not open copied database file. I have no idea why.";
+        errorString = "Could not open the copied database file.";
         break;
       case 4:
-        errorString = "Could not copy some image file. Disk full?";
+        errorString = "Could not copy one or more image files. Check disk space and permissions.";
         break;
     }
 
     Gui2Text* explanationText =
         new Gui2Text(windowManager, "text_league_start_new_createsave", 5, 5, 90, 75, 2.5, 60, "");
-    explanationText->AddText((std::string) "Something went wrong! Error: " + errorString);
+    explanationText->AddText((std::string) "League save creation failed: " + errorString);
     explanationText->AddEmptyLine();
     explanationText->AddText((std::string)
-                             "Please try to fix the problem and delete any possible remains of new save dir (<game directory>/saves/" + saveNameInput->GetText() + ")");
+                             "Resolve the issue, then remove any incomplete save folder before trying again: <game directory>/saves/" + saveNameInput->GetText());
     createSaveDialog->AddContent(explanationText);
 
-    (createSaveDialog->AddSingleButton("Oh crud!"))->SetFocus();
+    (createSaveDialog->AddSingleButton("Close"))->SetFocus();
     createSaveDialog->sig_OnPositive.connect([this](...) { CloseCreateSaveDialog(); });
     // lol forwarding signals overload:
     // createSaveDialog->sig_OnPositive.connect(std::bind(boost:ref(Gui2Dialog::sig_OnClose),

@@ -1815,7 +1815,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
     resolutions.push_back(res);
   }
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_settings_graphics_reslist", 20, 15, 60, 75);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_settings_graphics_reslist", 2, 10, 66, 75);
 
   int context_width, context_height, context_bpp;
   GetScene2D()->GetContextSize(context_width, context_height, context_bpp);
@@ -1864,7 +1864,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   grid->Show();
 
   Gui2Button* backButton =
-      new Gui2Button(windowManager, "button_settings_graphics_back", 20, 92, 30, 3,
+      new Gui2Button(windowManager, "button_settings_graphics_back", 35, 92, 30, 3,
                      Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
   this->AddView(backButton);

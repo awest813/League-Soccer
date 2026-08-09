@@ -107,7 +107,7 @@ void LeagueCalendarPage::RefreshFixtures() {
     std::string homeTeam = r.at(2);
     std::string awayTeam = r.at(3);
     Gui2Button* btn =
-        new Gui2Button(windowManager, "btn_fixture_" + std::to_string(row), 0, 0, 86, 2.5, buf);
+        new Gui2Button(windowManager, "btn_fixture_" + std::to_string(row), 0, 0, 65, 2.5, buf);
     btn->sig_OnClick.connect([this, calID, homeTeam, awayTeam](...) {
       Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_fixture", 25, 25, 50, 50,
                                        homeTeam + " vs " + awayTeam);
@@ -176,7 +176,7 @@ void LeagueCalendarPage::RefreshFixtures() {
   }
   // Back lives in the same grid so keyboard/gamepad can reach it too.
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_cal_back", 0, 0, 86, 2.5, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_cal_back", 0, 0, 65, 2.5, "Back to Dashboard");
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   fixturesGrid->AddView(btnBack, row, 0);
 

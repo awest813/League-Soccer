@@ -55,11 +55,11 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   actionTitle->Show();
 
   Gui2Button* btnContracts =
-      new Gui2Button(windowManager, "btn_management_contracts", 0, 0, 60, 3, "Contracts");
+      new Gui2Button(windowManager, "btn_management_contracts", 0, 0, 34, 3, "Contracts");
   Gui2Button* btnTransfers =
-      new Gui2Button(windowManager, "btn_management_transfers", 0, 0, 60, 3, "Transfers");
+      new Gui2Button(windowManager, "btn_management_transfers", 0, 0, 34, 3, "Transfers");
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_management_back", 0, 0, 60, 3, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_management_back", 0, 0, 34, 3, "Back to Dashboard");
 
   btnContracts->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Management_Contracts); });
   btnTransfers->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Management_Transfers); });
@@ -171,7 +171,7 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
                r.at(3).c_str());
       std::string btnLabel(buf);
       Gui2Button* btn = new Gui2Button(windowManager, "btn_contract_" + std::to_string(row), 0, 0,
-                                       86, 2.5, btnLabel);
+                                       65, 2.5, btnLabel);
       btn->sig_OnClick.connect([this, windowManager, fullName](...) {
         auto detail = GetDB()->Query(
             "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
@@ -205,13 +205,13 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
       grid->AddView(btn, row++, 0);
     }
   } else {
-    Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_contracts_empty", 0, 0, 86, 3,
+    Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_contracts_empty", 0, 0, 65, 3,
                                             "No players listed.");
     grid->AddView(emptyCap, row++, 0);
   }
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_contracts_back", 0, 0, 86, 2.5,
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_contracts_back", 0, 0, 65, 2.5,
                                        Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([windowManager](...) {
     Properties properties;
@@ -282,7 +282,7 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
                r.at(3).c_str(), r.at(4).c_str(), r.at(5).c_str(), r.at(6).c_str());
       std::string btnLabel(buf);
       Gui2Button* btn = new Gui2Button(windowManager, "btn_transfer_" + std::to_string(row), 0, 0,
-                                       86, 2.5, btnLabel);
+                                       65, 2.5, btnLabel);
       btn->sig_OnClick.connect([this, windowManager, playerID, fullName](...) {
         auto detail = GetDB()->Query(
             "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
@@ -315,13 +315,13 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
       grid->AddView(btn, row++, 0);
     }
   } else {
-    Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_transfers_empty", 0, 0, 86, 3,
+    Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_transfers_empty", 0, 0, 65, 3,
                                             "No players available in the transfer market.");
     grid->AddView(emptyCap, row++, 0);
   }
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_transfers_back", 0, 0, 86, 2.5,
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_transfers_back", 0, 0, 65, 2.5,
                                        Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([windowManager](...) {
     Properties properties;

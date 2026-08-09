@@ -143,38 +143,38 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Frame* navFrame = new Gui2Frame(windowManager, "frame_oh_nav", 3, 13, 25, 66, true);
 
   Gui2Caption* navTitle =
-      new Gui2Caption(windowManager, "cap_oh_navtitle", 1, 1, 25, 2, "Management Areas");
+      new Gui2Caption(windowManager, "cap_oh_navtitle", 1, 1, 22, 2, "Management Areas");
   navFrame->AddView(navTitle);
   navTitle->Show();
 
   Gui2Grid* navGrid = new Gui2Grid(windowManager, "oh_nav_grid", 1, 3, 23, 58);
 
-  Gui2Button* btnStadium = new Gui2Button(windowManager, "btn_oh_stadium", 0, 0, 25, 3, "Stadium");
+  Gui2Button* btnStadium = new Gui2Button(windowManager, "btn_oh_stadium", 0, 0, 22, 3, "Stadium");
   Gui2Button* btnFinances =
-      new Gui2Button(windowManager, "btn_oh_finances", 0, 0, 25, 3, "Finances");
+      new Gui2Button(windowManager, "btn_oh_finances", 0, 0, 22, 3, "Finances");
   Gui2Button* btnSponsors =
-      new Gui2Button(windowManager, "btn_oh_sponsors", 0, 0, 25, 3, "Sponsors");
-  Gui2Button* btnStaff = new Gui2Button(windowManager, "btn_oh_staff", 0, 0, 25, 3, "Staff");
-  Gui2Button* btnBoard = new Gui2Button(windowManager, "btn_oh_board", 0, 0, 25, 3, "Board Room");
+      new Gui2Button(windowManager, "btn_oh_sponsors", 0, 0, 22, 3, "Sponsors");
+  Gui2Button* btnStaff = new Gui2Button(windowManager, "btn_oh_staff", 0, 0, 22, 3, "Staff");
+  Gui2Button* btnBoard = new Gui2Button(windowManager, "btn_oh_board", 0, 0, 22, 3, "Board Room");
 
-  Gui2Caption* navSep1 = new Gui2Caption(windowManager, "cap_oh_sep1", 0, 0, 25, 2, "-- Squad --");
+  Gui2Caption* navSep1 = new Gui2Caption(windowManager, "cap_oh_sep1", 0, 0, 22, 2, "-- Squad --");
   Gui2Button* btnTransfers =
-      new Gui2Button(windowManager, "btn_oh_transfers", 0, 0, 25, 3, "Transfers");
-  Gui2Button* btnSquad = new Gui2Button(windowManager, "btn_oh_squad", 0, 0, 25, 3, "Squad");
+      new Gui2Button(windowManager, "btn_oh_transfers", 0, 0, 22, 3, "Transfers");
+  Gui2Button* btnSquad = new Gui2Button(windowManager, "btn_oh_squad", 0, 0, 22, 3, "Squad");
   Gui2Button* btnTraining =
-      new Gui2Button(windowManager, "btn_oh_training", 0, 0, 25, 3, "Training");
+      new Gui2Button(windowManager, "btn_oh_training", 0, 0, 22, 3, "Training");
   Gui2Button* btnFreeAgency =
-      new Gui2Button(windowManager, "btn_oh_freeagency", 0, 0, 25, 3, "Free Agency");
+      new Gui2Button(windowManager, "btn_oh_freeagency", 0, 0, 22, 3, "Free Agency");
   Gui2Button* btnYouth =
-      new Gui2Button(windowManager, "btn_oh_youth", 0, 0, 25, 3, "Youth Academy");
+      new Gui2Button(windowManager, "btn_oh_youth", 0, 0, 22, 3, "Youth Academy");
 
   Gui2Button* btnSeason =
-      new Gui2Button(windowManager, "btn_oh_season", 0, 0, 25, 4, "Advance Season");
+      new Gui2Button(windowManager, "btn_oh_season", 0, 0, 22, 4, "Advance Season");
   Gui2Button* btnMatchday =
-      new Gui2Button(windowManager, "btn_oh_matchday", 0, 0, 25, 4, "Play Matchday");
+      new Gui2Button(windowManager, "btn_oh_matchday", 0, 0, 22, 4, "Play Matchday");
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_oh_back_main", 0, 0, 25, 4, "Back to Career Modes");
+      new Gui2Button(windowManager, "btn_oh_back_main", 0, 0, 22, 4, "Back to Career Modes");
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerMenu); });
 
   btnStadium->sig_OnClick.connect([this](...) { GoStadium(); });
@@ -207,7 +207,7 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
   navGrid->AddView(btnYouth, row++, 0);
 
   // Section separator
-  Gui2Caption* navSep2 = new Gui2Caption(windowManager, "cap_oh_sep2", 0, 0, 25, 2, "-- Season --");
+  Gui2Caption* navSep2 = new Gui2Caption(windowManager, "cap_oh_sep2", 0, 0, 22, 2, "-- Season --");
   navGrid->AddView(navSep2, row++, 0);
 
   navGrid->AddView(btnSeason, row++, 0);
@@ -387,7 +387,7 @@ OwnerStadiumPage::OwnerStadiumPage(Gui2WindowManager* windowManager, const Gui2P
   }
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_stad_back", 30, 92, 40, 3, "Back to Owner Hub");
+      new Gui2Button(windowManager, "btn_stad_back", 26, 89, 40, 3, "Back to Owner Hub");
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerHub); });
   root->AddView(btnBack);
   btnBack->Show();
@@ -548,7 +548,7 @@ OwnerFinancesPage::OwnerFinancesPage(Gui2WindowManager* windowManager, const Gui
   }
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_fin_back", 30, 92, 40, 3, "Back to Owner Hub");
+      new Gui2Button(windowManager, "btn_fin_back", 26, 89, 40, 3, "Back to Owner Hub");
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerHub); });
   root->AddView(btnBack);
   btnBack->Show();
@@ -612,18 +612,18 @@ OwnerStaffPage::OwnerStaffPage(Gui2WindowManager* windowManager, const Gui2PageD
     Gui2Frame* staffFrame = new Gui2Frame(windowManager, "frame_staff", 4, 24, 84, 48, true);
 
     Gui2Caption* header = new Gui2Caption(
-        windowManager, "caption_staff_hdr", 2, 2, 86, 2,
+        windowManager, "caption_staff_hdr", 2, 2, 80, 2,
         "Name                   | Role              | Skill | Salary       | Contract | Morale");
     staffFrame->AddView(header);
     header->Show();
 
-    Gui2Grid* grid = new Gui2Grid(windowManager, "staff_grid", 2, 5, 86, 56);
+    Gui2Grid* grid = new Gui2Grid(windowManager, "staff_grid", 2, 5, 80, 40);
     int row = 0;
     for (const auto& s : save->staff) {
       char buf[256];
       snprintf(buf, sizeof(buf), "%-22s | %-17s | %3d   | %10lld | %d yr    | %d%%", s.name.c_str(),
                s.role.c_str(), s.skill, s.salary, s.contractYearsRemaining, s.morale);
-      Gui2Button* btn = new Gui2Button(windowManager, "btn_staff_" + std::to_string(row), 0, 0, 86,
+      Gui2Button* btn = new Gui2Button(windowManager, "btn_staff_" + std::to_string(row), 0, 0, 79,
                                        2.5, std::string("[Fire] ") + buf);
       std::string staffName = s.name;
       btn->sig_OnClick.connect([this, staffName](...) { FireStaff(staffName); });
@@ -715,19 +715,19 @@ OwnerStaffHirePage::OwnerStaffHirePage(Gui2WindowManager* windowManager,
   Gui2Frame* hireFrame = new Gui2Frame(windowManager, "frame_hire", 4, 24, 84, 58, true);
 
   Gui2Caption* header = new Gui2Caption(
-      windowManager, "caption_hire_hdr", 2, 2, 86, 2,
+      windowManager, "caption_hire_hdr", 2, 2, 80, 2,
       "Name                   | Role              | Skill | Salary       | Contract");
   hireFrame->AddView(header);
   header->Show();
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "hire_grid", 2, 5, 86, 73);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "hire_grid", 2, 5, 80, 50);
   int row = 0;
   for (int i = 0; i < static_cast<int>(m_candidates.size()); i++) {
     const auto& c = m_candidates[i];
     char buf[256];
     snprintf(buf, sizeof(buf), "%-22s | %-17s | %3d   | %10lld | %d yr", c.name.c_str(),
              c.role.c_str(), c.skill, c.salary, c.contractYearsRemaining);
-    Gui2Button* btn = new Gui2Button(windowManager, "btn_hire_" + std::to_string(i), 0, 0, 86, 2.5,
+    Gui2Button* btn = new Gui2Button(windowManager, "btn_hire_" + std::to_string(i), 0, 0, 79, 2.5,
                                      std::string("[Hire] ") + buf);
     btn->sig_OnClick.connect([this, i](...) { HireCandidate(i); });
     grid->AddView(btn, row++, 0);
@@ -800,18 +800,18 @@ OwnerSponsorsPage::OwnerSponsorsPage(Gui2WindowManager* windowManager, const Gui
           new Gui2Frame(windowManager, "frame_sp_active", 4, nextY, 84, sHeight, true);
 
       Gui2Caption* activeTitle =
-          new Gui2Caption(windowManager, "caption_sp_active", 2, 1, 86, 2, "Active Sponsors:");
+          new Gui2Caption(windowManager, "caption_sp_active", 2, 1, 80, 2, "Active Sponsors:");
       activeFrame->AddView(activeTitle);
       activeTitle->Show();
 
-      Gui2Grid* activeGrid = new Gui2Grid(windowManager, "sp_active_grid", 2, 4, 86, sHeight - 4);
+      Gui2Grid* activeGrid = new Gui2Grid(windowManager, "sp_active_grid", 2, 4, 80, sHeight - 4);
       int row = 0;
       for (const auto& sp : save->activeSponsors) {
         std::string label = sp.sponsorName + " (" + sp.type + ") | EUR " +
                             std::to_string(sp.annualRevenue) + "/yr | " +
                             std::to_string(sp.yearsRemaining) + " yr left";
         Gui2Button* btn = new Gui2Button(windowManager, "btn_sp_term_" + std::to_string(row), 0, 0,
-                                         86, 2.5, "[Terminate] " + label);
+                                         79, 2.5, "[Terminate] " + label);
         std::string spName = sp.sponsorName;
         btn->sig_OnClick.connect([this, spName](...) { TerminateDeal(spName); });
         activeGrid->AddView(btn, row++, 0);
@@ -830,13 +830,13 @@ OwnerSponsorsPage::OwnerSponsorsPage(Gui2WindowManager* windowManager, const Gui
         new Gui2Frame(windowManager, "frame_sp_offers", 4, nextY, 84, 88 - nextY, true);
 
     Gui2Caption* offersTitle =
-        new Gui2Caption(windowManager, "caption_sp_offers", 2, 1, 86, 2, "Available Offers:");
+        new Gui2Caption(windowManager, "caption_sp_offers", 2, 1, 80, 2, "Available Offers:");
     offersFrame->AddView(offersTitle);
     offersTitle->Show();
 
     if (save->availableSponsorOffers.empty()) {
       Gui2Caption* noOffers =
-          new Gui2Caption(windowManager, "caption_sp_none", 2, 4, 86, 2,
+          new Gui2Caption(windowManager, "caption_sp_none", 2, 4, 80, 2,
                           "No offers currently available. New offers appear each season.");
       offersFrame->AddView(noOffers);
       noOffers->Show();
@@ -850,7 +850,7 @@ OwnerSponsorsPage::OwnerSponsorsPage(Gui2WindowManager* windowManager, const Gui
                             std::to_string(sp.annualRevenue) + "/yr | " +
                             std::to_string(sp.yearsRemaining) + " yr" +
                             " | Req rep: " + std::to_string(sp.reputationRequirement);
-        Gui2Button* btn = new Gui2Button(windowManager, "btn_sp_acc_" + std::to_string(i), 0, 0, 86,
+        Gui2Button* btn = new Gui2Button(windowManager, "btn_sp_acc_" + std::to_string(i), 0, 0, 79,
                                          2.5, "[Accept] " + label);
         btn->sig_OnClick.connect([this, i](...) { AcceptDeal(i); });
         offersGrid->AddView(btn, row++, 0);
@@ -917,7 +917,7 @@ OwnerBoardRoomPage::OwnerBoardRoomPage(Gui2WindowManager* windowManager,
                           " (" + std::to_string(save->reputation) + ")" +
                           " | Prestige: " + std::to_string(save->clubPrestige);
     Gui2Caption* confLabel =
-        new Gui2Caption(windowManager, "caption_br_conf", 2, 2, 86, 4, confStr);
+        new Gui2Caption(windowManager, "caption_br_conf", 2, 2, 80, 4, confStr);
     brFrame->AddView(confLabel);
     confLabel->Show();
 
@@ -928,7 +928,7 @@ OwnerBoardRoomPage::OwnerBoardRoomPage(Gui2WindowManager* windowManager,
     Gui2Frame* objFrame = new Gui2Frame(windowManager, "frame_br_obj", 4, 24, 84, objHeight, true);
 
     Gui2Caption* objTitle =
-        new Gui2Caption(windowManager, "caption_br_objtitle", 2, 1, 86, 2, "Board Objectives:");
+        new Gui2Caption(windowManager, "caption_br_objtitle", 2, 1, 80, 2, "Board Objectives:");
     objFrame->AddView(objTitle);
     objTitle->Show();
 
@@ -953,7 +953,7 @@ OwnerBoardRoomPage::OwnerBoardRoomPage(Gui2WindowManager* windowManager,
         new Gui2Frame(windowManager, "frame_br_evt", 4, yPos, 84, 88 - yPos, true);
 
     Gui2Caption* evtTitle =
-        new Gui2Caption(windowManager, "caption_br_evttitle", 2, 1, 86, 2, "Recent Events:");
+        new Gui2Caption(windowManager, "caption_br_evttitle", 2, 1, 80, 2, "Recent Events:");
     evtFrame->AddView(evtTitle);
     evtTitle->Show();
 

@@ -37,7 +37,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   }
   match->Pause(true);
 
-  Gui2Frame* frame = new Gui2Frame(windowManager, "gameover_frame", 10, 10, 80, 80, true);
+  Gui2Frame* frame = new Gui2Frame(windowManager, "gameover_frame", 10, 8, 80, 84, true);
   this->AddView(frame);
   frame->Show();
 
@@ -45,13 +45,19 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
                          int_to_str(match->GetMatchData()->GetGoalCount(0)) + " - " +
                          int_to_str(match->GetMatchData()->GetGoalCount(1)) + " " +
                          match->GetTeam(1)->GetTeamData()->GetName();
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "caption_gameover_title", 2, 3, 76, 3, "FULL TIME");
+  title->SetPosition(40 - title->GetTextWidthPercent() * 0.5f, 3);
+  frame->AddView(title);
+  title->Show();
+
   Gui2Caption* header =
-      new Gui2Caption(windowManager, "caption_gameover_header", 0, 15, 80, 4, scoreStr);
-  header->SetPosition(50 - header->GetTextWidthPercent() / 2, 15);
+      new Gui2Caption(windowManager, "caption_gameover_header", 2, 8, 76, 4, scoreStr);
+  header->SetPosition(40 - header->GetTextWidthPercent() * 0.5f, 8);
   frame->AddView(header);
   header->Show();
 
-  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 55, 82, 20, 3,
+  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 42, 76, 24, 4,
                               Localization::GetInstance().Translate("gameover_continue"));
   frame->AddView(buttonOkay);
   buttonOkay->Show();
@@ -70,7 +76,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   int fouls1 = match->GetMatchData()->GetFouls(0);
   int fouls2 = match->GetMatchData()->GetFouls(1);
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_gameover_stats", 15, 25, 70, 50);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_gameover_stats", 5, 18, 70, 44);
 
   float totalPossession = possession1 + possession2;
   int possession1Pct = (totalPossession > 0) ? round(possession1 / totalPossession * 100) : 50;
@@ -181,7 +187,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   }
 
   Gui2Button* buttonHistory =
-      new Gui2Button(windowManager, "button_gameover_history", 25, 82, 20, 3,
+      new Gui2Button(windowManager, "button_gameover_history", 14, 76, 24, 4,
                      Localization::GetInstance().Translate("gameover_match_history"));
   frame->AddView(buttonHistory);
   buttonHistory->Show();
