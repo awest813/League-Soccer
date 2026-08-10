@@ -291,6 +291,7 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
 
   add_library(menulib ${MENU_SOURCES} ${MENU_HEADERS})
   gf_target_includes(menulib)
+  target_link_libraries(menulib PRIVATE SQLite::SQLite3)
 
   add_library(datalib ${DATA_SOURCES} ${DATA_HEADERS})
   gf_target_includes(datalib)

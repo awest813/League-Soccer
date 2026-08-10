@@ -12,10 +12,18 @@ using blunted::CareerDatabase;
 
 namespace fs = std::filesystem;
 
+// Returns a temp directory unique to the current test so tests can run in
+// parallel under ctest without racing over shared save-file paths.
+std::string UniqueTempDir(const std::string& label) {
+  const char* testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+  return (fs::temp_directory_path() / ("league_soccer_" + std::string(testName) + "_" + label))
+      .string();
+}
+
 // Writes the given career.save contents into a fresh temp directory and returns
 // the directory path for CareerDatabase::Initialize().
 std::string WriteSaveFile(const std::string& contents) {
-  fs::path dir = fs::temp_directory_path() / "league_soccer_saveload_test";
+  fs::path dir = UniqueTempDir("saveload");
   fs::create_directories(dir);
   std::ofstream file(dir / "career.save", std::ios::trunc);
   file << contents;
@@ -27,7 +35,7 @@ std::string WriteSaveFile(const std::string& contents) {
 // without throwing: valid fields are kept, bad ones fall back to defaults, and
 // every roster row is still parsed.
 TEST(CareerSaveLoadTest, MissingSaveFileReturnsFalse) {
-  fs::path dir = fs::temp_directory_path() / "league_soccer_missing_save";
+  fs::path dir = UniqueTempDir("missing");
   fs::remove_all(dir);
   fs::create_directories(dir);
 
@@ -281,6 +289,60 @@ TEST(CareerSaveLoadTest, RoundTripPreservesCareerCollections) {
   EXPECT_TRUE(l->boardObjectives[0].completed);
 
   EXPECT_EQ(l->legacyStats["titles"], 4);
+}
+
+// The save file produced by SaveCareerData must be a genuine SQLite database
+// (the SQLite magic header), matching the project's "SQLite-backed saves"
+// contract rather than the legacy plain-text format.
+TEST(CareerSaveLoadTest, SaveProducesSqliteContainer) {
+  fs::path dir = UniqueTempDir("sqlite_format");
+  fs::create_directories(dir);
+  fs::remove_all(dir / "career.save");
+
+  CareerDatabase& db = CareerDatabase::GetInstance();
+  db.Initialize(dir.string());
+  ASSERT_TRUE(db.CreateNewCareer("Sqlite United", "manager", "Boss"));
+
+  const std::string path = (dir / "career.save").string();
+  ASSERT_TRUE(fs::exists(path));
+
+  std::ifstream file(path, std::ios::binary);
+  ASSERT_TRUE(file.good());
+  std::vector<char> header(16);
+  file.read(header.data(), 16);
+  // SQLite's magic header is exactly 16 bytes: "SQLite format 3" + NUL.
+  const std::string magic(header.begin(), header.end());
+  EXPECT_EQ(magic, std::string("SQLite format 3\0", 16));
+}
+
+// A legacy plain-text save file (no SQLite container) must still load through
+// the backward-compatibility fallback.
+TEST(CareerSaveLoadTest, LegacyPlainTextSaveStillLoads) {
+  const fs::path dir = UniqueTempDir("legacy_text");
+  fs::remove_all(dir);
+  fs::create_directories(dir);
+  const std::string path = (dir / "career.save").string();
+  {
+    std::ofstream file(path, std::ios::trunc);
+    file << "# Career Save: Old Club\n"
+         << "name=Old Club\n"
+         << "mode=1\n"
+         << "reputation=33\n"
+         << "transferBudget=2000000\n"
+         << "player.0=Leo|ST|26|83|90|4000000|9000|70|65|95|12|4|18\n";
+  }
+
+  CareerDatabase& db = CareerDatabase::GetInstance();
+  db.Initialize(dir.string());
+  ASSERT_TRUE(db.LoadCareerSave("Old Club"));
+  CareerSave* save = db.GetActiveSave();
+  ASSERT_NE(save, nullptr);
+  EXPECT_EQ(save->name, "Old Club");
+  EXPECT_EQ(save->reputation, 33);
+  ASSERT_EQ(save->roster.size(), 1u);
+  EXPECT_EQ(save->roster[0].name, "Leo");
+  EXPECT_EQ(save->roster[0].ovr, 83);
+  EXPECT_EQ(save->roster[0].careerGoals, 12);
 }
 
 }  // namespace

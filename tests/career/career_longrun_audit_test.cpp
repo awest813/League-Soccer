@@ -44,7 +44,12 @@ const int kSeasons = 12;
 const int kMatchesPerSeason = 38;
 
 std::string PersonaTempDir(const PersonaTier& persona) {
-  fs::path dir = fs::temp_directory_path() / ("league_soccer_audit_" + std::string(persona.name));
+  // Unique to the current test so it never collides when ctest runs tests in
+  // parallel (e.g. ApplyMatchResultDrawIsReputationNeutral vs the 12-season
+  // audit both use kPersonas[0]).
+  const char* testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+  fs::path dir = fs::temp_directory_path() /
+                 ("league_soccer_" + std::string(testName) + "_" + std::string(persona.name));
   fs::remove_all(dir);
   fs::create_directories(dir);
   return dir.string();

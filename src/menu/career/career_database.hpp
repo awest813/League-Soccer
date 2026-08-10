@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../../data/careerdata.hpp"
+#include "career_common.hpp"
 
 namespace blunted {
 
@@ -18,10 +19,10 @@ using StadiumUpgrade = ::StadiumUpgrade;
 using SponsorDeal = ::SponsorDeal;
 using SimulatedMatch = ::SimulatedMatch;
 
-class CareerDatabase {
+class CareerDatabase : public CareerCommon::CareerEvents {
 public:
   CareerDatabase();
-  ~CareerDatabase();
+  ~CareerDatabase() override;
 
   static CareerDatabase& GetInstance() {
     static CareerDatabase instance;
@@ -38,7 +39,7 @@ public:
   CareerSave* GetActiveSave() { return m_activeSave.get(); }
 
   void AddEvent(const std::string& eventType, const std::string& description, int reputationDelta,
-                bool isMajor);
+                bool isMajor) override;
 
   void RecruitFreeAgent(const std::string& playerName);
   bool TrainSquad();
@@ -49,7 +50,7 @@ public:
   void PromoteYouthPlayer(const std::string& playerName);
 
   void ModifyBudget(long long transferDelta, long long wageDelta);
-  void ModifyBoardConfidence(int delta);
+  void ModifyBoardConfidence(int delta) override;
 
   void AdvanceSeason();
   void ProcessPlayerGrowth(PlayerCareerState& player);
@@ -65,7 +66,6 @@ public:
   void WithdrawBid(const std::string& playerName);
   void ProcessPendingBids();
   std::string GetBidStatusString(BidStatus status) const;
-  int GetNextBidID() { return ++m_nextBidID; }
   bool CompleteTransfer(const std::string& playerName);
 
   void InitializeOwnerData();
@@ -119,10 +119,6 @@ private:
   std::string m_saveDirectory;
   std::vector<TransferTarget> m_transferTargets;
   std::vector<TransferBid> m_activeBids;
-  int m_nextBidID = 0;
-
-  bool SaveToFile(const std::string& path) const;
-  bool LoadFromFile(const std::string& path);
 };
 
 }  // namespace blunted

@@ -81,6 +81,7 @@ gtest_discover_tests(gameplayfootball_league_integration_tests)
 # Career data unit tests (Phase 6: tasks 6.13, 6.16, 6.17)
 # Also covers the stat-based match simulation (career_database.cpp).
 add_executable(gameplayfootball_career_tests
+  career/career_modules_test.cpp
   career/careerdata_test.cpp
   career/career_simulation_test.cpp
   career/career_saveload_test.cpp
@@ -88,15 +89,26 @@ add_executable(gameplayfootball_career_tests
   ${PROJECT_SOURCE_DIR}/src/data/careerdata.cpp
   ${PROJECT_SOURCE_DIR}/src/data/draftdata.cpp
   ${PROJECT_SOURCE_DIR}/src/data/scoutingdata.cpp
+  ${PROJECT_SOURCE_DIR}/src/menu/career/career_board.cpp
+  ${PROJECT_SOURCE_DIR}/src/menu/career/career_common.cpp
   ${PROJECT_SOURCE_DIR}/src/menu/career/career_database.cpp
+  ${PROJECT_SOURCE_DIR}/src/menu/career/career_finance.cpp
+  ${PROJECT_SOURCE_DIR}/src/menu/career/career_persistence.cpp
+  ${PROJECT_SOURCE_DIR}/src/menu/career/career_sim.cpp
+  ${PROJECT_SOURCE_DIR}/src/menu/career/career_sponsors.cpp
+  ${PROJECT_SOURCE_DIR}/src/menu/career/career_staff.cpp
+  ${PROJECT_SOURCE_DIR}/src/menu/career/career_training.cpp
+  ${PROJECT_SOURCE_DIR}/src/menu/career/career_transfers.cpp
 )
 
 target_include_directories(gameplayfootball_career_tests PRIVATE
   ${PROJECT_SOURCE_DIR}/src
+  ${SQLite3_INCLUDE_DIRS}
 )
 
 target_link_libraries(gameplayfootball_career_tests PRIVATE
   GTest::gtest_main
+  SQLite::SQLite3
 )
 
 gtest_discover_tests(gameplayfootball_career_tests)
