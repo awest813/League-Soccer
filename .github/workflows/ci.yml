@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install minimal dependencies
         run: bash scripts/setup_linux_deps.sh --minimal
@@ -66,7 +66,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -98,7 +98,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: bash scripts/setup_linux_deps.sh
@@ -261,7 +261,7 @@ jobs:
           cp -R build-release/data/locale dist/linux-x64/data/
 
       - name: Upload Linux release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gameplayfootball-linux-x64
           path: dist/linux-x64/
@@ -273,7 +273,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
@@ -312,7 +312,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Bootstrap vcpkg
         shell: pwsh
@@ -321,7 +321,7 @@ jobs:
           & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
 
       - name: Cache vcpkg packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ${{ env.VCPKG_ROOT }}/downloads
@@ -362,7 +362,7 @@ jobs:
             -RepoRoot $env:GITHUB_WORKSPACE
 
       - name: Upload Windows release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gameplayfootball-windows-x64
           path: dist/windows-x64/
@@ -375,7 +375,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Doxygen
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends doxygen graphviz cmake build-essential libboost-dev
@@ -392,7 +392,7 @@ jobs:
         run: doxygen Doxyfile
 
       - name: Upload docs artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gameplayfootball-docs
           path: docs/html/
