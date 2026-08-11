@@ -6,6 +6,7 @@
 #include "goalie_default.hpp"
 
 #include "../../../../../main.hpp"
+#include "../../../../gameplaytuning.hpp"
 #include "base/geometry/triangle.hpp"
 
 GoalieDefaultStrategy::GoalieDefaultStrategy(ElizaController* controller) : Strategy(controller) {
@@ -309,27 +310,35 @@ void GoalieDefaultStrategy::CalculateIfBallIsBoundForGoal(const MentalImage* men
         }
     */
 
-    // 2d version
-
-    Line ballToGoal;
-    ballToGoal.SetVertex(0, mentalImage->GetBallPrediction(0).Get2D());
-    ballToGoal.SetVertex(1, mentalImage->GetBallPrediction(800).Get2D());
-    Line goalLine;
-    goalLine.SetVertex(0, Vector3(pitchHalfW * side, -pitchHalfH, 0));
-    goalLine.SetVertex(1, Vector3(pitchHalfW * side, pitchHalfH, 0));
-
-    Vector3 intersectPoint = ballToGoal.GetIntersectionPoint(goalLine).Get2D();
-    if (fabs(intersectPoint.coords[1]) > 3.7 * panic)
-      intersect = false;
-    else
-      intersect = true;
-
-    if (intersect) {
-      // SetGreenDebugPilon(intersectPoint);
-      ballBoundForGoal_ycoord = intersectPoint.coords[1];
-      ballBoundForGoal = true;
-    } else {
-      // SetGreenDebugPilon(Vector3(0, 0, -10));
+    // Walk the physics prediction until the ball crosses the goal line. Unlike
+    // the old 2D projection, this rejects trajectories travelling over the bar.
+    const float goalLineX = pitchHalfW * side;
+    const unsigned int finalPrediction_ms = ballPredictionSize_ms - 10;
+    unsigned int previousTime_ms = 0;
+    Vector3 previousPosition = mentalImage->GetBallPrediction(previousTime_ms);
+    while (previousTime_ms < finalPrediction_ms) {
+      const unsigned int predictionTime_ms = std::min(previousTime_ms + 50U, finalPrediction_ms);
+      const Vector3 predictedPosition = mentalImage->GetBallPrediction(predictionTime_ms);
+      const bool crossedGoalLine = previousPosition.coords[0] * side < pitchHalfW &&
+                                   predictedPosition.coords[0] * side >= pitchHalfW;
+      if (crossedGoalLine) {
+        const float xTravel = predictedPosition.coords[0] - previousPosition.coords[0];
+        const float crossingBias =
+            fabs(xTravel) > 0.0001f
+                ? clamp((goalLineX - previousPosition.coords[0]) / xTravel, 0.0f, 1.0f)
+                : 1.0f;
+        const Vector3 goalLinePosition =
+            previousPosition + (predictedPosition - previousPosition) * crossingBias;
+        intersect = GameplayTuning::IsGoalMouthThreat(goalLinePosition.coords[1],
+                                                      goalLinePosition.coords[2], goalHalfWidth,
+                                                      goalHeight, panic);
+        if (intersect)
+          ballBoundForGoal_ycoord = goalLinePosition.coords[1];
+        break;
+      }
+      previousTime_ms = predictionTime_ms;
+      previousPosition = predictedPosition;
     }
+    ballBoundForGoal = intersect;
   }
 }

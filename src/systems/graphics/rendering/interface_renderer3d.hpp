@@ -6,6 +6,7 @@
 #ifndef _HPP_RENDERER3D
 #define _HPP_RENDERER3D
 
+#include "../resources/texture.hpp"
 #include "../resources/vertexbuffer.hpp"
 #include "base/geometry/triangle.hpp"
 #include "base/math/vector3.hpp"
@@ -18,7 +19,6 @@ namespace blunted {
 
 class Camera;
 class Geometry;
-class Texture;
 
 struct Overlay2DQueueEntry {
   boost::intrusive_ptr<Resource<Texture>> texture;
@@ -125,36 +125,6 @@ enum e_TargetAttachment {
   e_TargetAttachment_Color3
 };
 
-enum e_PixelFormat {
-  e_PixelFormat_Alpha,
-  e_PixelFormat_RGB,
-  e_PixelFormat_RGBA,
-  e_PixelFormat_DepthComponent,
-  e_PixelFormat_Luminance
-};
-
-enum e_InternalPixelFormat {
-  //    e_InternalPixelFormat_RGB,
-  e_InternalPixelFormat_RGB8,
-  e_InternalPixelFormat_SRGB8,
-  e_InternalPixelFormat_RGB16,
-  //    e_InternalPixelFormat_RGBA,
-  e_InternalPixelFormat_RGBA8,
-  e_InternalPixelFormat_SRGBA8,
-  e_InternalPixelFormat_RGBA16,
-  e_InternalPixelFormat_RGBA16F,
-  e_InternalPixelFormat_RGBA32F,
-
-  e_InternalPixelFormat_RGBA4,
-  e_InternalPixelFormat_RGB5_A1,
-  e_InternalPixelFormat_DepthComponent,
-  e_InternalPixelFormat_DepthComponent16,
-  e_InternalPixelFormat_DepthComponent24,
-  e_InternalPixelFormat_DepthComponent32,
-  e_InternalPixelFormat_DepthComponent32F,
-  e_InternalPixelFormat_StencilIndex8
-};
-
 enum e_VertexBufferUsage {
   e_VertexBufferUsage_StreamDraw,
   e_VertexBufferUsage_StreamRead,
@@ -178,7 +148,7 @@ struct Shader {
 
 class Renderer3D : public Thread {
 public:
-  virtual ~Renderer3D() {};
+  virtual ~Renderer3D(){};
 
   virtual void SwapBuffers() = 0;
 

@@ -87,8 +87,6 @@ Vector3 MentalImage::GetBallPrediction(unsigned int time_ms) const {
   if (index >= ballPredictionSize_ms)
     index = ballPredictionSize_ms - 10;
   index = index / 10;
-  if (index < 0)
-    index = 0;
 
   Vector3 mentalResult = ballPredictions[index];
   Vector3 realResult = match->GetBall()->Predict(time_ms);

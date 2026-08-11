@@ -71,8 +71,7 @@ inline std::string TR(const std::string& key) {
 // Translate a key then substitute {0}, {1}, ... placeholders with the given
 // values. Lets UI code keep one source of truth (the locale file) for strings
 // that embed dynamic data such as names, ratings or money.
-inline std::string TRF(const std::string& key,
-                       const std::vector<std::string>& args) {
+inline std::string TRF(const std::string& key, const std::vector<std::string>& args) {
   return Localization::GetInstance().TranslateAndFormat(key, args);
 }
 

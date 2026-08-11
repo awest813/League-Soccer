@@ -382,11 +382,11 @@ void HumanController::Process() {
 
   const PlayerSwitchMode switchMode = ReadConfiguredPlayerSwitchMode(*GetConfiguration());
   const bool fullyManualSwitching = switchMode == PlayerSwitchMode::FullyManual;
-  const bool passCallPressed = ShouldCallForPass(
-      switchMode, match->IsInPlay(), match->IsInSetPiece(),
-      CastPlayer() == match->GetDesignatedPossessionPlayer(), team->HasPossession(),
-      hid->GetButton(e_ButtonFunction_ShortPass),
-      hid->GetPreviousButtonState(e_ButtonFunction_ShortPass));
+  const bool passCallPressed =
+      ShouldCallForPass(switchMode, match->IsInPlay(), match->IsInSetPiece(),
+                        CastPlayer() == match->GetDesignatedPossessionPlayer(),
+                        team->HasPossession(), hid->GetButton(e_ButtonFunction_ShortPass),
+                        hid->GetPreviousButtonState(e_ButtonFunction_ShortPass));
   if (passCallPressed)
     team->GetController()->RequestPass(CastPlayer());
 
@@ -555,8 +555,7 @@ void HumanController::_GetHidInput(Vector3& rawInputDirection, float& rawInputVe
     rawInputVelocityFloat = idleVelocity;
   } else {
     if (hid->GetButton(e_ButtonFunction_Sprint))
-      rawInputVelocityFloat =
-          ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint);
+      rawInputVelocityFloat = ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint);
     else if (hid->GetButton(e_ButtonFunction_Dribble))
       rawInputVelocityFloat =
           ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::SlowDribble);

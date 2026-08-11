@@ -6,6 +6,7 @@
 #include "wavloader.hpp"
 
 #include <fstream>
+#include <vector>
 
 #include "base/log.hpp"
 
@@ -26,53 +27,70 @@ void WAVLoader::Load(const std::string& filename,
   fopen_s(&f, filename.c_str(), "rb");
   if (!f) {
     Log(e_FatalError, "WAVLoader", "Load", "Could not load " + filename + ": file not found");
+    return;
   }
 
-  unsigned char* buf;
-  buf = new unsigned char[BUFFER_SIZE];
+  std::vector<unsigned char> buffer(BUFFER_SIZE);
+  auto readExact = [&](size_t byteCount, const char* section) {
+    if (fread(buffer.data(), 1, byteCount, f) == byteCount)
+      return true;
+    fclose(f);
+    Log(e_FatalError, "WAVLoader", "Load",
+        "Could not load " + filename + ": unexpected end of " + section);
+    return false;
+  };
 
-  fread(buf, 1, 12, f);  // ignore wave header
-  fread(buf, 1, 8, f);   // 4 identifier, 4 chunk size (ignore)
-  if (buf[0] != 'f' || buf[1] != 'm' || buf[2] != 't' || buf[3] != ' ') {
+  if (!readExact(12, "WAV header") || !readExact(8, "format header"))
+    return;
+  if (buffer[0] != 'f' || buffer[1] != 'm' || buffer[2] != 't' || buffer[3] != ' ') {
     fclose(f);
     Log(e_FatalError, "WAVLoader", "Load",
         "Could not load " + filename + ": format information header incorrect");
+    return;
   }
 
-  fread(buf, 1, 2, f);
+  if (!readExact(2, "PCM format"))
+    return;
 
-  if (buf[0] != 1 || buf[1] != 0) {
+  if (buffer[0] != 1 || buffer[1] != 0) {
     fclose(f);
     Log(e_FatalError, "WAVLoader", "Load", "Could not load " + filename + ": not PCM");
+    return;
   }
 
-  fread(buf, 1, 2, f);
-  channels = buf[1] << 8;
-  channels |= buf[0];
+  if (!readExact(2, "channel count"))
+    return;
+  channels = buffer[1] << 8;
+  channels |= buffer[0];
 
-  fread(buf, 1, 4, f);
-  frequency = buf[3] << 24;
-  frequency |= buf[2] << 16;
-  frequency |= buf[1] << 8;
-  frequency |= buf[0];
+  if (!readExact(4, "sample frequency"))
+    return;
+  frequency = buffer[3] << 24;
+  frequency |= buffer[2] << 16;
+  frequency |= buffer[1] << 8;
+  frequency |= buffer[0];
 
-  fread(buf, 1, 6, f);  // blocksize / bps (ignore)
+  if (!readExact(6, "block and byte rates"))
+    return;
 
-  fread(buf, 1, 2, f);
-  bits = buf[1] << 8;
-  bits |= buf[0];
+  if (!readExact(2, "sample bit depth"))
+    return;
+  bits = buffer[1] << 8;
+  bits |= buffer[0];
 
-  fread(buf, 1, 8, f);  // 4 identifier, 4 chunk size (ignore)
-  if (buf[0] != 'd' || buf[1] != 'a' || buf[2] != 't' || buf[3] != 'a') {
+  if (!readExact(8, "data header"))
+    return;
+  if (buffer[0] != 'd' || buffer[1] != 'a' || buffer[2] != 't' || buffer[3] != 'a') {
     fclose(f);
     Log(e_FatalError, "WAVLoader", "Load", "Could not load " + filename + ": data chunk not found");
+    return;
   }
 
-  int size = fread(buf, 1, BUFFER_SIZE, f);
+  int size = static_cast<int>(fread(buffer.data(), 1, BUFFER_SIZE, f));
 
   WavData* data = new WavData();
   data->data = new unsigned char[size];
-  memcpy(data->data, buf, size * sizeof(unsigned char));
+  memcpy(data->data, buffer.data(), size * sizeof(unsigned char));
   data->size = size;
   data->channels = channels;
   data->bits = bits;
@@ -84,7 +102,6 @@ void WAVLoader::Load(const std::string& filename,
   resource->GetResource()->SetData(data);
 
   fclose(f);
-  delete[] buf;
 }
 
 }  // namespace blunted

@@ -28,9 +28,9 @@ bool MenuSmokeFullMatchEnabled() {
 
 GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
+      match(nullptr),
       pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
-      autoQuitTriggered(false),
-      match(nullptr) {
+      autoQuitTriggered(false) {
   match = GetGameTask()->GetMatch();
   if (!match) {
     return;
@@ -160,9 +160,13 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
     time_t now = time(nullptr);
     char tsbuf[32];
-    struct tm* tminfo = localtime(&now);
-    strftime(tsbuf, sizeof(tsbuf), "%Y-%m-%d %H:%M:%S", tminfo);
-    entry.timestamp = tsbuf;
+    std::tm localTime = {};
+    if (blunted::GetLocalTime(now, localTime) &&
+        strftime(tsbuf, sizeof(tsbuf), "%Y-%m-%d %H:%M:%S", &localTime) > 0) {
+      entry.timestamp = tsbuf;
+    } else {
+      entry.timestamp = "1970-01-01 00:00:00";
+    }
 
     entry.team1_name = match->GetTeam(0)->GetTeamData()->GetName();
     entry.team2_name = match->GetTeam(1)->GetTeamData()->GetName();

@@ -334,8 +334,7 @@ void Team::RelaxFatigue(float howMuch) {
 
 void Team::Process() {
   if (!match->GetPause()) {
-    const bool fullyManualSwitching =
-        UsesFullyManualPlayerSwitching(*GetConfiguration());
+    const bool fullyManualSwitching = UsesFullyManualPlayerSwitching(*GetConfiguration());
     teamPossessionAmount =
         (float)(match->GetTeam(abs(GetID() - 1))->GetTimeNeededToGetToBall_ms() + 1500) /
         (float)(GetTimeNeededToGetToBall_ms() + 1500);

@@ -37,11 +37,9 @@ inline float MatchDurationFactorFromMinutes(float minutes) {
 inline double MatchDurationGameTimeFromRealMilliseconds(double realMilliseconds, float minutes,
                                                         float timeScale = 1.0f) {
   const double clampedMinutes =
-      std::clamp(static_cast<double>(minutes),
-                 static_cast<double>(kMinimumMatchDurationMinutes),
+      std::clamp(static_cast<double>(minutes), static_cast<double>(kMinimumMatchDurationMinutes),
                  static_cast<double>(kMaximumMatchDurationMinutes));
-  return realMilliseconds * (90.0 / clampedMinutes) *
-         std::max(1.0, static_cast<double>(timeScale));
+  return realMilliseconds * (90.0 / clampedMinutes) * std::max(1.0, static_cast<double>(timeScale));
 }
 
 #endif  // _HPP_FOOTBALL_ONTHEPITCH_MATCHDURATION

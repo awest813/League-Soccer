@@ -72,6 +72,7 @@ set(SYSTEMS_GRAPHICS_OBJECTS_HEADERS
 set(SYSTEMS_GRAPHICS_RESOURCES_HEADERS
         src/systems/graphics/resources/vertexbuffer.hpp
         src/systems/graphics/resources/texture.hpp
+        src/systems/graphics/resources/textureformats.hpp
         )
 
 set(SYSTEMS_GRAPHICS_RENDERING_HEADERS
@@ -406,7 +407,9 @@ set(CORE_SOURCES
 )
 
 set(GAME_HEADERS
+   src/onthepitch/aitactics.hpp
    src/onthepitch/ballphysics.hpp
+   src/onthepitch/gameplaytuning.hpp
    src/onthepitch/humanspeed.hpp
    src/onthepitch/matchduration.hpp
    src/onthepitch/playercontrolsettings.hpp

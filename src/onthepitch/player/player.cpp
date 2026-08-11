@@ -22,6 +22,7 @@
 
 #include "../../main.hpp"
 #include "../../utils.hpp"
+#include "../gameplaytuning.hpp"
 #include "../match.hpp"
 #include "../team.hpp"
 #include "base/geometry/triangle.hpp"
@@ -373,8 +374,10 @@ void Player::Process() {
     Vector3 posAfter = CastHumanoid()->GetPosition();
 
     float distance = (posAfter - posBefore).GetLength();
-    fatigueFactorInv -=
-        distance * 0.00003f * (2.0f - GetStaminaStat()) * (1.0f / match->GetMatchDurationFactor());
+    const float fatigueWorkload = GameplayTuning::GetFatigueWorkloadFactor(
+        (posAfter - posBefore).GetLength() * 100.0f, GetMaxVelocity(), hasPossession);
+    fatigueFactorInv -= distance * 0.00003f * (2.0f - GetStaminaStat()) * fatigueWorkload *
+                        (1.0f / match->GetMatchDurationFactor());
     fatigueFactorInv = clamp(fatigueFactorInv, 0.01f, 1.0f);
     // if (GetDebug() && match->GetActualTime_ms() % 1000 == 0) printf("fatigue: %f\n",
     // GetFatigueFactorInv());

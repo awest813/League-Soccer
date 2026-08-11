@@ -23,6 +23,7 @@
 #include "../main.hpp"
 #include "../misc/hungarian.h"
 #include "AIsupport/AIfunctions.hpp"
+#include "aitactics.hpp"
 #include "match.hpp"
 #include "playercontrolsettings.hpp"
 #include "team.hpp"
@@ -51,9 +52,9 @@ TeamAIController::TeamAIController(Team* team) : team(team) {
   passRequestExpires_ms = 0;
   forwardSupportPlayer = 0;
 
-  counterPressActive = false;
-  counterPressEndTime_ms = 0;
-  counterPressPlayers.clear();
+  zonePressureActive = false;
+  zonePressureEndTime_ms = 0;
+  nextZonePressureRefresh_ms = 0;
   prevTeamHasPossession = false;
 
   baseTeamTactics.Set("position_offense_depth_factor", 0.9f);
@@ -188,8 +189,8 @@ void TeamAIController::Process() {
     info.player = player;
 
     info.dangerFactor =
-        1.0 - NormalizedClamp((player->GetPosition() - mostDangerousPos).GetLength(), 0,
-                              pitchHalfW * 2);
+        1.0 -
+        NormalizedClamp((player->GetPosition() - mostDangerousPos).GetLength(), 0, pitchHalfW * 2);
 
     // player on ball is most dangerous
     info.dangerFactor *= 0.95f;
@@ -229,14 +230,32 @@ void TeamAIController::Process() {
     }
   */
 
-  // counter-press: trigger immediately when possession is lost
+  // PES-style zone pressure: after a suitable turnover, the nearest defender
+  // engages normally and one additional defender closes down for a short,
+  // tactic-dependent period.
   if (team->GetHumanGamerCount() == 0) {
     if (prevTeamHasPossession && !teamHasPossession) {
-      ApplyCounterPress();
+      Player* primaryDefender = team->GetDesignatedTeamPossessionPlayer();
+      const Vector3 ballPos = match->GetBall()->Predict(0).Get2D();
+      const float primaryDistance =
+          primaryDefender ? (primaryDefender->GetPosition() - ballPos).GetLength() : 1000.0f;
+      const float pressureSetting =
+          team->GetTeamData()->GetTactics().userProperties.GetReal("team_pressure", 0.5f);
+      const float territory =
+          AITactics::GetAttackingTerritory(ballPos.coords[0], team->GetSide(), pitchHalfW);
+      if (AITactics::ShouldStartZonePressure(pressureSetting, territory, primaryDistance))
+        ApplyZonePressure();
     }
-    if (counterPressActive && match->GetActualTime_ms() > counterPressEndTime_ms) {
-      counterPressActive = false;
-      counterPressPlayers.clear();
+
+    if (zonePressureActive) {
+      if (teamHasPossession || match->GetActualTime_ms() > zonePressureEndTime_ms) {
+        zonePressureActive = false;
+        endApplyTeamPressure_ms = match->GetActualTime_ms();
+        teamPressurePlayer = 0;
+      } else if (match->GetActualTime_ms() >= nextZonePressureRefresh_ms) {
+        ApplyTeamPressure();
+        nextZonePressureRefresh_ms = match->GetActualTime_ms() + 250;
+      }
     }
   }
   prevTeamHasPossession = teamHasPossession;
@@ -248,7 +267,9 @@ void TeamAIController::Process() {
     if (team->GetHumanGamerCount() <
         2) {  // with >= 2 human players, one can do the running manually
       if (match->GetBestPossessionTeamID() == team->GetID()) {
-        float neededRating = 0.5f;
+        const float counterAttack =
+            team->GetTeamData()->GetTactics().userProperties.GetReal("counter_attack", 0.5f);
+        const float neededRating = AITactics::GetAttackingRunThreshold(counterAttack);
 
         // from a certain distance, running is not very useful (can't pass that far)
         Player* runner = SelectAttackingRunPlayer(team);
@@ -285,15 +306,18 @@ void TeamAIController::Process() {
   }
 
   if (match->GetActualTime_ms() % 1500 == 0) {
+    const float counterAttack =
+        team->GetTeamData()->GetTactics().userProperties.GetReal("counter_attack", 0.5f);
+    const float supportLead = 0.5f + AITactics::ClampSetting(counterAttack) * 2.0f;
     forwardSupportPlayer = AI_GetClosestPlayer(
         team,
         team->GetDesignatedTeamPossessionPlayer()->GetPosition() * Vector3(1.0f, 1.0f, 0.0f) +
-            Vector3(-team->GetSide() * 1.5f, 0, 0),
+            Vector3(-team->GetSide() * supportLead, 0, 0),
         false, team->GetDesignatedTeamPossessionPlayer());
   }
 }
 
-float mixup(float base, const std::string& varname, e_PlayerRole role) {
+float mixup(float base, const std::string& varname, e_PlayerRole role, float counterAttack) {
   float value = -100.0f;
 
   if (role == e_PlayerRole_CB) {
@@ -313,7 +337,7 @@ float mixup(float base, const std::string& varname, e_PlayerRole role) {
   if (role == e_PlayerRole_LM || role == e_PlayerRole_RM) {
     // wingers stay high up to offer counter-attack support
     if (varname == "position_defense_ownhalf_factor")
-      value = -0.05f;
+      value = -(0.02f + 0.06f * counterAttack);
     if (varname == "position_offense_ownhalf_factor")
       value = -0.1f;  // go forward
   }
@@ -321,13 +345,13 @@ float mixup(float base, const std::string& varname, e_PlayerRole role) {
   if (role == e_PlayerRole_AM) {
     // attackers stay high up to offer counter-attack support
     if (varname == "position_defense_depth_factor")
-      value = 0.125f;
+      value = 0.05f + 0.15f * counterAttack;
   }
 
   if (role == e_PlayerRole_CF) {
     // strikers stay high up to offer counter-attack support
     if (varname == "position_defense_depth_factor")
-      value = 0.125f;
+      value = 0.05f + 0.15f * counterAttack;
   }
 
   if (value > -100.0f) {
@@ -355,6 +379,8 @@ Vector3 TeamAIController::GetAdaptedFormationPosition(Player* player,
   else
     role = player->GetFormationEntry().role;
 
+  const float counterAttack = AITactics::ClampSetting(
+      team->GetTeamData()->GetTactics().userProperties.GetReal("counter_attack", 0.5f));
   Vector3 focalPoint = match->GetDesignatedPossessionPlayer()->GetPosition();
   float urgencyBias =
       1.0f - NormalizedClamp((focalPoint - player->GetPosition()).GetLength(), 2.0f, 30.0f);
@@ -362,44 +388,44 @@ Vector3 TeamAIController::GetAdaptedFormationPosition(Player* player,
   float ballY = match->GetBall()->GetAveragePosition(4000 * (1.0f - urgencyBias * 0.5f)).coords[1];
 
   float offense_depthFactor = mixup(liveTeamTactics.GetReal("position_offense_depth_factor"),
-                                    "position_offense_depth_factor", role);
+                                    "position_offense_depth_factor", role, counterAttack);
   float defense_depthFactor = mixup(liveTeamTactics.GetReal("position_defense_depth_factor"),
-                                    "position_defense_depth_factor", role);
+                                    "position_defense_depth_factor", role, counterAttack);
   float offense_widthFactor = mixup(liveTeamTactics.GetReal("position_offense_width_factor"),
-                                    "position_offense_width_factor", role);
+                                    "position_offense_width_factor", role, counterAttack);
   float defense_widthFactor = mixup(liveTeamTactics.GetReal("position_defense_width_factor"),
-                                    "position_defense_width_factor", role);
+                                    "position_defense_width_factor", role, counterAttack);
   float offense_ownHalfFactor = mixup(liveTeamTactics.GetReal("position_offense_ownhalf_factor"),
-                                      "position_offense_ownhalf_factor", role);
+                                      "position_offense_ownhalf_factor", role, counterAttack);
   float defense_ownHalfFactor = mixup(liveTeamTactics.GetReal("position_defense_ownhalf_factor"),
-                                      "position_defense_ownhalf_factor", role);
+                                      "position_defense_ownhalf_factor", role, counterAttack);
   float offense_midfieldFocus = mixup(liveTeamTactics.GetReal("position_offense_midfieldfocus"),
-                                      "position_offense_midfieldfocus", role);
+                                      "position_offense_midfieldfocus", role, counterAttack);
   float defense_midfieldFocus = mixup(liveTeamTactics.GetReal("position_defense_midfieldfocus"),
-                                      "position_defense_midfieldfocus", role);
+                                      "position_defense_midfieldfocus", role, counterAttack);
   float offense_midfieldFocusStrength =
       mixup(liveTeamTactics.GetReal("position_offense_midfieldfocus_strength"),
-            "position_offense_midfieldfocus_strength", role);
+            "position_offense_midfieldfocus_strength", role, counterAttack);
   float defense_midfieldFocusStrength =
       mixup(liveTeamTactics.GetReal("position_defense_midfieldfocus_strength"),
-            "position_defense_midfieldfocus_strength", role);
+            "position_defense_midfieldfocus_strength", role, counterAttack);
   float offense_sideFocusStrength =
       mixup(liveTeamTactics.GetReal("position_offense_sidefocus_strength"),
-            "position_offense_sidefocus_strength", role);
+            "position_offense_sidefocus_strength", role, counterAttack);
   float defense_sideFocusStrength =
       mixup(liveTeamTactics.GetReal("position_defense_sidefocus_strength"),
-            "position_defense_sidefocus_strength", role);
+            "position_defense_sidefocus_strength", role, counterAttack);
   float offense_microFocusStrength =
       mixup(liveTeamTactics.GetReal("position_offense_microfocus_strength"),
-            "position_offense_microfocus_strength", role);
+            "position_offense_microfocus_strength", role, counterAttack);
   float defense_microFocusStrength =
       mixup(liveTeamTactics.GetReal("position_defense_microfocus_strength"),
-            "position_defense_microfocus_strength", role);
+            "position_defense_microfocus_strength", role, counterAttack);
 
   offense_sideFocusStrength += (-0.5 + AI_GetMindSet(role)) * 0.2f;
   defense_sideFocusStrength += (0.5 - AI_GetMindSet(role)) * 0.2f;
   offense_sideFocusStrength =
-      clamp(offense_sideFocusStrength + -0.3f + (offensivenessBias) * 0.3f, 0.0f, 1.0f);
+      clamp(offense_sideFocusStrength + -0.3f + (offensivenessBias)*0.3f, 0.0f, 1.0f);
   defense_sideFocusStrength =
       clamp(defense_sideFocusStrength + -0.3f + (1.0f - offensivenessBias) * 0.3f, 0.0f, 1.0f);
   if (player->GetDebug())
@@ -724,8 +750,8 @@ void TeamAIController::CalculateManMarking() {
   // most dangerous opponent gets closest player to cover him, and so on
   // (oppInfo is already sorted, most dangerous first. this is done in this->process() which is
   // called earlier from team->process())
-  for (unsigned int opp = 0;
-       opp < static_cast<unsigned int>(std::min(static_cast<int>(oppInfo.size()), numMarkedOpponents));
+  for (unsigned int opp = 0; opp < static_cast<unsigned int>(std::min(
+                                       static_cast<int>(oppInfo.size()), numMarkedOpponents));
        opp++) {
     Player* closestPlayer = nullptr;
     float bestMarkingQuality = -1.0f;
@@ -824,8 +850,7 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
     team->SetFadingTeamPossessionAmount(0.5);
 
   // Load custom set-piece formation parameters
-  SetPieceParams spParams =
-      SetPieceConfig::Load(team->GetTeamData()->GetDatabaseID(), setPiece);
+  SetPieceParams spParams = SetPieceConfig::Load(team->GetTeamData()->GetDatabaseID(), setPiece);
   float depth = spParams.formation_depth;
   float width = spParams.formation_width;
 
@@ -951,11 +976,11 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
           float xOffset =
               clamp((ballPos.coords[0] * -team->GetSide()) / pitchHalfW, -1.0, 1.0) * 0.5 +
               0.5;  // 0 == close to our goal, 1 == far from our goal
-          backXBound =
-              clamp(team->GetSide() * pitchHalfW * (depth - xOffset * depth), -pitchHalfW, pitchHalfW);
-          frontXBound =
-              clamp(team->GetSide() * pitchHalfW * (-0.43f * depth - xOffset * depth), -pitchHalfW, pitchHalfW);
-              // -0.43 pushes attackers forward past centre into the opponent half for deep free kicks
+          backXBound = clamp(team->GetSide() * pitchHalfW * (depth - xOffset * depth), -pitchHalfW,
+                             pitchHalfW);
+          frontXBound = clamp(team->GetSide() * pitchHalfW * (-0.43f * depth - xOffset * depth),
+                              -pitchHalfW, pitchHalfW);
+          // -0.43 pushes attackers forward past centre into the opponent half for deep free kicks
           // printf("fb: %f %f\n", backXBound, frontXBound);
           xFocus = clamp(ballPos.coords[0] + 10 * -team->GetSide(), -pitchHalfW, pitchHalfW);
           xFocusStrength = 0.5 + xOffset * 0.2;
@@ -1104,15 +1129,17 @@ void TeamAIController::PrepareSetPiece(e_SetPiece setPiece, int takerTeamID) {
       Vector3 toBall = player->GetPosition() - match->GetBall()->Predict(0).Get2D();
       float ballDistance = (toBall).GetLength();
       if (ballDistance < minDistance)
-        player->ResetPosition(
-            player->GetPosition() + toBall.GetNormalized(0) * minDistance,
-            match->GetBall()->Predict(0).Get2D());
+        player->ResetPosition(player->GetPosition() + toBall.GetNormalized(0) * minDistance,
+                              match->GetBall()->Predict(0).Get2D());
     }
   }
 }
 
 void TeamAIController::ApplyAttackingRun(Player* manualPlayer) {
-  endApplyAttackingRun_ms = match->GetActualTime_ms() + 4000;  // 1500;
+  const float counterAttack =
+      team->GetTeamData()->GetTactics().userProperties.GetReal("counter_attack", 0.5f);
+  endApplyAttackingRun_ms =
+      match->GetActualTime_ms() + AITactics::GetAttackingRunDuration_ms(counterAttack);
 
   attackingRunPlayer = manualPlayer ? manualPlayer : SelectAttackingRunPlayer(team);
 }
@@ -1121,43 +1148,46 @@ void TeamAIController::ApplyTeamPressure() {
   endApplyTeamPressure_ms = match->GetActualTime_ms() + 500;
 
   Player* opp = match->GetTeam(abs(team->GetID() - 1))->GetBestPossessionPlayer();
+  if (!opp) {
+    teamPressurePlayer = 0;
+    return;
+  }
   Vector3 opponentPos = opp->GetPosition() + opp->GetMovement() * 0.24f;
 
-  teamPressurePlayer = AI_GetClosestPlayer(
-      team, opponentPos + Vector3(team->GetSide() * 1.0f, 0, 0), true, team->GetGoalie());
-
-  if (teamPressurePlayer) {
-    // switch man marking
-    int prevMarking = teamPressurePlayer->GetManMarkingID();
-    teamPressurePlayer->SetManMarkingID(opp->GetID());
-
-    // SetRedDebugPilon(teamPressurePlayer->GetPosition());
+  // Team pressure is assistance: keep the primary defender in place and send
+  // the nearest available AI-controlled outfield teammate.
+  Player* primaryDefender = team->GetDesignatedTeamPossessionPlayer();
+  teamPressurePlayer = 0;
+  std::vector<Player*> candidates;
+  const Vector3 pressureTarget = opponentPos + Vector3(team->GetSide() * 1.0f, 0, 0);
+  AI_GetClosestPlayers(team, pressureTarget, true, candidates, playerNum);
+  float bestPressureRating = 1000.0f;
+  for (Player* candidate : candidates) {
+    if (candidate != primaryDefender && candidate != team->GetGoalie()) {
+      const float distance = (candidate->GetPosition() - pressureTarget).GetLength();
+      const float rolePenalty = AITactics::GetSecondaryPressureRolePenalty(
+          AI_GetMindSet(candidate->GetDynamicFormationEntry().role));
+      const float pressureRating = distance + rolePenalty;
+      if (pressureRating < bestPressureRating) {
+        bestPressureRating = pressureRating;
+        teamPressurePlayer = candidate;
+      }
+    }
   }
+
+  // Do not alter the player's persistent man-marking assignment here. The
+  // pressure override is intentionally temporary and is already identified by
+  // teamPressurePlayer/endApplyTeamPressure_ms in ElizaController.
 }
 
-void TeamAIController::ApplyCounterPress() {
-  // Gegenpressing: immediately after losing the ball, send up to 3 outfield players
-  // to swarm the opponent who just gained possession.
-  counterPressActive = true;
-  counterPressEndTime_ms = match->GetActualTime_ms() + 4000;
-  counterPressPlayers.clear();
-
-  Player* opp = match->GetTeam(abs(team->GetID() - 1))->GetBestPossessionPlayer();
-  if (!opp)
-    return;
-
-  Vector3 ballPos = match->GetBall()->Predict(0).Get2D();
-
-  // gather the 3 outfield players closest to the ball
-  std::vector<Player*> pressers;
-  AI_GetClosestPlayers(team, ballPos, true, pressers, 3);
-
-  for (Player* presser : pressers) {
-    if (!presser || presser == team->GetGoalie())
-      continue;
-    presser->SetManMarkingID(opp->GetID());
-    counterPressPlayers.push_back(presser);
-  }
+void TeamAIController::ApplyZonePressure() {
+  const float pressureSetting =
+      team->GetTeamData()->GetTactics().userProperties.GetReal("team_pressure", 0.5f);
+  zonePressureActive = true;
+  zonePressureEndTime_ms =
+      match->GetActualTime_ms() + AITactics::GetZonePressureDuration_ms(pressureSetting);
+  ApplyTeamPressure();
+  nextZonePressureRefresh_ms = match->GetActualTime_ms() + 250;
 }
 
 void TeamAIController::ApplyKeeperRush() {
@@ -1178,9 +1208,8 @@ Player* TeamAIController::ConsumePassRequest(Player* passer) {
     return 0;
 
   if (IsPassRequestExpired(match->GetActualTime_ms(), passRequestExpires_ms) ||
-      !passRequestTarget->IsActive() ||
-      !team->IsHumanControlled(passRequestTarget->GetID()) || passRequestTarget == passer ||
-      match->GetDesignatedPossessionPlayer() != passer) {
+      !passRequestTarget->IsActive() || !team->IsHumanControlled(passRequestTarget->GetID()) ||
+      passRequestTarget == passer || match->GetDesignatedPossessionPlayer() != passer) {
     ClearPassRequest();
     return 0;
   }
@@ -1288,9 +1317,9 @@ void TeamAIController::Reset() {
 
   ClearPassRequest();
 
-  counterPressActive = false;
-  counterPressEndTime_ms = 0;
-  counterPressPlayers.clear();
+  zonePressureActive = false;
+  zonePressureEndTime_ms = 0;
+  nextZonePressureRefresh_ms = 0;
   prevTeamHasPossession = false;
 
   teamHasPossession = false;

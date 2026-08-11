@@ -21,6 +21,7 @@
 #include <cmath>
 
 #include "../../main.hpp"
+#include "../aitactics.hpp"
 #include "../ball.hpp"
 #include "../match.hpp"
 #include "../player/humanoid/humanoid_utils.hpp"
@@ -454,9 +455,9 @@ void AI_GetBestDribbleMovement(Match* match, int thisPlayerID, const MentalImage
   Vector3 myPos = player->GetPosition();
   Vector3 myMov = player->GetMovement();
 
-  float offenseFactor = 0.7f +
-                        teamTactics.userProperties.GetReal("dribble_offensiveness", 0.5f) * 0.05f +
-                        AI_GetMindSet(player->GetDynamicFormationEntry().role) * 0.05f;
+  const float offenseFactor = AITactics::GetDribbleForwardDrive(
+      teamTactics.userProperties.GetReal("dribble_offensiveness", 0.5f),
+      AI_GetMindSet(player->GetDynamicFormationEntry().role));
   float powerMultiplier = 1.0f;  // should alter (average) resulting velocity
 
   float future_sec = 0.25f;

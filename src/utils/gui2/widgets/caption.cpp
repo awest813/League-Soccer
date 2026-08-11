@@ -6,6 +6,7 @@
 #include "caption.hpp"
 
 #include <cmath>
+
 #include "../windowmanager.hpp"
 #include "SDL2/SDL2_rotozoom.h"
 
@@ -66,11 +67,11 @@ void Gui2Caption::Redraw() {
 
   Vector3 textColor = color;
   SDL_Color textColorSDL = {Uint8(textColor.coords[0]), Uint8(textColor.coords[1]),
-                            Uint8(textColor.coords[2])};
+                            Uint8(textColor.coords[2]), 255};
   Vector3 textOutlineColor = outlineColor;
   SDL_Color textOutlineColorSDL = {Uint8(textOutlineColor.coords[0]),
                                    Uint8(textOutlineColor.coords[1]),
-                                   Uint8(textOutlineColor.coords[2])};
+                                   Uint8(textOutlineColor.coords[2]), 255};
 
   SDL_Surface* textSurfTmp = TTF_RenderUTF8_Blended(
       windowManager->GetStyle()->GetFont(e_TextType_Caption), caption.c_str(), textColorSDL);

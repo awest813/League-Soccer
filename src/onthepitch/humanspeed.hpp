@@ -99,8 +99,8 @@ inline float HumanSpeedSliderFromSpeed(float speed, HumanSpeedType type) {
 
 template <typename Configuration>
 float ReadConfiguredHumanSpeed(const Configuration& configuration, HumanSpeedType type) {
-  return ClampHumanSpeed(
-      configuration.GetReal(HumanSpeedConfigKey(type), DefaultHumanSpeed(type)), type);
+  return ClampHumanSpeed(configuration.GetReal(HumanSpeedConfigKey(type), DefaultHumanSpeed(type)),
+                         type);
 }
 
 #endif  // _HPP_FOOTBALL_ONTHEPITCH_HUMANSPEED

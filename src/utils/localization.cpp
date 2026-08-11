@@ -71,6 +71,8 @@ bool LoadLocaleFile(const std::string& languageCode,
     strings->clear();
     std::string line;
     while (std::getline(file, line)) {
+      if (!line.empty() && line.back() == '\r')
+        line.pop_back();
       if (line.empty() || line[0] == '#' || line[0] == ';')
         continue;
       const size_t separator = line.find('=');
@@ -116,8 +118,8 @@ bool Localization::Load(const std::string& languageCode) {
     strings_ = fallbackStrings_;
     currentLanguage_ = "en";
     Log(e_Notice, "Localization", "Load",
-        "Loaded locale 'en' from " + englishPath + " (" +
-            std::to_string(strings_.size()) + " strings)");
+        "Loaded locale 'en' from " + englishPath + " (" + std::to_string(strings_.size()) +
+            " strings)");
     return true;
   }
 
@@ -175,8 +177,7 @@ std::string Localization::TranslateAndFormat(const std::string& key,
           }
         }
         if (numeric && !template_.substr(i + 1, end - i - 1).empty()) {
-          size_t index = static_cast<size_t>(
-              atoi(template_.substr(i + 1, end - i - 1).c_str()));
+          size_t index = static_cast<size_t>(atoi(template_.substr(i + 1, end - i - 1).c_str()));
           if (index < args.size()) {
             result += args[index];
             i = end + 1;

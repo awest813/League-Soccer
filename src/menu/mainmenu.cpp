@@ -47,9 +47,8 @@ bool MenuSmokeAutoQuickMatchEnabled() {
   return MenuSmokeQuickMatchEnabled() || MenuSmokeFullMatchEnabled();
 }
 
-void AddMainMenuCaption(Gui2WindowManager* windowManager, Gui2View* panel,
-                        const std::string& name, float y_percent, float height_percent,
-                        const std::string& text) {
+void AddMainMenuCaption(Gui2WindowManager* windowManager, Gui2View* panel, const std::string& name,
+                        float y_percent, float height_percent, const std::string& text) {
   Gui2Caption* caption =
       new Gui2Caption(windowManager, name, 2, y_percent, 46, height_percent, text);
   panel->AddView(caption);
@@ -62,16 +61,14 @@ IntroPage::IntroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
     : Gui2Page(windowManager, pageData) {
   constexpr float kLogoAspectRatio = 512.0f / 180.0f;
   constexpr float kLogoHeight = 18.0f;
-  const float logoWidth =
-      windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
-  Gui2Image* logo = new Gui2Image(windowManager, "image_intro_logo",
-                                  50.0f - logoWidth * 0.5f, 10, logoWidth, kLogoHeight);
+  const float logoWidth = windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
+  Gui2Image* logo = new Gui2Image(windowManager, "image_intro_logo", 50.0f - logoWidth * 0.5f, 10,
+                                  logoWidth, kLogoHeight);
   logo->LoadImage("media/menu/main/title01.png");
   this->AddView(logo);
   logo->Show();
 
-  Gui2Frame* promptPanel =
-      new Gui2Frame(windowManager, "frame_intro_prompt", 32, 86, 36, 8, true);
+  Gui2Frame* promptPanel = new Gui2Frame(windowManager, "frame_intro_prompt", 32, 86, 36, 8, true);
   this->AddView(promptPanel);
   promptPanel->Show();
   Gui2Caption* prompt = new Gui2Caption(windowManager, "caption_intro_prompt", 0, 2.5f, 32, 3,
@@ -106,10 +103,9 @@ OutroPage::OutroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
     : Gui2Page(windowManager, pageData) {
   constexpr float kLogoAspectRatio = 512.0f / 180.0f;
   constexpr float kLogoHeight = 18.0f;
-  const float logoWidth =
-      windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
-  Gui2Image* logo = new Gui2Image(windowManager, "image_outro_logo",
-                                  50.0f - logoWidth * 0.5f, 20, logoWidth, kLogoHeight);
+  const float logoWidth = windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
+  Gui2Image* logo = new Gui2Image(windowManager, "image_outro_logo", 50.0f - logoWidth * 0.5f, 20,
+                                  logoWidth, kLogoHeight);
   logo->LoadImage("media/menu/main/title01.png");
   this->AddView(logo);
   logo->Show();
@@ -118,15 +114,13 @@ OutroPage::OutroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
       new Gui2Frame(windowManager, "frame_outro_message", 32, 70, 36, 16, true);
   this->AddView(messagePanel);
   messagePanel->Show();
-  Gui2Caption* message =
-      new Gui2Caption(windowManager, "caption_outro_message", 0, 3, 32, 3,
-                      "Thanks for playing League Soccer");
+  Gui2Caption* message = new Gui2Caption(windowManager, "caption_outro_message", 0, 3, 32, 3,
+                                         "Thanks for playing League Soccer");
   message->SetPosition(18.0f - message->GetTextWidthPercent() * 0.5f, 3);
   messagePanel->AddView(message);
   message->Show();
-  Gui2Caption* prompt =
-      new Gui2Caption(windowManager, "caption_outro_prompt", 0, 9, 32, 3,
-                      "Press Enter, A, or Escape to Exit");
+  Gui2Caption* prompt = new Gui2Caption(windowManager, "caption_outro_prompt", 0, 9, 32, 3,
+                                        "Press Enter, A, or Escape to Exit");
   prompt->SetPosition(18.0f - prompt->GetTextWidthPercent() * 0.5f, 9);
   messagePanel->AddView(prompt);
   prompt->Show();
@@ -162,10 +156,9 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Frame* titlePanel = new Gui2Frame(windowManager, "frame_mm_title", 4, 2, 38, 24, true);
   constexpr float kLogoAspectRatio = 512.0f / 180.0f;
   constexpr float kLogoHeight = 18.0f;
-  const float logoWidth =
-      windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
-  Gui2Image* title = new Gui2Image(windowManager, "image_main_title",
-                                   19.0f - logoWidth * 0.5f, 2, logoWidth, kLogoHeight);
+  const float logoWidth = windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
+  Gui2Image* title = new Gui2Image(windowManager, "image_main_title", 19.0f - logoWidth * 0.5f, 2,
+                                   logoWidth, kLogoHeight);
   title->LoadImage("media/menu/main/title01.png");
   titlePanel->AddView(title);
   title->Show();
@@ -769,7 +762,10 @@ bool MainMenuPage::GoImportDB() {
       "<position_defense_microfocus_strength>0.5</position_defense_microfocus_strength>"
 
       "<dribble_offensiveness>0.5</dribble_offensiveness>"
-      "<dribble_centermagnet>0.5</dribble_centermagnet>";
+      "<dribble_centermagnet>0.5</dribble_centermagnet>"
+      "<counter_attack>0.5</counter_attack>"
+      "<support_distance>0.5</support_distance>"
+      "<team_pressure>0.5</team_pressure>";
 
   InitDefaultProfiles();
 

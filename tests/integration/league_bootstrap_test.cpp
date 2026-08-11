@@ -8,6 +8,7 @@
 
 #include "base/properties.hpp"
 #include "league/leaguecode.hpp"
+#include "league/leaguesetup.hpp"
 #include "sqlite3.h"
 #include "utils/database.hpp"
 
@@ -160,6 +161,23 @@ TEST(LeagueBootstrapIntegrationTest, CreateNewLeagueSaveCopiesDatabaseAndKnownAs
   EXPECT_TRUE(
       std::filesystem::exists(saveDir / "images_teams" / "test" / "alpha" / "kit_home.png"));
   EXPECT_FALSE(std::filesystem::exists(saveDir / "images_teams" / "test" / "bravo"));
+}
+
+TEST(LeagueBootstrapIntegrationTest, GeneratedTeamsIncludeClassicTacticalDefaults) {
+  ScopedWorkspace workspace;
+  const auto databasePath = workspace.root() / "generated.sqlite";
+  sqlite3* emptyDatabase = nullptr;
+  ASSERT_EQ(sqlite3_open(databasePath.string().c_str(), &emptyDatabase), SQLITE_OK);
+  ASSERT_EQ(sqlite3_close(emptyDatabase), SQLITE_OK);
+  ASSERT_TRUE(GetDB()->Load(databasePath.string()));
+
+  SetupFourLeagues(GetDB());
+
+  const std::string tactics =
+      QuerySingleString(GetDB(), "SELECT tactics_xml FROM teams ORDER BY id LIMIT 1");
+  EXPECT_NE(tactics.find("<counter_attack>0.5</counter_attack>"), std::string::npos);
+  EXPECT_NE(tactics.find("<support_distance>0.5</support_distance>"), std::string::npos);
+  EXPECT_NE(tactics.find("<team_pressure>0.5</team_pressure>"), std::string::npos);
 }
 
 TEST(LeagueBootstrapIntegrationTest, PrepareDatabaseForLeagueSupportsProfileXmlSchema) {

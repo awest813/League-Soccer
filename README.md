@@ -55,7 +55,7 @@ stripped out — the menus, audio, full gameplay, and beyond.
   set pieces, and statistics.
 - **🎮 Keyboard + gamepad** — remappable controls for up to two players,
   with gamepad calibration and mapping.
-- **🧠 Real football AI** — pressure and counter-press tactics, per-player
+- **🧠 Real football AI** — zone pressure and counter-attack tactics, per-player
   roles, velocity/stamina state machine, and dynamic team AI controllers.
 - **🛠️ Deep management modes** — run a club as Owner, GM, or Coach across
   transfer markets, contracts, drafts, scouting, youth academies, staff,
@@ -284,6 +284,11 @@ nix-shell          # or: nix develop
   mode, control changes only when **Switch player** is pressed, even after an
   AI teammate wins or receives the ball. Press **Short pass** while controlling
   an off-ball teammate to call for a pass from the AI ball carrier.
+- The pre-match **Game Plan > Tactics** menu includes **Counter attack** and
+  **Zone pressure** controls, plus **Support distance** for shorter combinations
+  or wider passing options. They influence forward outlets, support-run
+  frequency, spacing, and selective secondary pressure without forcing every
+  team into the same high-tempo style.
 
 ### Menu Navigation
 

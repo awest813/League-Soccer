@@ -8,7 +8,7 @@
 
 #include "base/sdl_surface.hpp"
 #include "defines.hpp"
-#include "systems/graphics/rendering/interface_renderer3d.hpp"
+#include "systems/graphics/resources/textureformats.hpp"
 
 namespace blunted {
 

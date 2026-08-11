@@ -12,6 +12,20 @@
 #include "base/utils.hpp"
 #include "utils/database.hpp"
 
+namespace {
+
+void EnsureTacticDefinition(TeamTactics& tactics, const char* name, float defaultValue,
+                            const char* displayName, const char* description) {
+  if (!tactics.userProperties.Exists(name))
+    tactics.userProperties.Set(name, defaultValue);
+  if (!tactics.factoryProperties.Exists(name))
+    tactics.factoryProperties.Set(name, defaultValue);
+  tactics.humanReadableNames.Set(name, displayName);
+  tactics.descriptions.Set(name, description);
+}
+
+}  // namespace
+
 Vector3 GetDefaultRolePosition(e_PlayerRole role) {
   switch (role) {
     case e_PlayerRole_GK:
@@ -103,7 +117,6 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
     shortName = shortName.substr(0, 3);
     std::transform(shortName.begin(), shortName.end(), shortName.begin(), ::toupper);
   }
-
 
   std::string saveDir = GetActiveSaveDirectory();
   if (!saveDir.empty()) {
@@ -264,6 +277,17 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
     iter++;
   }
 
+  // Older databases predate these classic team-strategy controls. Inject
+  // neutral defaults in memory so every team can use and edit them without a
+  // schema migration.
+  EnsureTacticDefinition(tactics, "counter_attack", 0.5f, "Attack: Counter attack",
+                         "Higher values keep a forward outlet and trigger earlier support runs.");
+  EnsureTacticDefinition(tactics, "support_distance", 0.5f, "Attack: Support distance",
+                         "Lower values create shorter links; higher values spread support.");
+  EnsureTacticDefinition(
+      tactics, "team_pressure", 0.5f, "Defense: Zone pressure",
+      "Higher values use secondary pressure more often and deeper on the pitch.");
+
   // load players
 
   std::string order = "formationorder";
@@ -279,7 +303,6 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
     // printf("loading player %i\n", playerDatabaseID);
     playerData.push_back(std::make_unique<PlayerData>(playerDatabaseID));
   }
-
 }
 
 TeamData::~TeamData() {}
@@ -338,7 +361,7 @@ void TeamData::SaveTactics() {
   }
 
   auto result = GetDB()->Query("update teams set tactics_xml = \"" + tactics_xml +
-                                          "\" where id = " + int_to_str(GetDatabaseID()) + ";");
+                               "\" where id = " + int_to_str(GetDatabaseID()) + ";");
 }
 
 void TeamData::Save() {

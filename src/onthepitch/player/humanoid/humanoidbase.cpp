@@ -2519,7 +2519,7 @@ Vector3 HumanoidBase::CalculatePhysicsVector(Animation* anim, bool useDesiredMov
     radian toDesiredAngle = desiredVector.GetAngle2D(animOutgoingVector);
     if (fabs(toDesiredAngle) <= 0.5f * pi ||
         animType == "sliding") {  // if we want > x degrees, just skip it to next anim,
-                                             // it'll only look weird otherwise
+                                  // it'll only look weird otherwise
 
       radian animChange = animOutgoingVector.GetAngle2D(spatialState.directionVec);
       if (fabs(animChange) > 0.06f * pi) {

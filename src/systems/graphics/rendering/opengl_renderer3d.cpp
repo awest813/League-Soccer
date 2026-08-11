@@ -50,7 +50,7 @@ namespace blunted {
 
 struct GLfunctions {
 #ifndef APIENTRYP
-#define APIENTRYP APIENTRY *
+#define APIENTRYP APIENTRY*
 #endif
 #define SDL_PROC(ret, func, params) ret(APIENTRYP func) params;
 #include "sdl_glfuncs.h"
@@ -118,9 +118,8 @@ void OpenGLRenderer3D::RenderOverlay2D(const std::vector<Overlay2DQueueEntry>& o
   UseShader("overlay");
 
   // VK: TODO: check window size instead?
-  Matrix4 orthoMatrix =
-      CreateOrthoMatrix(0.0f, static_cast<real>(context_width), static_cast<real>(context_height),
-                        0.0f, 0.1f, 10.0f);
+  Matrix4 orthoMatrix = CreateOrthoMatrix(0.0f, static_cast<real>(context_width),
+                                          static_cast<real>(context_height), 0.0f, 0.1f, 10.0f);
   SetMatrix("projection", orthoMatrix);
 
   mapping.glBindVertexArray(overlayBuffer.vertexArrayID);
@@ -132,10 +131,10 @@ void OpenGLRenderer3D::RenderOverlay2D(const std::vector<Overlay2DQueueEntry>& o
     }
 
     Matrix4 modelMatrix(MATRIX4_IDENTITY);
-    modelMatrix.SetTranslation(
-        Vector3(static_cast<real>(queueEntry.position[0]), static_cast<real>(queueEntry.position[1]), -1.0f));
-    modelMatrix.SetScale(
-        Vector3(static_cast<real>(queueEntry.size[0]), static_cast<real>(queueEntry.size[1]), 1.0f));
+    modelMatrix.SetTranslation(Vector3(static_cast<real>(queueEntry.position[0]),
+                                       static_cast<real>(queueEntry.position[1]), -1.0f));
+    modelMatrix.SetScale(Vector3(static_cast<real>(queueEntry.size[0]),
+                                 static_cast<real>(queueEntry.size[1]), 1.0f));
     SetMatrix("model", modelMatrix);
 
     BindTexture(queueEntry.texture->GetResource()->GetID());
@@ -1057,8 +1056,7 @@ VertexBufferID OpenGLRenderer3D::CreateVertexBuffer(float* vertices, unsigned in
     mapping.glBufferData(GL_ELEMENT_ARRAY_BUFFER, effectiveIndices.size() * sizeof(unsigned int),
                          nullptr, GetGLVertexBufferUsage(usage));
     mapping.glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,
-                            effectiveIndices.size() * sizeof(unsigned int),
-                            &effectiveIndices[0]);
+                            effectiveIndices.size() * sizeof(unsigned int), &effectiveIndices[0]);
 
 #define BUFFER_OFFSET(i) ((char*)nullptr + (i))
     for (int i = 0; i < GetTriangleMeshElementCount(); i++) {
@@ -1411,7 +1409,8 @@ void OpenGLRenderer3D::RenderVertexBuffer(
             // SetUniformInt("simple", "has_specular", (int)has_specular);
             // SetUniformInt("simple", "has_illumination", (int)has_illumination);
             SetUniformFloat3("simple", "materialbools", static_cast<float>(has_normal),
-                             static_cast<float>(has_specular), static_cast<float>(has_illumination));
+                             static_cast<float>(has_specular),
+                             static_cast<float>(has_illumination));
           }
 
           currentDiffuseTextureID = diffuseTextureID;
@@ -2282,7 +2281,6 @@ void OpenGLRenderer3D::LoadShader(const std::string& name, const std::string& fi
 
   mapping.glUseProgram(shader.programID);
 
-  GLint location;
   if (name == "simple") {
     SetUniformInt("simple", "map_albedo", 0);
     SetUniformInt("simple", "map_normal", 1);

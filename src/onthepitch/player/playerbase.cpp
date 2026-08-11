@@ -148,9 +148,8 @@ float PlayerBase::GetMaxVelocity() const {
   // fatigue reduces sprint speed: fully rested = 100%, exhausted = 60%
   const float fatigueFactor = 0.6f + 0.4f * fatigueFactorInv;
   const float baseSprintVelocity =
-      externalController
-          ? ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint)
-          : sprintVelocity;
+      externalController ? ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint)
+                         : sprintVelocity;
   return baseSprintVelocity * GetVelocityMultiplier() * fatigueFactor;
 }
 

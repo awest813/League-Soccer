@@ -52,7 +52,7 @@ public:
   e_SetPiece GetSetPieceType() { return setPieceType; }
   void ApplyAttackingRun(Player* manualPlayer = 0);
   void ApplyTeamPressure();
-  void ApplyCounterPress();
+  void ApplyZonePressure();
   void ApplyKeeperRush();
   void RequestPass(Player* target);
   Player* ConsumePassRequest(Player* passer);
@@ -66,9 +66,8 @@ public:
   unsigned long GetEndApplyTeamPressure_ms() { return endApplyTeamPressure_ms; }
   Player* GetTeamPressurePlayer() { return teamPressurePlayer; }
 
-  bool IsCounterPressActive() const { return counterPressActive; }
-  unsigned long GetCounterPressEndTime_ms() const { return counterPressEndTime_ms; }
-  const std::vector<Player*>& GetCounterPressPlayers() const { return counterPressPlayers; }
+  bool IsZonePressureActive() const { return zonePressureActive; }
+  unsigned long GetZonePressureEndTime_ms() const { return zonePressureEndTime_ms; }
 
   Player* GetForwardSupportPlayer() { return forwardSupportPlayer; }
 
@@ -117,9 +116,9 @@ protected:
   unsigned long passRequestExpires_ms;
   void ClearPassRequest();
 
-  bool counterPressActive;
-  unsigned long counterPressEndTime_ms;
-  std::vector<Player*> counterPressPlayers;
+  bool zonePressureActive;
+  unsigned long zonePressureEndTime_ms;
+  unsigned long nextZonePressureRefresh_ms;
   bool prevTeamHasPossession;
 
   Player* forwardSupportPlayer;  // sort of like the attacking run player, but more for a forward

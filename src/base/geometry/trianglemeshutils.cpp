@@ -34,11 +34,13 @@ AABB GetTriangleMeshAABB(float* vertices, int verticesDataSize,
     for (unsigned int t = 0; t < indices.size() / 3; t++) {
       for (unsigned int v = 0; v < 3; v++) {
         for (unsigned int i = 0; i < 3; i++) {
-          assert(verticesDataSize > indices[t * 3 + v] + i);
-          if (vertices[indices[t * 3 + v] + i] < aabb.minxyz.coords[i])
-            aabb.minxyz.coords[i] = vertices[indices[t * 3 + v] + i];
-          if (vertices[indices[t * 3 + v] + i] > aabb.maxxyz.coords[i])
-            aabb.maxxyz.coords[i] = vertices[indices[t * 3 + v] + i];
+          const unsigned int vertexOffset = indices[t * 3 + v] + i;
+          assert(verticesDataSize >= 0 &&
+                 static_cast<unsigned int>(verticesDataSize) > vertexOffset);
+          if (vertices[vertexOffset] < aabb.minxyz.coords[i])
+            aabb.minxyz.coords[i] = vertices[vertexOffset];
+          if (vertices[vertexOffset] > aabb.maxxyz.coords[i])
+            aabb.maxxyz.coords[i] = vertices[vertexOffset];
         }
       }
     }

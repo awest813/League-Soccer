@@ -22,6 +22,7 @@
 
 #include "../../../main.hpp"
 #include "../../AIsupport/AIfunctions.hpp"
+#include "../../gameplaytuning.hpp"
 #include "../../match.hpp"
 #include "../playerbase.hpp"
 #include "animcollection.hpp"
@@ -150,9 +151,8 @@ float StretchSprintTo(const float& inputVelocity, float inputSpaceMaxVelocity,
   if (inputSpaceMaxVelocity <= walkSprintSwitch)
     return targetMaxVelocity;
 
-  const float sprintFraction =
-      clamp((inputVelocity - walkSprintSwitch) / (inputSpaceMaxVelocity - walkSprintSwitch), 0.0f,
-            1.0f);
+  const float sprintFraction = clamp(
+      (inputVelocity - walkSprintSwitch) / (inputSpaceMaxVelocity - walkSprintSwitch), 0.0f, 1.0f);
   return walkSprintSwitch + (targetMaxVelocity - walkSprintSwitch) * sprintFraction;
 }
 
@@ -191,6 +191,20 @@ void GetDifficultyFactors(Match* match, Player* player, const Vector3& positionO
   heightFactor += positionOffsetPenalty * 0.5f;
   heightFactor += ballBodyVeloPenalty * 2.0f;
   heightFactor += fartherAwayPenalty;
+
+  float incomingFacingAlignment = 1.0f;
+  const Vector3 incomingBallMovement = ball->GetMovement().Get2D();
+  if (incomingBallMovement.GetLength() > 0.1f) {
+    incomingFacingAlignment =
+        player->GetBodyDirectionVec().GetDotProduct(incomingBallMovement.GetNormalized(0) * -1.0f);
+  }
+  const float contextPenalty = GameplayTuning::GetFirstTouchContextPenalty(
+      player->GetClosestOpponentDistance(), player->GetStat("mental_calmness"),
+      player->GetStat("physical_balance"), incomingBallMovement.GetLength(),
+      incomingFacingAlignment);
+  distanceFactor += contextPenalty;
+  heightFactor += contextPenalty * 0.25f;
+  ballMovementFactor += contextPenalty * 0.35f;
 
   // make intercepting passes harder
   if (match->GetLastTouchTeamID() != player->GetTeam()->GetID()) {

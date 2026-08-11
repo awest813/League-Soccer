@@ -1,5 +1,7 @@
 #include "leaguesetup.hpp"
 
+#include <iterator>
+
 #include "base/utils.hpp"
 
 namespace {
@@ -56,8 +58,8 @@ void GeneratePlayersForTeam(Database* db, int teamID) {
       "tactics><condition>1.0</condition>";
 
   for (int i = 0; i < 20; i++) {
-    std::string fname = kFirstNames[rand() % 24];
-    std::string lname = kLastNames[rand() % 23];
+    std::string fname = kFirstNames[rand() % std::size(kFirstNames)];
+    std::string lname = kLastNames[rand() % std::size(kLastNames)];
     std::string role = kRoles[i];
     int age = 18 + (rand() % 15);
     float baseStat = 0.5f + (static_cast<float>(rand() % 40) / 100.0f);
@@ -103,7 +105,8 @@ void SetupFourLeagues(Database* db) {
       "position><role>CF</role></p10><p11><position>0.7,-0.5</position><role>CF</role></p11>";
   std::string defaultTactics =
       "<dribble_centermagnet>0.5</dribble_centermagnet><dribble_offensiveness>0.5</"
-      "dribble_offensiveness>";
+      "dribble_offensiveness><counter_attack>0.5</counter_attack><support_distance>0.5</"
+      "support_distance><team_pressure>0.5</team_pressure>";
 
   db->Query("DELETE FROM players");
   db->Query("DELETE FROM teams");

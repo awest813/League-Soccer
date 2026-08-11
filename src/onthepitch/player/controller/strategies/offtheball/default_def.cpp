@@ -5,6 +5,8 @@
 
 #include "default_def.hpp"
 
+#include "../../../../aitactics.hpp"
+
 DefaultDefenseStrategy::DefaultDefenseStrategy(ElizaController* controller) : Strategy(controller) {
   name = "default defense";
 }
@@ -34,6 +36,8 @@ void DefaultDefenseStrategy::RequestInput(const MentalImage* mentalImage, Vector
     // support position
     float attackBias =
         NormalizedClamp((controller->GetFadingTeamPossessionAmount() - 0.5f) * 1.0f, 0.2f, 0.9f);
+    attackBias *= AITactics::GetDefenderSupportScale(
+        AI_GetMindSet(CastPlayer()->GetDynamicFormationEntry().role));
     Vector3 supportPosition =
         controller->GetSupportPosition_ForceField(mentalImage, desiredPosition);
     desiredPosition = desiredPosition * (1.0f - attackBias) + supportPosition * attackBias;

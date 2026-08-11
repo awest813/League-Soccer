@@ -5,11 +5,18 @@ find_package(SQLite3 REQUIRED)
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-FetchContent_Declare(
-  googletest
+set(GOOGLETEST_FETCHCONTENT_ARGS
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
+
+# DOWNLOAD_EXTRACT_TIMESTAMP was added in CMake 3.24. Ubuntu 22.04 ships
+# CMake 3.22, where the unknown keyword is interpreted as a second URL and
+# makes FetchContent configuration fail.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
+  list(APPEND GOOGLETEST_FETCHCONTENT_ARGS DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+endif()
+
+FetchContent_Declare(googletest ${GOOGLETEST_FETCHCONTENT_ARGS})
 
 FetchContent_MakeAvailable(googletest)
 

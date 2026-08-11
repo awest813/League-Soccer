@@ -22,8 +22,26 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(UNIX)
-   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Wextra")
-   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O3")
+   # The legacy engine keeps compatibility parameters in virtual interfaces
+   # and dormant diagnostic calculations alongside active code. Keep the
+   # broad GCC warning sets while excluding only those two known categories.
+   set(GAMEPLAYFOOTBALL_LEGACY_UNUSED_WARNINGS
+       "-Wno-unused-parameter -Wno-unused-variable")
+   set(CMAKE_CXX_FLAGS_DEBUG
+       "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Wextra ${GAMEPLAYFOOTBALL_LEGACY_UNUSED_WARNINGS}")
+   set(CMAKE_CXX_FLAGS_RELEASE
+       "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O3 ${GAMEPLAYFOOTBALL_LEGACY_UNUSED_WARNINGS}")
+endif()
+
+if(MSVC)
+  # SDL2_gfx and the Windows CRT both provide the standard M_PI compatibility
+  # macro; their include order can produce C4005 even though the values match.
+  # The original engine intentionally mixes float-based world/UI coordinates
+  # with integer pixels, frame indices, and container sizes. MSVC reports those
+  # established boundaries as C4244/C4267/C4305 throughout the legacy code.
+  # Keep the useful warning set enabled while excluding these known, noisy
+  # compatibility and conversion categories from Windows builds.
+  add_compile_options(/wd4005 /wd4244 /wd4267 /wd4305)
 endif()
 
 function(gf_find_boost)

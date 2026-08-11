@@ -41,9 +41,8 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* header =
-      new Gui2Caption(windowManager, "matchoptions_caption", 2, 2, 46, 3,
-                      TR("match_options_title"));
+  Gui2Caption* header = new Gui2Caption(windowManager, "matchoptions_caption", 2, 2, 46, 3,
+                                        TR("match_options_title"));
   frame->AddView(header);
   header->Show();
 
@@ -55,8 +54,7 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
                                        6, TR("match_duration"));
   matchDurationSlider->SetQuantization(kMatchDurationSliderSteps);
   buttonStart =
-      new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 29, 3,
-                     TR("match_start"));
+      new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 29, 3, TR("match_start"));
   Gui2Button* buttonBack = new Gui2Button(windowManager, "matchoptions_button_back", 0, 0, 29, 3,
                                           Localization::GetInstance().Translate("action_back"));
 
@@ -72,8 +70,7 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
   difficultySlider->SetValue(difficulty);
   matchDurationSlider->SetValue(MatchDurationSliderFromMinutes(matchDurationMinutes));
   UpdateMatchDurationCaption();
-  matchDurationSlider->sig_OnChange.connect(
-      [this](Gui2Slider*) { UpdateMatchDurationCaption(); });
+  matchDurationSlider->sig_OnChange.connect([this](Gui2Slider*) { UpdateMatchDurationCaption(); });
 
   grid->AddView(difficultySlider, 0, 0);
   grid->AddView(matchDurationSlider, 1, 0);
@@ -97,8 +94,7 @@ MatchOptionsPage::~MatchOptionsPage() {}
 void MatchOptionsPage::UpdateMatchDurationCaption() {
   const int minutes =
       static_cast<int>(std::round(MatchDurationMinutesFromSlider(matchDurationSlider->GetValue())));
-  matchDurationSlider->SetCaption(
-      TRF("match_duration_minutes", {std::to_string(minutes)}));
+  matchDurationSlider->SetCaption(TRF("match_duration_minutes", {std::to_string(minutes)}));
 }
 
 void MatchOptionsPage::Process() {

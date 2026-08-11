@@ -6,6 +6,7 @@
 #include "slider.hpp"
 
 #include <cmath>
+
 #include "../windowmanager.hpp"
 #include "SDL2/SDL2_rotozoom.h"
 
@@ -142,12 +143,10 @@ void Gui2Slider::ProcessWindowingEvent(WindowingEvent* event) {
   if (direction.coords[0] > 0.3f)
     xoffset = pow(direction.coords[0], 2.0f);
 
-  bool fullStep = false;
-  if (direction.coords[0] > 0.99f ||
-      direction.coords[0] <
-          0.01f) {  // full effect, maybe digital input, so make this 1 quantized step
-    fullStep = true;
-  }
+  // Digital input reaches either extreme. Analog input should remain
+  // proportional in both directions instead of making every left movement a
+  // full quantized step.
+  const bool fullStep = std::fabs(direction.coords[0]) >= 0.99f;
 
   if (xoffset != 0) {
     if (!fullStep) {

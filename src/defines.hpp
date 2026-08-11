@@ -22,16 +22,12 @@
 #include <boost/signals2/slot.hpp>
 #include <cassert>
 #include <chrono>
-#ifdef _MSC_VER
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-#endif
 #include <cmath>
 #include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -71,6 +67,14 @@ namespace blunted {
 
 using real = float;
 
+inline bool GetLocalTime(std::time_t timestamp, std::tm& result) {
+#ifdef _MSC_VER
+  return localtime_s(&result, &timestamp) == 0;
+#else
+  return localtime_r(&timestamp, &result) != nullptr;
+#endif
 }
+
+}  // namespace blunted
 
 #endif

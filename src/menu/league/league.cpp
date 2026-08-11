@@ -660,7 +660,9 @@ void LeagueStartNewPage::CloseCreateSaveDialog() {
         "Could not prepare database for league");
 
   auto now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-  int currentYear = 1900 + std::localtime(&now_time)->tm_year;
+  std::tm localTime = {};
+  const int currentYear =
+      blunted::GetLocalTime(now_time, localTime) ? 1900 + localTime.tm_year : 1970;
   std::string startDate = std::to_string(currentYear) + "-06-01";
 
   auto result = GetDB()->Query(

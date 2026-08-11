@@ -23,6 +23,7 @@
 #include "../../../main.hpp"
 #include "../../AIsupport/AIfunctions.hpp"
 #include "../../AIsupport/mentalimage.hpp"
+#include "../../aitactics.hpp"
 #include "../../playercontrolsettings.hpp"
 #include "../humanoid/humanoid_utils.hpp"
 #include "../playerofficial.hpp"
@@ -748,7 +749,8 @@ Vector3 ElizaController::GetSupportPosition_ForceField(const MentalImage* mental
   float runWeight = 1.0f * overallWeight;
   float flockToPossessionPlayerWeight = 0.45f * overallWeight;
 
-  float webScale = 0.75f;
+  const float webScale = AITactics::GetSupportWebScale(
+      team->GetTeamData()->GetTactics().userProperties.GetReal("support_distance", 0.5f));
 
   switch (CastPlayer()->GetDynamicFormationEntry().role) {
     case e_PlayerRole_CB:
@@ -829,7 +831,7 @@ Vector3 ElizaController::GetSupportPosition_ForceField(const MentalImage* mental
   // stay away from opponents
   std::vector<Player*> opponents;
   AI_GetClosestPlayers(match->GetTeam(abs(team->GetID() - 1)),
-                       mainManPos * 0.3f + currentPos + 0.7f, false, opponents, 3);
+                       mainManPos * 0.3f + currentPos * 0.7f, false, opponents, 3);
   for (unsigned int i = 0; i < opponents.size(); i++) {
     const PlayerImage& oppImg = mentalImage->GetPlayerImage(opponents.at(i)->GetID());
     ForceSpot spot;
@@ -989,6 +991,7 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand>& commandQu
     float tacticalRating;
     float tacticalDiffRating;
     float passRating;
+    float supportRating;
     float proximityRating;
     e_FunctionType passType;
   };
@@ -1015,10 +1018,20 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand>& commandQu
       mateRating.player = mates.at(i);
       mateRating.tacticalRating = mateTacticalRating;
 
-      if (mateTacticalRating > tacticalRating + tacticalImprovementThreshold) {
+      const bool progressiveCandidate =
+          mateTacticalRating > tacticalRating + tacticalImprovementThreshold;
+      const bool supportCandidate =
+          AITactics::ShouldConsiderSupportPass(tacticalRating, sit.spaceRating, mateTacticalRating,
+                                               mateSit.spaceRating, longPossessionFactor);
+
+      if (progressiveCandidate || supportCandidate) {
         float tacticalDiffRating = mateRating.tacticalRating - tacticalRating;
 
-        mateRating.tacticalDiffRating = tacticalDiffRating;
+        mateRating.tacticalDiffRating = std::max(tacticalDiffRating, 0.0f);
+        mateRating.supportRating =
+            supportCandidate ? AITactics::GetSupportPassBonus(sit.spaceRating, mateSit.spaceRating,
+                                                              longPossessionFactor)
+                             : 0.0f;
         float passingOddsShort =
             _GetPassingOdds(mates.at(i), e_FunctionType_ShortPass, opponentPlayerImages);
         float passingOddsLong =
@@ -1037,7 +1050,8 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand>& commandQu
         }
 
         float totalRating = mateRating.tacticalDiffRating * tacticalDiffWeight +
-                            mateRating.passRating * passWeight - oneTouchIsHard;
+                            mateRating.passRating * passWeight + mateRating.supportRating -
+                            oneTouchIsHard;
 
         totalRating /= totalWeight2;
 

@@ -19,6 +19,8 @@
 #include "vector3.hpp"
 
 #include <cmath>
+#include <cstdint>
+#include <cstring>
 
 #include "base/log.hpp"
 #include "quaternion.hpp"
@@ -156,11 +158,13 @@ void Vector3::FastNormalize() {
 
   float x = GetDotProduct(*this);
   float xhalf = 0.5f * x;
-  int i = *(int*)&x;          // get bits for floating value
-  i = 0x5f3759df - (i >> 1);  // give initial guess y0
-  x = *(float*)&i;            // convert bits back to float
-  x *= 1.5f - xhalf * x * x;  // newton step, repeating this step
-                              // increases accuracy
+  static_assert(sizeof(float) == sizeof(std::uint32_t));
+  std::uint32_t i;
+  std::memcpy(&i, &x, sizeof(x));  // get bits for floating value
+  i = 0x5f3759df - (i >> 1);       // give initial guess y0
+  std::memcpy(&x, &i, sizeof(x));  // convert bits back to float
+  x *= 1.5f - xhalf * x * x;       // newton step, repeating this step
+                                   // increases accuracy
 
   coords[0] *= x;
   coords[1] *= x;

@@ -45,8 +45,8 @@ TEST(PlayerControlSettingsTest, AutomaticSelectionIsAssistedOnly) {
 }
 
 TEST(PlayerControlSettingsTest, PassCallRequiresManualOffBallRisingEdgeDuringPossession) {
-  EXPECT_TRUE(ShouldCallForPass(PlayerSwitchMode::FullyManual, true, false, false, true, true,
-                               false));
+  EXPECT_TRUE(
+      ShouldCallForPass(PlayerSwitchMode::FullyManual, true, false, false, true, true, false));
 
   EXPECT_FALSE(
       ShouldCallForPass(PlayerSwitchMode::Assisted, true, false, false, true, true, false));
@@ -196,8 +196,7 @@ TEST(VelocityStateTest, FloatToEnum_SprintBand) {
 // ---------------------------------------------------------------------------
 
 TEST(VelocityStateTest, RoundTrip_EnumFloatEnum) {
-  for (auto v :
-       {e_Velocity_Idle, e_Velocity_Dribble, e_Velocity_Walk, e_Velocity_Sprint}) {
+  for (auto v : {e_Velocity_Idle, e_Velocity_Dribble, e_Velocity_Walk, e_Velocity_Sprint}) {
     EXPECT_EQ(FloatToEnumVelocity(EnumToFloatVelocity(v)), v);
   }
 }

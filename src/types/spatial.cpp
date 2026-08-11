@@ -21,7 +21,7 @@ Spatial::~Spatial() {
   parent = 0;
 }
 
-Spatial::Spatial(const Spatial& src) {
+Spatial::Spatial(const Spatial& src) : RefCounted(src) {
   name = src.GetName();
   position = src.position;
   rotation = src.rotation;

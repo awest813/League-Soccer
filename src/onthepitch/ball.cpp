@@ -5,6 +5,7 @@
 
 #include "ball.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 #include "../main.hpp"
@@ -86,7 +87,7 @@ Ball::~Ball() {
 }
 
 void Ball::GetPredictionArray(Vector3* target) {
-  memcpy(target, predictions, sizeof(Vector3) * ballPredictionSize_ms / 10);
+  std::copy_n(predictions, ballPredictionSize_ms / 10, target);
 }
 
 Vector3 Ball::GetMovement() {
