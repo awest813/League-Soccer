@@ -35,6 +35,10 @@ bool MenuSmokeLeagueEnabled() {
          !GetConfiguration()->Get("menu_smoke_test_league_route", "").empty();
 }
 
+bool MenuSmokeCareerEnabled() {
+  return GetConfiguration()->GetBool("menu_smoke_test_career", false);
+}
+
 bool MenuSmokeSettingsEnabled() {
   return GetConfiguration()->GetBool("menu_smoke_test_settings", false);
 }
@@ -261,6 +265,12 @@ void MainMenuPage::Process() {
     autoAdvanceTriggered = true;
     printf("[menu-smoke] Main menu ready, opening League Mode\n");
     GoLeague();
+  } else if (!autoAdvanceTriggered && MenuSmokeCareerEnabled() &&
+             EnvironmentManager::GetInstance().GetTime_ms() >=
+                 pageCreatedTime_ms + kMenuSmokeAdvanceDelay_ms) {
+    autoAdvanceTriggered = true;
+    printf("[menu-smoke] Main menu ready, opening Career Mode\n");
+    GoCareerMode();
   } else if (!autoAdvanceTriggered && MenuSmokeSettingsEnabled() &&
              EnvironmentManager::GetInstance().GetTime_ms() >=
                  pageCreatedTime_ms + kMenuSmokeAdvanceDelay_ms) {

@@ -148,6 +148,13 @@ jobs:
             "[menu-smoke] League save created, entering league page" \
             "[menu-smoke] League page flow succeeded"
 
+      - name: Smoke test Career Mode menu
+        run: |
+          cd build
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_career.config" 40 \
+            "[menu-smoke] Main menu ready, opening Career Mode" \
+            "[menu-smoke] Career mode menu reached successfully"
+
       - name: Smoke test League Dashboard
         run: |
           cd build

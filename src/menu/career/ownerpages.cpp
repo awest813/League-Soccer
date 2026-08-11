@@ -89,7 +89,7 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
     std::string finStr =
         TRF("career_owner_fin_body",
-            {std::to_string(save->finances.netWorth), std::to_string(save->transferBudget),
+            {FormatOwnerMoney(save->finances.netWorth), FormatOwnerMoney(save->transferBudget),
              CareerDatabase::GetInstance().GetFinancialHealthString(),
              std::to_string(save->finances.ticketPrice)});
     Gui2Caption* finBody =
@@ -140,6 +140,36 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
     root->AddView(infFrame);
     infFrame->Show();
+
+    Gui2Frame* sharedFrame =
+        new Gui2Frame(windowManager, "frame_oh_shared", contentX, 55, contentW, 24, true);
+    Gui2Caption* sharedTitle = new Gui2Caption(windowManager, "cap_oh_shared_title", 2, 1,
+                                               contentW - 4, 2, TR("career_owner_shared_tools"));
+    sharedFrame->AddView(sharedTitle);
+    sharedTitle->Show();
+
+    Gui2Grid* sharedGrid = new Gui2Grid(windowManager, "oh_shared_grid", 2, 5, 56, 15);
+    Gui2Button* btnStrategy =
+        new Gui2Button(windowManager, "btn_oh_strategy", 0, 0, 27, 4, TR("career_strategy_nav"));
+    Gui2Button* btnPress =
+        new Gui2Button(windowManager, "btn_oh_press", 0, 0, 27, 4, TR("career_press_nav"));
+    Gui2Button* btnLeague =
+        new Gui2Button(windowManager, "btn_oh_league", 0, 0, 27, 4, TR("career_competitions_nav"));
+    Gui2Button* btnCustom =
+        new Gui2Button(windowManager, "btn_oh_custom", 0, 0, 27, 4, TR("career_customleague_nav"));
+    btnStrategy->sig_OnClick.connect([this](...) { GoStrategy(); });
+    btnPress->sig_OnClick.connect([this](...) { GoPressConference(); });
+    btnLeague->sig_OnClick.connect([this](...) { GoLeagueExpansion(); });
+    btnCustom->sig_OnClick.connect([this](...) { GoCustomLeague(); });
+    sharedGrid->AddView(btnStrategy, 0, 0);
+    sharedGrid->AddView(btnPress, 0, 1);
+    sharedGrid->AddView(btnLeague, 1, 0);
+    sharedGrid->AddView(btnCustom, 1, 1);
+    sharedGrid->UpdateLayout(0.5);
+    sharedFrame->AddView(sharedGrid);
+    sharedGrid->Show();
+    root->AddView(sharedFrame);
+    sharedFrame->Show();
   }
 
   Gui2Frame* navFrame = new Gui2Frame(windowManager, "frame_oh_nav", 3, 13, 25, 66, true);
@@ -261,11 +291,23 @@ void OwnerHubPage::GoSquad() {
 void OwnerHubPage::GoTraining() {
   CreatePage(e_PageID_CareerTraining);
 }
+void OwnerHubPage::GoStrategy() {
+  CreatePage(e_PageID_CareerStrategy);
+}
 void OwnerHubPage::GoFreeAgency() {
   CreatePage(e_PageID_CareerFreeAgency);
 }
 void OwnerHubPage::GoYouthAcademy() {
   CreatePage(e_PageID_CareerYouthAcademy);
+}
+void OwnerHubPage::GoPressConference() {
+  CreatePage(e_PageID_CareerPressConference);
+}
+void OwnerHubPage::GoLeagueExpansion() {
+  CreatePage(e_PageID_CareerLeagueExpansion);
+}
+void OwnerHubPage::GoCustomLeague() {
+  CreatePage(e_PageID_CareerCustomLeague);
 }
 void OwnerHubPage::GoSeason() {
   CreatePage(e_PageID_CareerSeason);

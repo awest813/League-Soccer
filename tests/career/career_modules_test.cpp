@@ -190,6 +190,12 @@ TEST(LocalizationTest, FormatsMultilineCareerTextAndFallsBackToEnglish) {
   EXPECT_EQ(TR("career_menu_coach"), "Coach\nMatchday leadership");
   EXPECT_EQ(TRF("career_progress_line", {"2", "38", "1", "0", "1", "3", "2"}),
             "Week 2/38 | W 1  D 0  L 1 | GF 3  GA 2");
+  EXPECT_EQ(TR("career_hub_club_snapshot"), "Club Snapshot");
+  EXPECT_EQ(TRF("career_release_confirm", {"Alex Morgan"}),
+            "Release Alex Morgan? This cannot be undone.");
+  EXPECT_EQ(TRF("career_owner_fin_body", {"EUR 1,000", "EUR 500", "Stable", "25"}),
+            "Net Worth: EUR 1,000\nTransfer Budget: EUR 500\nFinancial Health: Stable\nTicket "
+            "Price: EUR 25");
 
   ASSERT_TRUE(Localization::GetInstance().Load("es"));
   EXPECT_EQ(TR("menu_match"), "Partido");

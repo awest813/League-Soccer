@@ -20,6 +20,7 @@ class CareerMenuPage : public Gui2Page {
 public:
   CareerMenuPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~CareerMenuPage();
+  virtual void Process();
 
 protected:
   void GoMyCoach();
@@ -31,6 +32,8 @@ protected:
 
 private:
   void GoCareerMode(const std::string& mode);
+  unsigned long pageCreatedTime_ms;
+  bool autoAdvanceTriggered;
 };
 
 // New career setup: pick team and identity

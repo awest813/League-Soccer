@@ -34,8 +34,12 @@ protected:
   void GoTransferMarket();
   void GoSquad();
   void GoTraining();
+  void GoStrategy();
   void GoFreeAgency();
   void GoYouthAcademy();
+  void GoPressConference();
+  void GoLeagueExpansion();
+  void GoCustomLeague();
   void GoSeason();
   void GoMatchday();
 };
