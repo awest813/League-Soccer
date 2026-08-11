@@ -112,6 +112,7 @@ add_executable(gameplayfootball_career_tests
 
 target_include_directories(gameplayfootball_career_tests PRIVATE
   ${PROJECT_SOURCE_DIR}/src
+  ${GF_BOOST_INCLUDE_DIRS}
   ${SQLite3_INCLUDE_DIRS}
 )
 
