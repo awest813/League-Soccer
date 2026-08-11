@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "career_common.hpp"
+#include "utils/localization.hpp"
 
 namespace blunted {
 namespace CareerFinance {
@@ -141,12 +142,12 @@ long long GetSeasonProfit(const CareerSave& save) {
 std::string GetFinancialHealthString(const CareerSave& save) {
   long long profit = GetSeasonProfit(save);
   if (save.finances.netWorth >= 150000000 && profit >= 0)
-    return "Elite";
+    return TR("career_fin_elite");
   if (save.finances.netWorth >= 75000000 && profit >= -5000000)
-    return "Stable";
+    return TR("career_fin_stable");
   if (save.finances.netWorth >= 25000000)
-    return "Tight";
-  return "Critical";
+    return TR("career_fin_tight");
+  return TR("career_fin_critical");
 }
 
 }  // namespace CareerFinance

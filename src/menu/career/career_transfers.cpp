@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "career_common.hpp"
+#include "utils/localization.hpp"
 
 namespace blunted {
 namespace CareerTransfers {
@@ -47,6 +48,28 @@ void ReleasePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
   save.roster.erase(it);
   events.AddEvent("squad", "Released player " + playerName, -1, false);
   events.ModifyBoardConfidence(-1);
+}
+
+void SeedFreeAgents(CareerSave& save) {
+  if (!save.freeAgents.empty())
+    return;
+  static const std::vector<std::string> firstNames = {"Marco", "Rafa", "Osman", "Dimitri", "Luca"};
+  static const std::vector<std::string> lastNames = {"Ferrer", "Vidal", "Kowalski", "Petrov",
+                                                     "Moretti"};
+  static const std::vector<std::string> positions = {"CM", "AM", "CB", "GK", "CF"};
+  for (int i = 0; i < 5; ++i) {
+    PlayerCareerState fa;
+    fa.name = firstNames[i] + " " + lastNames[i];
+    fa.position = positions[i];
+    fa.preferredPosition = positions[i];
+    fa.age = 21 + i * 3;  // 21..33 — a realistic free-agent mix
+    fa.ovr = 58 + i * 4;
+    fa.pot = std::min(90, fa.ovr + 8);
+    fa.wage = 5000 + i * 2500;
+    fa.value = ComputeMarketValue(fa.ovr, fa.pot, fa.age);
+    fa.transferStatus = TransferStatus::NONE;
+    save.freeAgents.push_back(fa);
+  }
 }
 
 long long ComputeMarketValue(int overallRating, int potentialRating, int age) {
@@ -133,6 +156,22 @@ void WithdrawBid(std::vector<TransferBid>& bids, const std::string& playerName) 
   it->status = BidStatus::WITHDRAWN;
 }
 
+bool ImprovePendingBid(TransferBid& bid, long long transferBudget) {
+  if (bid.status != BidStatus::PENDING)
+    return false;
+
+  const long long increase = std::max(50000LL, bid.bidAmount / 10);
+  const long long proposedBid = bid.bidAmount + increase;
+  const long long proposedAgentFee = std::max(25000LL, proposedBid / 20);
+  if (proposedBid + proposedAgentFee > transferBudget)
+    return false;
+
+  bid.bidAmount = proposedBid;
+  bid.agentFee = proposedAgentFee;
+  bid.negotiationRounds++;
+  return true;
+}
+
 void ProcessPendingBids(CareerSave& save, CareerCommon::CareerEvents& events,
                         std::vector<TransferTarget>& targets, std::vector<TransferBid>& bids) {
   for (auto& bid : bids) {
@@ -168,15 +207,15 @@ void ProcessPendingBids(CareerSave& save, CareerCommon::CareerEvents& events,
 std::string GetBidStatusString(BidStatus status) {
   switch (status) {
     case BidStatus::PENDING:
-      return "Pending";
+      return TR("career_bid_pending");
     case BidStatus::ACCEPTED:
-      return "Accepted";
+      return TR("career_bid_accepted");
     case BidStatus::REJECTED:
-      return "Rejected";
+      return TR("career_bid_rejected_status");
     case BidStatus::WITHDRAWN:
-      return "Withdrawn";
+      return TR("career_bid_withdrawn");
   }
-  return "Pending";
+  return TR("career_bid_pending");
 }
 
 bool CompleteTransfer(CareerSave& save, CareerCommon::CareerEvents& events,

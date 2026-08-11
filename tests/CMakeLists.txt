@@ -99,6 +99,8 @@ add_executable(gameplayfootball_career_tests
   ${PROJECT_SOURCE_DIR}/src/menu/career/career_staff.cpp
   ${PROJECT_SOURCE_DIR}/src/menu/career/career_training.cpp
   ${PROJECT_SOURCE_DIR}/src/menu/career/career_transfers.cpp
+  ${PROJECT_SOURCE_DIR}/src/utils/localization.cpp
+  ${PROJECT_SOURCE_DIR}/src/base/log.cpp
 )
 
 target_include_directories(gameplayfootball_career_tests PRIVATE
@@ -111,4 +113,6 @@ target_link_libraries(gameplayfootball_career_tests PRIVATE
   SQLite::SQLite3
 )
 
-gtest_discover_tests(gameplayfootball_career_tests)
+gtest_discover_tests(gameplayfootball_career_tests
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)

@@ -407,6 +407,9 @@ set(CORE_SOURCES
 
 set(GAME_HEADERS
    src/onthepitch/ballphysics.hpp
+   src/onthepitch/humanspeed.hpp
+   src/onthepitch/matchduration.hpp
+   src/onthepitch/playercontrolsettings.hpp
    src/onthepitch/humangamer.hpp
    src/onthepitch/officials.hpp
    src/onthepitch/player/humanoid/humanoidbase.hpp

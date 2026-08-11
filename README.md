@@ -273,6 +273,18 @@ nix-shell          # or: nix develop
 | Switch player | **Space** |
 | Pause | **Escape** |
 
+### Gameplay Options
+
+- Match duration is selectable in five-minute steps from 5 to 90 minutes. It
+  measures active play time, so the clock stopping while the ball is out does
+  not shorten the selected match.
+- Human slow-dribble, run, and sprint speeds can be tuned independently under
+  **Settings > Gameplay**. The factory values preserve the original movement.
+- Player switching can be **Assisted** or **Fully manual**. In fully manual
+  mode, control changes only when **Switch player** is pressed, even after an
+  AI teammate wins or receives the ball. Press **Short pass** while controlling
+  an off-ball teammate to call for a pass from the AI ball carrier.
+
 ### Menu Navigation
 
 | Action | Key |

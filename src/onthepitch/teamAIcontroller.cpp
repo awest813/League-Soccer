@@ -24,6 +24,7 @@
 #include "../misc/hungarian.h"
 #include "AIsupport/AIfunctions.hpp"
 #include "match.hpp"
+#include "playercontrolsettings.hpp"
 #include "team.hpp"
 
 bool ReverseSortTacticalOpponentInfo(const TacticalOpponentInfo& a, const TacticalOpponentInfo& b) {
@@ -46,6 +47,8 @@ TeamAIController::TeamAIController(Team* team) : team(team) {
   endApplyTeamPressure_ms = 0;
   teamPressurePlayer = 0;
   endApplyKeeperRush_ms = 0;
+  passRequestTarget = 0;
+  passRequestExpires_ms = 0;
   forwardSupportPlayer = 0;
 
   counterPressActive = false;
@@ -108,6 +111,8 @@ void TeamAIController::Process() {
     UpdateTactics();
 
   CalculateSituation();
+  if (!teamHasPossession)
+    ClearPassRequest();
 
   float startDistance =
       30.0f + 20.0f * offensivenessBias;  // distance from goal where we start holding the opponents
@@ -1159,6 +1164,37 @@ void TeamAIController::ApplyKeeperRush() {
   endApplyKeeperRush_ms = match->GetActualTime_ms() + 300;
 }
 
+void TeamAIController::RequestPass(Player* target) {
+  if (!target || target->GetTeam() != team || !target->IsActive() ||
+      !team->IsHumanControlled(target->GetID()) || !team->HasPossession())
+    return;
+
+  passRequestTarget = target;
+  passRequestExpires_ms = PassRequestExpiresAt(match->GetActualTime_ms());
+}
+
+Player* TeamAIController::ConsumePassRequest(Player* passer) {
+  if (!passRequestTarget)
+    return 0;
+
+  if (IsPassRequestExpired(match->GetActualTime_ms(), passRequestExpires_ms) ||
+      !passRequestTarget->IsActive() ||
+      !team->IsHumanControlled(passRequestTarget->GetID()) || passRequestTarget == passer ||
+      match->GetDesignatedPossessionPlayer() != passer) {
+    ClearPassRequest();
+    return 0;
+  }
+
+  Player* target = passRequestTarget;
+  ClearPassRequest();
+  return target;
+}
+
+void TeamAIController::ClearPassRequest() {
+  passRequestTarget = 0;
+  passRequestExpires_ms = 0;
+}
+
 void TeamAIController::CalculateSituation() {
   teamHasPossession = team->HasPossession();
   teamHasUniquePossession = team->HasUniquePossession();
@@ -1249,6 +1285,8 @@ void TeamAIController::Reset() {
   endApplyTeamPressure_ms = 0;
   teamPressurePlayer = 0;
   endApplyKeeperRush_ms = 0;
+
+  ClearPassRequest();
 
   counterPressActive = false;
   counterPressEndTime_ms = 0;

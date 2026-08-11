@@ -144,21 +144,16 @@ bool NeedDefendingMovement(int mySide, const Vector3& position, const Vector3& t
 
 float StretchSprintTo(const float& inputVelocity, float inputSpaceMaxVelocity,
                       float targetMaxVelocity) {
-  assert(targetMaxVelocity > walkSprintSwitch);
-
   if (inputVelocity < walkSprintSwitch)
     return inputVelocity;
 
-  float howMuchSprintage = inputVelocity - walkSprintSwitch;
+  if (inputSpaceMaxVelocity <= walkSprintSwitch)
+    return targetMaxVelocity;
 
-  float oldLength = inputSpaceMaxVelocity - walkSprintSwitch;
-  float newLength = targetMaxVelocity - walkSprintSwitch;
-
-  float toNewFactor = newLength / oldLength;
-
-  float resultSprintage = howMuchSprintage * toNewFactor;
-
-  return walkSprintSwitch + resultSprintage;
+  const float sprintFraction =
+      clamp((inputVelocity - walkSprintSwitch) / (inputSpaceMaxVelocity - walkSprintSwitch), 0.0f,
+            1.0f);
+  return walkSprintSwitch + (targetMaxVelocity - walkSprintSwitch) * sprintFraction;
 }
 
 void GetDifficultyFactors(Match* match, Player* player, const Vector3& positionOffset,

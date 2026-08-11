@@ -23,6 +23,7 @@
 #include "../../../main.hpp"
 #include "../../AIsupport/AIfunctions.hpp"
 #include "../../AIsupport/mentalimage.hpp"
+#include "../../humanspeed.hpp"
 #include "../../match.hpp"
 #include "../../team.hpp"
 #include "../humanoid/humanoid_utils.hpp"
@@ -700,8 +701,12 @@ void PlayerController::_MovementCommand(PlayerCommandQueue& commandQueue, bool f
     Vector3 manualMovement = manualDirection * manualVelocityFloat;
     Vector3 resultingMovement = manualMovement * (1.0 - autoBias) + autoMovement * autoBias;
     command.desiredDirection = resultingMovement.GetNormalized(quantizedInputDirection);
+    const float maximumInputVelocity =
+        CastPlayer()->GetExternalController()
+            ? ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint)
+            : sprintVelocity;
     command.desiredVelocityFloat =
-        clamp(resultingMovement.GetLength(), idleVelocity, sprintVelocity);
+        clamp(resultingMovement.GetLength(), idleVelocity, maximumInputVelocity);
 
     if (command.desiredVelocityFloat < idleDribbleSwitch)
       command.desiredDirection = autoLookDirection;

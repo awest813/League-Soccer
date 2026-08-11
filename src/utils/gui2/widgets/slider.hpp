@@ -44,6 +44,10 @@ public:
 
   void SetValue(float newValue);
   float GetValue() { return quantizedValue; }
+  void SetCaption(const std::string& newCaption) {
+    caption = newCaption;
+    titleCaption->SetCaption(newCaption);
+  }
 
   void SetQuantization(int steps) { quantizationSteps = std::max(steps, 2); }
 

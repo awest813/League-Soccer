@@ -54,6 +54,8 @@ public:
   void ApplyTeamPressure();
   void ApplyCounterPress();
   void ApplyKeeperRush();
+  void RequestPass(Player* target);
+  Player* ConsumePassRequest(Player* passer);
   void CalculateSituation();
 
   void UpdateTactics();
@@ -110,6 +112,10 @@ protected:
   unsigned long endApplyTeamPressure_ms;
   Player* teamPressurePlayer;
   unsigned long endApplyKeeperRush_ms;
+
+  Player* passRequestTarget;
+  unsigned long passRequestExpires_ms;
+  void ClearPassRequest();
 
   bool counterPressActive;
   unsigned long counterPressEndTime_ms;

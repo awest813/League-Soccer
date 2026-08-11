@@ -26,6 +26,7 @@ const float _default_CameraFOV = 0.4f;
 const float _default_CameraAngleFactor = 0.0f;
 
 const float _default_Difficulty = 0.8f;
+// Legacy normalized 5-25 minute match-duration setting. New code stores minutes explicitly.
 const float _default_MatchDuration = 1.0f;
 
 const float _default_QuantizedDirectionBias = 0.0f;

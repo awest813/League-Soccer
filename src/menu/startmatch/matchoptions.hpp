@@ -29,6 +29,8 @@ public:
   Gui2Button* buttonStart;
 
 protected:
+  void UpdateMatchDurationCaption();
+
   Gui2Slider* difficultySlider;
   Gui2Slider* matchDurationSlider;
   unsigned long pageCreatedTime_ms;

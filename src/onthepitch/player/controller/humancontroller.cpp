@@ -7,6 +7,8 @@
 
 #include "../../../main.hpp"
 #include "../../AIsupport/AIfunctions.hpp"
+#include "../../humanspeed.hpp"
+#include "../../playercontrolsettings.hpp"
 
 HumanController::HumanController(Match* match, IHIDevice* hid) : PlayerController(match), hid(hid) {
   Reset();
@@ -378,9 +380,19 @@ void HumanController::Process() {
 
   _CalculateSituation();
 
+  const PlayerSwitchMode switchMode = ReadConfiguredPlayerSwitchMode(*GetConfiguration());
+  const bool fullyManualSwitching = switchMode == PlayerSwitchMode::FullyManual;
+  const bool passCallPressed = ShouldCallForPass(
+      switchMode, match->IsInPlay(), match->IsInSetPiece(),
+      CastPlayer() == match->GetDesignatedPossessionPlayer(), team->HasPossession(),
+      hid->GetButton(e_ButtonFunction_ShortPass),
+      hid->GetPreviousButtonState(e_ButtonFunction_ShortPass));
+  if (passCallPressed)
+    team->GetController()->RequestPass(CastPlayer());
+
   // action?
 
-  if (actionMode == 0 &&
+  if (actionMode == 0 && !passCallPressed &&
       (!match->IsInSetPiece() || team->GetController()->GetPieceTaker() == player)) {
     // todo: clean this up
 
@@ -499,7 +511,7 @@ void HumanController::Process() {
     }
   }
 
-  if (hid->GetButton(e_ButtonFunction_Switch) && hasPossession)
+  if (!fullyManualSwitching && hid->GetButton(e_ButtonFunction_Switch) && hasPossession)
     team->GetController()->ApplyAttackingRun();
 }
 
@@ -543,14 +555,17 @@ void HumanController::_GetHidInput(Vector3& rawInputDirection, float& rawInputVe
     rawInputVelocityFloat = idleVelocity;
   } else {
     if (hid->GetButton(e_ButtonFunction_Sprint))
-      rawInputVelocityFloat = sprintVelocity;
+      rawInputVelocityFloat =
+          ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint);
     else if (hid->GetButton(e_ButtonFunction_Dribble))
-      rawInputVelocityFloat = dribbleVelocity;
-    else if (hid->GetButton(e_ButtonFunction_Switch) &&
+      rawInputVelocityFloat =
+          ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::SlowDribble);
+    else if (!UsesFullyManualPlayerSwitching(*GetConfiguration()) &&
+             hid->GetButton(e_ButtonFunction_Switch) &&
              match->GetDesignatedPossessionPlayer() == CastPlayer())
       rawInputVelocityFloat = idleVelocity;
     else
-      rawInputVelocityFloat = walkVelocity;
+      rawInputVelocityFloat = ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Run);
     assert(rawInputDirection.GetLength() > 0.001f);
     rawInputDirection.Normalize();  // hid should do this, but still
   }

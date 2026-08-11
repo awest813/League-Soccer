@@ -11,6 +11,7 @@
 #include "AIsupport/AIfunctions.hpp"
 #include "managers/resourcemanagerpool.hpp"
 #include "match.hpp"
+#include "playercontrolsettings.hpp"
 
 Team::Team(int id, Match* match, TeamData* teamData) : id(id), match(match), teamData(teamData) {
   assert(id == 0 || id == 1);
@@ -298,7 +299,8 @@ void Team::HumanGamersSelectAnyone() {
 
 void Team::SelectPlayer(Player* player) {
   // printf("trying to switch to %s\n", player->GetPlayerData()->GetLastName().c_str());
-  if (!IsHumanControlled(player->GetID()) && humanGamers.size() != 0) {  // already selected
+  if (AllowsAutomaticPlayerSelection(ReadConfiguredPlayerSwitchMode(*GetConfiguration())) &&
+      !IsHumanControlled(player->GetID()) && humanGamers.size() != 0) {  // already selected
     humanGamers.at(*switchPriority.begin())->SetSelectedPlayerID(player->GetID());
     switchPriority.push_back(*switchPriority.begin());
     switchPriority.pop_front();
@@ -332,6 +334,8 @@ void Team::RelaxFatigue(float howMuch) {
 
 void Team::Process() {
   if (!match->GetPause()) {
+    const bool fullyManualSwitching =
+        UsesFullyManualPlayerSwitching(*GetConfiguration());
     teamPossessionAmount =
         (float)(match->GetTeam(abs(GetID() - 1))->GetTimeNeededToGetToBall_ms() + 1500) /
         (float)(GetTimeNeededToGetToBall_ms() + 1500);
@@ -382,12 +386,11 @@ void Team::Process() {
 
         if (humanGamers.at(i)->GetHIDevice()->GetButton(e_ButtonFunction_Switch) &&
             !humanGamers.at(i)->GetHIDevice()->GetPreviousButtonState(e_ButtonFunction_Switch) &&
-            // don't switch if we are both best AND designated possession player. unless opponent
-            // team has ball.
-            (!(selectedPlayerID == GetBestPossessionPlayerID() &&
-               selectedPlayerID == designatedTeamPossessionPlayer->GetID()) ||
-             GetTeamPossessionAmount() < 1.0f) &&
-            !selectedPlayer->HasUniquePossession()) {
+            (fullyManualSwitching ||
+             ((!(selectedPlayerID == GetBestPossessionPlayerID() &&
+                 selectedPlayerID == designatedTeamPossessionPlayer->GetID()) ||
+               GetTeamPossessionAmount() < 1.0f) &&
+              !selectedPlayer->HasUniquePossession()))) {
           int targetPlayerID = -1;
           Player* targetPlayer = nullptr;
 
@@ -416,7 +419,7 @@ void Team::Process() {
         }
       }
 
-    } else {
+    } else if (!fullyManualSwitching) {
       // make sure all human gamers don't have a player selected
 
       for (unsigned int i = 0; i < humanGamers.size(); i++) {

@@ -328,6 +328,7 @@ protected:
   mutable Lockable<unsigned long> iterations;
   TaskSequenceInfo gameSequenceInfo;
   unsigned long matchTime_ms;
+  double matchTimeExact_ms;
   unsigned long actualTime_ms;
   unsigned long buf_matchTime_ms;
   unsigned long buf_actualTime_ms;
@@ -408,6 +409,7 @@ protected:
 
   Vector3 previousBallPos;
 
+  float matchDurationMinutes;
   float matchDurationFactor;
   float matchTimeScale;
 

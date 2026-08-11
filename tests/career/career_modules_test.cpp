@@ -10,6 +10,7 @@
 #include "menu/career/career_sim.hpp"
 #include "menu/career/career_training.hpp"
 #include "menu/career/career_transfers.hpp"
+#include "utils/localization.hpp"
 
 namespace {
 
@@ -139,6 +140,23 @@ TEST(CareerTransferModuleTest, NegotiationDiscountIsProgressive) {
   EXPECT_EQ(runBid(3), BidStatus::ACCEPTED);  // 15% off asking clears the bar
 }
 
+TEST(CareerTransferModuleTest, UnaffordableNegotiationLeavesBidUnchanged) {
+  TransferBid bid;
+  bid.status = BidStatus::PENDING;
+  bid.bidAmount = 1000000;
+  bid.agentFee = 50000;
+
+  EXPECT_FALSE(blunted::CareerTransfers::ImprovePendingBid(bid, 1100000));
+  EXPECT_EQ(bid.bidAmount, 1000000);
+  EXPECT_EQ(bid.agentFee, 50000);
+  EXPECT_EQ(bid.negotiationRounds, 0);
+
+  EXPECT_TRUE(blunted::CareerTransfers::ImprovePendingBid(bid, 1200000));
+  EXPECT_EQ(bid.bidAmount, 1100000);
+  EXPECT_EQ(bid.agentFee, 55000);
+  EXPECT_EQ(bid.negotiationRounds, 1);
+}
+
 // ---------------------------------------------------------------------------
 // CareerFinance: budget / profit / health / ticket price
 // ---------------------------------------------------------------------------
@@ -155,6 +173,7 @@ TEST(CareerFinanceModuleTest, ModifyBudgetKeepsMirrorsConsistent) {
 }
 
 TEST(CareerFinanceModuleTest, FinancialHealthStringTiers) {
+  ASSERT_TRUE(Localization::GetInstance().Load("en"));
   CareerSave save;
   save.finances.totalRevenue = 20000000;
   save.finances.totalExpenses = 15000000;  // +5M profit
@@ -163,6 +182,18 @@ TEST(CareerFinanceModuleTest, FinancialHealthStringTiers) {
 
   save.finances.netWorth = 10000000;
   EXPECT_EQ(blunted::CareerFinance::GetFinancialHealthString(save), "Critical");
+}
+
+TEST(LocalizationTest, FormatsMultilineCareerTextAndFallsBackToEnglish) {
+  ASSERT_TRUE(Localization::GetInstance().Load("en"));
+  EXPECT_EQ(TR("career_hub_title"), "Career Hub");
+  EXPECT_EQ(TR("career_menu_coach"), "Coach\nMatchday leadership");
+  EXPECT_EQ(TRF("career_progress_line", {"2", "38", "1", "0", "1", "3", "2"}),
+            "Week 2/38 | W 1  D 0  L 1 | GF 3  GA 2");
+
+  ASSERT_TRUE(Localization::GetInstance().Load("es"));
+  EXPECT_EQ(TR("menu_match"), "Partido");
+  EXPECT_EQ(TR("career_hub_title"), "Career Hub");
 }
 
 TEST(CareerFinanceModuleTest, SetTicketPriceClamps) {

@@ -12,6 +12,7 @@
 #include "managers/resourcemanagerpool.hpp"
 #include "menu/pagefactory.hpp"
 #include "menu/startmatch/loadingmatch.hpp"
+#include "matchduration.hpp"
 #include "player/playerofficial.hpp"
 #include "proceduralpitch.hpp"
 #include "scene/objectfactory.hpp"
@@ -45,8 +46,15 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   resetNetting = false;
   nettingHasChanged = false;
 
-  matchDurationFactor =
-      GetConfiguration()->GetReal("match_duration", _default_MatchDuration) * 0.2f + 0.05f;
+  matchDurationMinutes = kDefaultMatchDurationMinutes;
+  if (GetConfiguration()->Exists("match_duration_minutes")) {
+    matchDurationMinutes =
+        GetConfiguration()->GetReal("match_duration_minutes", kDefaultMatchDurationMinutes);
+  } else {
+    matchDurationMinutes = MatchDurationMinutesFromLegacySlider(
+        GetConfiguration()->GetReal("match_duration", _default_MatchDuration));
+  }
+  matchDurationFactor = MatchDurationFactorFromMinutes(matchDurationMinutes);
   matchTimeScale = std::max(1.0f, GetConfiguration()->GetReal("menu_smoke_match_time_scale", 1.0f));
   matchDifficulty = GetConfiguration()->GetReal("match_difficulty", _default_Difficulty);
 
@@ -265,6 +273,7 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   // match params
 
   matchTime_ms = 0;
+  matchTimeExact_ms = 0.0;
   pause = false;
   inPlay = false;
   inSetPiece = false;
@@ -745,6 +754,8 @@ void Match::SetMatchPhase(e_MatchPhase newMatchPhase) {
   else if (matchPhase == e_MatchPhase_Penalties)
     matchTime_ms = 7200000;
 
+  matchTimeExact_ms = static_cast<double>(matchTime_ms);
+
   if (matchPhase == e_MatchPhase_2ndHalf) {
     teams[0]->RelaxFatigue(0.05f);
     teams[1]->RelaxFatigue(0.05f);
@@ -1071,8 +1082,11 @@ void Match::Process() {
 
     // time
 
-    if (IsInPlay() && !IsInSetPiece())
-      matchTime_ms += 10 * (1.0f / matchDurationFactor) * matchTimeScale;
+    if (IsInPlay() && !IsInSetPiece()) {
+      matchTimeExact_ms +=
+          MatchDurationGameTimeFromRealMilliseconds(10.0, matchDurationMinutes, matchTimeScale);
+      matchTime_ms = static_cast<unsigned long>(matchTimeExact_ms);
+    }
     actualTime_ms += 10;
     if (IsGoalScored())
       goalScoredTimer += 10;

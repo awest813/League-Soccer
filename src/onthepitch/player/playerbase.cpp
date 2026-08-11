@@ -5,6 +5,7 @@
 
 #include "../../main.hpp"
 #include "../../utils.hpp"
+#include "../humanspeed.hpp"
 #include "../match.hpp"
 #include "base/geometry/triangle.hpp"
 #include "controller/elizacontroller.hpp"
@@ -146,7 +147,11 @@ float PlayerBase::GetStat(const char* name) const {
 float PlayerBase::GetMaxVelocity() const {
   // fatigue reduces sprint speed: fully rested = 100%, exhausted = 60%
   const float fatigueFactor = 0.6f + 0.4f * fatigueFactorInv;
-  return sprintVelocity * GetVelocityMultiplier() * fatigueFactor;
+  const float baseSprintVelocity =
+      externalController
+          ? ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint)
+          : sprintVelocity;
+  return baseSprintVelocity * GetVelocityMultiplier() * fatigueFactor;
 }
 
 float PlayerBase::GetVelocityMultiplier() const {

@@ -13,12 +13,81 @@
 
 #include "localization.hpp"
 
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 
 #include "base/log.hpp"
 
 using namespace blunted;
+
+namespace {
+
+std::string UnescapeLocaleValue(const std::string& value) {
+  std::string result;
+  result.reserve(value.size());
+  for (size_t i = 0; i < value.size(); ++i) {
+    if (value[i] != '\\' || i + 1 >= value.size()) {
+      result += value[i];
+      continue;
+    }
+
+    const char escaped = value[++i];
+    switch (escaped) {
+      case 'n':
+        result += '\n';
+        break;
+      case 'r':
+        result += '\r';
+        break;
+      case 't':
+        result += '\t';
+        break;
+      case '\\':
+        result += '\\';
+        break;
+      default:
+        result += '\\';
+        result += escaped;
+        break;
+    }
+  }
+  return result;
+}
+
+bool LoadLocaleFile(const std::string& languageCode,
+                    std::unordered_map<std::string, std::string>* strings,
+                    std::string* loadedPath) {
+  const std::string paths[] = {
+      "data/locale/" + languageCode + ".ini",
+      "locale/" + languageCode + ".ini",
+  };
+
+  for (const std::string& path : paths) {
+    std::ifstream file(path);
+    if (!file.is_open())
+      continue;
+
+    strings->clear();
+    std::string line;
+    while (std::getline(file, line)) {
+      if (line.empty() || line[0] == '#' || line[0] == ';')
+        continue;
+      const size_t separator = line.find('=');
+      if (separator == std::string::npos)
+        continue;
+
+      const std::string key = line.substr(0, separator);
+      (*strings)[key] = UnescapeLocaleValue(line.substr(separator + 1));
+    }
+    if (loadedPath)
+      *loadedPath = path;
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 // ---------------------------------------------------------------------------
 // Singleton accessor
@@ -34,34 +103,39 @@ Localization& Localization::GetInstance() {
 // ---------------------------------------------------------------------------
 
 bool Localization::Load(const std::string& languageCode) {
-  std::string path = "data/locale/" + languageCode + ".ini";
-  std::ifstream file(path);
-  if (!file.is_open()) {
+  std::string englishPath;
+  fallbackStrings_.clear();
+  if (!LoadLocaleFile("en", &fallbackStrings_, &englishPath)) {
     Log(e_Warning, "Localization", "Load",
-        "Could not open locale file: " + path + " – falling back to English");
-    if (languageCode != "en") {
-      return Load("en");
-    }
+        "Could not open English locale file from data/locale or locale");
+    strings_.clear();
     return false;
   }
 
-  strings_.clear();
-  std::string line;
-  while (std::getline(file, line)) {
-    // Skip blank lines and comments (# or ;)
-    if (line.empty() || line[0] == '#' || line[0] == ';')
-      continue;
-    auto sep = line.find('=');
-    if (sep == std::string::npos)
-      continue;
-    std::string key = line.substr(0, sep);
-    std::string value = line.substr(sep + 1);
-    strings_[key] = value;
+  if (languageCode == "en") {
+    strings_ = fallbackStrings_;
+    currentLanguage_ = "en";
+    Log(e_Notice, "Localization", "Load",
+        "Loaded locale 'en' from " + englishPath + " (" +
+            std::to_string(strings_.size()) + " strings)");
+    return true;
+  }
+
+  std::string localizedPath;
+  if (!LoadLocaleFile(languageCode, &strings_, &localizedPath)) {
+    Log(e_Warning, "Localization", "Load",
+        "Could not open locale '" + languageCode +
+            "' from data/locale or locale; falling back to English");
+    strings_ = fallbackStrings_;
+    currentLanguage_ = "en";
+    return true;
   }
 
   currentLanguage_ = languageCode;
   Log(e_Notice, "Localization", "Load",
-      "Loaded locale '" + languageCode + "' (" + std::to_string(strings_.size()) + " strings)");
+      "Loaded locale '" + languageCode + "' from " + localizedPath + " (" +
+          std::to_string(strings_.size()) + " translated, " +
+          std::to_string(fallbackStrings_.size()) + " English fallbacks)");
   return true;
 }
 
@@ -69,12 +143,52 @@ bool Localization::Load(const std::string& languageCode) {
 // Translate
 // ---------------------------------------------------------------------------
 
-const std::string& Localization::Translate(const std::string& key) const {
+std::string Localization::Translate(const std::string& key) const {
   auto it = strings_.find(key);
   if (it != strings_.end())
     return it->second;
-  // Return the key itself so the UI is always human-readable.
+  auto fallback = fallbackStrings_.find(key);
+  if (fallback != fallbackStrings_.end())
+    return fallback->second;
   return key;
+}
+
+// ---------------------------------------------------------------------------
+// TranslateAndFormat
+// ---------------------------------------------------------------------------
+
+std::string Localization::TranslateAndFormat(const std::string& key,
+                                             const std::vector<std::string>& args) const {
+  std::string template_ = Translate(key);
+  std::string result;
+  result.reserve(template_.size() + 32);
+  size_t i = 0;
+  while (i < template_.size()) {
+    if (template_[i] == '{') {
+      size_t end = template_.find('}', i + 1);
+      if (end != std::string::npos) {
+        bool numeric = true;
+        for (size_t k = i + 1; k < end; ++k) {
+          if (template_[k] < '0' || template_[k] > '9') {
+            numeric = false;
+            break;
+          }
+        }
+        if (numeric && !template_.substr(i + 1, end - i - 1).empty()) {
+          size_t index = static_cast<size_t>(
+              atoi(template_.substr(i + 1, end - i - 1).c_str()));
+          if (index < args.size()) {
+            result += args[index];
+            i = end + 1;
+            continue;
+          }
+        }
+      }
+    }
+    result += template_[i];
+    ++i;
+  }
+  return result;
 }
 
 // ---------------------------------------------------------------------------

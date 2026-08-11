@@ -1,11 +1,45 @@
 #include <gtest/gtest.h>
 
 #include "onthepitch/matchclock.hpp"
+#include "onthepitch/matchduration.hpp"
 
 // Integration tests that simulate a complete 90-minute match using the
 // headless MatchClock, verifying phase transitions and score tracking.
 
 namespace {
+
+TEST(MatchDurationTest, SliderUsesFiveMinuteStepsFromFiveToNinety) {
+  EXPECT_FLOAT_EQ(MatchDurationMinutesFromSlider(0.0f), 5.0f);
+  EXPECT_FLOAT_EQ(MatchDurationMinutesFromSlider(4.0f / 17.0f), 25.0f);
+  EXPECT_FLOAT_EQ(MatchDurationMinutesFromSlider(1.0f), 90.0f);
+}
+
+TEST(MatchDurationTest, DurationFactorMatchesRealActivePlayTime) {
+  EXPECT_FLOAT_EQ(MatchDurationFactorFromMinutes(25.0f), 25.0f / 90.0f);
+  EXPECT_FLOAT_EQ(MatchDurationFactorFromMinutes(90.0f), 1.0f);
+
+  const float realSecondsPerHalfAt25Minutes =
+      (45.0f * 60.0f) * MatchDurationFactorFromMinutes(25.0f);
+  EXPECT_FLOAT_EQ(realSecondsPerHalfAt25Minutes, 12.5f * 60.0f);
+}
+
+TEST(MatchDurationTest, FractionalTickDurationsDoNotDrift) {
+  for (int minutes = 5; minutes <= 90; minutes += 5) {
+    const int tickCount = minutes * 60 * 100;
+    double gameTime_ms = 0.0;
+    for (int tick = 0; tick < tickCount; ++tick) {
+      gameTime_ms +=
+          MatchDurationGameTimeFromRealMilliseconds(10.0, static_cast<float>(minutes));
+    }
+    EXPECT_NEAR(gameTime_ms, 2.0 * kHalfDuration_ms, 0.01) << minutes << " minute setting";
+  }
+}
+
+TEST(MatchDurationTest, MigratesLegacySliderUsingAdvertisedRange) {
+  EXPECT_FLOAT_EQ(MatchDurationMinutesFromLegacySlider(0.0f), 5.0f);
+  EXPECT_FLOAT_EQ(MatchDurationMinutesFromLegacySlider(0.5f), 15.0f);
+  EXPECT_FLOAT_EQ(MatchDurationMinutesFromLegacySlider(1.0f), 25.0f);
+}
 
 // ---------------------------------------------------------------------------
 // Helper: run the clock forward by 'total_ms' in one or more ticks

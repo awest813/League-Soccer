@@ -35,9 +35,14 @@ public:
   // Returns true on success.  Falls back to English on failure.
   bool Load(const std::string& languageCode);
 
-  // Return the translated string for key.  Falls back to key itself when not
-  // found so the UI always shows something meaningful.
-  const std::string& Translate(const std::string& key) const;
+  // Return the translated string for key. Missing entries fall back to the
+  // English catalog, then to the key itself.
+  std::string Translate(const std::string& key) const;
+
+  // Translate a key, then replace {0}, {1}, ... with the corresponding values.
+  // Falls back to the key (with placeholders intact) when not found.
+  std::string TranslateAndFormat(const std::string& key,
+                                 const std::vector<std::string>& args) const;
 
   // The language code that is currently active, e.g. "en", "es", "fr".
   const std::string& GetCurrentLanguage() const;
@@ -54,12 +59,21 @@ private:
   Localization& operator=(const Localization&) = delete;
 
   std::unordered_map<std::string, std::string> strings_;
+  std::unordered_map<std::string, std::string> fallbackStrings_;
   std::string currentLanguage_{"en"};
 };
 
 // Global helper – mirrors gettext-style usage.
-inline const std::string& TR(const std::string& key) {
+inline std::string TR(const std::string& key) {
   return Localization::GetInstance().Translate(key);
+}
+
+// Translate a key then substitute {0}, {1}, ... placeholders with the given
+// values. Lets UI code keep one source of truth (the locale file) for strings
+// that embed dynamic data such as names, ratings or money.
+inline std::string TRF(const std::string& key,
+                       const std::vector<std::string>& args) {
+  return Localization::GetInstance().TranslateAndFormat(key, args);
 }
 
 #endif  // _HPP_UTILS_LOCALIZATION

@@ -238,6 +238,10 @@ void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int 
 void Process3DMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int homeGoals,
                           int awayGoals) {
   ApplyMatchResult(save, events, homeGoals, awayGoals, "(3D match)");
+  // A completed 3D match is one league fixture, matching the simulated path
+  // (where CareerMatchdayPage::GoBack advances the week). Without this the
+  // calendar drifted between simulated and played matches.
+  save.season.currentWeek++;
 }
 
 void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,

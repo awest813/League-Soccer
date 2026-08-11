@@ -26,6 +26,10 @@ void ReleasePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
 // Generates the transfer-market targets (no-op if already populated).
 void PopulateTransferMarket(std::vector<TransferTarget>& targets);
 
+// Seeds the free-agent pool for a fresh career so the Free Agency screen is
+// not a dead end before the player ever releases a squad member.
+void SeedFreeAgents(CareerSave& save);
+
 // Places a bid on a listed target; returns the resulting bid object.
 TransferBid PlaceBid(CareerSave& save, CareerCommon::CareerEvents& events,
                      std::vector<TransferTarget>& targets, std::vector<TransferBid>& bids,
@@ -33,6 +37,10 @@ TransferBid PlaceBid(CareerSave& save, CareerCommon::CareerEvents& events,
                      int contractYears);
 
 void WithdrawBid(std::vector<TransferBid>& bids, const std::string& playerName);
+
+// Raises a pending bid by 10% (at least EUR 50k) when the improved offer and
+// agent fee remain affordable. Returns true only when the bid was changed.
+bool ImprovePendingBid(TransferBid& bid, long long transferBudget);
 
 // Resolves all pending bids against their targets' asking prices.
 void ProcessPendingBids(CareerSave& save, CareerCommon::CareerEvents& events,

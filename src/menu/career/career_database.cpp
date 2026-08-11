@@ -13,6 +13,7 @@
 #include "career_staff.hpp"
 #include "career_training.hpp"
 #include "career_transfers.hpp"
+#include "utils/localization.hpp"
 
 namespace blunted {
 
@@ -80,6 +81,7 @@ bool CareerDatabase::CreateNewCareer(const std::string& careerName, const std::s
   CareerFinance::InitializeOwnerData(*m_activeSave);
   CareerBoard::GenerateBoardObjectives(*m_activeSave);
   CareerSponsors::GenerateSponsorOffers(*m_activeSave);
+  CareerTransfers::SeedFreeAgents(*m_activeSave);
   return SaveCareerData();
 }
 
@@ -155,35 +157,35 @@ int CareerDatabase::GetReputation() const {
 
 std::string CareerDatabase::GetReputationStatus() const {
   if (!m_activeSave)
-    return "Unknown";
+    return TR("career_rep_unknown");
   int rep = m_activeSave->reputation;
   if (rep >= 80)
-    return "Legendary";
+    return TR("career_rep_legendary");
   if (rep >= 50)
-    return "Respected";
+    return TR("career_rep_respected");
   if (rep >= 20)
-    return "Known";
+    return TR("career_rep_known");
   if (rep >= -20)
-    return "Unproven";
+    return TR("career_rep_unproven");
   if (rep >= -50)
-    return "Controversial";
-  return "Notorious";
+    return TR("career_rep_controversial");
+  return TR("career_rep_notorious");
 }
 
 std::string CareerDatabase::GetMoraleString(int morale) const {
   if (morale >= 80)
-    return "Happy";
+    return TR("career_morale_happy");
   if (morale >= 40)
-    return "Content";
-  return "Unhappy";
+    return TR("career_morale_content");
+  return TR("career_morale_unhappy");
 }
 
 std::string CareerDatabase::GetFormString(int form) const {
   if (form >= 80)
-    return "Excellent";
+    return TR("career_form_excellent");
   if (form >= 40)
-    return "Good";
-  return "Poor";
+    return TR("career_form_good");
+  return TR("career_form_poor");
 }
 
 int CareerDatabase::GetLegacyStat(const std::string& statName) const {

@@ -47,6 +47,9 @@ public:
   virtual void Exit();
 
 protected:
+  void UpdateHumanSpeedCaptions();
+  void UpdatePlayerSwitchCaption();
+
   Gui2Slider* slider_ShortPass_AutoDirection;
   Gui2Slider* slider_ShortPass_AutoPower;
   Gui2Slider* slider_ThroughPass_AutoDirection;
@@ -57,6 +60,10 @@ protected:
 
   Gui2Slider* slider_Agility;
   Gui2Slider* slider_Acceleration;
+  Gui2Slider* slider_SlowDribbleSpeed;
+  Gui2Slider* slider_RunSpeed;
+  Gui2Slider* slider_SprintSpeed;
+  Gui2Slider* slider_PlayerSwitchMode;
   Gui2Slider* slider_Quantization;
 
   unsigned long pageCreatedTime_ms;

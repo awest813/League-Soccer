@@ -23,6 +23,7 @@
 #include "../../../main.hpp"
 #include "../../AIsupport/AIfunctions.hpp"
 #include "../../AIsupport/mentalimage.hpp"
+#include "../../playercontrolsettings.hpp"
 #include "../humanoid/humanoid_utils.hpp"
 #include "../playerofficial.hpp"
 #include "strategies/offtheball/default_def.hpp"
@@ -308,10 +309,17 @@ void ElizaController::RequestCommand(PlayerCommandQueue& commandQueue) {
 
   // dribble, pass, etcetera
   else if (match->IsInPlay() && !match->IsInSetPiece() &&
-           match->GetDesignatedPossessionPlayer() == player && team->GetHumanGamerCount() == 0 &&
+           match->GetDesignatedPossessionPlayer() == player &&
+           (team->GetHumanGamerCount() == 0 ||
+            UsesFullyManualPlayerSwitching(*GetConfiguration())) &&
            CastPlayer()->GetFormationEntry().role != e_PlayerRole_GK) {
     if (CastPlayer()->GetTimeNeededToGetToBall_ms() < 1000) {
-      GetOnTheBallCommands(commandQueue, rawInputDirection, rawInputVelocityFloat);
+      Player* passRequest = team->GetController()->ConsumePassRequest(CastPlayer());
+      if (passRequest) {
+        _AddPass(commandQueue, passRequest, e_FunctionType_ShortPass);
+      } else {
+        GetOnTheBallCommands(commandQueue, rawInputDirection, rawInputVelocityFloat);
+      }
     }
     extraHaste = false;  // todo: extra haste when touch anim is queued?
   }
@@ -341,7 +349,12 @@ void ElizaController::RequestCommand(PlayerCommandQueue& commandQueue) {
 
     if (CastPlayer()->GetTimeNeededToGetToBall_ms() < 1000 &&
         match->GetDesignatedPossessionPlayer() == player) {
-      GetOnTheBallCommands(commandQueue, rawInputDirection, rawInputVelocityFloat);
+      Player* passRequest = team->GetController()->ConsumePassRequest(CastPlayer());
+      if (passRequest) {
+        _AddPass(commandQueue, passRequest, e_FunctionType_ShortPass);
+      } else {
+        GetOnTheBallCommands(commandQueue, rawInputDirection, rawInputVelocityFloat);
+      }
     }
   }
 

@@ -7,6 +7,7 @@
 
 #include "../../../main.hpp"
 #include "../../AIsupport/AIfunctions.hpp"
+#include "../../humanspeed.hpp"
 #include "../../match.hpp"
 #include "../playerbase.hpp"
 #include "humanoid.hpp"
@@ -2602,13 +2603,37 @@ Vector3 HumanoidBase::CalculatePhysicsVector(Animation* anim, bool useDesiredMov
     Vector3 adaptedAnimMovement = animMovement;
     float adaptedAnimVelo = animVelo;
 
+    const bool scalableMovementAnimation =
+        animType == "movement" || animType == "ballcontrol" || animType == "trap";
+
+    // Scale human-controlled dribble and run root movement while leaving the
+    // canonical numeric bands intact for animation selection.
+    if (player->GetExternalController() && scalableMovementAnimation) {
+      const e_Velocity animationVelocity = FloatToEnumVelocity(anim->GetOutgoingVelocity());
+      float configuredVelocity = 0.0f;
+      float canonicalVelocity = 0.0f;
+      if (animationVelocity == e_Velocity_Dribble) {
+        configuredVelocity =
+            ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::SlowDribble);
+        canonicalVelocity = dribbleVelocity;
+      } else if (animationVelocity == e_Velocity_Walk) {
+        configuredVelocity = ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Run);
+        canonicalVelocity = walkVelocity;
+      }
+      if (canonicalVelocity > 0.0f) {
+        adaptedAnimVelo = animVelo * configuredVelocity / canonicalVelocity;
+        adaptedAnimMovement = adaptedAnimMovement.GetNormalized(0) * adaptedAnimVelo;
+      }
+    }
+
     // adapt sprint velocity to player's max velocity stat
 
-    if (animVelo > walkSprintSwitch &&
-        (animType == "movement" || animType == "ballcontrol" ||
-         animType == "trap")) {
-      if (maxVelocity > animVelo) {  // only speed up, don't slow down. may be faster parts (jumps
-                                     // and such) within anim, allow this
+    if (animVelo > walkSprintSwitch && scalableMovementAnimation) {
+      // Human sprint settings are an explicit cap as well as a boost. Without
+      // scaling down here, the animation's canonical 8 m/s root motion leaves
+      // the lowest slider values stuck above their requested speed.
+      const bool humanControlled = player->GetExternalController() != nullptr;
+      if (humanControlled || maxVelocity > animVelo) {
         adaptedAnimVelo = StretchSprintTo(animVelo, animSprintVelocity, maxVelocity);
         adaptedAnimMovement = adaptedAnimMovement.GetNormalized(0) * adaptedAnimVelo;
       }
