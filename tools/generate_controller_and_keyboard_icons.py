@@ -326,6 +326,40 @@ class Canvas:
                         for sx in range(scale):
                             self.set_pixel(start_x + c_idx * scale + sx, start_y + r_idx * scale + sy, r, g, b, a)
 
+    def draw_ps_shape(self, shape, cx, cy, radius, r, g, b, a=255, stroke_width=7):
+        if shape == 'CROSS':
+            for i in range(-radius, radius + 1):
+                for w in range(-stroke_width // 2, stroke_width // 2 + 1):
+                    self.set_pixel(cx + i + w, cy + i, r, g, b, a)
+                    self.set_pixel(cx + i + w, cy - i, r, g, b, a)
+        elif shape == 'CIRCLE':
+            for y in range(cy - radius - stroke_width, cy + radius + stroke_width + 1):
+                for x in range(cx - radius - stroke_width, cx + radius + stroke_width + 1):
+                    dist = math.hypot(x - cx, y - cy)
+                    if abs(dist - radius) <= stroke_width / 2.0:
+                        alpha_f = max(0.0, min(1.0, 1.0 - (abs(dist - radius) - (stroke_width / 2.0 - 0.5))))
+                        self.set_pixel(x, y, r, g, b, int(a * alpha_f))
+        elif shape == 'SQUARE':
+            half = radius
+            for y in range(cy - half, cy + half + 1):
+                for x in range(cx - half, cx + half + 1):
+                    on_edge = (abs(x - cx) >= half - stroke_width) or (abs(y - cy) >= half - stroke_width)
+                    if on_edge:
+                        self.set_pixel(x, y, r, g, b, a)
+        elif shape == 'TRIANGLE':
+            # Isosceles triangle
+            h = int(radius * 1.7)
+            top_y = cy - int(h * 0.55)
+            bot_y = cy + int(h * 0.45)
+            base_half = int(radius * 1.15)
+            for y in range(top_y, bot_y + 1):
+                prog = (y - top_y) / float(bot_y - top_y + 1)
+                cur_half = int(prog * base_half)
+                for x in range(cx - cur_half, cx + cur_half + 1):
+                    is_border = (abs(x - cx) >= cur_half - stroke_width) or (y >= bot_y - stroke_width)
+                    if is_border:
+                        self.set_pixel(x, y, r, g, b, a)
+
 def generate_xbox_button(filename, letter, base_color, text_color=(255, 255, 255)):
     size = 128
     c = Canvas(size, size)
@@ -355,6 +389,35 @@ def generate_xbox_button(filename, letter, base_color, text_color=(255, 255, 255
 
     write_png(filename, size, size, c.data)
 
+def generate_ps_button(filename, shape, shape_color):
+    size = 128
+    c = Canvas(size, size)
+    cx, cy = size // 2, size // 2
+    r_outer = 56
+
+    # Drop shadow
+    c.draw_circle(cx, cy + 4, r_outer, 0, 0, 0, 100)
+
+    # Outer metallic rim (Sleek dark matte)
+    c.draw_circle(cx, cy, r_outer, 48, 52, 60, 255)
+    c.draw_circle(cx, cy, r_outer - 2, 25, 28, 33, 255)
+
+    # Button face (Dark Charcoal)
+    for rad in range(r_outer - 4, 0, -1):
+        factor = rad / (r_outer - 4)
+        br = int(32 * (0.7 + 0.4 * factor))
+        bg = int(35 * (0.7 + 0.4 * factor))
+        bb = int(42 * (0.7 + 0.4 * factor))
+        c.draw_circle(cx, cy, rad, br, bg, bb, 255)
+
+    # Top gloss highlight
+    c.draw_circle(cx, cy - 14, r_outer // 2, 255, 255, 255, 45)
+
+    # Geometric symbol
+    c.draw_ps_shape(shape, cx, cy, 22, shape_color[0], shape_color[1], shape_color[2], 255, stroke_width=6)
+
+    write_png(filename, size, size, c.data)
+
 def generate_capsule_button(filename, text, base_color=(45, 48, 55)):
     w, h = 160, 96
     c = Canvas(w, h)
@@ -368,6 +431,14 @@ def generate_capsule_button(filename, text, base_color=(45, 48, 55)):
     if len(text) == 2:
         c.draw_letter(text[0], w // 2 - 20, h // 2 - 2, 5, 240, 245, 255, 255)
         c.draw_letter(text[1], w // 2 + 20, h // 2 - 2, 5, 240, 245, 255, 255)
+    elif len(text) == 7: # OPTIONS / SPECIAL
+        c.draw_letter('O', w // 2 - 40, h // 2 - 2, 3, 240, 245, 255, 255)
+        c.draw_letter('P', w // 2 - 26, h // 2 - 2, 3, 240, 245, 255, 255)
+        c.draw_letter('T', w // 2 - 13, h // 2 - 2, 3, 240, 245, 255, 255)
+        c.draw_letter('I', w // 2, h // 2 - 2, 3, 240, 245, 255, 255)
+        c.draw_letter('O', w // 2 + 13, h // 2 - 2, 3, 240, 245, 255, 255)
+        c.draw_letter('N', w // 2 + 26, h // 2 - 2, 3, 240, 245, 255, 255)
+        c.draw_letter('S', w // 2 + 40, h // 2 - 2, 3, 240, 245, 255, 255)
     else:
         c.draw_letter(text, w // 2, h // 2 - 2, 5, 240, 245, 255, 255)
 
@@ -426,13 +497,35 @@ def main():
     buttons_dir = "data/media/menu/buttons"
     os.makedirs(buttons_dir, exist_ok=True)
 
-    print("=== Generating Public Domain Xbox Controller & Keyboard Icons ===")
+    print("=== Generating Public Domain Xbox, PlayStation & Keyboard Icons ===")
 
     # Xbox Face Buttons (Authentic Colors: A=Green, B=Red, X=Blue, Y=Yellow)
     generate_xbox_button(os.path.join(buttons_dir, "xbox_a.png"), 'A', (16, 170, 72))
     generate_xbox_button(os.path.join(buttons_dir, "xbox_b.png"), 'B', (225, 32, 38))
     generate_xbox_button(os.path.join(buttons_dir, "xbox_x.png"), 'X', (20, 115, 230))
     generate_xbox_button(os.path.join(buttons_dir, "xbox_y.png"), 'Y', (240, 180, 15))
+
+    # PlayStation Face Buttons (Authentic Symbols: Cross=Blue, Circle=Red, Square=Pink, Triangle=Green)
+    generate_ps_button(os.path.join(buttons_dir, "ps_cross.png"), 'CROSS', (64, 130, 245))
+    generate_ps_button(os.path.join(buttons_dir, "ps_circle.png"), 'CIRCLE', (235, 45, 55))
+    generate_ps_button(os.path.join(buttons_dir, "ps_square.png"), 'SQUARE', (240, 90, 185))
+    generate_ps_button(os.path.join(buttons_dir, "ps_triangle.png"), 'TRIANGLE', (30, 210, 135))
+
+    # PlayStation Shoulder & Triggers
+    generate_capsule_button(os.path.join(buttons_dir, "ps_l1.png"), "L1", (48, 52, 60))
+    generate_capsule_button(os.path.join(buttons_dir, "ps_r1.png"), "R1", (48, 52, 60))
+    generate_capsule_button(os.path.join(buttons_dir, "ps_l2.png"), "L2", (38, 42, 50))
+    generate_capsule_button(os.path.join(buttons_dir, "ps_r2.png"), "R2", (38, 42, 50))
+    generate_capsule_button(os.path.join(buttons_dir, "ps_l3.png"), "L3", (42, 46, 54))
+    generate_capsule_button(os.path.join(buttons_dir, "ps_r3.png"), "R3", (42, 46, 54))
+    generate_capsule_button(os.path.join(buttons_dir, "ps_options.png"), "OPT", (42, 46, 54))
+    generate_capsule_button(os.path.join(buttons_dir, "ps_share.png"), "SHR", (42, 46, 54))
+
+    # Nintendo Switch Face Buttons
+    generate_xbox_button(os.path.join(buttons_dir, "switch_a.png"), 'A', (230, 45, 45))
+    generate_xbox_button(os.path.join(buttons_dir, "switch_b.png"), 'B', (230, 45, 45))
+    generate_xbox_button(os.path.join(buttons_dir, "switch_x.png"), 'X', (45, 140, 230))
+    generate_xbox_button(os.path.join(buttons_dir, "switch_y.png"), 'Y', (45, 140, 230))
 
     # Shoulder Bumpers & Triggers
     generate_capsule_button(os.path.join(buttons_dir, "xbox_lb.png"), "LB", (48, 52, 60))
@@ -462,6 +555,8 @@ def main():
     generate_keycap(os.path.join(buttons_dir, "key_e.png"), 'E')
     generate_keycap(os.path.join(buttons_dir, "key_c.png"), 'C')
     generate_keycap(os.path.join(buttons_dir, "key_f.png"), 'F')
+    generate_keycap(os.path.join(buttons_dir, "key_1.png"), '1')
+    generate_keycap(os.path.join(buttons_dir, "key_2.png"), '2')
 
     generate_keycap(os.path.join(buttons_dir, "key_up.png"), 'UP')
     generate_keycap(os.path.join(buttons_dir, "key_down.png"), 'DOWN')
