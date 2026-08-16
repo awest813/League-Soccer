@@ -11,6 +11,14 @@
 
 using namespace blunted;
 
+enum e_ControllerType {
+  e_ControllerType_Xbox,
+  e_ControllerType_PlayStation,
+  e_ControllerType_NintendoSwitch,
+  e_ControllerType_LogitechDirectInput,
+  e_ControllerType_Generic
+};
+
 class HIDGamepad : public IHIDevice {
 public:
   // deviceIndex: SDL device index at connect time (used only for naming / the
@@ -31,6 +39,11 @@ public:
   virtual void SetButton(e_ButtonFunction buttonFunction, bool state);
   virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction);
   virtual Vector3 GetDirection();
+
+  e_ControllerType GetControllerType() const { return controllerType; }
+  std::string GetControllerTypeName() const;
+  static e_ControllerType DetectControllerType(const std::string& name);
+  std::string GetButtonGlyphPath(e_ButtonFunction buttonFunction) const;
 
   e_ControllerButton GetFunctionMapping(e_ButtonFunction buttonFunction) {
     std::unique_lock<std::mutex> blah(mutex);
@@ -55,6 +68,7 @@ public:
 protected:
   int deviceIndex;
   int gamepadID;
+  e_ControllerType controllerType;
   float controllerButtonState[e_ControllerButton_Size];
   float previousControllerButtonState[e_ControllerButton_Size];
 

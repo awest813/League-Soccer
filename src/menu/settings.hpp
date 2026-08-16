@@ -124,6 +124,7 @@ public:
   void GoGamepadCalibrationPage(int controllerID);
   void GoGamepadMappingPage(int controllerID);
   void GoGamepadFunctionPage(int controllerID);
+  void ResetToAutoDetectProfile(int controllerID);
 
 protected:
 };

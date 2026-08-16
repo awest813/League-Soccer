@@ -935,7 +935,7 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
   }
 
   Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_settings_gamepadsetup", 15, 15, 70, 70, true);
+      new Gui2Frame(windowManager, "frame_settings_gamepadsetup", 15, 12, 70, 76, true);
   this->AddView(frame);
   frame->Show();
 
@@ -944,25 +944,38 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
   frame->AddView(title);
   title->Show();
 
+  std::string profileText = "🎮 Hardware Profile: " + controller->GetControllerTypeName() +
+                            " (Auto-Detected)";
+  Gui2Caption* profileCap = new Gui2Caption(windowManager, "caption_gamepad_profile", 2, 6, 66, 2.5f, profileText);
+  profileCap->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+  frame->AddView(profileCap);
+  profileCap->Show();
+
   Gui2Button* buttonCalibration = new Gui2Button(
-      windowManager, "button_gamepadsetupmenu_calibration", 0, 0, 30, 3, "axes calibration");
+      windowManager, "button_gamepadsetupmenu_calibration", 0, 0, 36, 3, "axes calibration");
   buttonCalibration->sig_OnClick.connect(
       std::bind(&GamepadSetupPage::GoGamepadCalibrationPage, this, controllerID));
   Gui2Button* buttonMapping = new Gui2Button(windowManager, "button_gamepadsetupmenu_mapping", 0, 0,
-                                             30, 3, "button mapping");
+                                             36, 3, "button mapping");
   buttonMapping->sig_OnClick.connect(
       std::bind(&GamepadSetupPage::GoGamepadMappingPage, this, controllerID));
   Gui2Button* buttonFunction = new Gui2Button(windowManager, "button_gamepadsetupmenu_function", 0,
-                                              0, 30, 3, "function setup");
+                                              0, 36, 3, "function setup");
   buttonFunction->sig_OnClick.connect(
       std::bind(&GamepadSetupPage::GoGamepadFunctionPage, this, controllerID));
 
+  Gui2Button* buttonReset = new Gui2Button(windowManager, "button_gamepadsetupmenu_reset", 0, 0,
+                                           36, 3, "reset to profile defaults");
+  buttonReset->sig_OnClick.connect(
+      std::bind(&GamepadSetupPage::ResetToAutoDetectProfile, this, controllerID));
+
   Gui2Grid* grid =
-      new Gui2Grid(windowManager, "grid_settings_controller_gamepadsetup", 2, 8, 66, 58);
+      new Gui2Grid(windowManager, "grid_settings_controller_gamepadsetup", 2, 10, 66, 56);
 
   grid->AddView(buttonCalibration, 0, 0);
   grid->AddView(buttonMapping, 1, 0);
   grid->AddView(buttonFunction, 2, 0);
+  grid->AddView(buttonReset, 3, 0);
 
   grid->UpdateLayout(0.5);
   frame->AddView(grid);
@@ -991,6 +1004,17 @@ void GamepadSetupPage::GoGamepadFunctionPage(int controllerID) {
   Properties properties;
   properties.Set("controllerID", controllerID);
   CreatePage(e_PageID_GamepadFunction, properties);
+}
+
+void GamepadSetupPage::ResetToAutoDetectProfile(int controllerID) {
+  HIDGamepad* controller = GetGamepadIfAvailable(controllerID);
+  if (controller) {
+    controller->LoadConfig();
+    controller->SaveConfig();
+  }
+  Properties properties;
+  properties.Set("controllerID", controllerID);
+  CreatePage(e_PageID_GamepadSetup, properties);
 }
 
 // GAMEPAD CALIBRATION

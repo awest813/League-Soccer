@@ -256,20 +256,46 @@ void RunDefensiveSafetyChecks() {
   float diagLen = std::hypot(diagX, diagY);
   TEST_ASSERT(std::fabs(diagLen - 1.0f) < 0.001f, "Diagonal stick input is clamped to unit length (no diagonal overspeed)");
 
-  // Controller profile detection logic
-  auto DetectControllerProfile = [](const std::string& name) -> std::string {
+  // Comprehensive controller profile auto-detection test
+  enum class TestCtrlType { Xbox, PlayStation, NintendoSwitch, LogitechDirectInput, Generic };
+  auto DetectProfile = [](const std::string& name) -> TestCtrlType {
     std::string lower = name;
     std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
     if (lower.find("sony") != std::string::npos || lower.find("dualshock") != std::string::npos ||
         lower.find("dualsense") != std::string::npos || lower.find("ps4") != std::string::npos ||
-        lower.find("ps5") != std::string::npos) {
-      return "PlayStation";
+        lower.find("ps5") != std::string::npos || lower.find("playstation") != std::string::npos ||
+        lower.find("054c") != std::string::npos) {
+      return TestCtrlType::PlayStation;
     }
-    return "Xbox";
+    if (lower.find("nintendo") != std::string::npos || lower.find("switch") != std::string::npos ||
+        lower.find("joy-con") != std::string::npos || lower.find("pro controller") != std::string::npos ||
+        lower.find("057e") != std::string::npos) {
+      return TestCtrlType::NintendoSwitch;
+    }
+    if (lower.find("logitech") != std::string::npos || lower.find("f310") != std::string::npos ||
+        lower.find("f710") != std::string::npos || lower.find("f510") != std::string::npos ||
+        lower.find("dual action") != std::string::npos) {
+      return TestCtrlType::LogitechDirectInput;
+    }
+    if (lower.find("xbox") != std::string::npos || lower.find("xinput") != std::string::npos ||
+        lower.find("microsoft") != std::string::npos || lower.find("045e") != std::string::npos ||
+        lower.find("8bitdo") != std::string::npos || lower.find("razer") != std::string::npos ||
+        lower.find("powera") != std::string::npos) {
+      return TestCtrlType::Xbox;
+    }
+    return TestCtrlType::Generic;
   };
-  TEST_ASSERT(DetectControllerProfile("Xbox Wireless Controller") == "Xbox", "Xbox controller correctly identified");
-  TEST_ASSERT(DetectControllerProfile("Sony Interactive Entertainment Wireless Controller") == "PlayStation", "DualSense/DualShock controller correctly identified");
-  TEST_ASSERT(DetectControllerProfile("Generic USB Gamepad") == "Xbox", "Generic gamepad defaults to standard layout");
+
+  TEST_ASSERT(DetectProfile("Xbox Wireless Controller") == TestCtrlType::Xbox, "Xbox Wireless Controller auto-detected as Xbox");
+  TEST_ASSERT(DetectProfile("Microsoft X-Box 360 pad") == TestCtrlType::Xbox, "Xbox 360 pad auto-detected as Xbox");
+  TEST_ASSERT(DetectProfile("8BitDo Pro 2 Wired Controller") == TestCtrlType::Xbox, "8BitDo XInput pad auto-detected as Xbox");
+  TEST_ASSERT(DetectProfile("Sony Interactive Entertainment DualSense Wireless Controller") == TestCtrlType::PlayStation, "DualSense auto-detected as PlayStation");
+  TEST_ASSERT(DetectProfile("PS4 DualShock 4 Controller") == TestCtrlType::PlayStation, "DualShock 4 auto-detected as PlayStation");
+  TEST_ASSERT(DetectProfile("Nintendo Switch Pro Controller") == TestCtrlType::NintendoSwitch, "Switch Pro auto-detected as NintendoSwitch");
+  TEST_ASSERT(DetectProfile("Logitech Gamepad F310") == TestCtrlType::LogitechDirectInput, "Logitech F310 auto-detected as LogitechDirectInput");
+  TEST_ASSERT(DetectProfile("Logitech Dual Action") == TestCtrlType::LogitechDirectInput, "Logitech Dual Action auto-detected as LogitechDirectInput");
+  TEST_ASSERT(DetectProfile("DragonRise Inc. Generic USB Joystick") == TestCtrlType::Generic, "Generic USB Joystick auto-detected as Generic");
 }
 
 int main() {

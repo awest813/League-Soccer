@@ -41,18 +41,8 @@ void HIDGamepad::LoadConfig() {
     UserEventManager::GetInstance().SetJoystickAxisCalibration(GetGamepadID(), i, min, max, rest);
   }
 
-  // Detect PlayStation controller profile
-  bool isPlayStation = false;
-  std::string lowerId = GetIdentifier();
-  std::transform(lowerId.begin(), lowerId.end(), lowerId.begin(), ::tolower);
-  if (lowerId.find("sony") != std::string::npos ||
-      lowerId.find("dualshock") != std::string::npos ||
-      lowerId.find("dualsense") != std::string::npos ||
-      lowerId.find("ps4") != std::string::npos ||
-      lowerId.find("ps5") != std::string::npos ||
-      lowerId.find("playstation") != std::string::npos) {
-    isPlayStation = true;
-  }
+  // Smart controller profile auto-detection
+  controllerType = DetectControllerType(GetIdentifier());
 
   for (int i = 0; i < e_ControllerButton_Size; i++) {
     int defaultButton = 0;
@@ -64,26 +54,70 @@ void HIDGamepad::LoadConfig() {
       defaultButton = -4; // Down
     else if (i == 3)
       defaultButton = -1; // Left
-    else if (i == 4)
-      defaultButton = 3;  // Y / Triangle
-    else if (i == 5)
-      defaultButton = 1;  // B / Circle
-    else if (i == 6)
-      defaultButton = 0;  // A / Cross
-    else if (i == 7)
-      defaultButton = 2;  // X / Square
+    else if (i == 4) { // Top Face (Y / Triangle / X on Switch)
+      if (controllerType == e_ControllerType_NintendoSwitch)
+        defaultButton = 3;  // X on Switch
+      else
+        defaultButton = 3;  // Y / Triangle
+    }
+    else if (i == 5) { // Right Face (B / Circle / A on Switch)
+      if (controllerType == e_ControllerType_NintendoSwitch)
+        defaultButton = 1;  // A on Switch (physically right)
+      else
+        defaultButton = 1;  // B / Circle
+    }
+    else if (i == 6) { // Bottom Face (A / Cross / B on Switch)
+      if (controllerType == e_ControllerType_NintendoSwitch)
+        defaultButton = 0;  // B on Switch (physically bottom)
+      else
+        defaultButton = 0;  // A / Cross
+    }
+    else if (i == 7) { // Left Face (X / Square / Y on Switch)
+      if (controllerType == e_ControllerType_NintendoSwitch)
+        defaultButton = 2;  // Y on Switch (physically left)
+      else
+        defaultButton = 2;  // X / Square
+    }
     else if (i == 8)
-      defaultButton = 4;  // L1
-    else if (i == 9)
-      defaultButton = isPlayStation ? 6 : -6; // L2
+      defaultButton = 4;  // L1 / LB
+    else if (i == 9) {    // L2 / LT
+      if (controllerType == e_ControllerType_PlayStation)
+        defaultButton = 6;
+      else if (controllerType == e_ControllerType_NintendoSwitch || controllerType == e_ControllerType_LogitechDirectInput)
+        defaultButton = 6;
+      else
+        defaultButton = -6; // Xbox LT (Axis)
+    }
     else if (i == 10)
-      defaultButton = 5;  // R1
-    else if (i == 11)
-      defaultButton = isPlayStation ? 7 : -5; // R2
-    else if (i == 12)
-      defaultButton = isPlayStation ? 8 : 6;  // Select / Share / Back
-    else if (i == 13)
-      defaultButton = isPlayStation ? 9 : 7;  // Start / Options
+      defaultButton = 5;  // R1 / RB
+    else if (i == 11) {   // R2 / RT
+      if (controllerType == e_ControllerType_PlayStation)
+        defaultButton = 7;
+      else if (controllerType == e_ControllerType_NintendoSwitch || controllerType == e_ControllerType_LogitechDirectInput)
+        defaultButton = 7;
+      else
+        defaultButton = -5; // Xbox RT (Axis)
+    }
+    else if (i == 12) {   // Select / Share / Back / Minus
+      if (controllerType == e_ControllerType_PlayStation)
+        defaultButton = 8;
+      else if (controllerType == e_ControllerType_NintendoSwitch)
+        defaultButton = 8; // Minus
+      else if (controllerType == e_ControllerType_LogitechDirectInput)
+        defaultButton = 8;
+      else
+        defaultButton = 6; // Xbox Back
+    }
+    else if (i == 13) {   // Start / Options / Plus
+      if (controllerType == e_ControllerType_PlayStation)
+        defaultButton = 9;
+      else if (controllerType == e_ControllerType_NintendoSwitch)
+        defaultButton = 9; // Plus
+      else if (controllerType == e_ControllerType_LogitechDirectInput)
+        defaultButton = 9;
+      else
+        defaultButton = 7; // Xbox Start
+    }
 
     controllerMapping[i] = GetConfiguration()->GetInt(
         ("input_gamepad_" + GetIdentifier() + "_" + int_to_str(i)).c_str(), defaultButton);
@@ -205,4 +239,176 @@ Vector3 HIDGamepad::GetDirection() {
     inputDirection.Normalize(0);
   }
   return inputDirection;
+}
+
+e_ControllerType HIDGamepad::DetectControllerType(const std::string& name) {
+  std::string lower = name;
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
+  // PlayStation check
+  if (lower.find("sony") != std::string::npos ||
+      lower.find("dualshock") != std::string::npos ||
+      lower.find("dualsense") != std::string::npos ||
+      lower.find("ps4") != std::string::npos ||
+      lower.find("ps5") != std::string::npos ||
+      lower.find("ps3") != std::string::npos ||
+      lower.find("playstation") != std::string::npos ||
+      lower.find("sixaxis") != std::string::npos ||
+      lower.find("054c") != std::string::npos) {
+    return e_ControllerType_PlayStation;
+  }
+
+  // Nintendo Switch check
+  if (lower.find("nintendo") != std::string::npos ||
+      lower.find("switch") != std::string::npos ||
+      lower.find("joy-con") != std::string::npos ||
+      lower.find("pro controller") != std::string::npos ||
+      lower.find("057e") != std::string::npos) {
+    return e_ControllerType_NintendoSwitch;
+  }
+
+  // Logitech DirectInput check
+  if (lower.find("logitech") != std::string::npos ||
+      lower.find("f310") != std::string::npos ||
+      lower.find("f710") != std::string::npos ||
+      lower.find("f510") != std::string::npos ||
+      lower.find("dual action") != std::string::npos ||
+      lower.find("wingman") != std::string::npos) {
+    return e_ControllerType_LogitechDirectInput;
+  }
+
+  // Xbox check
+  if (lower.find("xbox") != std::string::npos ||
+      lower.find("x-box") != std::string::npos ||
+      lower.find("xinput") != std::string::npos ||
+      lower.find("microsoft") != std::string::npos ||
+      lower.find("045e") != std::string::npos ||
+      lower.find("8bitdo") != std::string::npos ||
+      lower.find("pdp") != std::string::npos ||
+      lower.find("razer") != std::string::npos ||
+      lower.find("powera") != std::string::npos) {
+    return e_ControllerType_Xbox;
+  }
+
+  return e_ControllerType_Generic;
+}
+
+std::string HIDGamepad::GetControllerTypeName() const {
+  switch (controllerType) {
+    case e_ControllerType_Xbox:
+      return "Xbox Controller";
+    case e_ControllerType_PlayStation:
+      return "PlayStation Controller";
+    case e_ControllerType_NintendoSwitch:
+      return "Nintendo Switch Controller";
+    case e_ControllerType_LogitechDirectInput:
+      return "Logitech Gamepad";
+    case e_ControllerType_Generic:
+    default:
+      return "Standard Gamepad";
+  }
+}
+
+std::string HIDGamepad::GetButtonGlyphPath(e_ButtonFunction buttonFunction) const {
+  if (controllerType == e_ControllerType_PlayStation) {
+    switch (buttonFunction) {
+      case e_ButtonFunction_ShortPass:
+      case e_ButtonFunction_Pressure:
+        return "media/menu/buttons/ps_cross.png";
+      case e_ButtonFunction_HighPass:
+      case e_ButtonFunction_Sliding:
+        return "media/menu/buttons/ps_circle.png";
+      case e_ButtonFunction_Shot:
+      case e_ButtonFunction_TeamPressure:
+        return "media/menu/buttons/ps_square.png";
+      case e_ButtonFunction_LongPass:
+      case e_ButtonFunction_KeeperRush:
+        return "media/menu/buttons/ps_triangle.png";
+      case e_ButtonFunction_Switch:
+        return "media/menu/buttons/ps_l1.png";
+      case e_ButtonFunction_Special:
+        return "media/menu/buttons/ps_l2.png";
+      case e_ButtonFunction_Sprint:
+        return "media/menu/buttons/ps_r1.png";
+      case e_ButtonFunction_Dribble:
+        return "media/menu/buttons/ps_r2.png";
+      case e_ButtonFunction_Start:
+        return "media/menu/buttons/ps_options.png";
+      case e_ButtonFunction_Select:
+        return "media/menu/buttons/ps_share.png";
+      case e_ButtonFunction_Up:
+        return "media/menu/buttons/xbox_dpad_up.png";
+      case e_ButtonFunction_Down:
+        return "media/menu/buttons/xbox_dpad_down.png";
+      case e_ButtonFunction_Left:
+        return "media/menu/buttons/xbox_dpad_left.png";
+      case e_ButtonFunction_Right:
+        return "media/menu/buttons/xbox_dpad_right.png";
+      default:
+        break;
+    }
+  } else if (controllerType == e_ControllerType_NintendoSwitch) {
+    switch (buttonFunction) {
+      case e_ButtonFunction_ShortPass:
+      case e_ButtonFunction_Pressure:
+        return "media/menu/buttons/switch_b.png";
+      case e_ButtonFunction_HighPass:
+      case e_ButtonFunction_Sliding:
+        return "media/menu/buttons/switch_a.png";
+      case e_ButtonFunction_Shot:
+      case e_ButtonFunction_TeamPressure:
+        return "media/menu/buttons/switch_y.png";
+      case e_ButtonFunction_LongPass:
+      case e_ButtonFunction_KeeperRush:
+        return "media/menu/buttons/switch_x.png";
+      case e_ButtonFunction_Switch:
+        return "media/menu/buttons/xbox_lb.png";
+      case e_ButtonFunction_Special:
+        return "media/menu/buttons/xbox_lt.png";
+      case e_ButtonFunction_Sprint:
+        return "media/menu/buttons/xbox_rb.png";
+      case e_ButtonFunction_Dribble:
+        return "media/menu/buttons/xbox_rt.png";
+      default:
+        break;
+    }
+  }
+
+  // Default Xbox / Standard layout
+  switch (buttonFunction) {
+    case e_ButtonFunction_ShortPass:
+    case e_ButtonFunction_Pressure:
+      return "media/menu/buttons/xbox_a.png";
+    case e_ButtonFunction_HighPass:
+    case e_ButtonFunction_Sliding:
+      return "media/menu/buttons/xbox_b.png";
+    case e_ButtonFunction_Shot:
+    case e_ButtonFunction_TeamPressure:
+      return "media/menu/buttons/xbox_x.png";
+    case e_ButtonFunction_LongPass:
+    case e_ButtonFunction_KeeperRush:
+      return "media/menu/buttons/xbox_y.png";
+    case e_ButtonFunction_Switch:
+      return "media/menu/buttons/xbox_lb.png";
+    case e_ButtonFunction_Special:
+      return "media/menu/buttons/xbox_lt.png";
+    case e_ButtonFunction_Sprint:
+      return "media/menu/buttons/xbox_rb.png";
+    case e_ButtonFunction_Dribble:
+      return "media/menu/buttons/xbox_rt.png";
+    case e_ButtonFunction_Start:
+      return "media/menu/buttons/xbox_start.png";
+    case e_ButtonFunction_Select:
+      return "media/menu/buttons/xbox_back.png";
+    case e_ButtonFunction_Up:
+      return "media/menu/buttons/xbox_dpad_up.png";
+    case e_ButtonFunction_Down:
+      return "media/menu/buttons/xbox_dpad_down.png";
+    case e_ButtonFunction_Left:
+      return "media/menu/buttons/xbox_dpad_left.png";
+    case e_ButtonFunction_Right:
+      return "media/menu/buttons/xbox_dpad_right.png";
+    default:
+      return "media/menu/buttons/xbox_a.png";
+  }
 }
