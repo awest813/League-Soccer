@@ -31,10 +31,16 @@ public:
 
   bool Initialize(const std::string& saveDir);
   bool HasSaveFile() const;
+  bool HasSaveSlot(int slotIndex) const;
   bool LoadCareerSave(const std::string& saveName);
+  bool LoadCareerSlot(int slotIndex);
   bool CreateNewCareer(const std::string& careerName, const std::string& mode,
                        const std::string& managerName);
   bool SaveCareerData();
+  bool SaveCareerSlot(int slotIndex);
+  bool AutoSave();
+  bool GetSlotSummary(int slotIndex, CareerPersistence::CareerSaveSummary& outSummary) const;
+  std::string GetSlotPath(int slotIndex) const;
 
   CareerSave* GetActiveSave() { return m_activeSave.get(); }
 

@@ -154,9 +154,27 @@ CareerMenuPage::CareerMenuPage(Gui2WindowManager* windowManager, const Gui2PageD
   saveFrame->AddView(saveTitle);
   saveTitle->Show();
 
+  CareerPersistence::CareerSaveSummary summary;
+  bool hasSummary = CareerDatabase::GetInstance().GetSlotSummary(0, summary);
+  if (!hasSummary) {
+    hasSummary = CareerDatabase::GetInstance().GetSlotSummary(-1, summary);
+  }
+
+  std::string saveInfoStr;
+  if (hasSummary && summary.isValid) {
+    saveInfoStr = "🏆 " + summary.clubName + "\n" +
+                  "📅 Season " + std::to_string(summary.season) + " (Week " + std::to_string(summary.week) + ")\n" +
+                  "👔 " + summary.managerName + "\n" +
+                  "💰 " + FormatCareerMoney(summary.transferBudget) + " | Trust: " + std::to_string(summary.boardConfidence) + "%";
+    if (!summary.timestamp.empty()) {
+      saveInfoStr += "\n🕒 " + summary.timestamp;
+    }
+  } else {
+    saveInfoStr = TR(hasSave ? "career_menu_save_ready" : "career_menu_save_empty");
+  }
+
   Gui2Caption* saveStatus =
-      new Gui2Caption(windowManager, "caption_career_save_status", 2, 7, 28, 9,
-                      TR(hasSave ? "career_menu_save_ready" : "career_menu_save_empty"));
+      new Gui2Caption(windowManager, "caption_career_save_status", 2, 6, 28, 12, saveInfoStr);
   saveFrame->AddView(saveStatus);
   saveStatus->Show();
 

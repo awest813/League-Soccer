@@ -374,7 +374,14 @@ bool Save(const CareerSave& save, const std::vector<TransferBid>& bids, const st
       "schema_version INTEGER NOT NULL,"
       "name TEXT NOT NULL,"
       "mode INTEGER NOT NULL,"
-      "season INTEGER NOT NULL)";
+      "season INTEGER NOT NULL,"
+      "week INTEGER NOT NULL DEFAULT 1,"
+      "club_name TEXT NOT NULL DEFAULT '',"
+      "manager_name TEXT NOT NULL DEFAULT '',"
+      "transfer_budget INTEGER NOT NULL DEFAULT 0,"
+      "reputation INTEGER NOT NULL DEFAULT 50,"
+      "board_confidence INTEGER NOT NULL DEFAULT 75,"
+      "timestamp TEXT NOT NULL DEFAULT '')";
   const char* createPayload =
       "CREATE TABLE IF NOT EXISTS career_payload ("
       "id INTEGER PRIMARY KEY,"
@@ -398,13 +405,28 @@ bool Save(const CareerSave& save, const std::vector<TransferBid>& bids, const st
   // Insert metadata (bound, so names with quotes are safe).
   {
     sqlite3_stmt* stmt = nullptr;
-    const char* sql = "INSERT INTO career_meta(schema_version,name,mode,season) VALUES(?,?,?,?)";
+    const char* sql =
+        "INSERT INTO career_meta(schema_version,name,mode,season,week,club_name,manager_name,transfer_budget,reputation,board_confidence,timestamp) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
       return fail();
+
+    time_t now = time(nullptr);
+    char timeBuf[64];
+    strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M", localtime(&now));
+
     sqlite3_bind_int(stmt, 1, kSchemaVersion);
     sqlite3_bind_text(stmt, 2, save.name.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_int(stmt, 3, static_cast<int>(save.mode));
     sqlite3_bind_int(stmt, 4, save.season.currentSeason);
+    sqlite3_bind_int(stmt, 5, save.season.currentWeek);
+    sqlite3_bind_text(stmt, 6, save.club.clubName.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 7, save.managerName.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt, 8, save.transferBudget);
+    sqlite3_bind_int(stmt, 9, save.reputation);
+    sqlite3_bind_int(stmt, 10, save.boardConfidence);
+    sqlite3_bind_text(stmt, 11, timeBuf, -1, SQLITE_TRANSIENT);
+
     const bool metaOk = sqlite3_step(stmt) == SQLITE_DONE;
     sqlite3_finalize(stmt);
     if (!metaOk) {
@@ -476,6 +498,81 @@ bool Load(CareerSave& save, std::vector<TransferBid>& bids, const std::string& p
   if (payload.empty())
     return false;
   return Deserialize(payload, save, bids);
+}
+
+bool ReadSummary(const std::string& path, CareerSaveSummary& outSummary) {
+  sqlite3* db = nullptr;
+  if (sqlite3_open_v2(path.c_str(), &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
+    if (db)
+      sqlite3_close(db);
+    // Legacy fallback: parse header of text file
+    std::ifstream file(path);
+    if (!file.is_open()) return false;
+    std::string line;
+    int linesRead = 0;
+    while (std::getline(file, line) && linesRead++ < 30) {
+      auto eq = line.find('=');
+      if (eq == std::string::npos) continue;
+      std::string k = line.substr(0, eq);
+      std::string v = line.substr(eq + 1);
+      if (k == "name") outSummary.name = v;
+      else if (k == "clubName") outSummary.clubName = v;
+      else if (k == "managerName") outSummary.managerName = v;
+      else if (k == "season") outSummary.season = atoi(v.c_str());
+      else if (k == "week") outSummary.week = atoi(v.c_str());
+      else if (k == "transferBudget") outSummary.transferBudget = atoll(v.c_str());
+      else if (k == "reputation") outSummary.reputation = atoi(v.c_str());
+      else if (k == "boardConfidence") outSummary.boardConfidence = atoi(v.c_str());
+      else if (k == "mode") outSummary.mode = static_cast<CareerMode>(atoi(v.c_str()));
+    }
+    outSummary.isValid = !outSummary.name.empty() || !outSummary.clubName.empty();
+    return outSummary.isValid;
+  }
+
+  // Try reading full metadata row
+  sqlite3_stmt* stmt = nullptr;
+  const char* sqlFull =
+      "SELECT schema_version,name,mode,season,week,club_name,manager_name,transfer_budget,reputation,board_confidence,timestamp "
+      "FROM career_meta LIMIT 1";
+  if (sqlite3_prepare_v2(db, sqlFull, -1, &stmt, nullptr) == SQLITE_OK) {
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+      outSummary.schemaVersion = sqlite3_column_int(stmt, 0);
+      outSummary.name = SqliteText(stmt, 1);
+      outSummary.mode = static_cast<CareerMode>(sqlite3_column_int(stmt, 2));
+      outSummary.season = sqlite3_column_int(stmt, 3);
+      outSummary.week = sqlite3_column_int(stmt, 4);
+      outSummary.clubName = SqliteText(stmt, 5);
+      outSummary.managerName = SqliteText(stmt, 6);
+      outSummary.transferBudget = sqlite3_column_int64(stmt, 7);
+      outSummary.reputation = sqlite3_column_int(stmt, 8);
+      outSummary.boardConfidence = sqlite3_column_int(stmt, 9);
+      outSummary.timestamp = SqliteText(stmt, 10);
+      outSummary.isValid = true;
+      sqlite3_finalize(stmt);
+      CloseDb(db);
+      return true;
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  // Fallback to basic meta columns if older table
+  const char* sqlBasic = "SELECT schema_version,name,mode,season FROM career_meta LIMIT 1";
+  if (sqlite3_prepare_v2(db, sqlBasic, -1, &stmt, nullptr) == SQLITE_OK) {
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+      outSummary.schemaVersion = sqlite3_column_int(stmt, 0);
+      outSummary.name = SqliteText(stmt, 1);
+      outSummary.mode = static_cast<CareerMode>(sqlite3_column_int(stmt, 2));
+      outSummary.season = sqlite3_column_int(stmt, 3);
+      outSummary.isValid = true;
+      sqlite3_finalize(stmt);
+      CloseDb(db);
+      return true;
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  CloseDb(db);
+  return false;
 }
 
 }  // namespace CareerPersistence

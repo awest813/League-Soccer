@@ -25,25 +25,73 @@ bool CareerDatabase::Initialize(const std::string& saveDir) {
   return true;
 }
 
-bool CareerDatabase::HasSaveFile() const {
+std::string CareerDatabase::GetSlotPath(int slotIndex) const {
   if (m_saveDirectory.empty())
-    return false;
-  std::ifstream file(m_saveDirectory + "/career.save");
-  return file.good();
+    return "career.save";
+  if (slotIndex == -1)
+    return m_saveDirectory + "/career_autosave.save";
+  if (slotIndex == 0)
+    return m_saveDirectory + "/career.save";
+  return m_saveDirectory + "/career_slot_" + std::to_string(slotIndex) + ".save";
+}
+
+bool CareerDatabase::HasSaveFile() const {
+  return HasSaveSlot(0) || HasSaveSlot(-1);
+}
+
+bool CareerDatabase::HasSaveSlot(int slotIndex) const {
+  std::string path = GetSlotPath(slotIndex);
+  CareerPersistence::CareerSaveSummary summary;
+  return CareerPersistence::ReadSummary(path, summary) && summary.isValid;
 }
 
 bool CareerDatabase::LoadCareerSave(const std::string& saveName) {
-  if (m_saveDirectory.empty())
-    return false;
-  std::string path = m_saveDirectory + "/career.save";
+  if (LoadCareerSlot(0)) {
+    printf("[career] Loaded default save: %s\n", saveName.c_str());
+    return true;
+  }
+  if (LoadCareerSlot(-1)) {
+    printf("[career] Loaded autosave fallback: %s\n", saveName.c_str());
+    return true;
+  }
+  return false;
+}
+
+bool CareerDatabase::LoadCareerSlot(int slotIndex) {
+  std::string path = GetSlotPath(slotIndex);
   CareerSave loaded;
   std::vector<TransferBid> loadedBids;
   if (!CareerPersistence::Load(loaded, loadedBids, path))
     return false;
   m_activeSave = std::make_unique<CareerSave>(loaded);
   m_activeBids = loadedBids;
-  printf("[career] Loaded save: %s\n", saveName.c_str());
+  printf("[career] Loaded slot %d from %s\n", slotIndex, path.c_str());
   return true;
+}
+
+bool CareerDatabase::SaveCareerData() {
+  return SaveCareerSlot(0);
+}
+
+bool CareerDatabase::SaveCareerSlot(int slotIndex) {
+  if (!m_activeSave)
+    return false;
+  std::string path = GetSlotPath(slotIndex);
+  bool success = CareerPersistence::Save(*m_activeSave, m_activeBids, path);
+  if (success)
+    printf("[career] Saved slot %d to %s\n", slotIndex, path.c_str());
+  return success;
+}
+
+bool CareerDatabase::AutoSave() {
+  if (!m_activeSave)
+    return false;
+  return SaveCareerSlot(-1);
+}
+
+bool CareerDatabase::GetSlotSummary(int slotIndex, CareerPersistence::CareerSaveSummary& outSummary) const {
+  std::string path = GetSlotPath(slotIndex);
+  return CareerPersistence::ReadSummary(path, outSummary);
 }
 
 bool CareerDatabase::CreateNewCareer(const std::string& careerName, const std::string& mode,

@@ -211,6 +211,16 @@ void RunCareerPersistenceTests() {
   bool saveSuccess = CareerPersistence::Save(save, bids, testDbPath);
   TEST_ASSERT(saveSuccess, "Career save serialized to SQLite successfully");
 
+  CareerPersistence::CareerSaveSummary summary;
+  bool summarySuccess = CareerPersistence::ReadSummary(testDbPath, summary);
+  TEST_ASSERT(summarySuccess, "ReadSummary reads metadata without full deserialization");
+  TEST_ASSERT(summary.isValid, "Summary marked valid");
+  TEST_ASSERT(summary.name == "Persistence Test FC", "Summary club name matches");
+  TEST_ASSERT(summary.managerName == "Test Coach", "Summary manager name matches");
+  TEST_ASSERT(summary.season == 3, "Summary season matches");
+  TEST_ASSERT(summary.transferBudget == 45000000, "Summary budget matches");
+  TEST_ASSERT(!summary.timestamp.empty(), "Summary timestamp populated");
+
   CareerSave loadedSave;
   std::vector<TransferBid> loadedBids;
   bool loadSuccess = CareerPersistence::Load(loadedSave, loadedBids, testDbPath);
