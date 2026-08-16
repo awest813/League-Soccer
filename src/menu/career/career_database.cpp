@@ -133,13 +133,6 @@ bool CareerDatabase::CreateNewCareer(const std::string& careerName, const std::s
   return SaveCareerData();
 }
 
-bool CareerDatabase::SaveCareerData() {
-  if (!m_activeSave || m_saveDirectory.empty())
-    return false;
-  std::string path = m_saveDirectory + "/career.save";
-  return CareerPersistence::Save(*m_activeSave, m_activeBids, path);
-}
-
 void CareerDatabase::AddEvent(const std::string& eventType, const std::string& description,
                               int reputationDelta, bool isMajor) {
   if (!m_activeSave)

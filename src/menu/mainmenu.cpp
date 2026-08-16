@@ -16,6 +16,7 @@
 #include "pagefactory.hpp"
 #include "settings.hpp"
 #include "career/career_database.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -79,7 +80,7 @@ IntroPage::IntroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
   splashBg->AddView(logo);
   logo->Show();
   
-  Gui2Caption* subtitle = new Gui2Caption(windowManager, "caption_intro_sub", 0, 45, 100, 3, "THE BEAUTIFUL GAME SIMULATOR");
+  Gui2Caption* subtitle = new Gui2Caption(windowManager, "caption_intro_sub", 0, 45, 100, 3, TR("intro_title"));
   subtitle->SetPosition(50.0f - subtitle->GetTextWidthPercent() * 0.5f, 45);
   subtitle->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   splashBg->AddView(subtitle);
@@ -89,7 +90,7 @@ IntroPage::IntroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
   splashBg->AddView(promptPanel);
   promptPanel->Show();
   Gui2Caption* prompt = new Gui2Caption(windowManager, "caption_intro_prompt", 0, 3.5f, 40, 3,
-                                        "PRESS START OR ENTER TO CONTINUE");
+                                        TR("intro_continue"));
   prompt->SetPosition(20.0f - prompt->GetTextWidthPercent() * 0.5f, 3.5f);
   prompt->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright1));
   promptPanel->AddView(prompt);

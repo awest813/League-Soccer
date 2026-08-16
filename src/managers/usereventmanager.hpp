@@ -76,7 +76,7 @@ protected:
   std::map<SDL_Keycode, TimedKeyPress> keyPressed;
   unsigned long lastKeyTime_ms = 0;
 
-  bool mousePressed[8];
+  bool mousePressed[32];
 
   SDL_Joystick* joystick[_JOYSTICK_MAX];
   // Stable mapping: joystickInstanceNow[slot] holds the SDL instance ID that

@@ -7,6 +7,7 @@
 
 #include "../../data/careerdata.hpp"
 #include "career_common.hpp"
+#include "career_persistence.hpp"
 
 namespace blunted {
 

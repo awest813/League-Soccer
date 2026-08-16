@@ -75,11 +75,11 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
   ctrlFrame->Show();
 
   Gui2Caption* t1 =
-      new Gui2Caption(windowManager, "caption_controllerselect_t1", 0, 0, 28, 3, "HOME (Team 1)");
+      new Gui2Caption(windowManager, "caption_controllerselect_t1", 0, 0, 28, 3, TR("ctrl_home"));
   Gui2Caption* t2 =
-      new Gui2Caption(windowManager, "caption_controllerselect_t2", 0, 0, 28, 3, "AWAY (Team 2)");
+      new Gui2Caption(windowManager, "caption_controllerselect_t2", 0, 0, 28, 3, TR("ctrl_away"));
   Gui2Caption* tNeutral =
-      new Gui2Caption(windowManager, "caption_controllerselect_tn", 0, 0, 28, 3, "UNASSIGNED");
+      new Gui2Caption(windowManager, "caption_controllerselect_tn", 0, 0, 28, 3, TR("ctrl_unassigned"));
 
   t1->SetPosition(25 - t1->GetTextWidthPercent() * 0.5, 10);
   t2->SetPosition(75 - t2->GetTextWidthPercent() * 0.5, 10);
@@ -101,9 +101,9 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
   const std::vector<IHIDevice*>& controllers = GetControllers();
   if (controllers.empty()) {
     AddControllerSelectNotice(this, windowManager, "caption_controllerselect_noinput", 44,
-                              "No input devices detected.");
+                              TR("ctrl_noinput"));
     AddControllerSelectNotice(this, windowManager, "caption_controllerselect_noinput_hint", 49,
-                              "Connect a keyboard or gamepad before starting a match.");
+                              TR("ctrl_noinput_hint"));
     Gui2Button* backButton =
         AddControllerSelectBackButton(this, windowManager, "button_controllerselect_back");
     backButton->SetFocus();
