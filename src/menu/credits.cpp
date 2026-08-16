@@ -280,28 +280,28 @@ void CreditsPage::InitCreditsContents() {
     AddWhitespace();
 }
 
-void CreditsPage::AddHeader(const std::string& blah) {
+void CreditsPage::AddHeader(const std::string& text) {
   AddWhitespace();
   AddWhitespace();
   AddWhitespace();
   CreditsContents credit;
-  credit.text = blah;
+  credit.text = text;
   credit.color.Set(255, 255, 255);
   credits.push_back(credit);
   AddWhitespace();
 }
 
-void CreditsPage::AddSubHeader(const std::string& blah) {
+void CreditsPage::AddSubHeader(const std::string& text) {
   AddWhitespace();
   CreditsContents credit;
-  credit.text = blah;
+  credit.text = text;
   credit.color.Set(255, 255, 200);
   credits.push_back(credit);
 }
 
-void CreditsPage::AddCredit(const std::string& blah) {
+void CreditsPage::AddCredit(const std::string& text) {
   CreditsContents credit;
-  credit.text = blah;
+  credit.text = text;
   credit.color.Set(200, 200, 255);
   credits.push_back(credit);
 }

@@ -233,9 +233,9 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
     infoPanel->AddView(activeTitle);
     activeTitle->Show();
     
-    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_saveteam", 2, 8, activeSave->name + " (" + activeSave->club.leagueName + ")");
-    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savemgr", 2, 12, "Manager: " + activeSave->managerName);
-    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_saveseason", 2, 16, "Season " + std::to_string(activeSave->season.currentSeason) + " (Week " + std::to_string(activeSave->season.currentWeek) + ")");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_saveteam", 2, 8, "🏆 " + activeSave->name + " (" + activeSave->club.leagueName + ")");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savemgr", 2, 12, "👔 Manager: " + activeSave->managerName);
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_saveseason", 2, 16, "📅 Season " + std::to_string(activeSave->season.currentSeason) + " (Week " + std::to_string(activeSave->season.currentWeek) + ")");
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savedesc", 2, 22, "Select 'Career Mode' from the main menu to resume this save.");
   } else {
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_welcome", 2, 3, "League Soccer");
@@ -602,101 +602,6 @@ bool MainMenuPage::GoImportDB() {
       "year INTEGER, "
       "xmldata TEXT);");
 
-  // std::string defaultStats =
-  // "<defense>0.8</defense><bodybalance>0.8</bodybalance><acceleration>0.6</acceleration><velocity>0.6</velocity><agility>0.8</agility><reaction>1.0</reaction><ballcontrol>0.8</ballcontrol><dribblevelocity>0.6</dribblevelocity><shotpower>0.8</shotpower><passtechnique>1.0</passtechnique><tactics>1.0</tactics><condition>1.0</condition>";
-  // std::string defaultFormation = "<p1><position>-1,
-  // 0</position><role>GK</role></p1><p2><position>-0.6,
-  // 0.6</position><role>LB</role></p2><p3><position>-0.7,
-  // 0.2</position><role>CB</role></p3><p4><position>-0.7,
-  // -0.2</position><role>CB</role></p4><p5><position>-0.6,
-  // -0.6</position><role>RB</role></p5><p6><position>0.0,
-  // 0.8</position><role>LM</role></p6><p7><position>0.1,
-  // 0.0</position><role>AM</role></p7><p8><position>0.0,
-  // -0.8</position><role>RM</role></p8><p9><position>0.7,
-  // 0.5</position><role>CF</role></p9><p10><position>0.8,
-  // 0.0</position><role>CF</role></p10><p11><position>0.7, -0.5</position><role>CF</role></p11>";
-
-  /* possession game, high pressure
-  <dribble_centermagnet>0.5</dribble_centermagnet>
-  <dribble_offensiveness>0.5</dribble_offensiveness>
-
-  <position_defense_depth_factor>0.3</position_defense_depth_factor>
-  <position_defense_microfocus_strength>0.8</position_defense_microfocus_strength>
-  <position_defense_midfieldfocus>0.8</position_defense_midfieldfocus>
-  <position_defense_sidefocus_strength>0.7</position_defense_sidefocus_strength>
-  <position_defense_width_factor>0.3</position_defense_width_factor>
-
-  <position_offense_depth_factor>0.6</position_offense_depth_factor>
-  <position_offense_microfocus_strength>0.8</position_offense_microfocus_strength>
-  <position_offense_midfieldfocus>0.8</position_offense_midfieldfocus>
-  <position_offense_sidefocus_strength>0.4</position_offense_sidefocus_strength>
-  <position_offense_width_factor>0.6</position_offense_width_factor>
-  */
-
-  /* counter
-  <dribble_centermagnet>0.7</dribble_centermagnet>
-  <dribble_offensiveness>0.9</dribble_offensiveness>
-
-  <position_defense_depth_factor>0.3</position_defense_depth_factor>
-  <position_defense_microfocus_strength>0.3</position_defense_microfocus_strength>
-  <position_defense_midfieldfocus>0.2</position_defense_midfieldfocus>
-  <position_defense_sidefocus_strength>0.3</position_defense_sidefocus_strength>
-  <position_defense_width_factor>0.6</position_defense_width_factor>
-
-  <position_offense_depth_factor>0.9</position_offense_depth_factor>
-  <position_offense_microfocus_strength>0.4</position_offense_microfocus_strength>
-  <position_offense_midfieldfocus>0.7</position_offense_midfieldfocus>
-  <position_offense_sidefocus_strength>0.3</position_offense_sidefocus_strength>
-  <position_offense_width_factor>0.3</position_offense_width_factor>
-  */
-
-  /* balanced offensive
-  <dribble_centermagnet>0.6</dribble_centermagnet>
-  <dribble_offensiveness>0.8</dribble_offensiveness>
-
-  <position_defense_depth_factor>0.6</position_defense_depth_factor>
-  <position_defense_microfocus_strength>0.5</position_defense_microfocus_strength>
-  <position_defense_midfieldfocus>0.7</position_defense_midfieldfocus>
-  <position_defense_sidefocus_strength>0.5</position_defense_sidefocus_strength>
-  <position_defense_width_factor>0.5</position_defense_width_factor>
-
-  <position_offense_depth_factor>0.6</position_offense_depth_factor>
-  <position_offense_microfocus_strength>0.5</position_offense_microfocus_strength>
-  <position_offense_midfieldfocus>0.8</position_offense_midfieldfocus>
-  <position_offense_sidefocus_strength>0.5</position_offense_sidefocus_strength>
-  <position_offense_width_factor>0.7</position_offense_width_factor>
-  */
-
-  /* balanced defensive
-  <dribble_centermagnet>0.3</dribble_centermagnet>
-  <dribble_offensiveness>0.2</dribble_offensiveness>
-
-  <position_defense_depth_factor>0.4</position_defense_depth_factor>
-  <position_defense_microfocus_strength>0.6</position_defense_microfocus_strength>
-  <position_defense_midfieldfocus>0.3</position_defense_midfieldfocus>
-  <position_defense_sidefocus_strength>0.4</position_defense_sidefocus_strength>
-  <position_defense_width_factor>0.4</position_defense_width_factor>
-
-  <position_offense_depth_factor>0.6</position_offense_depth_factor>
-  <position_offense_microfocus_strength>0.5</position_offense_microfocus_strength>
-  <position_offense_midfieldfocus>0.5</position_offense_midfieldfocus>
-  <position_offense_sidefocus_strength>0.5</position_offense_sidefocus_strength>
-  <position_offense_width_factor>0.5</position_offense_width_factor>
-  */
-
-  /*
-  <p1><position>-1.0,  0.0</position><role>GK</role></p1>
-  <p2><position>-0.6,  0.7</position><role>LB</role></p2>
-  <p3><position>-0.7,  0.2</position><role>CB</role></p3>
-  <p4><position>-0.7, -0.2</position><role>CB</role></p4>
-  <p5><position>-0.6, -0.7</position><role>RB</role></p5>
-  <p6><position> 0.1,  0.8</position><role>LM</role></p6>
-  <p7><position>-0.1,  0.0</position><role>DM</role></p7>
-  <p8><position> 0.1, -0.8</position><role>RM</role></p8>
-  <p9><position> 0.5,  0.0</position><role>AM</role></p9>
-  <p10><position>0.8,  0.3</position><role>CF</role></p10>
-  <p11><position>0.8, -0.3</position><role>CF</role></p11>
-  */
 
   // 4-2-3-1
   std::string defaultFormation =
@@ -716,74 +621,6 @@ bool MainMenuPage::GoImportDB() {
 
       "<p11><position>1.0,  0.0</position><role>CF</role></p11>";
 
-  //<p1><position>-1.0,  0.0</position><role>GK</role></p1><p2><position>-0.7,
-  // 0.75</position><role>LB</role></p2><p3><position>-1.0,
-  // 0.25</position><role>CB</role></p3><p4><position>-1.0,
-  //-0.25</position><role>CB</role></p4><p5><position>-0.7,
-  //-0.75</position><role>RB</role></p5><p6><position>-0.2,
-  // 0.3</position><role>CM</role></p6><p7><position>-0.2,
-  //-0.3</position><role>CM</role></p7><p8><position> 0.7,
-  // 0.9</position><role>LM</role></p8><p9><position> 0.2,
-  // 0.0</position><role>AM</role></p9><p10><position>0.7,
-  //-0.9</position><role>RM</role></p10><p11><position>1.0,  0.0</position><role>CF</role></p11>
-
-  /*
-  // 4-4-2
-  std::string defaultFormation = "<p1><position>-1.0,  0.0</position><role>GK</role></p1>"
-
-                                 "<p2><position>-0.7,  0.6</position><role>LB</role></p2>"
-                                 "<p3><position>-0.8,  0.2</position><role>CB</role></p3>"
-                                 "<p4><position>-0.8, -0.2</position><role>CB</role></p4>"
-                                 "<p5><position>-0.7, -0.6</position><role>RB</role></p5>"
-
-                                 "<p6><position> 0.0,  0.9</position><role>LM</role></p6>"
-                                 "<p7><position>-0.3,  0.0</position><role>DM</role></p7>"
-                                 "<p8><position> 0.0, -0.9</position><role>RM</role></p8>"
-                                 "<p9><position> 0.3,  0.0</position><role>AM</role></p9>"
-
-                                 "<p10><position>0.8,  0.3</position><role>CF</role></p10>"
-                                 "<p11><position>0.8, -0.3</position><role>CF</role></p11>";
-
-  //<p1><position>-1.0,  0.0</position><role>GK</role></p1><p2><position>-0.7,
-  0.6</position><role>LB</role></p2><p3><position>-0.8,
-  0.2</position><role>CB</role></p3><p4><position>-0.8,
-  -0.2</position><role>CB</role></p4><p5><position>-0.7,
-  -0.6</position><role>RB</role></p5><p6><position> 0.0,
-  0.9</position><role>LM</role></p6><p7><position>-0.3,
-  0.0</position><role>DM</role></p7><p8><position> 0.0,
-  -0.9</position><role>RM</role></p8><p9><position> 0.3,
-  0.0</position><role>AM</role></p9><p10><position>0.8,
-  0.3</position><role>CF</role></p10><p11><position>0.8, -0.3</position><role>CF</role></p11>
-  */
-
-  /*
-  // 4-3-3
-  std::string defaultFormation = "<p1><position> -1.0,  0.0 </position><role>GK</role></p1>"
-
-                                 "<p2><position> -0.7,  0.75</position><role>LB</role></p2>"
-                                 "<p3><position> -1.0,  0.25</position><role>CB</role></p3>"
-                                 "<p4><position> -1.0, -0.25</position><role>CB</role></p4>"
-                                 "<p5><position> -0.7, -0.75</position><role>RB</role></p5>"
-
-                                 "<p6><position>  0.0,  0.5 </position><role>CM</role></p6>"
-                                 "<p7><position> -0.2,  0.0 </position><role>CM</role></p7>"
-                                 "<p8><position>  0.0, -0.5 </position><role>CM</role></p8>"
-
-                                 "<p9><position>  0.6,  0.75 </position><role>LM</role></p9>"
-                                 "<p10><position> 1.0,  0.0 </position><role>CF</role></p10>"
-                                 "<p11><position> 0.6, -0.75 </position><role>RM</role></p11>";
-
-  //<p1><position> -1.0,  0.0 </position><role>GK</role></p1><p2><position> -0.7,
-  0.75</position><role>LB</role></p2><p3><position> -1.0,
-  0.25</position><role>CB</role></p3><p4><position> -1.0,
-  -0.25</position><role>CB</role></p4><p5><position> -0.7,
-  -0.75</position><role>RB</role></p5><p6><position>  0.0,  0.5
-  </position><role>CM</role></p6><p7><position> -0.2,  0.0
-  </position><role>CM</role></p7><p8><position>  0.0, -0.5
-  </position><role>CM</role></p8><p9><position>  0.6,  0.75
-  </position><role>LM</role></p9><p10><position> 1.0,  0.0
-  </position><role>CF</role></p10><p11><position> 0.6, -0.75 </position><role>RM</role></p11>
-  */
 
   std::string defaultTactics =
       "<position_offense_depth_factor>0.5</position_offense_depth_factor>"
@@ -842,14 +679,6 @@ bool MainMenuPage::GoImportDB() {
 
     bool addClub = false;
 
-    /* public beta 1
-    if ((club.country == "England" && club.competition == "Premier Division")
-    || (club.country == "Germany" && club.competition == "First Division") ||
-        (club.country == "Holland" && club.competition == "Eredivisie") ||
-        (club.country == "Spain" && club.competition == "LIGA BBVA")) {
-      addClub = true;
-    }
-    */
 
     // public beta 2
     if (club.name == "PSV")
@@ -1226,14 +1055,6 @@ bool MainMenuPage::GoImportDB() {
 
     // printf("KEEPER?: %s\n", clubs.at(c).players.begin()->lastName.c_str());
 
-    /*
-        // add second keeper
-        if (keepers.size() > 1) {
-          iter = clubs.at(c).players.begin();
-          advance(iter, 11);
-          clubs.at(c).players.insert(iter, keepers.at(1));
-        } // (fuck the possible 3rd keeper and on hee hee)
-    */
 
     // only keep the best
     unsigned int keepPlayers = 18;
@@ -1286,112 +1107,6 @@ bool MainMenuPage::GoImportDB() {
   return true;
 }
 
-/*XX deprecated
-void MainMenuPage::Import_AgeValueStatsAdd(int age, int value) {
-  std::map < int, std::vector<int> >::iterator iter = ageValues.find(age);
-  if (iter == ageValues.end()) {
-    std::vector<int> valueVec;
-    valueVec.push_back(value);
-    ageValues.insert(std::pair<int, std::vector<int> >(age, valueVec));
-  } else {
-    iter->second.push_back(value);
-  }
-}
-
-void MainMenuPage::Import_ProcessAgeValueStats() {
-
-  bool cachedVersion = false;
-
-  if (cachedVersion) {
-
-    averageStatPerAge.insert(std::pair<int, float>(15, 0.452861));
-    averageStatPerAge.insert(std::pair<int, float>(16, 0.456137));
-    averageStatPerAge.insert(std::pair<int, float>(17, 0.463531));
-    averageStatPerAge.insert(std::pair<int, float>(18, 0.476644));
-    averageStatPerAge.insert(std::pair<int, float>(19, 0.495670));
-    averageStatPerAge.insert(std::pair<int, float>(20, 0.521165));
-    averageStatPerAge.insert(std::pair<int, float>(21, 0.549251));
-    averageStatPerAge.insert(std::pair<int, float>(22, 0.581290));
-    averageStatPerAge.insert(std::pair<int, float>(23, 0.609627));
-    averageStatPerAge.insert(std::pair<int, float>(24, 0.640026));
-    averageStatPerAge.insert(std::pair<int, float>(25, 0.661062));
-    averageStatPerAge.insert(std::pair<int, float>(26, 0.681876));
-    averageStatPerAge.insert(std::pair<int, float>(27, 0.695848));
-    averageStatPerAge.insert(std::pair<int, float>(28, 0.707468));
-    averageStatPerAge.insert(std::pair<int, float>(29, 0.716388));
-    averageStatPerAge.insert(std::pair<int, float>(30, 0.722636));
-    averageStatPerAge.insert(std::pair<int, float>(31, 0.725265));
-    averageStatPerAge.insert(std::pair<int, float>(32, 0.718620));
-    averageStatPerAge.insert(std::pair<int, float>(33, 0.706918));
-    averageStatPerAge.insert(std::pair<int, float>(34, 0.701204));
-    averageStatPerAge.insert(std::pair<int, float>(35, 0.698097));
-    averageStatPerAge.insert(std::pair<int, float>(36, 0.695981));
-    averageStatPerAge.insert(std::pair<int, float>(37, 0.694231));
-    averageStatPerAge.insert(std::pair<int, float>(38, 0.693000));
-    averageStatPerAge.insert(std::pair<int, float>(39, 0.690599));
-    averageStatPerAge.insert(std::pair<int, float>(40, 0.683223));
-
-  } else {
-
-    std::map<int, float> tempAverageStatPerAge; // needs to be smoothed later on into the non-temp
-version int lowestOverallValue = 10000000; int highestOverallValue = 0; for (int age = 15; age <=
-40; age++) { std::map < int, std::vector<int> >::iterator iter = ageValues.find(age); if (iter !=
-ageValues.end()) { int totalValues = 0; int cumulativeValue = 0; int lowestValue = 10000000; int
-highestValue = 0; std::vector<int> &values = iter->second; for (unsigned int i = 0; i <
-values.size(); i++) { cumulativeValue += values.at(i); totalValues++; if (values.at(i) <
-lowestValue) lowestValue = values.at(i); if (values.at(i) > highestValue) highestValue =
-values.at(i); if (values.at(i) < lowestOverallValue) lowestOverallValue = values.at(i); if
-(values.at(i) > highestOverallValue) highestOverallValue = values.at(i);
-        }
-        int average = int(round((float)cumulativeValue / (float)totalValues));
-        std::sort(values.begin(), values.end());
-        int median = values.at(clamp(values.size() / 2, 0, values.size() - 1));
-        printf("age: %i, players: %i, average value: %i, median value: %i, lowest/highest: %i/%i\n",
-age, totalValues, average, median, lowestValue, highestValue);
-
-        // save
-        //float averageStat = GetAverageStatFromValue(age, average);
-        float averageStat = GetAverageStatFromValue(age, median * 0.9 + average * 0.1);
-        tempAverageStatPerAge.insert(std::pair<int, float>(age, averageStat));
-      }
-    }
-
-    // average stats per age over multiple ages to smooth out the graph and to fix ages where few
-players are available (>~40 year old) averageStatPerAge = tempAverageStatPerAge; auto tmpIter =
-tempAverageStatPerAge.begin(); auto iter = averageStatPerAge.begin(); while (tmpIter !=
-tempAverageStatPerAge.end()) { int amount = 1; // divide by how many? (for average) float average =
-tmpIter->second; if (tmpIter != tempAverageStatPerAge.begin()) { // add previous tmpIter--; average
-+= tmpIter->second; amount++; tmpIter++;
-      }
-      if (std::next(tmpIter) != tempAverageStatPerAge.end()) { // add next
-        tmpIter++;
-        average += tmpIter->second;
-        amount++;
-        tmpIter--;
-      }
-
-      iter->second = average / (float)amount;
-      //printf("new: %f\n", iter->second);
-
-      tmpIter++;
-      iter++;
-    }
-
-    printf("overall lowest/highest value: %i/%i\n", lowestOverallValue, highestOverallValue);
-    // right now: overall lowest/highest value: 10/45643480
-
-
-    iter = averageStatPerAge.begin();
-    while (iter != averageStatPerAge.end()) {
-      //printf("average stat at age %i: %f\n", iter->first, iter->second);
-      printf("averageStatPerAge.insert(std::pair<int, float>(%i, %f));\n", iter->first,
-iter->second); iter++;
-    }
-
-  } // uncached version
-
-}
-*/
 
 // inhibit 'back' button from closing the game
 void MainMenuPage::ProcessWindowingEvent(WindowingEvent* event) {
