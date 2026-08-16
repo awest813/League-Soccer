@@ -185,27 +185,27 @@ install() {
 # canonical package names verified against each family's repositories.
 case "${PM}" in
   apt)
-    CORE_PKGS=(cmake build-essential libboost-dev libsqlite3-dev)
+    CORE_PKGS=(cmake ninja-build build-essential libboost-dev libsqlite3-dev)
     GAME_PKGS=(libgl1-mesa-dev libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev \
                libsdl2-gfx-dev libopenal-dev xvfb)
-    TOOLS_PKGS=(ninja-build clang clang-format clang-tidy doxygen graphviz)
+    TOOLS_PKGS=(clang clang-format clang-tidy doxygen graphviz)
     ;;
   dnf|yum)
-    CORE_PKGS=(cmake gcc-c++ make boost-devel sqlite-devel)
+    CORE_PKGS=(cmake ninja-build gcc-c++ make boost-devel sqlite-devel)
     GAME_PKGS=(mesa-libGL-devel SDL2-devel SDL2_image-devel SDL2_ttf-devel \
                SDL2_gfx-devel openal-soft-devel xorg-x11-server-Xvfb)
-    TOOLS_PKGS=(ninja-build clang clang-tools-extra doxygen graphviz)
+    TOOLS_PKGS=(clang clang-tools-extra doxygen graphviz)
     ;;
   pacman)
-    CORE_PKGS=(cmake base-devel boost sqlite)
+    CORE_PKGS=(cmake ninja base-devel boost sqlite)
     GAME_PKGS=(mesa sdl2 sdl2_image sdl2_ttf sdl2_gfx openal xorg-server-xvfb)
-    TOOLS_PKGS=(ninja clang clang-tools-extra doxygen graphviz)
+    TOOLS_PKGS=(clang clang-tools-extra doxygen graphviz)
     ;;
   zypper)
-    CORE_PKGS=(cmake gcc-c++ make libboost_headers-devel sqlite3-devel)
+    CORE_PKGS=(cmake ninja gcc-c++ make libboost_headers-devel sqlite3-devel)
     GAME_PKGS=(Mesa-libGL-devel SDL2-devel SDL2_image-devel \
                SDL2_ttf-devel SDL2_gfx-devel openal-soft-devel xorg-x11-server-Xvfb)
-    TOOLS_PKGS=(ninja clang clang-tools-extra doxygen graphviz)
+    TOOLS_PKGS=(clang clang-tools-extra doxygen graphviz)
     ;;
   xbps)
     CORE_PKGS=(cmake base-devel boost-devel sqlite-devel pkg-config)

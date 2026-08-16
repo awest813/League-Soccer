@@ -189,14 +189,17 @@ cmake --build build --parallel
 
 ### macOS
 
+The Linux helper scripts now seamlessly support macOS using Homebrew! 
 Install [Homebrew](https://brew.sh/), then:
 
 ```bash
-brew install git cmake sdl2 sdl2_image sdl2_ttf sdl2_gfx boost openal-soft sqlite
+./build.sh          # auto-installs dependencies via Homebrew and builds
+./run.sh            # launches the game
+```
 
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel
-(cd build && ./gameplayfootball)
+To assemble a distributable standalone Mac bundle/folder:
+```bash
+./scripts/package_macos.sh --build-dir build --out-dir dist/macos-x64
 ```
 
 ### Windows

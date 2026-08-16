@@ -33,6 +33,11 @@ if(UNIX)
        "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O3 ${GAMEPLAYFOOTBALL_LEGACY_UNUSED_WARNINGS}")
 endif()
 
+if(APPLE)
+  list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew" "/usr/local")
+  add_compile_definitions(GL_SILENCE_DEPRECATION=1)
+endif()
+
 if(MSVC)
   # SDL2_gfx and the Windows CRT both provide the standard M_PI compatibility
   # macro; their include order can produce C4005 even though the values match.
@@ -41,7 +46,7 @@ if(MSVC)
   # established boundaries as C4244/C4267/C4305 throughout the legacy code.
   # Keep the useful warning set enabled while excluding these known, noisy
   # compatibility and conversion categories from Windows builds.
-  add_compile_options(/wd4005 /wd4244 /wd4267 /wd4305)
+  add_compile_options(/MP /wd4005 /wd4244 /wd4267 /wd4305)
 endif()
 
 function(gf_find_boost)
@@ -105,6 +110,8 @@ function(gf_find_boost)
     HINTS
       "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
       "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include"
+      "/opt/homebrew/include"
+      "/usr/local/include"
   )
   message(STATUS "gf_find_boost: header-only fallback search result: ${GF_BOOST_HEADER_DIR}")
   if(GF_BOOST_HEADER_DIR)
@@ -344,7 +351,7 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
   elseif(OPENGL_LIBRARIES)
     list(APPEND LIBRARIES ${OPENGL_LIBRARIES})
   endif()
-  if(UNIX)
+  if(UNIX AND NOT APPLE)
     list(APPEND LIBRARIES dl m)
   endif()
   if(OpenAL_FOUND)
@@ -369,6 +376,13 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
   )
   if(OpenAL_FOUND)
     target_include_directories(gameplayfootball PRIVATE ${OPENAL_INCLUDE_DIR})
+  endif()
+  
+  if(APPLE)
+    set_target_properties(gameplayfootball PROPERTIES
+      BUILD_WITH_INSTALL_RPATH TRUE
+      INSTALL_RPATH "@executable_path;@loader_path"
+    )
   endif()
   add_custom_command(TARGET gameplayfootball POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:gameplayfootball>/data

@@ -80,10 +80,16 @@ fi
 
 cd "${SCRIPT_DIR}"
 
+OS_NAME="$(uname -s)"
+
 # ── 1. Dependencies ──────────────────────────────────────────────────────────
 if [[ "${INSTALL_DEPS}" == true ]]; then
   echo "==> Installing build dependencies…"
-  bash scripts/setup_linux_deps.sh
+  if [[ "${OS_NAME}" == "Darwin" ]]; then
+    bash scripts/setup_macos_deps.sh
+  else
+    bash scripts/setup_linux_deps.sh
+  fi
 fi
 
 # ── 2. Clean ─────────────────────────────────────────────────────────────────
@@ -94,7 +100,28 @@ fi
 
 # ── 3. Configure ─────────────────────────────────────────────────────────────
 echo "==> Configuring (${BUILD_TYPE})…"
-cmake -S . -B build -DCMAKE_BUILD_TYPE="${BUILD_TYPE}"
+
+EXTRA_CMAKE_ARGS=()
+if command -v ninja >/dev/null 2>&1; then
+  EXTRA_CMAKE_ARGS+=("-G" "Ninja")
+fi
+
+if [[ "${OS_NAME}" == "Darwin" ]]; then
+  if command -v brew >/dev/null 2>&1; then
+    EXTRA_CMAKE_ARGS+=("-DCMAKE_PREFIX_PATH=$(brew --prefix)")
+  elif [[ -d /opt/homebrew ]]; then
+    EXTRA_CMAKE_ARGS+=("-DCMAKE_PREFIX_PATH=/opt/homebrew")
+  elif [[ -d /usr/local ]]; then
+    EXTRA_CMAKE_ARGS+=("-DCMAKE_PREFIX_PATH=/usr/local")
+  fi
+fi
+
+cmake -S . -B build -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" "${EXTRA_CMAKE_ARGS[@]}"
+
+# Symlink compile_commands.json for IDEs
+if [[ -f build/compile_commands.json ]]; then
+  ln -sf build/compile_commands.json compile_commands.json
+fi
 
 # ── 4. Build ─────────────────────────────────────────────────────────────────
 echo "==> Building with ${JOBS} parallel job(s)…"

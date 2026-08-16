@@ -8,12 +8,20 @@
 
 #include "interface_audiorenderer.hpp"
 
-#ifdef __APPLE__
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
+#if defined(__has_include)
+  #if __has_include(<OpenAL/al.h>)
+    #include <OpenAL/al.h>
+    #include <OpenAL/alc.h>
+  #elif __has_include(<AL/al.h>)
+    #include <AL/al.h>
+    #include <AL/alc.h>
+  #endif
+#elif defined(__APPLE__)
+  #include <OpenAL/al.h>
+  #include <OpenAL/alc.h>
 #else
-#include <AL/al.h>
-#include <AL/alc.h>
+  #include <AL/al.h>
+  #include <AL/alc.h>
 #endif
 
 namespace blunted {

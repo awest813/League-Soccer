@@ -17,9 +17,19 @@ cleanup() {
 }
 trap cleanup EXIT
 
-runner=(stdbuf -oL -eL timeout "${timeout_seconds}s")
+runner=()
+if command -v stdbuf >/dev/null 2>&1 && command -v timeout >/dev/null 2>&1; then
+  runner=(stdbuf -oL -eL timeout "${timeout_seconds}s")
+elif command -v gstdbuf >/dev/null 2>&1 && command -v gtimeout >/dev/null 2>&1; then
+  runner=(gstdbuf -oL -eL gtimeout "${timeout_seconds}s")
+fi
+
 if command -v xvfb-run >/dev/null 2>&1; then
-  runner=(xvfb-run -a "${runner[@]}")
+  if [[ ${#runner[@]} -gt 0 ]]; then
+    runner=(xvfb-run -a "${runner[@]}")
+  else
+    runner=(xvfb-run -a)
+  fi
 fi
 
 if ! "${runner[@]}" "$executable" "$config" >"$log_file" 2>&1; then
