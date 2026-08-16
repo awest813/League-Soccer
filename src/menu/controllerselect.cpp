@@ -75,17 +75,26 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
   ctrlFrame->Show();
 
   Gui2Caption* t1 =
-      new Gui2Caption(windowManager, "caption_controllerselect_t1", 0, 0, 28, 3, "Team 1");
+      new Gui2Caption(windowManager, "caption_controllerselect_t1", 0, 0, 28, 3, "HOME (Team 1)");
   Gui2Caption* t2 =
-      new Gui2Caption(windowManager, "caption_controllerselect_t2", 0, 0, 28, 3, "Team 2");
+      new Gui2Caption(windowManager, "caption_controllerselect_t2", 0, 0, 28, 3, "AWAY (Team 2)");
+  Gui2Caption* tNeutral =
+      new Gui2Caption(windowManager, "caption_controllerselect_tn", 0, 0, 28, 3, "UNASSIGNED");
 
   t1->SetPosition(25 - t1->GetTextWidthPercent() * 0.5, 10);
   t2->SetPosition(75 - t2->GetTextWidthPercent() * 0.5, 10);
+  tNeutral->SetPosition(50 - tNeutral->GetTextWidthPercent() * 0.5, 10);
+
+  t1->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+  t2->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+  tNeutral->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Dark2));
 
   ctrlFrame->AddView(t1);
   t1->Show();
   ctrlFrame->AddView(t2);
   t2->Show();
+  ctrlFrame->AddView(tNeutral);
+  tNeutral->Show();
 
   this->SetFocus();
 
@@ -143,6 +152,20 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
   }
 
   SetImagePositions();
+
+  Gui2Caption* hintGamepad = new Gui2Caption(
+      windowManager, "caption_ctrl_hint_gp", 5, 72.0f, 70, 2.0f,
+      "🎮 GAMEPAD: [D-PAD / Stick / Bumpers] Move Team | [A / START] Confirm | [B] Back");
+  hintGamepad->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+  ctrlFrame->AddView(hintGamepad);
+  hintGamepad->Show();
+
+  Gui2Caption* hintKbd = new Gui2Caption(
+      windowManager, "caption_ctrl_hint_kbd", 5, 75.0f, 70, 2.0f,
+      "⌨️ KEYBOARD: [Left / Right / 1 / 2] Move Team | [Enter / Space] Confirm | [Esc] Back");
+  hintKbd->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+  ctrlFrame->AddView(hintKbd);
+  hintKbd->Show();
 
   Gui2Button* backButton =
       AddControllerSelectBackButton(this, windowManager, "button_controllerselect_back", 88.0f);
@@ -261,13 +284,25 @@ void ControllerSelectPage::Process() {
       }
     } else if (controller->GetDeviceType() == e_HIDeviceType_Gamepad) {
       HIDGamepad* gamepad = static_cast<HIDGamepad*>(controller);
-      if (gamepad->GetButtonValue(e_ButtonFunction_Left) > 0.5) {
+      if (gamepad->GetButtonValue(e_ButtonFunction_Left) > 0.5 ||
+          gamepad->GetButtonValue(e_ButtonFunction_Switch) > 0.5) {
         sides.at(i).side -= 1;
         moved = true;
       }
-      if (gamepad->GetButtonValue(e_ButtonFunction_Right) > 0.5) {
+      if (gamepad->GetButtonValue(e_ButtonFunction_Right) > 0.5 ||
+          gamepad->GetButtonValue(e_ButtonFunction_Sprint) > 0.5) {
         sides.at(i).side += 1;
         moved = true;
+      }
+      if (gamepad->GetButtonValue(e_ButtonFunction_ShortPass) > 0.5 ||
+          gamepad->GetButtonValue(e_ButtonFunction_Start) > 0.5) {
+        ConfirmSelection();
+        return;
+      }
+      if (gamepad->GetButtonValue(e_ButtonFunction_HighPass) > 0.5 ||
+          gamepad->GetButtonValue(e_ButtonFunction_Select) > 0.5) {
+        GoBack();
+        return;
       }
     }
 

@@ -111,6 +111,10 @@ public:
   std::string GetReputationStatus() const;
   std::string GetMoraleString(int morale) const;
   std::string GetFormString(int form) const;
+  std::string GetConditionArrow(int form) const;
+  std::string GetFormGuideString(int count = 5) const;
+  std::vector<std::string> GetNewsHeadlines(int count = 3) const;
+  std::string GetNextOpponentPreview(int week) const;
   int GetLegacyStat(const std::string& statName) const;
   std::vector<CareerEvent> GetRecentEvents(int limit = 5) const;
 

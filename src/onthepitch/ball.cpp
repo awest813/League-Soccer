@@ -22,7 +22,7 @@ Ball::Ball(Match* match) : match(match) {
   linearBounce = 0.06f;   // bigger = more brake force
   drag = 0.015f;          // previously 0.025f; // bigger = more
   friction = 0.04f;       // bigger = more
-  linearFriction = 1.6f;  // bigger = more, arbitrary scale
+  linearFriction = 1.38f;  // PES 5/6 ground roll balance
   gravity = -9.81f;
   grassHeight = 0.025f;
 

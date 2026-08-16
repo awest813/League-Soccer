@@ -30,6 +30,7 @@ public:
 
 protected:
   void UpdateMatchDurationCaption();
+  void UpdateDifficultyCaption();
 
   Gui2Slider* difficultySlider;
   Gui2Slider* matchDurationSlider;

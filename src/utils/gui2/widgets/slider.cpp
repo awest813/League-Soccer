@@ -91,45 +91,68 @@ void Gui2Slider::Process() {
 void Gui2Slider::Redraw() {
   int x, y, w, h;
   windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
-  float x_ratio = w / width_percent;   // 1% width
-  float y_ratio = h / height_percent;  // 1% width
-  int x_margin = int(round(x_ratio * 0.5));
-  int y_margin = int(round(y_ratio * 0.5));
+  float x_ratio = w / width_percent;   // 1% width in px
+  float y_ratio = h / height_percent;  // 1% height in px
+  int x_margin = std::max(1, int(round(x_ratio * 0.4f)));
 
-  int alpha = 0;
-  Vector3 color1;
+  Vector3 darkColor = windowManager->GetStyle()->GetColor(e_DecorationType_Dark1);
+  Vector3 brightColor = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);
+  Vector3 accentColor = windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
+  Vector3 trackColor = windowManager->GetStyle()->GetColor(e_DecorationType_Dark2);
+
+  float bias = IsFocussed() ? 0.0f : (fadeOut_ms / (float)fadeOutTime_ms);
+  Vector3 bgColor = brightColor * (1.0f - bias) + darkColor * bias;
+  int bgAlpha = 180 + int(75.0f * (1.0f - bias));
+
+  // Background frame
+  image->DrawRectangle(0, 0, w, h, bgColor, bgAlpha);
+
+  // Focus accent top & bottom borders
   if (IsFocussed()) {
-    alpha = 200;
-    color1 = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);
-  } else {
-    alpha = int(floor(200 - (fadeOut_ms / (float)fadeOutTime_ms * 100)));
-    float bias = fadeOut_ms / (float)fadeOutTime_ms;
-    color1 = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2) * (1 - bias) +
-             windowManager->GetStyle()->GetColor(e_DecorationType_Dark1) * bias;
+    image->DrawRectangle(0, 0, w, 2, brightColor, 255);
+    image->DrawRectangle(0, h - 2, w, 2, brightColor, 255);
   }
-  Vector3 color2 = windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
 
-  // sides
-  image->DrawRectangle(0, 0, x_margin, h, color2, alpha);
-  image->DrawRectangle(w - x_margin, 0, x_margin, h, color2, alpha);
+  // Groove / Track geometry
+  int trackMarginX = int(round(x_ratio * 0.8f));
+  int trackX = trackMarginX;
+  int trackY = int(h * 0.65f);
+  int trackW = w - trackMarginX * 2;
+  int trackH = std::max(3, int(h * 0.12f));
 
-  // main
-  image->DrawRectangle(x_margin, 0, w - x_margin * 2, h, color1, alpha);
+  // Track background (unfilled)
+  image->DrawRectangle(trackX, trackY, trackW, trackH, trackColor, 220);
 
-  // helper sliders
+  // Track border / outline
+  image->DrawRectangle(trackX, trackY, trackW, 1, darkColor, 255);
+  image->DrawRectangle(trackX, trackY + trackH - 1, trackW, 1, darkColor, 255);
+
+  // Filled progress bar (from start to slider thumb)
+  int fillW = int(round(quantizedValue * trackW));
+  if (fillW > 0) {
+    Vector3 fillCol = IsFocussed() ? accentColor : (accentColor * 0.7f + brightColor * 0.3f);
+    image->DrawRectangle(trackX, trackY, fillW, trackH, fillCol, 230);
+  }
+
+  // Helper value markers (e.g. factory default ticks)
   for (unsigned int i = 0; i < helperValues.size(); i++) {
-    Vector3 helperColor = helperValues.at(i).color * 0.5f + color1 * 0.5f;
-    float helperValue = helperValues.at(i).value;
-    image->DrawRectangle(x_margin * 2 + helperValue * (w - x_margin * 6), h * 0.5, x_ratio, h * 0.5,
-                         helperColor, alpha);
+    float helperVal = helperValues.at(i).value;
+    int tickX = trackX + int(round(helperVal * (trackW - 2)));
+    Vector3 helperCol = helperValues.at(i).color;
+    image->DrawRectangle(tickX, trackY - 2, 2, trackH + 4, helperCol, 255);
   }
 
-  // slider groove
-  image->DrawRectangle(x_margin * 2, h * 0.7, w - x_margin * 4, h * 0.1, color2, 255);
+  // Slider thumb / knob
+  int thumbW = std::max(4, int(round(x_ratio * 0.5f)));
+  int thumbH = std::max(8, int(h * 0.42f));
+  int thumbY = trackY - (thumbH - trackH) / 2;
+  int thumbX = trackX + int(round(quantizedValue * (trackW - thumbW)));
 
-  // the slider
-  image->DrawRectangle(x_margin * 2 + quantizedValue * (w - x_margin * 6), h * 0.5, x_ratio,
-                       h * 0.5, color2, 160);
+  // Thumb body and border
+  Vector3 thumbCol = IsFocussed() ? accentColor : brightColor;
+  image->DrawRectangle(thumbX, thumbY, thumbW, thumbH, thumbCol, 255);
+  image->DrawRectangle(thumbX, thumbY, thumbW, 1, Vector3(255, 255, 255), 255);
+  image->DrawRectangle(thumbX, thumbY + thumbH - 1, thumbW, 1, darkColor, 255);
 
   image->OnChange();
 }

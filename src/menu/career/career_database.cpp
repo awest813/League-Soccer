@@ -188,6 +188,101 @@ std::string CareerDatabase::GetFormString(int form) const {
   return TR("career_form_poor");
 }
 
+std::string CareerDatabase::GetConditionArrow(int form) const {
+  // Classic PES 5/6 Condition Arrow indicators:
+  // Red Up (Top) > Orange Diagonal (Good) > Green Right (Normal) > Blue Diagonal (Poor) > Purple Down (Terrible)
+  if (form >= 85)
+    return "[^] TOP";
+  if (form >= 65)
+    return "[/] GOOD";
+  if (form >= 40)
+    return "[>] NORM";
+  if (form >= 20)
+    return "[\\] POOR";
+  return "[v] BAD";
+}
+
+std::string CareerDatabase::GetFormGuideString(int count) const {
+  if (!m_activeSave)
+    return "[ - - - - - ]";
+  std::string guide = "";
+  int wins = m_activeSave->seasonWins;
+  int draws = m_activeSave->seasonDraws;
+  int losses = m_activeSave->seasonLosses;
+  int total = wins + draws + losses;
+  if (total == 0)
+    return "[ - - - - - ]";
+
+  // Build a realistic recent form sequence from the season record
+  std::vector<std::string> recent;
+  for (int i = 0; i < count; i++) {
+    int seed = (m_activeSave->season.currentWeek * 7 + i * 13) % 100;
+    if (wins > 0 && (seed < (wins * 100 / total))) {
+      recent.push_back("[W]");
+    } else if (draws > 0 && (seed < ((wins + draws) * 100 / total))) {
+      recent.push_back("[D]");
+    } else {
+      recent.push_back("[L]");
+    }
+  }
+  for (const auto& r : recent) {
+    guide += r + " ";
+  }
+  return guide;
+}
+
+std::vector<std::string> CareerDatabase::GetNewsHeadlines(int count) const {
+  if (!m_activeSave)
+    return {"Transfer window opens with record activity across top divisions."};
+
+  std::vector<std::string> headlines;
+  // 1. Match result / form headline
+  int played = m_activeSave->seasonWins + m_activeSave->seasonDraws + m_activeSave->seasonLosses;
+  if (played == 0) {
+    headlines.push_back("PRE-SEASON: " + m_activeSave->name + " gears up for ambitious campaign in " + m_activeSave->club.leagueName + ".");
+  } else if (m_activeSave->seasonWins > m_activeSave->seasonLosses * 2) {
+    headlines.push_back("MEDIA SPOTLIGHT: Pundits praise " + m_activeSave->name + "'s tactical fluidity and dominant run of form.");
+  } else if (m_activeSave->seasonLosses > m_activeSave->seasonWins) {
+    headlines.push_back("PRESSURE BUILDS: Manager " + m_activeSave->managerName + " calls for resilience amid testing fixture schedule.");
+  } else {
+    headlines.push_back("COMPETITIVE RACE: " + m_activeSave->name + " stays in contention as mid-table battle intensifies.");
+  }
+
+  // 2. Squad / Youth headline
+  if (!m_activeSave->youthAcademy.empty()) {
+    headlines.push_back("ACADEMY REPORT: Scouts spotlight " + m_activeSave->youthAcademy[0].name + " as a potential future star.");
+  } else if (!m_activeSave->roster.empty()) {
+    headlines.push_back("SQUAD FOCUS: " + m_activeSave->roster[0].name + " maintaining peak match condition ahead of next clash.");
+  }
+
+  // 3. Board / Club operations headline
+  if (m_activeSave->boardConfidence >= 75) {
+    headlines.push_back("BOARD CONFIDENCE: Club hierarchy 'delighted' with current management and financial health.");
+  } else {
+    headlines.push_back("BOARD NOTICE: Club leadership expects strong performance in upcoming league fixtures.");
+  }
+
+  while (static_cast<int>(headlines.size()) > count) {
+    headlines.pop_back();
+  }
+  return headlines;
+}
+
+std::string CareerDatabase::GetNextOpponentPreview(int week) const {
+  static const std::vector<std::string> opponentNames = {
+      "FC United",     "Athletic Club", "Wanderers FC",      "Real Deportivo", "Inter Milano",
+      "Bayern Munich", "FC Barcelona",  "Chelsea FC",        "Arsenal FC",     "Juventus Turin",
+      "AC Milan",      "Liverpool FC",  "Borussia Dortmund", "Paris SG",       "Ajax Amsterdam",
+      "Porto FC",      "Benfica",       "Sporting CP",       "Napoli",         "Atletico Madrid",
+      "Tottenham"};
+  int opponentIdx = (week * 3) % static_cast<int>(opponentNames.size());
+  std::string opp = opponentNames[opponentIdx];
+  bool isHome = (week % 2) == 0;
+  std::string venue = isHome ? "Home (Your Stadium)" : "Away (" + opp + " Arena)";
+  std::string danger = ((week % 3) == 0) ? "★★★★★ High Danger" : (((week % 2) == 0) ? "★★★☆☆ Moderate Threat" : "★★★★☆ Solid Defense");
+  return opp + " | Venue: " + venue + "\nThreat Rating: " + danger + " | Expected Strategy: Balanced Press";
+}
+
 int CareerDatabase::GetLegacyStat(const std::string& statName) const {
   if (!m_activeSave)
     return 0;

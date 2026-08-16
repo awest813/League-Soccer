@@ -130,8 +130,10 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
   brandingNotice->Show();
 
   Gui2Caption* p1 =
-      new Gui2Caption(windowManager, "teamselect_caption_p1", 2, 2, 30, 3, "Player 1");
-  p2 = new Gui2Caption(windowManager, "teamselect_caption_p2", 2, 2, 30, 3, "Player 2");
+      new Gui2Caption(windowManager, "teamselect_caption_p1", 2, 2, 30, 3, "HOME TEAM (P1)");
+  p1->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+  p2 = new Gui2Caption(windowManager, "teamselect_caption_p2", 2, 2, 30, 3, "AWAY TEAM (P2)");
+  p2->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   Gui2Grid* grid1 = new Gui2Grid(windowManager, "teamselect_grid_team1", 2, 8, 30, 42);
   grid2 = new Gui2Grid(windowManager, "teamselect_grid_team2", 2, 8, 30, 42);
 
@@ -143,8 +145,8 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
                                      "Team select");
   teamSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team2", 0, 0, 29, 18,
                                      "Team select");
-  buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 29, 3, "Ready");
-  buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 29, 3, "Ready");
+  buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 29, 3, "Confirm Home");
+  buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 29, 3, "Confirm Away");
   Gui2Button* buttonBack = new Gui2Button(windowManager, "teamselect_button_back", 0, 0, 29, 3,
                                           Localization::GetInstance().Translate("action_back"));
 
@@ -173,22 +175,22 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
   SetupTeamSelect1();
 
   frame2->AddView(p2);
+  p2->Show();
   frame2->AddView(grid2);
   grid2->AddView(competitionSelect2, 0, 0);
   grid2->AddView(teamSelect2, 1, 0);
   grid2->AddView(buttonStart2, 2, 0);
   grid2->UpdateLayout(0.5);
+  grid2->Show();
 
   AddCompetitions(competitionSelect2);
   SetupTeamSelect2();
 
+  frame2->Show();
+
   competitionSelect1->SetFocus();
 
   SetActiveController(-1, true);
-
-  p2->Hide();
-  grid2->Hide();
-  frame2->Hide();
 
   this->Show();
 }

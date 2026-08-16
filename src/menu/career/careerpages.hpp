@@ -187,6 +187,9 @@ public:
   virtual ~CareerSquadRosterPage();
 
 protected:
+  void InspectPlayer(const PlayerCareerState& player);
+  void ExtendContract(const std::string& playerName);
+  void ToggleTransferList(const std::string& playerName);
   void ReleasePlayer(const std::string& playerName);
 };
 

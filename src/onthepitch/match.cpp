@@ -348,6 +348,10 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   root->AddView(scoreboard.get());
   scoreboard->Show();
 
+  playerHUD = std::make_unique<Gui2PlayerHUD>(menuTask->GetWindowManager(), this);
+  root->AddView(playerHUD.get());
+  playerHUD->Show();
+
   statsOverlay = std::make_unique<Gui2StatsOverlay>(menuTask->GetWindowManager(), this);
   root->AddView(statsOverlay.get());
   statsOverlay->Hide();
@@ -483,6 +487,10 @@ void Match::Exit() {
 
   radar->Exit();
   radar.reset();
+  if (playerHUD) {
+    playerHUD->Exit();
+    playerHUD.reset();
+  }
   if (tacticsDebug) {
     tacticsDebug->Exit();
     tacticsDebug.reset();
@@ -1446,9 +1454,12 @@ void Match::Put() {
     if (messageCaptionRemoveTime_ms <= fetchedbuf_actualTime_ms)
       messageCaption->Hide();
 
-    // radar
+    // radar & player HUD
 
     radar->Put();
+    if (playerHUD) {
+      playerHUD->Put();
+    }
 
     if (tacticsDebug) {
       tacticsDebug->Redraw();

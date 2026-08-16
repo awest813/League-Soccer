@@ -190,75 +190,79 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
     : Gui2Page(windowManager, pageData),
       pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
       autoAdvanceTriggered(false) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_gameplay", 15, 5, 70, 90, true);
+  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_settings_gameplay", 10, 4, 80, 92, true);
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_gameplay", 2, 2, 66, 3,
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_gameplay", 2, 2, 76, 3,
                                        TR("gameplay_title"));
   frame->AddView(title);
   title->Show();
 
   slider_ShortPass_AutoDirection = new Gui2Slider(windowManager, "slider_shortpass_autodirection",
-                                                  0, 0, 30, 6, TR("gameplay_short_pass_direction"));
+                                                  0, 0, 36, 5.5, TR("gameplay_short_pass_direction"));
   slider_ShortPass_AutoDirection->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"), _default_ShortPass_AutoDirection);
   slider_ShortPass_AutoDirection->SetValue(GetConfiguration()->GetReal(
       "gameplay_shortpass_autodirection", _default_ShortPass_AutoDirection));
-  slider_ShortPass_AutoPower = new Gui2Slider(windowManager, "slider_shortpass_autopower", 0, 0, 30,
-                                              6, TR("gameplay_short_pass_power"));
+
+  slider_ShortPass_AutoPower = new Gui2Slider(windowManager, "slider_shortpass_autopower", 0, 0, 36,
+                                              5.5, TR("gameplay_short_pass_power"));
   slider_ShortPass_AutoPower->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                              _default_ShortPass_AutoPower);
   slider_ShortPass_AutoPower->SetValue(
       GetConfiguration()->GetReal("gameplay_shortpass_autopower", _default_ShortPass_AutoPower));
 
   slider_ThroughPass_AutoDirection =
-      new Gui2Slider(windowManager, "slider_throughpass_autodirection", 0, 0, 30, 6,
+      new Gui2Slider(windowManager, "slider_throughpass_autodirection", 0, 0, 36, 5.5,
                      TR("gameplay_through_pass_direction"));
   slider_ThroughPass_AutoDirection->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"), _default_ThroughPass_AutoDirection);
   slider_ThroughPass_AutoDirection->SetValue(GetConfiguration()->GetReal(
       "gameplay_throughpass_autodirection", _default_ThroughPass_AutoDirection));
+
   slider_ThroughPass_AutoPower = new Gui2Slider(windowManager, "slider_throughpass_autopower", 0, 0,
-                                                30, 6, TR("gameplay_through_pass_power"));
+                                                36, 5.5, TR("gameplay_through_pass_power"));
   slider_ThroughPass_AutoPower->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                                _default_ThroughPass_AutoPower);
   slider_ThroughPass_AutoPower->SetValue(GetConfiguration()->GetReal(
       "gameplay_throughpass_autopower", _default_ThroughPass_AutoPower));
 
   slider_HighPass_AutoDirection = new Gui2Slider(windowManager, "slider_highpass_autodirection", 0,
-                                                 0, 30, 6, TR("gameplay_high_pass_direction"));
+                                                 0, 36, 5.5, TR("gameplay_high_pass_direction"));
   slider_HighPass_AutoDirection->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"), _default_HighPass_AutoDirection);
   slider_HighPass_AutoDirection->SetValue(GetConfiguration()->GetReal(
       "gameplay_highpass_autodirection", _default_HighPass_AutoDirection));
-  slider_HighPass_AutoPower = new Gui2Slider(windowManager, "slider_highpass_autopower", 0, 0, 30,
-                                             6, TR("gameplay_high_pass_power"));
+
+  slider_HighPass_AutoPower = new Gui2Slider(windowManager, "slider_highpass_autopower", 0, 0, 36,
+                                             5.5, TR("gameplay_high_pass_power"));
   slider_HighPass_AutoPower->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                             _default_HighPass_AutoPower);
   slider_HighPass_AutoPower->SetValue(
       GetConfiguration()->GetReal("gameplay_highpass_autopower", _default_HighPass_AutoPower));
 
-  slider_Shot_AutoDirection = new Gui2Slider(windowManager, "slider_shot_autodirection", 0, 0, 30,
-                                             6, TR("gameplay_shot_direction"));
+  slider_Shot_AutoDirection = new Gui2Slider(windowManager, "slider_shot_autodirection", 0, 0, 36,
+                                             5.5, TR("gameplay_shot_direction"));
   slider_Shot_AutoDirection->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                             _default_Shot_AutoDirection);
   slider_Shot_AutoDirection->SetValue(
       GetConfiguration()->GetReal("gameplay_shot_autodirection", _default_Shot_AutoDirection));
 
   slider_Agility =
-      new Gui2Slider(windowManager, "slider_agility", 0, 0, 30, 6, TR("gameplay_human_agility"));
+      new Gui2Slider(windowManager, "slider_agility", 0, 0, 36, 5.5, TR("gameplay_human_agility"));
   slider_Agility->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                  _default_AgilityFactor);
   slider_Agility->SetValue(
       GetConfiguration()->GetReal("gameplay_agilityfactor", _default_AgilityFactor));
-  slider_Acceleration = new Gui2Slider(windowManager, "slider_acceleration", 0, 0, 30, 6,
+
+  slider_Acceleration = new Gui2Slider(windowManager, "slider_acceleration", 0, 0, 36, 5.5,
                                        TR("gameplay_human_acceleration"));
   slider_Acceleration->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                       _default_AccelerationFactor);
   slider_Acceleration->SetValue(
       GetConfiguration()->GetReal("gameplay_accelerationfactor", _default_AccelerationFactor));
 
-  slider_SlowDribbleSpeed = new Gui2Slider(windowManager, "slider_human_slowdribblespeed", 0, 0, 30,
-                                           6, TR("gameplay_human_slow_dribble_speed"));
+  slider_SlowDribbleSpeed = new Gui2Slider(windowManager, "slider_human_slowdribblespeed", 0, 0, 36,
+                                           5.5, TR("gameplay_human_slow_dribble_speed"));
   slider_SlowDribbleSpeed->SetQuantization(HumanSpeedSliderSteps(HumanSpeedType::SlowDribble));
   slider_SlowDribbleSpeed->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"),
@@ -267,7 +271,7 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
       ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::SlowDribble),
       HumanSpeedType::SlowDribble));
 
-  slider_RunSpeed = new Gui2Slider(windowManager, "slider_human_runspeed", 0, 0, 30, 6,
+  slider_RunSpeed = new Gui2Slider(windowManager, "slider_human_runspeed", 0, 0, 36, 5.5,
                                    TR("gameplay_human_run_speed"));
   slider_RunSpeed->SetQuantization(HumanSpeedSliderSteps(HumanSpeedType::Run));
   slider_RunSpeed->AddHelperValue(
@@ -276,7 +280,7 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
   slider_RunSpeed->SetValue(HumanSpeedSliderFromSpeed(
       ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Run), HumanSpeedType::Run));
 
-  slider_SprintSpeed = new Gui2Slider(windowManager, "slider_human_sprintspeed", 0, 0, 30, 6,
+  slider_SprintSpeed = new Gui2Slider(windowManager, "slider_human_sprintspeed", 0, 0, 36, 5.5,
                                       TR("gameplay_human_sprint_speed"));
   slider_SprintSpeed->SetQuantization(HumanSpeedSliderSteps(HumanSpeedType::Sprint));
   slider_SprintSpeed->AddHelperValue(
@@ -286,41 +290,55 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
       ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint),
       HumanSpeedType::Sprint));
 
-  UpdateHumanSpeedCaptions();
-  slider_SlowDribbleSpeed->sig_OnChange.connect(
-      [this](Gui2Slider*) { UpdateHumanSpeedCaptions(); });
-  slider_RunSpeed->sig_OnChange.connect([this](Gui2Slider*) { UpdateHumanSpeedCaptions(); });
-  slider_SprintSpeed->sig_OnChange.connect([this](Gui2Slider*) { UpdateHumanSpeedCaptions(); });
-
-  slider_PlayerSwitchMode = new Gui2Slider(windowManager, "slider_player_switch_mode", 0, 0, 30, 6,
+  slider_PlayerSwitchMode = new Gui2Slider(windowManager, "slider_player_switch_mode", 0, 0, 36, 5.5,
                                            TR("gameplay_player_switch_assisted"));
   slider_PlayerSwitchMode->SetQuantization(2);
   slider_PlayerSwitchMode->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                           0.0f);
   slider_PlayerSwitchMode->SetValue(
       PlayerSwitchModeToSlider(ReadConfiguredPlayerSwitchMode(*GetConfiguration())));
-  UpdatePlayerSwitchCaption();
-  slider_PlayerSwitchMode->sig_OnChange.connect(
-      [this](Gui2Slider*) { UpdatePlayerSwitchCaption(); });
 
-  slider_Quantization = new Gui2Slider(windowManager, "slider_quantization", 0, 0, 30, 6,
+  slider_Quantization = new Gui2Slider(windowManager, "slider_quantization", 0, 0, 36, 5.5,
                                        TR("gameplay_input_quantization"));
   slider_Quantization->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                       _default_QuantizedDirectionBias);
   slider_Quantization->SetValue(GetConfiguration()->GetReal("gameplay_quantizeddirectionbias",
                                                             _default_QuantizedDirectionBias));
 
+  // Initialize and connect dynamic caption updaters
+  UpdateAssistanceCaptions();
+  UpdatePhysicsCaptions();
+  UpdateHumanSpeedCaptions();
+  UpdatePlayerSwitchCaption();
+  UpdateQuantizationCaption();
+
+  slider_ShortPass_AutoDirection->sig_OnChange.connect([this](Gui2Slider*) { UpdateAssistanceCaptions(); });
+  slider_ShortPass_AutoPower->sig_OnChange.connect([this](Gui2Slider*) { UpdateAssistanceCaptions(); });
+  slider_ThroughPass_AutoDirection->sig_OnChange.connect([this](Gui2Slider*) { UpdateAssistanceCaptions(); });
+  slider_ThroughPass_AutoPower->sig_OnChange.connect([this](Gui2Slider*) { UpdateAssistanceCaptions(); });
+  slider_HighPass_AutoDirection->sig_OnChange.connect([this](Gui2Slider*) { UpdateAssistanceCaptions(); });
+  slider_HighPass_AutoPower->sig_OnChange.connect([this](Gui2Slider*) { UpdateAssistanceCaptions(); });
+  slider_Shot_AutoDirection->sig_OnChange.connect([this](Gui2Slider*) { UpdateAssistanceCaptions(); });
+
+  slider_Agility->sig_OnChange.connect([this](Gui2Slider*) { UpdatePhysicsCaptions(); });
+  slider_Acceleration->sig_OnChange.connect([this](Gui2Slider*) { UpdatePhysicsCaptions(); });
+  slider_SlowDribbleSpeed->sig_OnChange.connect([this](Gui2Slider*) { UpdateHumanSpeedCaptions(); });
+  slider_RunSpeed->sig_OnChange.connect([this](Gui2Slider*) { UpdateHumanSpeedCaptions(); });
+  slider_SprintSpeed->sig_OnChange.connect([this](Gui2Slider*) { UpdateHumanSpeedCaptions(); });
+  slider_PlayerSwitchMode->sig_OnChange.connect([this](Gui2Slider*) { UpdatePlayerSwitchCaption(); });
+  slider_Quantization->sig_OnChange.connect([this](Gui2Slider*) { UpdateQuantizationCaption(); });
+
   Gui2Caption* assistanceHeader = new Gui2Caption(windowManager, "caption_gameplay_assistance", 2,
-                                                  7, 30, 3, TR("gameplay_assistance_header"));
+                                                  6, 36, 3, TR("gameplay_assistance_header"));
   Gui2Caption* humanControlHeader =
-      new Gui2Caption(windowManager, "caption_gameplay_human_control", 34, 7, 30, 3,
+      new Gui2Caption(windowManager, "caption_gameplay_human_control", 40, 6, 36, 3,
                       TR("gameplay_human_control_header"));
   frame->AddView(assistanceHeader);
   frame->AddView(humanControlHeader);
   assistanceHeader->Show();
   humanControlHeader->Show();
 
-  Gui2Grid* gridMain = new Gui2Grid(windowManager, "grid_settings_gameplay", 2, 11, 66, 52);
+  Gui2Grid* gridMain = new Gui2Grid(windowManager, "grid_settings_gameplay", 2, 9.5, 76, 68);
 
   gridMain->AddView(slider_ShortPass_AutoDirection, 0, 0);
   gridMain->AddView(slider_ShortPass_AutoPower, 1, 0);
@@ -338,18 +356,24 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
   gridMain->AddView(slider_PlayerSwitchMode, 5, 1);
   gridMain->AddView(slider_Quantization, 6, 1);
 
-  Gui2Button* backButton = new Gui2Button(windowManager, "button_settings_gameplay_back", 0, 0, 30,
-                                          3, Localization::GetInstance().Translate("action_back"));
-  backButton->sig_OnClick.connect([this](...) { GoBack(); });
   gridMain->UpdateLayout(0.5);
   gridMain->Show();
-
   frame->AddView(gridMain);
-  backButton->SetPosition(20, 65);
+
+  Gui2Button* buttonDefaults =
+      new Gui2Button(windowManager, "button_settings_gameplay_defaults", 16, 80, 22, 3.5,
+                     "Reset to defaults");
+  buttonDefaults->sig_OnClick.connect([this](...) { SetDefaults(); });
+  frame->AddView(buttonDefaults);
+  buttonDefaults->Show();
+
+  Gui2Button* backButton = new Gui2Button(windowManager, "button_settings_gameplay_back", 42, 80, 22,
+                                          3.5, Localization::GetInstance().Translate("action_back"));
+  backButton->sig_OnClick.connect([this](...) { GoBack(); });
   frame->AddView(backButton);
   backButton->Show();
-  frame->Show();
 
+  frame->Show();
   this->AddView(frame);
 
   slider_ShortPass_AutoDirection->SetFocus();
@@ -358,6 +382,69 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
 }
 
 GameplayPage::~GameplayPage() {}
+
+void GameplayPage::SetDefaults() {
+  slider_ShortPass_AutoDirection->SetValue(_default_ShortPass_AutoDirection);
+  slider_ShortPass_AutoPower->SetValue(_default_ShortPass_AutoPower);
+  slider_ThroughPass_AutoDirection->SetValue(_default_ThroughPass_AutoDirection);
+  slider_ThroughPass_AutoPower->SetValue(_default_ThroughPass_AutoPower);
+  slider_HighPass_AutoDirection->SetValue(_default_HighPass_AutoDirection);
+  slider_HighPass_AutoPower->SetValue(_default_HighPass_AutoPower);
+  slider_Shot_AutoDirection->SetValue(_default_Shot_AutoDirection);
+
+  slider_Agility->SetValue(_default_AgilityFactor);
+  slider_Acceleration->SetValue(_default_AccelerationFactor);
+  slider_SlowDribbleSpeed->SetValue(HumanSpeedSliderFromSpeed(
+      kDefaultHumanSlowDribbleSpeed, HumanSpeedType::SlowDribble));
+  slider_RunSpeed->SetValue(HumanSpeedSliderFromSpeed(
+      kDefaultHumanRunSpeed, HumanSpeedType::Run));
+  slider_SprintSpeed->SetValue(HumanSpeedSliderFromSpeed(
+      kDefaultHumanSprintSpeed, HumanSpeedType::Sprint));
+  slider_PlayerSwitchMode->SetValue(0.0f);
+  slider_Quantization->SetValue(_default_QuantizedDirectionBias);
+
+  UpdateAssistanceCaptions();
+  UpdatePhysicsCaptions();
+  UpdateHumanSpeedCaptions();
+  UpdatePlayerSwitchCaption();
+  UpdateQuantizationCaption();
+}
+
+void GameplayPage::UpdateAssistanceCaptions() {
+  slider_ShortPass_AutoDirection->SetCaption(
+      TR("gameplay_short_pass_direction") + ": " +
+      std::to_string(static_cast<int>(std::round(slider_ShortPass_AutoDirection->GetValue() * 100.0f))) + "%");
+  slider_ShortPass_AutoPower->SetCaption(
+      TR("gameplay_short_pass_power") + ": " +
+      std::to_string(static_cast<int>(std::round(slider_ShortPass_AutoPower->GetValue() * 100.0f))) + "%");
+
+  slider_ThroughPass_AutoDirection->SetCaption(
+      TR("gameplay_through_pass_direction") + ": " +
+      std::to_string(static_cast<int>(std::round(slider_ThroughPass_AutoDirection->GetValue() * 100.0f))) + "%");
+  slider_ThroughPass_AutoPower->SetCaption(
+      TR("gameplay_through_pass_power") + ": " +
+      std::to_string(static_cast<int>(std::round(slider_ThroughPass_AutoPower->GetValue() * 100.0f))) + "%");
+
+  slider_HighPass_AutoDirection->SetCaption(
+      TR("gameplay_high_pass_direction") + ": " +
+      std::to_string(static_cast<int>(std::round(slider_HighPass_AutoDirection->GetValue() * 100.0f))) + "%");
+  slider_HighPass_AutoPower->SetCaption(
+      TR("gameplay_high_pass_power") + ": " +
+      std::to_string(static_cast<int>(std::round(slider_HighPass_AutoPower->GetValue() * 100.0f))) + "%");
+
+  slider_Shot_AutoDirection->SetCaption(
+      TR("gameplay_shot_direction") + ": " +
+      std::to_string(static_cast<int>(std::round(slider_Shot_AutoDirection->GetValue() * 100.0f))) + "%");
+}
+
+void GameplayPage::UpdatePhysicsCaptions() {
+  slider_Agility->SetCaption(
+      TR("gameplay_human_agility") + ": " +
+      std::to_string(static_cast<int>(std::round(slider_Agility->GetValue() * 100.0f))) + "%");
+  slider_Acceleration->SetCaption(
+      TR("gameplay_human_acceleration") + ": " +
+      std::to_string(static_cast<int>(std::round(slider_Acceleration->GetValue() * 100.0f))) + "%");
+}
 
 void GameplayPage::UpdateHumanSpeedCaptions() {
   slider_SlowDribbleSpeed->SetCaption(HumanSpeedCaption(
@@ -379,6 +466,21 @@ void GameplayPage::UpdatePlayerSwitchCaption() {
   slider_PlayerSwitchMode->SetCaption(mode == PlayerSwitchMode::FullyManual
                                           ? TR("gameplay_player_switch_manual")
                                           : TR("gameplay_player_switch_assisted"));
+}
+
+void GameplayPage::UpdateQuantizationCaption() {
+  float val = slider_Quantization->GetValue();
+  std::string label;
+  if (val <= 0.05f) {
+    label = "Full Analog (0%)";
+  } else if (val >= 0.95f) {
+    label = "PES 8-way (100%)";
+  } else if (std::abs(val - 0.5f) <= 0.1f) {
+    label = "PES 16-way (50%)";
+  } else {
+    label = std::to_string(static_cast<int>(std::round(val * 100.0f))) + "%";
+  }
+  slider_Quantization->SetCaption(TR("gameplay_input_quantization") + ": " + label);
 }
 
 void GameplayPage::Process() {
@@ -423,10 +525,6 @@ void GameplayPage::Exit() {
   GetConfiguration()->Set(kPlayerSwitchModeConfigKey, slider_PlayerSwitchMode->GetValue());
   GetConfiguration()->Set("gameplay_quantizeddirectionbias", slider_Quantization->GetValue());
 
-  // printf("%f - %f - %f - %f - %f - %f\n", slider_ShortPass_AutoDirection->GetValue(),
-  // slider_ShortPass_AutoPower->GetValue(), slider_ThroughPass_AutoDirection->GetValue(),
-  // slider_ThroughPass_AutoPower->GetValue(), slider_HighPass_AutoDirection->GetValue(),
-  // slider_HighPass_AutoPower->GetValue());
   GetConfiguration()->SaveFile(GetConfigFilename());
 
   Gui2Page::Exit();
@@ -552,7 +650,7 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   keyButtons[6]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 6, "normal pass"));
 
   Gui2Caption* captionShoot =
-      new Gui2Caption(windowManager, "caption_keyboard_shoot", 0, 0, 20, 3, "(on ball) shoot");
+      new Gui2Caption(windowManager, "caption_keyboard_shoot", 0, 0, 20, 3, "(on ball) shoot / fake shot (w/ pass)");
   keyButtons[7] = new Gui2Button(windowManager, "button_keyboard_shoot", 0, 0, 16, 3,
                                  SDL_GetKeyName(keyIDs[7]));
   keyButtons[7]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 7, "shoot"));
@@ -582,7 +680,7 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   keyButtons[11]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 11, "team pressure"));
 
   Gui2Caption* captionSwitch =
-      new Gui2Caption(windowManager, "caption_keyboard_switch", 0, 0, 20, 3, "switch player");
+      new Gui2Caption(windowManager, "caption_keyboard_switch", 0, 0, 20, 3, "switch / chip / 1-2 pass");
   keyButtons[12] = new Gui2Button(windowManager, "button_keyboard_switch", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[12]));
   keyButtons[12]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 12, "switch player"));
@@ -594,13 +692,13 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   keyButtons[13]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 13, "special"));
 
   Gui2Caption* captionSprint =
-      new Gui2Caption(windowManager, "caption_keyboard_sprint", 0, 0, 20, 3, "sprint");
+      new Gui2Caption(windowManager, "caption_keyboard_sprint", 0, 0, 20, 3, "sprint / knock-on");
   keyButtons[14] = new Gui2Button(windowManager, "button_keyboard_sprint", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[14]));
   keyButtons[14]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 14, "sprint"));
 
   Gui2Caption* captionSlow =
-      new Gui2Caption(windowManager, "caption_keyboard_dribble", 0, 0, 20, 3, "slow dribble");
+      new Gui2Caption(windowManager, "caption_keyboard_dribble", 0, 0, 20, 3, "dribble / finesse / SC (+sprint)");
   keyButtons[15] = new Gui2Button(windowManager, "button_keyboard_dribble", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[15]));
   keyButtons[15]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 15, "slow dribble"));
@@ -931,7 +1029,7 @@ GamepadCalibrationPage::GamepadCalibrationPage(Gui2WindowManager* windowManager,
       new Gui2Caption(windowManager, "caption_settings_calibration_info2", 0, 0, 100, 3,
                       "2) release all axes and analog buttons in their untouched positions");
   captionExplanation[2] = new Gui2Caption(windowManager, "caption_settings_calibration_info3", 0, 0,
-                                          100, 3, "3) press return when done or escape to cancel");
+                                          100, 3, "3) press [A] / Enter when done, or [B] / Esc to cancel");
   captionExplanation[0]->SetPosition(50 - captionExplanation[0]->GetTextWidthPercent() * 0.5, 44);
   captionExplanation[1]->SetPosition(50 - captionExplanation[1]->GetTextWidthPercent() * 0.5, 48);
   captionExplanation[2]->SetPosition(50 - captionExplanation[2]->GetTextWidthPercent() * 0.5, 52);
@@ -969,13 +1067,44 @@ void GamepadCalibrationPage::Process() {
   }
 }
 
-void GamepadCalibrationPage::ProcessKeyboardEvent(KeyboardEvent* event) {
-  if (event->GetKeyOnce(SDLK_RETURN)) {
+void GamepadCalibrationPage::ProcessWindowingEvent(WindowingEvent* event) {
+  if (event->IsActivate()) {
     SaveCalibration();
     GoBack();
     return;
   }
-  if (event->GetKeyOnce(SDLK_ESCAPE)) {
+  if (event->IsEscape()) {
+    GoBack();
+    return;
+  }
+  Gui2Page::ProcessWindowingEvent(event);
+}
+
+void GamepadCalibrationPage::ProcessKeyboardEvent(KeyboardEvent* event) {
+  if (event->GetKeyOnce(SDLK_RETURN) || event->GetKeyOnce(SDLK_KP_ENTER) || event->GetKeyOnce(SDLK_SPACE)) {
+    SaveCalibration();
+    GoBack();
+    return;
+  }
+  if (event->GetKeyOnce(SDLK_ESCAPE) || event->GetKeyOnce(SDLK_BACKSPACE)) {
+    GoBack();
+    return;
+  }
+}
+
+void GamepadCalibrationPage::ProcessJoystickEvent(JoystickEvent* event) {
+  HIDGamepad* controller = GetGamepadIfAvailable(controllerID);
+  if (!controller) {
+    return;
+  }
+  int joyID = controller->GetGamepadID();
+  // Check Activate button (A / Start) or Escape button (B / Back)
+  if (event->GetButton(joyID, 0) || event->GetButton(joyID, 7)) { // A or Start
+    SaveCalibration();
+    GoBack();
+    return;
+  }
+  if (event->GetButton(joyID, 1) || event->GetButton(joyID, 6)) { // B or Back
     GoBack();
     return;
   }
@@ -1438,7 +1567,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
       new Gui2Caption(windowManager, "caption_gamepadfunction_modifiers", 0, 0, 30, 3, "modifiers");
 
   Gui2Caption* captionSwitch =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_switch", 0, 0, 10, 3, "switch");
+      new Gui2Caption(windowManager, "caption_gamepadfunction_switch", 0, 0, 10, 3, "switch / chip / 1-2 pass");
   modifierButtons[0] =
       new Gui2Button(windowManager, "button_gamepadfunction_modifier0", 0, 0, 8, 3, modifierStr[0]);
   modifierButtons[0]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1468,7 +1597,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   modifierButtons[1]->SetToggleable(true);
 
   Gui2Caption* captionSprint =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_sprint", 0, 0, 10, 3, "sprint");
+      new Gui2Caption(windowManager, "caption_gamepadfunction_sprint", 0, 0, 10, 3, "sprint / knock-on");
   modifierButtons[2] =
       new Gui2Button(windowManager, "button_gamepadfunction_modifier2", 0, 0, 8, 3, modifierStr[2]);
   modifierButtons[2]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1483,7 +1612,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   modifierButtons[2]->SetToggleable(true);
 
   Gui2Caption* captionDribble = new Gui2Caption(windowManager, "caption_gamepadfunction_dribble", 0,
-                                                0, 10, 3, "slow dribble");
+                                                0, 10, 3, "dribble / finesse / SC (+sprint)");
   modifierButtons[3] =
       new Gui2Button(windowManager, "button_gamepadfunction_modifier3", 0, 0, 8, 3, modifierStr[3]);
   modifierButtons[3]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1565,7 +1694,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   onTheBallButtons[2]->SetToggleable(true);
 
   Gui2Caption* captionShot =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_shot", 0, 0, 10, 3, "shoot");
+      new Gui2Caption(windowManager, "caption_gamepadfunction_shot", 0, 0, 10, 3, "shoot / fake shot (w/ pass)");
   onTheBallButtons[3] = new Gui2Button(windowManager, "button_gamepadfunction_ontheball3", 0, 0, 8,
                                        3, onTheBallStr[3]);
   onTheBallButtons[3]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -2048,23 +2177,24 @@ AudioPage::AudioPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
   frame->AddView(title);
   title->Show();
 
-  sliderVolume = new Gui2Slider(windowManager, "volumeslider", 0, 0, 30, 6,
+  sliderVolume = new Gui2Slider(windowManager, "volumeslider", 0, 0, 36, 6,
                                 Localization::GetInstance().Translate("audio_volume"));
+  sliderVolume->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"), 0.5f);
 
-  Gui2Button* backButton = new Gui2Button(windowManager, "button_settings_audio_back", 0, 0, 30, 3,
+  Gui2Button* backButton = new Gui2Button(windowManager, "button_settings_audio_back", 0, 0, 36, 3.5,
                                           Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "volumegrid", 20, 25, 50, 50);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "volumegrid", 17, 22, 36, 35);
 
   grid->AddView(sliderVolume, 0, 0);
   grid->AddView(backButton, 1, 0);
 
   grid->UpdateLayout(0.5);
 
-  if (Verbose())
-    printf("volume: %f\n", GetConfiguration()->GetReal("audio_volume", 0.5));
   sliderVolume->SetValue(GetConfiguration()->GetReal("audio_volume", 0.5));
+  UpdateVolumeCaption();
+  sliderVolume->sig_OnChange.connect([this](Gui2Slider*) { UpdateVolumeCaption(); });
 
   frame->AddView(grid);
   grid->Show();
@@ -2077,6 +2207,12 @@ AudioPage::AudioPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
 }
 
 AudioPage::~AudioPage() {}
+
+void AudioPage::UpdateVolumeCaption() {
+  const int pct = static_cast<int>(std::round(sliderVolume->GetValue() * 100.0f));
+  sliderVolume->SetCaption(Localization::GetInstance().Translate("audio_volume") + ": " +
+                           std::to_string(pct) + "%");
+}
 
 void AudioPage::Process() {
   Gui2Page::Process();

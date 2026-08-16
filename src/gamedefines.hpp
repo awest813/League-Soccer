@@ -122,7 +122,11 @@ enum e_MatchPhase {
 
 enum e_PlayerCommandModifier {
   e_PlayerCommandModifier_None = 0,
-  e_PlayerCommandModifier_KnockOn = 1
+  e_PlayerCommandModifier_KnockOn = 1 << 0,
+  e_PlayerCommandModifier_Chip = 1 << 1,
+  e_PlayerCommandModifier_Finesse = 1 << 2,
+  e_PlayerCommandModifier_OneTwo = 1 << 3,
+  e_PlayerCommandModifier_FakeShot = 1 << 4
 };
 
 class IController;

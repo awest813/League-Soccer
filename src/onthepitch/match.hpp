@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "../data/matchdata.hpp"
+#include "../menu/ingame/playerhud.hpp"
 #include "../menu/ingame/radar.hpp"
 #include "../menu/ingame/scoreboard.hpp"
 #include "../menu/ingame/statsoverlay.hpp"
@@ -319,6 +320,7 @@ protected:
       mentalImages;  // [index] == index * 10 ms ago ([0] == now)
 
   std::unique_ptr<Gui2ScoreBoard> scoreboard;
+  std::unique_ptr<Gui2PlayerHUD> playerHUD;
   std::unique_ptr<Gui2Radar> radar;
   std::unique_ptr<Gui2TacticsDebug> tacticsDebug;
   std::unique_ptr<Gui2Caption> messageCaption;

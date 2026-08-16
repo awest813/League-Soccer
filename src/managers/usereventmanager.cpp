@@ -55,9 +55,8 @@ UserEventManager::UserEventManager() {
     }
   }
 
-  // init the joy!
-
-  SDL_Init(SDL_INIT_JOYSTICK);
+  // init the joy and gamecontroller subsystems!
+  SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
   for (int i = 0; i < SDL_NumJoysticks(); i++) {
     joystick[i] = SDL_JoystickOpen(i);
     if (joystick[i]) {
@@ -65,10 +64,7 @@ UserEventManager::UserEventManager() {
       AddGamepad(i, i);
     }
   }
-  // SDL_JoystickEventState(SDL_IGNORE); // doesn't seem to work? bug?
   SDL_JoystickEventState(SDL_ENABLE);
-  // printf("JOYSTICK EVENT STATE: %i (%i = ignore, %i = enable)\n",
-  // SDL_JoystickEventState(SDL_QUERY), SDL_IGNORE, SDL_ENABLE);
 }
 
 UserEventManager::~UserEventManager() {
@@ -163,6 +159,19 @@ void UserEventManager::InputSDLEvent(const SDL_Event& event) {
       int joyID = FindJoystickSlot(event.jaxis.which);
       if (joyID >= 0)
         joyAxis[joyID][event.jaxis.axis] = event.jaxis.value;
+      break;
+    }
+    case SDL_JOYHATMOTION: {
+      std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
+      int joyID = FindJoystickSlot(event.jhat.which);
+      if (joyID >= 0) {
+        // Map D-pad hat states to virtual button indices (16..19):
+        // Button 16: Up, 17: Right, 18: Down, 19: Left
+        joyButtonPressed[joyID][16] = (event.jhat.value & SDL_HAT_UP) != 0;
+        joyButtonPressed[joyID][17] = (event.jhat.value & SDL_HAT_RIGHT) != 0;
+        joyButtonPressed[joyID][18] = (event.jhat.value & SDL_HAT_DOWN) != 0;
+        joyButtonPressed[joyID][19] = (event.jhat.value & SDL_HAT_LEFT) != 0;
+      }
       break;
     }
     case SDL_JOYBUTTONDOWN: {

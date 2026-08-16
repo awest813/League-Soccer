@@ -225,8 +225,11 @@ float AI_CalculatePassingOdds(Match* match, const Vector3& origin, const Vector3
     Vector3 ballPos = origin + step * i;
 
     float currentDistance = i * (targetDistance / (float)checkCount);
+    // PES 5/6: tighter passing corridor (0.45 + dist * 0.22 vs 0.5 + dist * 0.25).
+    // Opponents lurking in the passing lane are noticed sooner, making the AI
+    // more reluctant to thread passes through tight spaces.
     float maxOpponentDistance =
-        0.5 + currentDistance * 0.25;  // at this distance, opponents start being a threat
+        0.45 + currentDistance * 0.22;  // tightened: earlier threat detection
 
     for (int opp = 0; opp < (signed int)opponentPlayerImages.size(); opp++) {
       float opponentDistance = (opponentPlayerImages.at(opp).position - ballPos).GetLength();
@@ -305,8 +308,10 @@ void AI_GetPassRatings(Match* match, int thisPlayerID, const MentalImage* mental
     // situational rating
     float sit = AI_GetSituationRating(match, playerImages.at(i).playerID, mentalImage);
 
+    // situation exponent 0.45: AI weighs receiver free space more aggressively,
+    // discouraging risky through-balls into traffic.
     PassRating passRating(playerImages.at(i).playerID, pow(odds, 0.8), pow(pos, 0.7),
-                          pow(sit, 0.6));
+                          pow(sit, 0.45));
     passRating.CalculateRating(opportunism);
 
     passRatings.push_back(passRating);
@@ -1195,8 +1200,10 @@ Player* AI_GetBestSwitchTargetPlayer(Match* match, Team* team, const Vector3& de
       (actionPosition * Vector3(1.0f, 0.8f, 0.0f)) + Vector3(-team->GetSide() * 8.0f, 0.0f, 0.0f);
 
   // experiment: also take team possession player into account, try to pick one near
-  defensePosition =
-      defensePosition * 0.8f + team->GetDesignatedTeamPossessionPlayer()->GetPosition() * 0.2f;
+  Player* desPossPlayer = team->GetDesignatedTeamPossessionPlayer();
+  if (desPossPlayer) {
+    defensePosition = defensePosition * 0.8f + desPossPlayer->GetPosition() * 0.2f;
+  }
 
   float offenseBias = team->GetFadingTeamPossessionAmount() - 0.5f;
   offenseBias = offenseBias * 0.2f + clamp(team->GetTeamPossessionAmount() - 0.5f, 0.0f, 1.0f) *

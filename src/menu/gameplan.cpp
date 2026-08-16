@@ -25,6 +25,7 @@ GamePlanPage::GamePlanPage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Caption* header = new Gui2Caption(
       windowManager, "gameplan_header", xOffset, 11, 35, 3,
       Localization::GetInstance().Translate("gameplan_header") + " " + int_to_str(teamID + 1));
+  header->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   grid = new Gui2Grid(windowManager, "gameplan_grid", xOffset, 15, 0, 0);
   gridNav = new Gui2Grid(windowManager, "gameplan_grid_navigation", xOffset, 0, 0, 0);
 
@@ -98,10 +99,10 @@ void GamePlanPage::Reactivate() {
 
 Vector3 GamePlanPage::GetButtonColor(int id) {
   Vector3 color = windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
-  if (id > 10)
-    color = Vector3(240, 140, 60);
-  if (id > 21)
-    color = Vector3(80, 140, 255);
+  if (id > 10) // Substitutes: Gold/Warm
+    color = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);
+  if (id > 21) // Reserves: Silver/Muted
+    color = windowManager->GetStyle()->GetColor(e_DecorationType_Dark2);
   return color;
 }
 
@@ -114,10 +115,14 @@ void GamePlanPage::GoLineupMenu() {
 
   const auto& playerData = teamData->GetPlayerData();
   for (unsigned int i = 0; i < playerData.size(); i++) {
+    std::string role = "[" + playerData.at(i)->GetRoleName() + "]";
+    std::string name = playerData.at(i)->GetLastName();
+    std::string cond = playerData.at(i)->GetConditionSymbol();
+    std::string label = role + " " + name + "  " + cond;
     Vector3 color = GetButtonColor(i);
     Gui2Button* button =
         lineupMenu->AddButton("playerbutton_id" + int_to_str(playerData.at(i)->GetDatabaseID()),
-                              playerData.at(i)->GetLastName(), i, 0, color);
+                              label, i, 0, color);
     button->sig_OnClick.connect([this](Gui2Button* btn) { LineupMenuOnClick(btn); });
     button->SetToggleable(true);
     if (i == 0)

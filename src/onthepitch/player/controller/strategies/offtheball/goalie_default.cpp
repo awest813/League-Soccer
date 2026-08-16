@@ -90,96 +90,102 @@ void GoalieDefaultStrategy::RequestInput(const MentalImage* mentalImage, Vector3
       float awayFromGoalOffset_m =
           0.7f;  // meters away from goal line (over the ballToGoal line, not straight forward)
       float awayFromGoalBias = 0.3f;  // factor between goal and ball
+      // PES 5/6: reduce how aggressively the keeper follows ball position during possession.
+      // 0.25f (vs 0.3f) keeps them nearer the line, more set for a counter-attack.
       awayFromGoalBias *= NormalizedClamp(controller->GetFadingTeamPossessionAmount(), 1.0f, 1.5f);
+      awayFromGoalBias *= 0.85f;  // slightly tighter to goal line
 
       // when opponent comes rushing in and team mates are too far away to help, come out to 'reduce
       // goal size'
 
       if (controller->GetFadingTeamPossessionAmount() < 1.0f) {
         Player* opp = controller->GetOppTeam()->GetDesignatedTeamPossessionPlayer();
-        Vector3 oppPos = opp->GetPosition() + opp->GetMovement() * 0.32f;
+        if (opp) {
+          Vector3 oppPos = opp->GetPosition() + opp->GetMovement() * 0.32f;
 
-        // if opp isn't in ball control, don't use ball pos but opp pos
-        if (opp->HasPossession() == false) {
-          ballToGoal.SetVertex(0, oppPos * 0.6f + ballPos * 0.4f);
-        } else {
-          ballToGoal.SetVertex(0, oppPos * 0.4f + ballPos * 0.6f);
-        }
+          // if opp isn't in ball control, don't use ball pos but opp pos
+          if (opp->HasPossession() == false) {
+            ballToGoal.SetVertex(0, oppPos * 0.6f + ballPos * 0.4f);
+          } else {
+            ballToGoal.SetVertex(0, oppPos * 0.4f + ballPos * 0.6f);
+          }
 
-        // first, calculate how close the opponent on the ball is to the goal/shooting treshold
-        float shootThreshold = 20.0f;  // average/base value; this distance is dynamic
-        float oppToGoalDistance = (goalPos - oppPos).GetLength();
-        float oppToThresholdDistance =
-            clamp(oppToGoalDistance - shootThreshold * NormalizedClamp(oppToGoalDistance, 0.0f,
-                                                                       shootThreshold * 2.0f),
-                  0.0f, pitchHalfW);  // variable threshold distance
-        Vector3 shootingPoint =
-            oppPos + (goalPos - oppPos).GetNormalized(0) * oppToThresholdDistance;
-        // SetGreenDebugPilon(shootingPoint);
+          // first, calculate how close the opponent on the ball is to the goal/shooting treshold
+          float shootThreshold = 20.0f;  // average/base value; this distance is dynamic
+          float oppToGoalDistance = (goalPos - oppPos).GetLength();
+          float oppToThresholdDistance =
+              clamp(oppToGoalDistance - shootThreshold * NormalizedClamp(oppToGoalDistance, 0.0f,
+                                                                         shootThreshold * 2.0f),
+                    0.0f, pitchHalfW);  // variable threshold distance
+          Vector3 shootingPoint =
+              oppPos + (goalPos - oppPos).GetNormalized(0) * oppToThresholdDistance;
+          // SetGreenDebugPilon(shootingPoint);
 
-        // now calculate the distance between this shooting point and our closest mate
-        Player* mate = AI_GetClosestPlayer(team, shootingPoint, false, CastPlayer());
-        float mateToThresholdDistance = 99999;
-        if (mate) {
-          Vector3 matePos = mate->GetPosition() + mate->GetMovement() * 0.24f;
-          mateToThresholdDistance = (shootingPoint - matePos).GetLength();
-        }
+          // now calculate the distance between this shooting point and our closest mate
+          Player* mate = AI_GetClosestPlayer(team, shootingPoint, false, CastPlayer());
+          float mateToThresholdDistance = 99999;
+          if (mate) {
+            Vector3 matePos = mate->GetPosition() + mate->GetMovement() * 0.24f;
+            mateToThresholdDistance = (shootingPoint - matePos).GetLength();
+          }
 
-        if (mateToThresholdDistance > oppToThresholdDistance + 1.0f) {  // come out, brave keeper!
+          // PES 5/6: keeper only charges when they have a meaningful positional advantage.
+          // Raising to 2.0m (was 1.0m) prevents reckless rushing on tight 50/50s.
+          if (mateToThresholdDistance > oppToThresholdDistance + 2.0f) {  // come out, brave keeper!
 
-          awayFromGoalBias = 1.0f;
+            awayFromGoalBias = 1.0f;
 
-          // the amount of 'come out bias' is related to how dangerous the opponent's closest mate
-          // is if they are to receive the ball. basically, the same as the above code, but with the
-          // secondary opponent and mate
-          Player* oppHelper = AI_GetClosestPlayer(controller->GetOppTeam(), goalPos, false, opp);
-          if (oppHelper) {
-            Vector3 oppHelperPosition = oppHelper->GetPosition() + oppHelper->GetMovement() * 0.32f;
+            // the amount of 'come out bias' is related to how dangerous the opponent's closest mate
+            // is if they are to receive the ball. basically, the same as the above code, but with the
+            // secondary opponent and mate
+            Player* oppHelper = AI_GetClosestPlayer(controller->GetOppTeam(), goalPos, false, opp);
+            if (oppHelper) {
+              Vector3 oppHelperPosition = oppHelper->GetPosition() + oppHelper->GetMovement() * 0.32f;
 
-            // first, calculate how close the opponent helper is to the goal/shooting treshold
-            float helperShootThreshold = 24.0f;  // average/base value; this distance is dynamic
-            float oppHelperToGoalDistance = (goalPos - oppHelperPosition).GetLength();
-            float oppHelperToThresholdDistance =
-                clamp(oppHelperToGoalDistance -
-                          helperShootThreshold * NormalizedClamp(oppHelperToGoalDistance, 0.0f,
-                                                                 helperShootThreshold * 2.0f),
-                      0.0f, pitchHalfW);  // variable threshold distance
-            Vector3 helperShootingPoint =
-                oppHelperPosition +
-                (goalPos - oppHelperPosition).GetNormalized(0) * oppHelperToThresholdDistance;
-            // SetYellowDebugPilon(helperShootingPoint);
+              // first, calculate how close the opponent helper is to the goal/shooting treshold
+              float helperShootThreshold = 24.0f;  // average/base value; this distance is dynamic
+              float oppHelperToGoalDistance = (goalPos - oppHelperPosition).GetLength();
+              float oppHelperToThresholdDistance =
+                  clamp(oppHelperToGoalDistance -
+                            helperShootThreshold * NormalizedClamp(oppHelperToGoalDistance, 0.0f,
+                                                                   helperShootThreshold * 2.0f),
+                        0.0f, pitchHalfW);  // variable threshold distance
+              Vector3 helperShootingPoint =
+                  oppHelperPosition +
+                  (goalPos - oppHelperPosition).GetNormalized(0) * oppHelperToThresholdDistance;
+              // SetYellowDebugPilon(helperShootingPoint);
 
-            // now calculate the distance between this shooting point and our closest mate
-            Player* mateHelper =
-                AI_GetClosestPlayer(team, helperShootingPoint, false, CastPlayer());
-            float mateHelperToThresholdDistance = 99999;
-            if (mateHelper)
-              mateHelperToThresholdDistance =
-                  (helperShootingPoint -
-                   (mateHelper->GetPosition() + mateHelper->GetMovement() * 0.24f))
-                      .GetLength();
+              // now calculate the distance between this shooting point and our closest mate
+              Player* mateHelper =
+                  AI_GetClosestPlayer(team, helperShootingPoint, false, CastPlayer());
+              float mateHelperToThresholdDistance = 99999;
+              if (mateHelper)
+                mateHelperToThresholdDistance =
+                    (helperShootingPoint -
+                     (mateHelper->GetPosition() + mateHelper->GetMovement() * 0.24f))
+                        .GetLength();
 
-            float secondaryDistanceDiff = 0.0f;
-            // if this var is bigger, LESS likely to come out because of secondary danger
-            if (mateHelperToThresholdDistance > oppHelperToThresholdDistance)
-              secondaryDistanceDiff = NormalizedClamp(
-                  mateHelperToThresholdDistance - oppHelperToThresholdDistance, 0.0f, 2.0f);
+              float secondaryDistanceDiff = 0.0f;
+              // if this var is bigger, LESS likely to come out because of secondary danger
+              if (mateHelperToThresholdDistance > oppHelperToThresholdDistance)
+                secondaryDistanceDiff = NormalizedClamp(
+                    mateHelperToThresholdDistance - oppHelperToThresholdDistance, 0.0f, 2.0f);
 
-            // also take into account the ratio between the primary opp to goal and the helper opp
-            // to goal distance if this var is bigger, LESS likely to come out because of secondary
-            // danger
-            float helperVSPrimaryDistanceRatio =
-                1.0f -
-                NormalizedClamp(oppHelperToThresholdDistance / (oppToThresholdDistance + 0.0001f),
-                                1.0f, 1.5f);
-            helperVSPrimaryDistanceRatio *=
-                0.7f;  // always allow some coming out despite opp mate danger
+              // also take into account the ratio between the primary opp to goal and the helper opp
+              // to goal distance if this var is bigger, LESS likely to come out because of secondary
+              // danger
+              float helperVSPrimaryDistanceRatio =
+                  1.0f -
+                  NormalizedClamp(oppHelperToThresholdDistance / (oppToThresholdDistance + 0.0001f),
+                                  1.0f, 1.5f);
+              helperVSPrimaryDistanceRatio *=
+                  0.7f;  // always allow some coming out despite opp mate danger
 
-            awayFromGoalBias =
-                clamp(1.0f - (secondaryDistanceDiff * helperVSPrimaryDistanceRatio), 0.0f, 1.0f);
+              awayFromGoalBias =
+                  clamp(1.0f - (secondaryDistanceDiff * helperVSPrimaryDistanceRatio), 0.0f, 1.0f);
+            }
           }
         }
-
       }  // end keeper come out code
 
       bool applyRushOut =

@@ -5,6 +5,8 @@
 
 #include "playerdata.hpp"
 
+#include <cmath>
+
 #include "../main.hpp"
 #include "base/utils.hpp"
 #include "utils/database.hpp"
@@ -75,6 +77,9 @@ PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
     stats.Set((*iter).first.c_str(), value);
     iter++;
   }
+
+  condition = e_PlayerCondition_Normal;
+  CalculateCondition(0);
 }
 
 PlayerData::PlayerData() {
@@ -83,6 +88,7 @@ PlayerData::PlayerData() {
   hairStyle = "short01";
   hairColor = "darkblonde";
   height = 1.8f;
+  condition = e_PlayerCondition_Normal;
 
   stats.Set("physical_balance", 0.6);
   stats.Set("physical_reaction", 0.6);
@@ -114,10 +120,77 @@ const std::vector<e_PlayerRole>& PlayerData::GetRoles() const {
   return roles;
 }
 
+void PlayerData::CalculateCondition(int matchSeed) {
+  // PES condition distribution: ~15% Red, ~20% Orange, ~30% Yellow, ~20% Blue, ~15% Purple
+  int val = (std::abs(databaseID * 37 + matchSeed * 17)) % 100;
+  if (val < 15)
+    condition = e_PlayerCondition_Terrible;
+  else if (val < 35)
+    condition = e_PlayerCondition_Poor;
+  else if (val < 65)
+    condition = e_PlayerCondition_Normal;
+  else if (val < 85)
+    condition = e_PlayerCondition_Good;
+  else
+    condition = e_PlayerCondition_Top;
+}
+
+float PlayerData::GetConditionMultiplier() const {
+  switch (condition) {
+    case e_PlayerCondition_Top:
+      return 1.09f;
+    case e_PlayerCondition_Good:
+      return 1.04f;
+    case e_PlayerCondition_Normal:
+      return 1.00f;
+    case e_PlayerCondition_Poor:
+      return 0.96f;
+    case e_PlayerCondition_Terrible:
+      return 0.91f;
+    default:
+      return 1.00f;
+  }
+}
+
+std::string PlayerData::GetConditionSymbol() const {
+  switch (condition) {
+    case e_PlayerCondition_Top:
+      return "^";
+    case e_PlayerCondition_Good:
+      return "/^";
+    case e_PlayerCondition_Normal:
+      return "->";
+    case e_PlayerCondition_Poor:
+      return "\\v";
+    case e_PlayerCondition_Terrible:
+      return "v";
+    default:
+      return "->";
+  }
+}
+
+Vector3 PlayerData::GetConditionColor() const {
+  switch (condition) {
+    case e_PlayerCondition_Top:
+      return Vector3(230, 40, 40);     // Red
+    case e_PlayerCondition_Good:
+      return Vector3(240, 150, 20);    // Orange
+    case e_PlayerCondition_Normal:
+      return Vector3(240, 220, 30);    // Yellow
+    case e_PlayerCondition_Poor:
+      return Vector3(50, 130, 240);    // Blue
+    case e_PlayerCondition_Terrible:
+      return Vector3(160, 60, 200);    // Purple
+    default:
+      return Vector3(240, 220, 30);
+  }
+}
+
 float PlayerData::GetStat(const char* name) {
   bool exists = stats.Exists(name);
   if (!exists)
     printf("Stat named '%s' does not exist!\n", name);
   assert(exists);
-  return stats.GetReal(name, 1.0f);
+  float baseValue = stats.GetReal(name, 1.0f);
+  return clamp(baseValue * GetConditionMultiplier(), 0.01f, 1.0f);
 }

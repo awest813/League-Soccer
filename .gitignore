@@ -10,3 +10,6 @@ vcpkg/
 vcpkg_installed/
 dist/
 .zcode/
+tools/*_bin
+*.save
+

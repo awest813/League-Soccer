@@ -5,11 +5,17 @@
 
 struct BallPhysicsConfig {
   float ballRadius = 0.11f;
-  float bounce = 0.62f;
-  float linearBounce = 0.06f;
-  float drag = 0.015f;
-  float friction = 0.04f;
-  float linearFriction = 1.6f;
+  // PES 5/6 feel: slightly livelier bounce so the ball skips off turf
+  // authentically, without feeling rubbery.
+  float bounce = 0.64f;
+  float linearBounce = 0.05f;
+  // More aerodynamic drag: long balls and lofted passes fade realistically
+  // instead of carrying flat at full pace all the way.
+  float drag = 0.017f;
+  // Heavier ground friction: ground passes decelerate noticeably so timing
+  // matters and the receiver has to move to collect the ball.
+  float friction = 0.06f;
+  float linearFriction = 1.55f;
   float gravity = -9.81f;
   float grassHeight = 0.025f;
 

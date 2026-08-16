@@ -64,13 +64,12 @@ MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font* defaultFont,
   style->SetFont(e_TextType_Title, defaultFont);
   style->SetFont(e_TextType_ToolTip, defaultFont);
 
-  // Ultra-modern minimalist dark theme with vibrant neon accents
-  style->SetColor(e_DecorationType_Dark1, Vector3(10, 10, 12));  // almost pure black (backgrounds)
-  style->SetColor(e_DecorationType_Dark2, Vector3(28, 28, 32));  // charcoal gray (borders/inactive)
-  style->SetColor(e_DecorationType_Bright1, Vector3(250, 250, 255));  // crisp cool white (text)
-  style->SetColor(e_DecorationType_Bright2, Vector3(0, 220, 255));    // electric cyan (hover/focus)
-  style->SetColor(e_DecorationType_Toggled,
-                  Vector3(255, 0, 100));  // vivid magenta (active/toggled)
+  // Classic PES 5/6 Theme: Deep Navy, Silver, and Broadcast Gold
+  style->SetColor(e_DecorationType_Dark1, Vector3(12, 22, 45));   // Deep navy blue (backgrounds)
+  style->SetColor(e_DecorationType_Dark2, Vector3(45, 55, 80));   // Cool silver-blue (borders/inactive)
+  style->SetColor(e_DecorationType_Bright1, Vector3(255, 255, 255)); // Pure crisp white (text)
+  style->SetColor(e_DecorationType_Bright2, Vector3(255, 215, 0));   // Classic PES broadcast gold (hover/focus)
+  style->SetColor(e_DecorationType_Toggled, Vector3(210, 40, 40));   // PES Red (active/toggled)
 
   windowManager->SetTimeStep_ms(10);
 

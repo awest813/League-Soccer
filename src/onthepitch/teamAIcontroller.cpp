@@ -57,31 +57,32 @@ TeamAIController::TeamAIController(Team* team) : team(team) {
   nextZonePressureRefresh_ms = 0;
   prevTeamHasPossession = false;
 
-  baseTeamTactics.Set("position_offense_depth_factor", 0.9f);
-  baseTeamTactics.Set("position_defense_depth_factor", 0.75f);
-  baseTeamTactics.Set("position_offense_width_factor", 0.9f);
-  baseTeamTactics.Set("position_defense_width_factor", 0.8f);
+  // PES 5/6 base tactics: disciplined mid-block, tight central midfield,
+  // attackers pushed high with deep defensive anchor.
+  baseTeamTactics.Set("position_offense_depth_factor", 0.92f);
+  baseTeamTactics.Set("position_defense_depth_factor", 0.80f);  // deeper block vs 0.75
+  baseTeamTactics.Set("position_offense_width_factor", 0.90f);
+  baseTeamTactics.Set("position_defense_width_factor", 0.74f);  // narrower, compact shape
   baseTeamTactics.Set("position_offense_ownhalf_factor", 0.52f);
-  baseTeamTactics.Set("position_defense_ownhalf_factor", 0.54f);
-  baseTeamTactics.Set("position_offense_midfieldfocus", 0.6f);
-  baseTeamTactics.Set("position_defense_midfieldfocus", 0.5f);
-  baseTeamTactics.Set("position_offense_midfieldfocus_strength", 0.35f);
-  baseTeamTactics.Set("position_defense_midfieldfocus_strength", 0.35f);
-  baseTeamTactics.Set("position_offense_sidefocus_strength",
-                      0.1f);  // take possession factor more seriously (high) or ball position (low)
-  baseTeamTactics.Set("position_defense_sidefocus_strength", 0.4f);
-  baseTeamTactics.Set("position_offense_microfocus_strength", 0.7f);
-  baseTeamTactics.Set("position_defense_microfocus_strength", 0.8f);
+  baseTeamTactics.Set("position_defense_ownhalf_factor", 0.58f);  // defenders stay back
+  baseTeamTactics.Set("position_offense_midfieldfocus", 0.65f);   // higher midfield press
+  baseTeamTactics.Set("position_defense_midfieldfocus", 0.55f);   // more midfield cover
+  baseTeamTactics.Set("position_offense_midfieldfocus_strength", 0.40f);
+  baseTeamTactics.Set("position_defense_midfieldfocus_strength", 0.42f);
+  baseTeamTactics.Set("position_offense_sidefocus_strength", 0.10f);
+  baseTeamTactics.Set("position_defense_sidefocus_strength", 0.45f);
+  baseTeamTactics.Set("position_offense_microfocus_strength", 0.72f);
+  baseTeamTactics.Set("position_defense_microfocus_strength", 0.82f);
 
   // how much [-1 * this value .. +1 * this value] offset we can add to the above tactics.
-  teamTacticsModMultipliers.Set("position_offense_depth_factor", 0.1f);
-  teamTacticsModMultipliers.Set("position_defense_depth_factor", 0.1f);
-  teamTacticsModMultipliers.Set("position_offense_width_factor", 0.1f);
-  teamTacticsModMultipliers.Set("position_defense_width_factor", 0.1f);
-  teamTacticsModMultipliers.Set("position_offense_midfieldfocus", 0.3f);
-  teamTacticsModMultipliers.Set("position_defense_midfieldfocus", 0.3f);
-  teamTacticsModMultipliers.Set("position_offense_sidefocus_strength", 0.1f);
-  teamTacticsModMultipliers.Set("position_defense_sidefocus_strength", 0.1f);
+  teamTacticsModMultipliers.Set("position_offense_depth_factor", 0.10f);
+  teamTacticsModMultipliers.Set("position_defense_depth_factor", 0.10f);
+  teamTacticsModMultipliers.Set("position_offense_width_factor", 0.10f);
+  teamTacticsModMultipliers.Set("position_defense_width_factor", 0.10f);
+  teamTacticsModMultipliers.Set("position_offense_midfieldfocus", 0.28f);
+  teamTacticsModMultipliers.Set("position_defense_midfieldfocus", 0.28f);
+  teamTacticsModMultipliers.Set("position_offense_sidefocus_strength", 0.10f);
+  teamTacticsModMultipliers.Set("position_defense_sidefocus_strength", 0.10f);
   teamTacticsModMultipliers.Set("position_offense_microfocus_strength", 0.15f);
   teamTacticsModMultipliers.Set("position_defense_microfocus_strength", 0.15f);
 
@@ -273,9 +274,10 @@ void TeamAIController::Process() {
 
         // from a certain distance, running is not very useful (can't pass that far)
         Player* runner = SelectAttackingRunPlayer(team);
-        if (runner) {
+        Player* possPlayer = team->GetDesignatedTeamPossessionPlayer();
+        if (runner && possPlayer) {
           float distance =
-              (runner->GetPosition() - team->GetDesignatedTeamPossessionPlayer()->GetPosition())
+              (runner->GetPosition() - possPlayer->GetPosition())
                   .GetLength();
           float distanceRating = std::pow(1.0f - NormalizedClamp(distance, 0, 40), 0.5f);
 
@@ -309,11 +311,14 @@ void TeamAIController::Process() {
     const float counterAttack =
         team->GetTeamData()->GetTactics().userProperties.GetReal("counter_attack", 0.5f);
     const float supportLead = 0.5f + AITactics::ClampSetting(counterAttack) * 2.0f;
-    forwardSupportPlayer = AI_GetClosestPlayer(
-        team,
-        team->GetDesignatedTeamPossessionPlayer()->GetPosition() * Vector3(1.0f, 1.0f, 0.0f) +
-            Vector3(-team->GetSide() * supportLead, 0, 0),
-        false, team->GetDesignatedTeamPossessionPlayer());
+    Player* possPlayer = team->GetDesignatedTeamPossessionPlayer();
+    if (possPlayer) {
+      forwardSupportPlayer = AI_GetClosestPlayer(
+          team,
+          possPlayer->GetPosition() * Vector3(1.0f, 1.0f, 0.0f) +
+              Vector3(-team->GetSide() * supportLead, 0, 0),
+          false, possPlayer);
+    }
   }
 }
 
@@ -1248,7 +1253,9 @@ void TeamAIController::UpdateTactics() {
   liveTeamTactics = baseTeamTactics;
 
   // when trailing, we need goals. when leading, defend lead
-  float goalFactor = clamp(0.5 + (oppGoals - goals) * 0.25f, 0.0f, 1.0f);
+  // Weight 0.17 means a 3-goal deficit pushes AI to full aggression (was 0.25 = 2 goals).
+  // This keeps the AI from panicking too early and produces more believable tactics when trailing.
+  float goalFactor = clamp(0.5 + (oppGoals - goals) * 0.17f, 0.0f, 1.0f);
   // time still to play matters - get more desperate towards the end
   float timeFactor = 0.5f + 0.5f * clamp(match->GetMatchTime_ms() / 6300000.0f, 0.0f, 1.0f);
   // printf("timefactor: %f\n", timeFactor);

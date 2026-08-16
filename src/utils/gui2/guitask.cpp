@@ -169,9 +169,15 @@ void Gui2Task::ProcessEvents() {
         event->SetAxis(j, i, axes[i]);
       }
 
-      // needs windowing event?
+      // Calculate direction from analog stick and D-pad hat buttons (16: Up, 17: Right, 18: Down, 19: Left)
       Vector3 stick1Direction = Vector3(axes[0], axes[1], 0);
-      if (j == GetActiveJoystickID() && stick1Direction.GetLength() != 0) {
+      if (UserEventManager::GetInstance().GetJoyButtonState(j, 16)) stick1Direction += Vector3(0, -1, 0); // D-pad Up
+      if (UserEventManager::GetInstance().GetJoyButtonState(j, 18)) stick1Direction += Vector3(0, 1, 0);  // D-pad Down
+      if (UserEventManager::GetInstance().GetJoyButtonState(j, 19)) stick1Direction += Vector3(-1, 0, 0); // D-pad Left
+      if (UserEventManager::GetInstance().GetJoyButtonState(j, 17)) stick1Direction += Vector3(1, 0, 0);  // D-pad Right
+
+      if (stick1Direction.GetLength() != 0) {
+        SetActiveJoystickID(j);
         wEvent->SetDirection(stick1Direction);
         needsWindowingEvent = true;
       }
@@ -180,11 +186,12 @@ void Gui2Task::ProcessEvents() {
         bool pressed = UserEventManager::GetInstance().GetJoyButtonState(j, i);
         if (pressed && !prevButtonState[j][i]) {
           event->SetButton(j, i);
-          if (j == GetActiveJoystickID() && i == joyButtonActivate) {
+          SetActiveJoystickID(j);
+          if (i == joyButtonActivate) {
             wEvent->SetActivate();
             needsWindowingEvent = true;
           }
-          if (j == GetActiveJoystickID() && i == joyButtonEscape) {
+          if (i == joyButtonEscape) {
             wEvent->SetEscape();
             needsWindowingEvent = true;
           }

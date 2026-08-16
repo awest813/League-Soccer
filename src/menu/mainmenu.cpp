@@ -15,6 +15,7 @@
 #include "credits.hpp"
 #include "pagefactory.hpp"
 #include "settings.hpp"
+#include "career/career_database.hpp"
 
 using namespace blunted;
 
@@ -63,21 +64,34 @@ void AddMainMenuCaption(Gui2WindowManager* windowManager, Gui2View* panel, const
 
 IntroPage::IntroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
+  // Immersive full-screen background overlay
+  Gui2Frame* splashBg = new Gui2Frame(windowManager, "frame_intro_bg", 0, 0, 100, 100, true);
+  splashBg->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Dark1));
+  this->AddView(splashBg);
+  splashBg->Show();
+
   constexpr float kLogoAspectRatio = 512.0f / 180.0f;
-  constexpr float kLogoHeight = 18.0f;
+  constexpr float kLogoHeight = 22.0f;
   const float logoWidth = windowManager->GetWidthPercentForHeight(kLogoHeight, kLogoAspectRatio);
-  Gui2Image* logo = new Gui2Image(windowManager, "image_intro_logo", 50.0f - logoWidth * 0.5f, 10,
+  Gui2Image* logo = new Gui2Image(windowManager, "image_intro_logo", 50.0f - logoWidth * 0.5f, 20,
                                   logoWidth, kLogoHeight);
   logo->LoadImage("media/menu/main/title01.png");
-  this->AddView(logo);
+  splashBg->AddView(logo);
   logo->Show();
+  
+  Gui2Caption* subtitle = new Gui2Caption(windowManager, "caption_intro_sub", 0, 45, 100, 3, "THE BEAUTIFUL GAME SIMULATOR");
+  subtitle->SetPosition(50.0f - subtitle->GetTextWidthPercent() * 0.5f, 45);
+  subtitle->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+  splashBg->AddView(subtitle);
+  subtitle->Show();
 
-  Gui2Frame* promptPanel = new Gui2Frame(windowManager, "frame_intro_prompt", 32, 86, 36, 8, true);
-  this->AddView(promptPanel);
+  Gui2Frame* promptPanel = new Gui2Frame(windowManager, "frame_intro_prompt", 30, 80, 40, 10, true);
+  splashBg->AddView(promptPanel);
   promptPanel->Show();
-  Gui2Caption* prompt = new Gui2Caption(windowManager, "caption_intro_prompt", 0, 2.5f, 32, 3,
-                                        "Press Enter or A to Continue");
-  prompt->SetPosition(18.0f - prompt->GetTextWidthPercent() * 0.5f, 2.5f);
+  Gui2Caption* prompt = new Gui2Caption(windowManager, "caption_intro_prompt", 0, 3.5f, 40, 3,
+                                        "PRESS START OR ENTER TO CONTINUE");
+  prompt->SetPosition(20.0f - prompt->GetTextWidthPercent() * 0.5f, 3.5f);
+  prompt->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright1));
   promptPanel->AddView(prompt);
   prompt->Show();
 
@@ -210,34 +224,49 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   navPanel->Show();
 
   Gui2Frame* infoPanel = new Gui2Frame(windowManager, "frame_mm_info", 46, 4, 50, 42, true);
-  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_welcome", 2, 3, "League Soccer");
-  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_tagline_1", 6, 2.2f,
-                     "Open-source football simulation with career modes,");
-  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_tagline_2", 9, 2.2f,
-                     "owner management, and a 3D match engine.");
-  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_quick", 14, 2.3f,
-                     "Quick Match: Jump straight into a game.");
-  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_league", 18, 2.3f,
-                     "League Mode: Full season with standings.");
-  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_career", 22, 2.2f,
-                     "Career Mode: Coach, GM, Player, Manager, or Owner.");
-  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_hint_1", 28, 2.2f,
-                     "Arrow keys or gamepad to navigate.");
-  AddMainMenuCaption(windowManager, infoPanel, "caption_mm_hint_2", 31, 2.2f,
-                     "Press Enter or A to select.");
+  CareerDatabase::GetInstance().Initialize("user/career");
+  CareerSave* activeSave = CareerDatabase::GetInstance().GetActiveSave();
+  
+  if (activeSave) {
+    Gui2Caption* activeTitle = new Gui2Caption(windowManager, "caption_mm_active", 2, 2, 46, 3, "RESUME CAREER");
+    activeTitle->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+    infoPanel->AddView(activeTitle);
+    activeTitle->Show();
+    
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_saveteam", 2, 8, activeSave->name + " (" + activeSave->club.leagueName + ")");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savemgr", 2, 12, "Manager: " + activeSave->managerName);
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_saveseason", 2, 16, "Season " + std::to_string(activeSave->season.currentSeason) + " (Week " + std::to_string(activeSave->season.currentWeek) + ")");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savedesc", 2, 22, "Select 'Career Mode' from the main menu to resume this save.");
+  } else {
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_welcome", 2, 3, "League Soccer");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_tagline_1", 6, 2.2f,
+                       "Classic PES-style simulation with 3D match engine,");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_tagline_2", 9, 2.2f,
+                       "advanced physics, and deep career modes.");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_quick", 14, 2.3f,
+                       "Quick Match: Jump straight into a game.");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_league", 18, 2.3f,
+                       "League Mode: Full season with standings.");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_career", 22, 2.2f,
+                       "Career Mode: Master League-style progression.");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_hint_1", 28, 2.2f,
+                       "Arrow keys or gamepad to navigate.");
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_hint_2", 31, 2.2f,
+                       "Press Enter or A to select.");
+  }
   root->AddView(infoPanel);
   infoPanel->Show();
 
   Gui2Frame* tipsPanel = new Gui2Frame(windowManager, "frame_mm_tips", 46, 50, 50, 34, true);
-  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_title", 2, 2, "Quick Tips");
-  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_settings", 6, 2.2f,
-                     "Settings: graphics, audio, controls, and language.");
-  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_pause", 10, 2.2f,
-                     "Pause during a match for camera and visual options.");
-  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_saves", 14, 2.2f,
-                     "League and Career keep saves under the data folder.");
-  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_escape", 18, 2.2f,
-                     "Press Escape on most pages to go back.");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_title", 2, 2, "Pro Tips");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_supercancel", 6, 2.2f,
+                     "Use R1+R2 (RB+RT) for Super Cancel to manually move players.");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_fakeshot", 10, 2.2f,
+                     "Press Pass right after Shoot to perform a Fake Shot.");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_condition", 14, 2.2f,
+                     "Check player Condition arrows before a match starts.");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_chip", 18, 2.2f,
+                     "Hold L1 (LB) while shooting for a Chip Shot.");
   root->AddView(tipsPanel);
   tipsPanel->Show();
 

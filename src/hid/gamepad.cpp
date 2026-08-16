@@ -12,7 +12,8 @@
 HIDGamepad::HIDGamepad(int deviceIndex, int gamepadID)
     : deviceIndex(deviceIndex), gamepadID(gamepadID) {
   deviceType = e_HIDeviceType_Gamepad;
-  identifier = std::string(SDL_JoystickNameForIndex(deviceIndex)) + " #" + int_to_str(deviceIndex);
+  const char* joyName = SDL_JoystickNameForIndex(deviceIndex);
+  identifier = std::string(joyName ? joyName : "Gamepad") + " #" + int_to_str(deviceIndex);
 
   LoadConfig();
 }
@@ -40,38 +41,49 @@ void HIDGamepad::LoadConfig() {
     UserEventManager::GetInstance().SetJoystickAxisCalibration(GetGamepadID(), i, min, max, rest);
   }
 
-  std::string gpbuttonIDs_string[14];
+  // Detect PlayStation controller profile
+  bool isPlayStation = false;
+  std::string lowerId = GetIdentifier();
+  std::transform(lowerId.begin(), lowerId.end(), lowerId.begin(), ::tolower);
+  if (lowerId.find("sony") != std::string::npos ||
+      lowerId.find("dualshock") != std::string::npos ||
+      lowerId.find("dualsense") != std::string::npos ||
+      lowerId.find("ps4") != std::string::npos ||
+      lowerId.find("ps5") != std::string::npos ||
+      lowerId.find("playstation") != std::string::npos) {
+    isPlayStation = true;
+  }
+
   for (int i = 0; i < e_ControllerButton_Size; i++) {
-    // universal controller defaults - xbox style (works for most controllers)
     int defaultButton = 0;
     if (i == 0)
-      defaultButton = -3;
+      defaultButton = -3; // Up
     else if (i == 1)
-      defaultButton = -2;
+      defaultButton = -2; // Right
     else if (i == 2)
-      defaultButton = -4;
+      defaultButton = -4; // Down
     else if (i == 3)
-      defaultButton = -1;
+      defaultButton = -1; // Left
     else if (i == 4)
-      defaultButton = 3;
+      defaultButton = 3;  // Y / Triangle
     else if (i == 5)
-      defaultButton = 1;
+      defaultButton = 1;  // B / Circle
     else if (i == 6)
-      defaultButton = 0;
+      defaultButton = 0;  // A / Cross
     else if (i == 7)
-      defaultButton = 2;
+      defaultButton = 2;  // X / Square
     else if (i == 8)
-      defaultButton = 4;
+      defaultButton = 4;  // L1
     else if (i == 9)
-      defaultButton = -6;
+      defaultButton = isPlayStation ? 6 : -6; // L2
     else if (i == 10)
-      defaultButton = 5;
+      defaultButton = 5;  // R1
     else if (i == 11)
-      defaultButton = -5;
+      defaultButton = isPlayStation ? 7 : -5; // R2
     else if (i == 12)
-      defaultButton = 6;
+      defaultButton = isPlayStation ? 8 : 6;  // Select / Share / Back
     else if (i == 13)
-      defaultButton = 7;
+      defaultButton = isPlayStation ? 9 : 7;  // Start / Options
 
     controllerMapping[i] = GetConfiguration()->GetInt(
         ("input_gamepad_" + GetIdentifier() + "_" + int_to_str(i)).c_str(), defaultButton);
@@ -184,9 +196,12 @@ Vector3 HIDGamepad::GetDirection() {
   inputDirection.coords[0] += GetButtonValue(e_ButtonFunction_Right);
   inputDirection.coords[1] += GetButtonValue(e_ButtonFunction_Up);
   inputDirection.coords[1] -= GetButtonValue(e_ButtonFunction_Down);
-  if (inputDirection.GetLength() < analogStickDeadzone) {
-    inputDirection = Vector3(0);
-  } else {
+  float len = inputDirection.GetLength();
+  if (len < analogStickDeadzone) {
+    return Vector3(0);
+  }
+  // Clamp maximum magnitude to 1.0 so diagonals don't exceed unit length
+  if (len > 1.0f) {
     inputDirection.Normalize(0);
   }
   return inputDirection;

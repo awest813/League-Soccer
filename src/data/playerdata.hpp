@@ -11,6 +11,14 @@
 #include "base/properties.hpp"
 #include "defines.hpp"
 
+enum e_PlayerCondition {
+  e_PlayerCondition_Terrible = 0,  // ⬇️ Purple (-9%)
+  e_PlayerCondition_Poor = 1,      // ↘️ Blue (-4%)
+  e_PlayerCondition_Normal = 2,    // ➡️ Yellow (0%)
+  e_PlayerCondition_Good = 3,      // ↗️ Orange (+4%)
+  e_PlayerCondition_Top = 4        // ⬆️ Red (+9%)
+};
+
 class PlayerData {
 public:
   PlayerData(int playerDatabaseID);
@@ -24,6 +32,13 @@ public:
 
   float GetStat(const char* name);
 
+  e_PlayerCondition GetCondition() const { return condition; }
+  void SetCondition(e_PlayerCondition cond) { condition = cond; }
+  void CalculateCondition(int matchSeed = 0);
+  float GetConditionMultiplier() const;
+  std::string GetConditionSymbol() const;
+  Vector3 GetConditionColor() const;
+
   int GetSkinColor() { return skinColor; }
   std::string GetHairStyle() { return hairStyle; }
   std::string GetHairColor() { return hairColor; }
@@ -36,6 +51,7 @@ protected:
   std::vector<e_PlayerRole> roles;
 
   Properties stats;
+  e_PlayerCondition condition;
 
   int skinColor;
   std::string hairStyle;

@@ -229,6 +229,8 @@ void PlayerController::Reset() {
 
 float PlayerController::OppBetweenBallAndMeDot() {
   Player* opp = match->GetTeam(abs(team->GetID() - 1))->GetDesignatedTeamPossessionPlayer();
+  if (!opp)
+    return 0.0f;
   Vector3 MeToOpp = (opp->GetPosition() + opp->GetMovement() * 0.1f) -
                     (CastPlayer()->GetPosition() + CastPlayer()->GetMovement() * 0.1f);
   Vector3 oppToBall = _mentalImage->GetBallPrediction(100).Get2D() -

@@ -18,6 +18,7 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   height_percent = 4;
 
   Vector3 textColor = 255;
+  Vector3 timeColor = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2); // Yellow/Gold for Time
   Vector3 textOutlineColor = 0;
 
   goalCount[0] = 0;
@@ -25,14 +26,14 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
 
   // percentages – score panel centered around 50%
   float xOffset[8];
-  xOffset[0] = 1;   // league logo (far left)
-  xOffset[1] = 5;   // time (near left)
-  xOffset[2] = 34;  // t1 logo
-  xOffset[3] = 38;  // t1 name
-  xOffset[4] = 44;  // t1 score
-  xOffset[5] = 48;  // t2 logo
-  xOffset[6] = 52;  // t2 name
-  xOffset[7] = 58;  // t2 score
+  xOffset[0] = 5;   // league logo (left)
+  xOffset[1] = 9;   // time
+  xOffset[2] = 20;  // t1 logo
+  xOffset[3] = 24;  // t1 name
+  xOffset[4] = 34;  // t1 score
+  xOffset[5] = 38;  // t2 score
+  xOffset[6] = 42;  // t2 name
+  xOffset[7] = 52;  // t2 logo
   float content_xOffset = 0.2f;
 
   constexpr float kScoreboardBackgroundAspectRatio = 1024.0f / 64.0f;
@@ -65,10 +66,10 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
       new Gui2Caption(windowManager, "game_scoreboard_team1goals", xOffset[4] + content_xOffset, 0,
                       5, height_percent * 0.9f, "0");
   goalCountCaption[1] =
-      new Gui2Caption(windowManager, "game_scoreboard_team2goals", xOffset[7] + content_xOffset, 0,
+      new Gui2Caption(windowManager, "game_scoreboard_team2goals", xOffset[5] + content_xOffset, 0,
                       5, height_percent * 0.9f, "0");
 
-  timeCaption->SetColor(textColor);
+  timeCaption->SetColor(timeColor);
   timeCaption->SetOutlineColor(textOutlineColor);
   teamNameCaption[0]->SetColor(textColor);
   teamNameCaption[0]->SetOutlineColor(textOutlineColor);
@@ -106,7 +107,7 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   teamLogo[0]->LoadImage(match->GetTeam(0)->GetTeamData()->GetLogoUrl());
   teamLogo[0]->Show();
 
-  teamLogo[1] = new Gui2Image(windowManager, "game_scoreboard_team2logo", xOffset[5], 0,
+  teamLogo[1] = new Gui2Image(windowManager, "game_scoreboard_team2logo", xOffset[7], 0,
                               squareLogoWidth, height_percent);
   this->AddView(teamLogo[1]);
   teamLogo[1]->LoadImage(match->GetTeam(1)->GetTeamData()->GetLogoUrl());

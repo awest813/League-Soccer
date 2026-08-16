@@ -23,12 +23,14 @@ void DefaultDefenseStrategy::RequestInput(const MentalImage* mentalImage, Vector
       team->GetController()->GetAdaptedFormationPosition(CastPlayer(), false);
   Vector3 desiredPosition_dynamic =
       team->GetController()->GetAdaptedFormationPosition(CastPlayer(), true);
+  // PES 5/6: tighter action distance [12,18] vs [15,20] — defenders hold shape
+  // more rigorously and don't drift toward the ball as early.
   float actionDistance = NormalizedClamp(
       player->GetPosition().GetDistance(match->GetDesignatedPossessionPlayer()->GetPosition()),
-      15.0f, 20.0f);
+      12.0f, 18.0f);
   float staticPositionBias = curve(
-      1.0f * actionDistance,
-      1.0f);  // lower values = swap position with other players' formation positions more easily
+      1.1f * actionDistance,
+      1.0f);  // higher bias: swap positions less, maintain defensive shape more
   Vector3 desiredPosition = desiredPosition_static * staticPositionBias +
                             desiredPosition_dynamic * (1.0f - staticPositionBias);
 

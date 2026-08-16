@@ -380,4 +380,53 @@ TEST(ScoutingNetworkTest, NoScoutUsesDefaultSkill50) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// PES 5/6 Master League Default Squad Tests
+// ---------------------------------------------------------------------------
+
+TEST(PESMasterLeagueTest, GeneratesCorrectRosterSizeAndStartingXI) {
+  SquadState squad = CreatePESDefaultMasterLeagueSquad(1);
+  EXPECT_EQ(squad.roster.size(), 16u);
+  EXPECT_EQ(squad.startingXIPlayerIDs.size(), 11u);
+  EXPECT_EQ(squad.benchPlayerIDs.size(), 4u);
+  EXPECT_EQ(squad.reservesPlayerIDs.size(), 1u);
+}
+
+TEST(PESMasterLeagueTest, ContainsIconicPESPlayers) {
+  SquadState squad = CreatePESDefaultMasterLeagueSquad(1);
+  bool foundCastolo = false;
+  bool foundMinanda = false;
+  bool foundEspimas = false;
+  bool foundIvarov = false;
+
+  for (const auto& p : squad.roster) {
+    if (p.name == "Castolo") {
+      foundCastolo = true;
+      EXPECT_EQ(p.position, "CF");
+      EXPECT_EQ(p.ovr, 73);
+    }
+    if (p.name == "Minanda") {
+      foundMinanda = true;
+      EXPECT_EQ(p.position, "AM");
+      EXPECT_EQ(p.ovr, 74);
+    }
+    if (p.name == "Espimas") {
+      foundEspimas = true;
+      EXPECT_EQ(p.position, "RM");
+      EXPECT_EQ(p.ovr, 72);
+    }
+    if (p.name == "Ivarov") {
+      foundIvarov = true;
+      EXPECT_EQ(p.position, "GK");
+      EXPECT_EQ(p.ovr, 68);
+    }
+  }
+
+  EXPECT_TRUE(foundCastolo);
+  EXPECT_TRUE(foundMinanda);
+  EXPECT_TRUE(foundEspimas);
+  EXPECT_TRUE(foundIvarov);
+}
+
 }  // namespace
+

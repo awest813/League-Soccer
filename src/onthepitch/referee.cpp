@@ -387,7 +387,9 @@ void Referee::TripNotice(Player* tripee, Player* tripper, int tackleType) {
                       0.5 +
                   0.5;
 
-      if (severity > 1.0) {
+      // PES 5/6: raise threshold slightly so marginal sliding tackles don't
+      // always result in a foul — physical play is part of the game.
+      if (severity > 1.05) {
         // uooooga uooooga foul!
         // printf("sliding! %lu ms ago\n", match->GetActualTime_ms() -
         // tripper->GetLastTouchTime_ms());
@@ -414,7 +416,7 @@ void Referee::TripNotice(Player* tripee, Player* tripper, int tackleType) {
 
 bool Referee::CheckFoul() {
   bool penalty = false;
-  if (foul.foulType != 0) {
+  if (foul.foulType != 0 && foul.foulVictim && foul.foulVictim->GetTeam()) {
     if (fabs(foul.foulPosition.coords[1]) < 20.15 - lineHalfW &&
         foul.foulPosition.coords[0] * -foul.foulVictim->GetTeam()->GetSide() >
             pitchHalfW - 16.5 + lineHalfW)
@@ -426,14 +428,18 @@ bool Referee::CheckFoul() {
       foul.advantage = false;
     } else {
       if (match->GetActualTime_ms() - 600 > foul.foulTime) {
-        if (match->GetActualTime_ms() - 3000 > foul.foulTime) {
+        // PES 5/6: advantage rule gives attacking team 3.5 seconds to
+        // capitalise before the referee reverts the call.
+        if (match->GetActualTime_ms() - 3500 > foul.foulTime) {
           // cancel foul, advantage took long enough
           // todo: yellow cards need to be remembered though ;)
-          foul.foulPlayer = 0;
+          foul.foulPlayer = nullptr;
+          foul.foulVictim = nullptr;
           foul.foulType = 0;
         } else {
           // calculate if there's advantage still
-          if (foul.foulVictim->GetTeam()->GetFadingTeamPossessionAmount() < 1.0) {
+          if (foul.foulVictim && foul.foulVictim->GetTeam() &&
+              foul.foulVictim->GetTeam()->GetFadingTeamPossessionAmount() < 1.0) {
             foul.advantage = false;
           }
         }

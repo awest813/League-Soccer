@@ -430,8 +430,9 @@ void ElizaController::RequestCommand(PlayerCommandQueue& commandQueue) {
 
         Player* opp = match->GetTeam(abs(team->GetID() - 1))->GetDesignatedTeamPossessionPlayer();
 
-        int huntingPlayersNum = 2;  // remember, this includes players with man marking id that are
-                                    // not controlled by this hunting code
+        // PES 5/6: three players coordinate to close the ball-carrier rather
+        // than just two, creating tighter defensive pressure in central zones.
+        int huntingPlayersNum = 3;  // was 2; includes players with man marking id
         std::vector<Player*> closestPlayers;
         AI_GetClosestPlayers(team, opp->GetPosition() + opp->GetMovement() * 0.1f, false,
                              closestPlayers, huntingPlayersNum);
@@ -529,11 +530,15 @@ float ElizaController::GetLazyVelocity(float desiredVelocityFloat) {
     adaptedDesiredVelocityFloat =
         sprintVelocity + (adaptedDesiredVelocityFloat - sprintVelocity) * 0.1f;
 
-  float startLazinessDistance = 20.0f * (CastPlayer()->GetFatigueFactorInv() * 0.8f + 0.2f);
-  float endLazinessDistance = 65.0f * (CastPlayer()->GetFatigueFactorInv() * 0.5f + 0.5f);
+  // PES 5/6: players hold position more when far from the ball — no frantic running everywhere.
+  // Tighter start distance (18→20) so midfield shape is maintained more naturally.
+  float startLazinessDistance = 18.0f * (CastPlayer()->GetFatigueFactorInv() * 0.8f + 0.2f);
+  float endLazinessDistance = 55.0f * (CastPlayer()->GetFatigueFactorInv() * 0.5f + 0.5f);
 
-  Vector3 oppPos =
-      match->GetTeam(abs(team->GetID() - 1))->GetDesignatedTeamPossessionPlayer()->GetPosition();
+  Player* oppPossPlayer =
+      match->GetTeam(abs(team->GetID() - 1))->GetDesignatedTeamPossessionPlayer();
+  Vector3 oppPos = oppPossPlayer ? oppPossPlayer->GetPosition()
+                                 : match->GetBall()->GetPredictor()->GetPosition(100);
   float actionDistance = (player->GetPosition() - oppPos).GetLength();
   float teamPossession = clamp(GetFadingTeamPossessionAmount() - 0.5f, 0.0f, 1.0f);
   float mindSet = AI_GetMindSet(CastPlayer()->GetDynamicFormationEntry().role);
@@ -579,12 +584,14 @@ Vector3 ElizaController::GetSupportPosition(const MentalImage* mentalImage,
   float distanceWeight = 1.0f;
   float passWeight = 0.8f;
   float movementWeight = 1.5f;
+  // PES 5/6: formation discipline — players further from the ball weight their
+  // formation position more heavily, maintaining team shape under possession.
   float formationWeight =
-      1.6f +
+      1.8f +
       clamp(
           (CastPlayer()->GetPosition() - mentalImage->GetBallPrediction(100).Get2D()).GetLength() /
-              30.0f,
-          0.0, 1.0f);
+              28.0f,
+          0.0, 1.2f);
   float offsideWeight = 10.0f;
 
   Vector3 playerPos = player->GetPosition() + player->GetMovement() * 0.1f;  // + physics slowness
@@ -953,7 +960,9 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand>& commandQu
   // first selection
   float forwardSpaceWeight = 0.4f;
   float spaceWeight = 0.3f;
-  float forwardWeight = 2.0f + AI_GetMindSet(CastPlayer()->GetDynamicFormationEntry().role) * 6.0f;
+  // PES 5/6: attackers still push forward, but less recklessly than 6.0 multiplier allows.
+  // 5.0 keeps them dangerous without ignoring passing options.
+  float forwardWeight = 2.0f + AI_GetMindSet(CastPlayer()->GetDynamicFormationEntry().role) * 5.0f;
 
   float totalWeight1 = forwardSpaceWeight + spaceWeight + forwardWeight;
   float tacticalImprovementThreshold =
@@ -973,7 +982,9 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand>& commandQu
   float totalWeight2 = tacticalDiffWeight + passWeight;
 
   // name says it all
-  float passThreshold = 0.1f - longPossessionFactor * 0.05f;
+  // PES 5/6: CPU holds the ball slightly more before forcing a pass,
+  // preventing an endless chain of aimless one-touch passing.
+  float passThreshold = 0.12f - longPossessionFactor * 0.06f;
 
   // self rating
   const TacticalPlayerSituation& sit = CastPlayer()->GetTacticalSituation();
@@ -1126,7 +1137,9 @@ void ElizaController::GetOnTheBallCommands(std::vector<PlayerCommand>& commandQu
     if (Verbose())
       printf("ODDS: %f\n", odds);
 
-    if (odds + random(0.0f, 0.5f) > 0.5f) {
+    // PES 5/6 polish: reduce random luck in shot decisions — CPU should wait for
+    // a genuinely good angle before pulling the trigger.
+    if (odds + random(0.0f, 0.28f) > 0.55f) {
       PlayerCommand command;
       command.desiredFunctionType = e_FunctionType_Shot;
       command.useDesiredMovement = false;
@@ -1178,11 +1191,13 @@ void ElizaController::_AddPass(std::vector<PlayerCommand>& commandQueue, Player*
 
 void ElizaController::_AddPanicPass(std::vector<PlayerCommand>& commandQueue) {
   int yside = signSide(player->GetDirectionVec().coords[1]);  // > 0 ? 1 : -1;
+  // PES 5/6: panic clearances bias more strongly away from our goal (forward bias 0.9 vs 0.7)
+  // and less laterally — defenders clear the danger area instead of hoofing sideways.
   Vector3 sensibleAwayDir =
       ((player->GetDirectionVec() * Vector3(0.8f, 1.0f, 0.0f)).GetNormalized() +
-       Vector3(-team->GetSide() * 0.7f, yside * 0.5f, 0))
+       Vector3(-team->GetSide() * 0.9f, yside * 0.35f, 0))
           .GetNormalized(0) +
-      Vector3(0, 0, 0.3f);
+      Vector3(0, 0, 0.25f);
   sensibleAwayDir.Normalize(player->GetDirectionVec());
 
   PlayerCommand command;

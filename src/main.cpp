@@ -311,9 +311,12 @@ void AddGamepad(int deviceIndex, int gamepadID) {
 }
 
 void RemoveGamepad(int gamepadID) {
+  if (controllers.size() <= 1)
+    return;
   for (auto it = controllers.begin() + 1; it != controllers.end(); ++it) {
     HIDGamepad* gp = dynamic_cast<HIDGamepad*>(*it);
     if (gp && gp->GetGamepadID() == gamepadID) {
+      delete gp;
       controllers.erase(it);
       printf("[main] Gamepad removed: slot %d, total controllers: %zu\n", gamepadID,
              controllers.size());

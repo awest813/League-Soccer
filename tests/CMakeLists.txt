@@ -23,6 +23,11 @@ FetchContent_MakeAvailable(googletest)
 add_executable(gameplayfootball_math_tests
   base/math_test.cpp
   onthepitch/ball_physics_test.cpp
+  onthepitch/gameplay_audit_test.cpp
+)
+
+target_include_directories(gameplayfootball_math_tests PRIVATE
+  ${PROJECT_SOURCE_DIR}/src
 )
 
 target_link_libraries(gameplayfootball_math_tests PRIVATE

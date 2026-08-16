@@ -46,9 +46,14 @@ public:
   virtual void Process();
   virtual void Exit();
 
+  void SetDefaults();
+
 protected:
+  void UpdateAssistanceCaptions();
+  void UpdatePhysicsCaptions();
   void UpdateHumanSpeedCaptions();
   void UpdatePlayerSwitchCaption();
+  void UpdateQuantizationCaption();
 
   Gui2Slider* slider_ShortPass_AutoDirection;
   Gui2Slider* slider_ShortPass_AutoPower;
@@ -129,8 +134,9 @@ public:
   virtual ~GamepadCalibrationPage();
 
   virtual void Process();
-  virtual void ProcessWindowingEvent(WindowingEvent* event) { event->Accept(); }
+  virtual void ProcessWindowingEvent(WindowingEvent* event);
   virtual void ProcessKeyboardEvent(KeyboardEvent* event);
+  virtual void ProcessJoystickEvent(JoystickEvent* event);
 
 protected:
   virtual void SaveCalibration();
@@ -221,6 +227,8 @@ public:
   virtual void Exit();
 
 protected:
+  void UpdateVolumeCaption();
+
   Gui2Slider* sliderVolume;
 
   unsigned long pageCreatedTime_ms;

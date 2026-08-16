@@ -28,6 +28,10 @@ public:
   IHIDevice* GetHIDevice() { return hid; }
 
   int GetActionMode() { return actionMode; }
+  int GetGauge_ms() const { return gauge_ms; }
+  float GetGaugeFactor() const;
+  e_ButtonFunction GetActionButton() const { return actionButton; }
+  bool IsSuperCancelling() const;
 
   virtual void Reset();
 
@@ -44,6 +48,9 @@ protected:
   e_ButtonFunction actionButton;
   int actionBufferTime_ms;
   int gauge_ms;
+
+  int lastSprintPressTime_ms;
+  bool isKnockOnSprint;
 
   // stuff to keep track of analog stick (or keys even) so that we can use a direction once it's
   // been pointed in for a while, instead of directly

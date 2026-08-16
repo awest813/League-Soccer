@@ -12,10 +12,10 @@ inline float ClampSetting(float value) {
   return std::max(0.0f, std::min(value, 1.0f));
 }
 
-// A low setting waits for a clear break; a high setting encourages earlier
-// supporting runs. The neutral value remains close to the previous threshold.
+// PES 5/6: CPU is more selective about runs (0.62 vs 0.60 base).
+// Players pick their moment rather than running automatically.
 inline float GetAttackingRunThreshold(float counterAttack) {
-  return 0.60f - ClampSetting(counterAttack) * 0.24f;
+  return 0.62f - ClampSetting(counterAttack) * 0.24f;
 }
 
 inline unsigned int GetAttackingRunDuration_ms(float counterAttack) {
@@ -29,16 +29,18 @@ inline float GetAttackingTerritory(float ballX, int teamSide, float pitchHalfLen
   return std::max(-1.0f, std::min(ballX * static_cast<float>(-teamSide) / pitchHalfLength, 1.0f));
 }
 
-// Classic zone pressure is selective rather than an automatic all-pitch swarm.
-// More aggressive settings activate deeper and from farther away.
+// PES 5/6: CPU sits in a mid-block and only presses when the opponent
+// is in a dangerous zone — not from deep in their own half.
+// territoryThreshold of 0.55 means CPU needs opponent past the halfway
+// line before pressing at medium settings.
 inline bool ShouldStartZonePressure(float pressure, float attackingTerritory,
                                     float primaryDefenderDistance) {
   const float setting = ClampSetting(pressure);
   if (setting < 0.05f)
     return false;
 
-  const float territoryThreshold = 0.50f - setting * 0.90f;
-  const float distanceThreshold = 6.0f + setting * 10.0f;
+  const float territoryThreshold = 0.55f - setting * 0.90f;
+  const float distanceThreshold = 5.0f + setting * 8.0f;  // tighter range (was 6+10)
   return attackingTerritory >= territoryThreshold && primaryDefenderDistance <= distanceThreshold;
 }
 
@@ -46,14 +48,16 @@ inline unsigned int GetZonePressureDuration_ms(float pressure) {
   return 700U + static_cast<unsigned int>(ClampSetting(pressure) * 1600.0f);
 }
 
+// PES 5/6: dribblers favour combination play over soloing (0.55 base vs 0.58).
+// This keeps wingers looking for a one-two rather than always charging.
 inline float GetDribbleForwardDrive(float dribbleOffensiveness, float roleMindset) {
-  return 0.58f + ClampSetting(dribbleOffensiveness) * 0.28f + ClampSetting(roleMindset) * 0.12f;
+  return 0.55f + ClampSetting(dribbleOffensiveness) * 0.28f + ClampSetting(roleMindset) * 0.12f;
 }
 
-// Neutral remains the historical 0.75 force-field scale. Lower values create
-// shorter passing links; higher values spread support players a little wider.
+// PES 5/6: slightly wider support triangle (0.68 base vs 0.65)
+// for cleaner give-and-go combinations in central areas.
 inline float GetSupportWebScale(float supportDistance) {
-  return 0.65f + ClampSetting(supportDistance) * 0.20f;
+  return 0.68f + ClampSetting(supportDistance) * 0.20f;
 }
 
 // Defenders still join possession play, but centre-backs retain more of their

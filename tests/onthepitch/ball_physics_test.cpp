@@ -56,7 +56,7 @@ TEST(BallPhysicsTest, GroundFrictionSlowsRollingBall) {
       blunted::Vector3(0.0f, 0.0f, config.ballRadius), blunted::Vector3(5.0f, 0.0f, 0.0f)};
   const BallGroundInteraction interaction = ApplyBallMotionForces(state, config, 0.1f);
 
-  EXPECT_NEAR(state.momentum.coords[0], 4.74f, kEpsilon);
+  EXPECT_NEAR(state.momentum.coords[0], 4.762f, kEpsilon);
   EXPECT_NEAR(state.momentum.coords[1], 0.0f, kEpsilon);
   EXPECT_NEAR(interaction.grassInfluenceBias, 1.0f, kEpsilon);
 }

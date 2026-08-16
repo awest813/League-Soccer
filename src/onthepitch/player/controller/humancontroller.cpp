@@ -54,22 +54,32 @@ void HumanController::RequestCommand(PlayerCommandQueue& commandQueue) {
     actionBufferTime_ms = 0;
   }
 
-  // cancels
-
-  // shot cancel
-  if (actionMode == 2 && actionButton == e_ButtonFunction_Shot &&
-      hid->GetButton(e_ButtonFunction_ShortPass) && !match->IsInSetPiece()) {
+  // super cancel (R1 + R2): immediately abort any buffered action or power gauge
+  if (IsSuperCancelling()) {
     actionMode = 0;
     gauge_ms = 0;
     actionBufferTime_ms = 0;
   }
 
-  // high pass cancel
-  if (actionMode == 2 && actionButton == e_ButtonFunction_HighPass &&
+  // cancels
+
+  // shot cancel / fake shot
+  if (actionMode == 2 && (actionButton == e_ButtonFunction_Shot || actionButton == e_ButtonFunction_HighPass) &&
       hid->GetButton(e_ButtonFunction_ShortPass) && !match->IsInSetPiece()) {
     actionMode = 0;
     gauge_ms = 0;
     actionBufferTime_ms = 0;
+
+    // Classic PES Fake Shot: immediately trigger a sharp cut in the stick direction if on the ball
+    if (CastPlayer()->HasPossession() || match->GetDesignatedPossessionPlayer() == CastPlayer()) {
+      PlayerCommand fakeShotCut;
+      fakeShotCut.desiredFunctionType = e_FunctionType_BallControl;
+      fakeShotCut.useDesiredMovement = true;
+      fakeShotCut.desiredDirection = inputDirection;
+      fakeShotCut.desiredVelocityFloat = dribbleVelocity;
+      fakeShotCut.modifier |= e_PlayerCommandModifier_FakeShot;
+      commandQueue.push_back(fakeShotCut);
+    }
   }
 
   // cancel action buffer
@@ -136,6 +146,12 @@ void HumanController::RequestCommand(PlayerCommandQueue& commandQueue) {
         command.useDesiredMovement = false;
         command.useDesiredLookAt = false;
 
+        // Classic PES 5/6 1-2 Pass: L1 + ShortPass makes passer break forward dynamically
+        if (hid->GetButton(e_ButtonFunction_Switch)) {
+          command.modifier |= e_PlayerCommandModifier_OneTwo;
+          team->GetController()->ApplyAttackingRun(CastPlayer());
+        }
+
         float inputPower = clamp(pow(gaugeFactor, 0.7f), 0.01f, 1.0f);
         command.touchInfo.inputDirection = inputDirection;
         command.touchInfo.inputPower = inputPower;
@@ -197,6 +213,16 @@ void HumanController::RequestCommand(PlayerCommandQueue& commandQueue) {
         command.useDesiredLookAt = false;
         command.desiredVelocityFloat =
             inputVelocityFloat;  // this is so we can use sprint/dribble buttons as shot modifiers
+
+        // Classic PES 5/6 Chip Shot: L1 + Shoot
+        if (hid->GetButton(e_ButtonFunction_Switch)) {
+          command.modifier |= e_PlayerCommandModifier_Chip;
+        }
+        // Classic PES 5/6 Controlled / Finesse Shot: R2 + Shoot
+        if (hid->GetButton(e_ButtonFunction_Dribble)) {
+          command.modifier |= e_PlayerCommandModifier_Finesse;
+        }
+
         command.touchInfo.inputDirection = inputDirection;
         command.touchInfo.autoDirectionBias =
             GetConfiguration()->GetReal("gameplay_shot_autodirection", _default_Shot_AutoDirection);
@@ -267,6 +293,10 @@ void HumanController::RequestCommand(PlayerCommandQueue& commandQueue) {
       idleTurnToOpponentGoal = true;
     if (hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint))
       knockOn = true;
+    if (isKnockOnSprint) {
+      knockOn = true;
+      isKnockOnSprint = false;
+    }
 
     // special adapted input for ballcontrol and trap, when we have shoot/pass buffers
     Vector3 inputDirectionSave2 = inputDirection;
@@ -312,13 +342,15 @@ void HumanController::RequestCommand(PlayerCommandQueue& commandQueue) {
   // movement
   bool forceMagnet = false;
   bool extraHaste = false;
-  if (actionMode != 2 && hid->GetButton(e_ButtonFunction_Pressure)) {
-    forceMagnet = true;
-    extraHaste = true;
-  }
-  if (actionMode == 2) {
-    forceMagnet = true;
-    extraHaste = true;
+  if (!IsSuperCancelling()) {
+    if (actionMode != 2 && hid->GetButton(e_ButtonFunction_Pressure)) {
+      forceMagnet = true;
+      extraHaste = true;
+    }
+    if (actionMode == 2) {
+      forceMagnet = true;
+      extraHaste = true;
+    }
   }
   _MovementCommand(commandQueue, forceMagnet, extraHaste);
 
@@ -328,23 +360,11 @@ void HumanController::RequestCommand(PlayerCommandQueue& commandQueue) {
            e_FunctionType_Movement);  // make sure this is the movement command (is probably
                                       // guaranteed, check out _MovementCommand)
 
-    /*
-        // no magnet
-        command.desiredDirection = inputDirection;
-        command.desiredVelocityFloat = inputVelocityFloat;
-        if (command.desiredVelocityFloat < idleDribbleSwitch) command.desiredDirection =
-       (_mentalImage->GetBallPrediction(500).Get2D() -
-       player->GetPosition()).GetNormalized(inputDirection);
-        //command.desiredLookAt = CastPlayer()->GetPosition() + inputDirection * 10;
-        command.desiredLookAt = _mentalImage->GetBallPrediction(500).Get2D();
-    */
-
-    // super cancel
-    if (hid->GetButton(e_ButtonFunction_Dribble) && hid->GetButton(e_ButtonFunction_Sprint)) {
-      if (!hasBestPossession) {
-        command.desiredDirection = inputDirection;
-        command.desiredVelocityFloat = inputVelocityFloat;
-      }
+    // Classic PES 5/6 Super Cancel: direct unassisted manual movement vector
+    if (IsSuperCancelling()) {
+      command.desiredDirection = inputDirection;
+      command.desiredVelocityFloat = inputVelocityFloat;
+      command.strictMovement = e_StrictMovement_True;
     }
   }
 
@@ -511,8 +531,28 @@ void HumanController::Process() {
     }
   }
 
+  if (hid->GetButton(e_ButtonFunction_Sprint) && !hid->GetPreviousButtonState(e_ButtonFunction_Sprint)) {
+    int now_ms = static_cast<int>(match->GetActualTime_ms());
+    if (now_ms - lastSprintPressTime_ms < 280) {
+      isKnockOnSprint = true;
+    }
+    lastSprintPressTime_ms = now_ms;
+  }
+
   if (!fullyManualSwitching && hid->GetButton(e_ButtonFunction_Switch) && hasPossession)
     team->GetController()->ApplyAttackingRun();
+}
+
+bool HumanController::IsSuperCancelling() const {
+  return hid && hid->GetButton(e_ButtonFunction_Sprint) && hid->GetButton(e_ButtonFunction_Dribble);
+}
+
+float HumanController::GetGaugeFactor() const {
+  if (actionMode != 2)
+    return 0.0f;
+  int baseTime_ms = 60;
+  float factor = (gauge_ms - baseTime_ms) * (1.0f / float(1000 - baseTime_ms));
+  return clamp(factor, 0.0f, 1.0f);
 }
 
 Vector3 HumanController::GetDirection() {
@@ -537,6 +577,9 @@ void HumanController::Reset() {
   actionButton = e_ButtonFunction_ShortPass;
   actionBufferTime_ms = 0;
 
+  lastSprintPressTime_ms = 0;
+  isKnockOnSprint = false;
+
   lastSwitchTime_ms = -10000;
   lastSwitchTimeDuration_ms = 300;
 
@@ -549,22 +592,35 @@ void HumanController::Reset() {
 
 void HumanController::_GetHidInput(Vector3& rawInputDirection, float& rawInputVelocityFloat) {
   rawInputDirection = hid->GetDirection();
+  float stickLen = rawInputDirection.GetLength();
 
-  if (rawInputDirection.GetLength() < analogStickDeadzone) {
+  if (stickLen < analogStickDeadzone) {
     rawInputDirection = CastPlayer()->GetDirectionVec();
     rawInputVelocityFloat = idleVelocity;
   } else {
-    if (hid->GetButton(e_ButtonFunction_Sprint))
-      rawInputVelocityFloat = ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint);
-    else if (hid->GetButton(e_ButtonFunction_Dribble))
-      rawInputVelocityFloat =
-          ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::SlowDribble);
-    else if (!UsesFullyManualPlayerSwitching(*GetConfiguration()) &&
-             hid->GetButton(e_ButtonFunction_Switch) &&
-             match->GetDesignatedPossessionPlayer() == CastPlayer())
+    float sprintSpeed = ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint);
+    float runSpeed = ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Run);
+    float slowDribbleSpeed =
+        ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::SlowDribble);
+
+    if (hid->GetButton(e_ButtonFunction_Sprint)) {
+      rawInputVelocityFloat = sprintSpeed;
+    } else if (hid->GetButton(e_ButtonFunction_Dribble)) {
+      rawInputVelocityFloat = slowDribbleSpeed;
+    } else if (!UsesFullyManualPlayerSwitching(*GetConfiguration()) &&
+               hid->GetButton(e_ButtonFunction_Switch) &&
+               match->GetDesignatedPossessionPlayer() == CastPlayer()) {
       rawInputVelocityFloat = idleVelocity;
-    else
-      rawInputVelocityFloat = ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Run);
+    } else {
+      // Analog stick modulation: gentle stick displacement enables fine close control
+      if (stickLen < 0.75f) {
+        float analogRatio =
+            clamp((stickLen - analogStickDeadzone) / (0.75f - analogStickDeadzone), 0.0f, 1.0f);
+        rawInputVelocityFloat = slowDribbleSpeed + analogRatio * (runSpeed - slowDribbleSpeed);
+      } else {
+        rawInputVelocityFloat = runSpeed;
+      }
+    }
     assert(rawInputDirection.GetLength() > 0.001f);
     rawInputDirection.Normalize();  // hid should do this, but still
   }

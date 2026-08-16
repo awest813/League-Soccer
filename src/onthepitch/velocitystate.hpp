@@ -20,8 +20,11 @@ inline constexpr float sprintVelocity = 8.0f;
 inline constexpr float animSprintVelocity = 7.0f;
 
 inline constexpr float idleDribbleSwitch = 1.8f;
-inline constexpr float dribbleWalkSwitch = 4.2f;
-inline constexpr float walkSprintSwitch = 6.0f;
+// PES 5/6: tighter dribble->walk boundary so close-control dribbling stays
+// in dribble-anim range longer before snapping to walk. Sprint trigger is
+// raised slightly so the transition to full sprint is crisper.
+inline constexpr float dribbleWalkSwitch = 4.4f;
+inline constexpr float walkSprintSwitch = 6.2f;
 
 // Maps a continuous velocity value to the nearest quantised level.
 inline float RangeVelocity(float velocity) {

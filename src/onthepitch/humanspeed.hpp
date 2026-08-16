@@ -8,17 +8,22 @@
 
 enum class HumanSpeedType { SlowDribble, Run, Sprint };
 
-inline constexpr float kMinimumHumanSlowDribbleSpeed = 2.0f;
-inline constexpr float kMaximumHumanSlowDribbleSpeed = 4.1f;
-inline constexpr float kDefaultHumanSlowDribbleSpeed = 3.5f;
+// PES 5/6 speed profile: players feel weighted and deliberate.
+// Sprint is meaningfully faster than a jog but not a rocket-ship.
+// Slow dribble is sticky — close control takes commitment.
+inline constexpr float kMinimumHumanSlowDribbleSpeed = 1.8f;
+inline constexpr float kMaximumHumanSlowDribbleSpeed = 3.8f;
+inline constexpr float kDefaultHumanSlowDribbleSpeed = 3.0f;
 
-inline constexpr float kMinimumHumanRunSpeed = 4.3f;
-inline constexpr float kMaximumHumanRunSpeed = 5.9f;
-inline constexpr float kDefaultHumanRunSpeed = 5.0f;
+inline constexpr float kMinimumHumanRunSpeed = 4.2f;
+inline constexpr float kMaximumHumanRunSpeed = 5.6f;
+inline constexpr float kDefaultHumanRunSpeed = 4.8f;
 
+// Sprint ceiling lowered vs default (8.0→7.0) so elite pace is still
+// rewarding but speed doesn't make skill irrelevant.
 inline constexpr float kMinimumHumanSprintSpeed = 6.0f;
-inline constexpr float kMaximumHumanSprintSpeed = 12.0f;
-inline constexpr float kDefaultHumanSprintSpeed = 8.0f;
+inline constexpr float kMaximumHumanSprintSpeed = 9.5f;
+inline constexpr float kDefaultHumanSprintSpeed = 7.0f;
 
 inline const char* HumanSpeedConfigKey(HumanSpeedType type) {
   switch (type) {
@@ -71,11 +76,11 @@ inline float DefaultHumanSpeed(HumanSpeedType type) {
 inline int HumanSpeedSliderSteps(HumanSpeedType type) {
   switch (type) {
     case HumanSpeedType::SlowDribble:
-      return 22;  // 0.1 m/s increments
+      return 21;  // 1.8 to 3.8 m/s in 0.1 m/s increments (20 intervals + 1)
     case HumanSpeedType::Run:
-      return 17;  // 0.1 m/s increments
+      return 15;  // 4.2 to 5.6 m/s in 0.1 m/s increments (14 intervals + 1)
     case HumanSpeedType::Sprint:
-      return 25;  // 0.25 m/s increments
+      return 36;  // 6.0 to 9.5 m/s in 0.1 m/s increments (35 intervals + 1)
   }
   return 2;
 }
