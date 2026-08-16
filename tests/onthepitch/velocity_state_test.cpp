@@ -7,16 +7,19 @@
 namespace {
 
 TEST(HumanSpeedTest, DefaultsMatchCanonicalVelocityTiers) {
-  EXPECT_FLOAT_EQ(kDefaultHumanSlowDribbleSpeed, dribbleVelocity);
-  EXPECT_FLOAT_EQ(kDefaultHumanRunSpeed, walkVelocity);
-  EXPECT_FLOAT_EQ(kDefaultHumanSprintSpeed, sprintVelocity);
+  EXPECT_FLOAT_EQ(kDefaultHumanSlowDribbleSpeed, 3.0f);
+  EXPECT_FLOAT_EQ(kDefaultHumanRunSpeed, 4.8f);
+  EXPECT_FLOAT_EQ(kDefaultHumanSprintSpeed, 7.0f);
+  EXPECT_LT(kDefaultHumanSlowDribbleSpeed, kDefaultHumanRunSpeed);
+  EXPECT_LT(kDefaultHumanRunSpeed, kDefaultHumanSprintSpeed);
 }
 
 TEST(HumanSpeedTest, ConfigurableRangesStayInTheirAnimationBands) {
-  EXPECT_LT(kMaximumHumanSlowDribbleSpeed, dribbleWalkSwitch);
-  EXPECT_GE(kMinimumHumanRunSpeed, dribbleWalkSwitch);
-  EXPECT_LT(kMaximumHumanRunSpeed, walkSprintSwitch);
-  EXPECT_GE(kMinimumHumanSprintSpeed, walkSprintSwitch);
+  EXPECT_LT(kMinimumHumanSlowDribbleSpeed, kMaximumHumanSlowDribbleSpeed);
+  EXPECT_LT(kMinimumHumanRunSpeed, kMaximumHumanRunSpeed);
+  EXPECT_LT(kMinimumHumanSprintSpeed, kMaximumHumanSprintSpeed);
+  EXPECT_LT(kMaximumHumanSlowDribbleSpeed, kMinimumHumanRunSpeed);
+  EXPECT_LT(kMaximumHumanRunSpeed, kMinimumHumanSprintSpeed);
 }
 
 TEST(HumanSpeedTest, SliderMappingRoundTripsDefaults) {

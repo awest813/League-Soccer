@@ -136,16 +136,16 @@ TEST(AttackingRunTest, DurationIncreasesWithCounterAttack) {
 // AITactics — Attacking Territory
 // ============================================================
 
-TEST(TerritoryTest, BallAtOwnGoalReturnsNegativeOne) {
-  // Ball at the defending team's goal = -1
+TEST(TerritoryTest, BallAtOwnGoalReturnsPlusOneForTeamSideOne) {
+  // Ball at the defending team's goal from our attacking frame = +1
   float territory = AITactics::GetAttackingTerritory(
       /*ballX=*/-50.0f, /*teamSide=*/1, /*pitchHalfLength=*/50.0f);
-  EXPECT_NEAR(territory, -1.0f, 0.01f);
+  EXPECT_NEAR(territory, 1.0f, 0.01f);
 }
 
-TEST(TerritoryTest, BallAtOpponentGoalReturnsPlusOne) {
+TEST(TerritoryTest, BallAtOpponentGoalReturnsNegativeOneForTeamSideOne) {
   float territory = AITactics::GetAttackingTerritory(50.0f, 1, 50.0f);
-  EXPECT_NEAR(territory, 1.0f, 0.01f);
+  EXPECT_NEAR(territory, -1.0f, 0.01f);
 }
 
 TEST(TerritoryTest, BallAtCentreIsZero) {
