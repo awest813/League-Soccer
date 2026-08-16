@@ -9,6 +9,8 @@
 #include "AIsupport/AIfunctions.hpp"
 #include "managers/resourcemanagerpool.hpp"
 #include "match.hpp"
+#include "officials.hpp"
+#include "player/playerofficial.hpp"
 #include "scene/objectfactory.hpp"
 
 Referee::Referee(Match* match) : match(match) {
@@ -90,6 +92,11 @@ void Referee::Process() {
       foul.advantage = false;
       if (!CheckFoul()) {
         match->StopPlay();
+        Vector3 refPos(0, 0, 1.7f);
+        if (match->GetOfficials() && match->GetOfficials()->GetReferee()) {
+          refPos = match->GetOfficials()->GetReferee()->GetPosition() + Vector3(0, 0, 1.7f);
+        }
+        whistle[3]->SetPosition(refPos);
         whistle[3]->SetGain(0.3 * GetConfiguration()->GetReal("audio_volume", 0.5));
         whistle[3]->Poke(e_SystemType_Audio);
 
@@ -208,6 +215,11 @@ void Referee::Process() {
     if (!match->IsInPlay() && !match->IsInSetPiece() && buffer.active == true) {
       if (buffer.stopTime + 300 == match->GetActualTime_ms() && buffer.endPhase == false &&
           buffer.desiredSetPiece != e_SetPiece_KickOff) {
+        Vector3 refPos(0, 0, 1.7f);
+        if (match->GetOfficials() && match->GetOfficials()->GetReferee()) {
+          refPos = match->GetOfficials()->GetReferee()->GetPosition() + Vector3(0, 0, 1.7f);
+        }
+        whistle[1]->SetPosition(refPos);
         whistle[1]->SetGain(0.3 * GetConfiguration()->GetReal("audio_volume", 0.5));
         whistle[1]->Poke(e_SystemType_Audio);
       }
@@ -238,6 +250,11 @@ void Referee::Process() {
 
       if (buffer.startTime == match->GetActualTime_ms()) {
         // blow whistle and wait for set piece taker to touch the ball
+        Vector3 refPos(0, 0, 1.7f);
+        if (match->GetOfficials() && match->GetOfficials()->GetReferee()) {
+          refPos = match->GetOfficials()->GetReferee()->GetPosition() + Vector3(0, 0, 1.7f);
+        }
+        whistle[1]->SetPosition(refPos);
         whistle[1]->SetGain(0.3 * GetConfiguration()->GetReal("audio_volume", 0.5));
         whistle[1]->Poke(e_SystemType_Audio);
         match->StartPlay();

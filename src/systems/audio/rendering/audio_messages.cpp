@@ -44,4 +44,16 @@ bool AudioRendererMessage_ConfigAudioSoundBuffer::Execute(void* caller) {
   return true;
 }
 
+bool AudioRendererMessage_SetSourcePosition::Execute(void* caller) {
+  AudioRenderer* renderer = static_cast<AudioRenderer*>(caller);
+  renderer->SetSourcePosition(audioSoundBufferID, position);
+  return true;
+}
+
+bool AudioRendererMessage_SetListenerParameters::Execute(void* caller) {
+  AudioRenderer* renderer = static_cast<AudioRenderer*>(caller);
+  renderer->SetListenerParameters(position, velocity, orientation);
+  return true;
+}
+
 }  // namespace blunted

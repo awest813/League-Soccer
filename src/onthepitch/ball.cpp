@@ -301,6 +301,7 @@ BallSpatialInfo Ball::CalculatePrediction() {
       }
 
       if (woodwork) {
+        goalpostsound->SetPosition(nextPos);
         goalpostsound->SetGain(clamp(momentumPredict.GetLength() * 0.05f, 0.01f, 1.0f) * 0.5f *
                                GetConfiguration()->GetReal("audio_volume", 0.5f));
         goalpostsound->Poke(e_SystemType_Audio);
@@ -549,6 +550,7 @@ Vector3 Ball::GetAveragePosition(unsigned int duration_ms) const {
 void Ball::TriggerBallTouchSound(float gain) {
   float finalGain = gain * 0.6f * GetConfiguration()->GetReal("audio_volume", 0.5f);
   if (finalGain > 0.01f) {
+    sound->SetPosition(positionBuffer);
     sound->SetPitch(0.9f + random(0.0f, 0.2f));
     sound->SetGain(finalGain);
     sound->Poke(e_SystemType_Audio);

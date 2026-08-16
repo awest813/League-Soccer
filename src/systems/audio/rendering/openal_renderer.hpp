@@ -36,6 +36,7 @@ public:
 
   virtual void SetSourceParameter(int audioSoundBufferID, e_AudioRenderer_SourceParameter parameter,
                                   float value);
+  virtual void SetSourcePosition(int audioSoundBufferID, const Vector3& position);
 
   void operator()();
 

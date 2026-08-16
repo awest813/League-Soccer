@@ -24,6 +24,7 @@
 #include "officials.hpp"
 #include "player/humanoid/animcollection.hpp"
 #include "referee.hpp"
+#include "scene/objects/audioreceiver.hpp"
 #include "scene/objects/camera.hpp"
 #include "scene/objects/light.hpp"
 #include "scene/objects/sound.hpp"
@@ -299,6 +300,7 @@ protected:
 
   boost::intrusive_ptr<Node> cameraNode;
   boost::intrusive_ptr<Camera> camera;
+  boost::intrusive_ptr<AudioReceiver> audioReceiver;
   boost::intrusive_ptr<Node> sunNode;
 
   boost::intrusive_ptr<Node> stadiumNode;

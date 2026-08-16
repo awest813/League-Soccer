@@ -95,6 +95,37 @@ protected:
   bool loop;
 };
 
+class AudioRendererMessage_SetSourcePosition : public Command {
+public:
+  AudioRendererMessage_SetSourcePosition(int audioSoundBufferID, const Vector3& position)
+      : Command("audiomsg_SetSourcePosition"),
+        audioSoundBufferID(audioSoundBufferID),
+        position(position) {};
+
+protected:
+  virtual bool Execute(void* caller = nullptr);
+
+  int audioSoundBufferID;
+  Vector3 position;
+};
+
+class AudioRendererMessage_SetListenerParameters : public Command {
+public:
+  AudioRendererMessage_SetListenerParameters(const Vector3& position, const Vector3& velocity,
+                                             const Quaternion& orientation)
+      : Command("audiomsg_SetListenerParameters"),
+        position(position),
+        velocity(velocity),
+        orientation(orientation) {};
+
+protected:
+  virtual bool Execute(void* caller = nullptr);
+
+  Vector3 position;
+  Vector3 velocity;
+  Quaternion orientation;
+};
+
 }  // namespace blunted
 
 #endif

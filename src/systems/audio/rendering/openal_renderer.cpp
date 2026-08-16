@@ -102,18 +102,20 @@ void OpenALRenderer::DeleteAudioSoundBuffer(int audioSoundBufferID) {
 }
 
 void OpenALRenderer::PlayAudioSoundBuffer(int audioSoundBufferID) {
-  alSourcePlay(bufferSourceMapping.find(audioSoundBufferID)->second);
+  auto iter = bufferSourceMapping.find(audioSoundBufferID);
+  if (iter != bufferSourceMapping.end()) {
+    alSourcePlay(iter->second);
+  }
 }
 
 void OpenALRenderer::SetListenerParameters(const Vector3& position, const Vector3& velocity,
                                            const Quaternion& orientation) {
   ALfloat listenerPos[] = {position.coords[0], position.coords[1], position.coords[2]};
   ALfloat listenerVel[] = {velocity.coords[0], velocity.coords[1], velocity.coords[2]};
-  Matrix3 ori;
-  orientation.ConstructMatrix(ori);
-  ori.Transpose();
-  ALfloat listenerOri[] = {ori.elements[0], ori.elements[1], ori.elements[2],
-                           ori.elements[3], ori.elements[4], ori.elements[5]};
+  Vector3 at = orientation * Vector3(0, 0, -1);
+  Vector3 up = orientation * Vector3(0, 1, 0);
+  ALfloat listenerOri[] = {at.coords[0], at.coords[1], at.coords[2],
+                           up.coords[0], up.coords[1], up.coords[2]};
 
   alListenerfv(AL_POSITION, listenerPos);
   alListenerfv(AL_VELOCITY, listenerVel);
@@ -122,22 +124,31 @@ void OpenALRenderer::SetListenerParameters(const Vector3& position, const Vector
 
 void OpenALRenderer::SetSourceParameter(int audioSoundBufferID,
                                         e_AudioRenderer_SourceParameter parameter, float value) {
-  ALuint sourceID = bufferSourceMapping.find(audioSoundBufferID)->second;
+  auto iter = bufferSourceMapping.find(audioSoundBufferID);
+  if (iter == bufferSourceMapping.end())
+    return;
+  ALuint sourceID = iter->second;
   switch (parameter) {
     case e_AudioRenderer_SourceParameter_Loop:
-      //        printf("LOOP: %i\n", int(round(value)));
       alSourcei(sourceID, AL_LOOPING, int(round(value)));
       break;
     case e_AudioRenderer_SourceParameter_Gain:
-      //        printf("GAIN: %f\n", value);
       alSourcef(sourceID, AL_GAIN, value);
       break;
     case e_AudioRenderer_SourceParameter_Pitch:
-      //        printf("PITCH: %f\n", value);
       alSourcef(sourceID, AL_PITCH, value);
       break;
     default:
       break;
+  }
+}
+
+void OpenALRenderer::SetSourcePosition(int audioSoundBufferID, const Vector3& position) {
+  auto iter = bufferSourceMapping.find(audioSoundBufferID);
+  if (iter != bufferSourceMapping.end()) {
+    ALuint sourceID = iter->second;
+    ALfloat sourcePos[] = {position.coords[0], position.coords[1], position.coords[2]};
+    alSourcefv(sourceID, AL_POSITION, sourcePos);
   }
 }
 

@@ -160,9 +160,15 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   GetScene3D()->CreateSystemObjects(camera);
   camera->Init();
 
+  audioReceiver = boost::static_pointer_cast<AudioReceiver>(
+      ObjectFactory::GetInstance().CreateObject("audioreceiver", e_ObjectType_AudioReceiver));
+  GetScene3D()->CreateSystemObjects(audioReceiver);
+  audioReceiver->Init();
+
   camera->SetFOV(25);
   cameraNode = boost::intrusive_ptr<Node>(new Node("cameraNode"));
   cameraNode->AddObject(camera);
+  cameraNode->AddObject(audioReceiver);
   cameraNode->SetPosition(Vector3(40, 0, 100));
   GetDynamicNode()->AddNode(cameraNode);
 
@@ -481,6 +487,8 @@ void Match::Exit() {
   scene3D->DeleteNode(GetDynamicNode());
   scene3D->DeleteNode(stadiumNode);
   scene3D->DeleteNode(goalsNode);
+
+  audioReceiver.reset();
 
   scene3D->DeleteObject(crowd01);
   scene3D->DeleteObject(crowd02);

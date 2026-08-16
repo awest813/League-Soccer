@@ -64,6 +64,13 @@ void AudioSound_SoundInterpreter::OnLoad(boost::intrusive_ptr<Resource<SoundBuff
     caller->audioSoundBuffer->GetResource()->CreateAudioSoundBuffer(
         resource->GetResource()->GetData());
   }
+
+  caller->audioSoundBuffer->resourceMutex.lock();
+  boost::intrusive_ptr<AudioRendererMessage_SetSourcePosition> posMsg(
+      new AudioRendererMessage_SetSourcePosition(
+          caller->audioSoundBuffer->GetResource()->GetID(), caller->GetPosition()));
+  caller->audioSoundBuffer->resourceMutex.unlock();
+  renderer->messageQueue.PushMessage(posMsg);
 }
 
 void AudioSound_SoundInterpreter::OnUnload() {
@@ -74,6 +81,15 @@ void AudioSound_SoundInterpreter::OnUnload() {
 
 void AudioSound_SoundInterpreter::OnMove(const Vector3& position) {
   caller->SetPosition(position);
+  if (caller->audioSoundBuffer) {
+    AudioRenderer* renderer = caller->GetAudioScene()->GetAudioSystem()->GetAudioRenderer();
+    caller->audioSoundBuffer->resourceMutex.lock();
+    boost::intrusive_ptr<AudioRendererMessage_SetSourcePosition> posMsg(
+        new AudioRendererMessage_SetSourcePosition(
+            caller->audioSoundBuffer->GetResource()->GetID(), position));
+    caller->audioSoundBuffer->resourceMutex.unlock();
+    renderer->messageQueue.PushMessage(posMsg);
+  }
 }
 
 void AudioSound_SoundInterpreter::OnPoke() {

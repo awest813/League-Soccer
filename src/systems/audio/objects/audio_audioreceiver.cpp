@@ -7,6 +7,7 @@
 
 #include "../audio_scene.hpp"
 #include "../audio_system.hpp"
+#include "../rendering/audio_messages.hpp"
 #include "managers/resourcemanagerpool.hpp"
 
 namespace blunted {
@@ -54,6 +55,13 @@ void AudioAudioReceiver_AudioReceiverInterpreter::OnSpatialChange(const Vector3&
                                                                   const Quaternion& rotation) {
   caller->SetPosition(position);
   caller->SetRotation(rotation);
+
+  AudioRenderer* renderer = caller->GetAudioScene()->GetAudioSystem()->GetAudioRenderer();
+  if (renderer) {
+    boost::intrusive_ptr<AudioRendererMessage_SetListenerParameters> listenerMsg(
+        new AudioRendererMessage_SetListenerParameters(position, Vector3(0, 0, 0), rotation));
+    renderer->messageQueue.PushMessage(listenerMsg);
+  }
 }
 
 }  // namespace blunted

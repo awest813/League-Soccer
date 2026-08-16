@@ -37,6 +37,9 @@ void NullAudioRenderer::SetSourceParameter(int /*audioSoundBufferID*/,
                                            e_AudioRenderer_SourceParameter /*parameter*/,
                                            float /*value*/) {}
 
+void NullAudioRenderer::SetSourcePosition(int /*audioSoundBufferID*/,
+                                          const Vector3& /*position*/) {}
+
 void NullAudioRenderer::operator()() {
   Log(e_Notice, "NullAudioRenderer", "operator()()", "Starting NullAudioRenderer thread");
 
