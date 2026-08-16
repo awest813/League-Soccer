@@ -165,7 +165,8 @@ CareerMenuPage::CareerMenuPage(Gui2WindowManager* windowManager, const Gui2PageD
     saveInfoStr = "🏆 " + summary.clubName + "\n" +
                   "📅 Season " + std::to_string(summary.season) + " (Week " + std::to_string(summary.week) + ")\n" +
                   "👔 " + summary.managerName + "\n" +
-                  "💰 " + FormatCareerMoney(summary.transferBudget) + " | Trust: " + std::to_string(summary.boardConfidence) + "%";
+                  "💰 " + FormatCareerMoney(summary.transferBudget) + "\n" +
+                  "🤝 Trust: " + std::to_string(summary.boardConfidence) + "%";
     if (!summary.timestamp.empty()) {
       saveInfoStr += "\n🕒 " + summary.timestamp;
     }
