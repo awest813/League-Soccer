@@ -57,6 +57,13 @@ UserEventManager::UserEventManager() {
 
   // init the joy and gamecontroller subsystems!
   SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
+
+  // Load community SDL_GameControllerDB mappings if present (zlib / permissive license)
+  int numMappings = SDL_GameControllerAddMappingsFromFile("data/gamecontrollerdb.txt");
+  if (numMappings > 0) {
+    printf("[userevent] Loaded %d gamecontroller mappings from data/gamecontrollerdb.txt\n", numMappings);
+  }
+
   for (int i = 0; i < SDL_NumJoysticks(); i++) {
     joystick[i] = SDL_JoystickOpen(i);
     if (joystick[i]) {
