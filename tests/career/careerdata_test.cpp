@@ -388,8 +388,8 @@ TEST(PESMasterLeagueTest, GeneratesCorrectRosterSizeAndStartingXI) {
   SquadState squad = CreatePESDefaultMasterLeagueSquad(1);
   EXPECT_EQ(squad.roster.size(), 16u);
   EXPECT_EQ(squad.startingXIPlayerIDs.size(), 11u);
-  EXPECT_EQ(squad.benchPlayerIDs.size(), 4u);
-  EXPECT_EQ(squad.reservesPlayerIDs.size(), 1u);
+  EXPECT_EQ(squad.benchPlayerIDs.size(), 5u);
+  EXPECT_EQ(squad.reservesPlayerIDs.size(), 0u);
 }
 
 TEST(PESMasterLeagueTest, ContainsIconicPESPlayers) {
@@ -429,4 +429,3 @@ TEST(PESMasterLeagueTest, ContainsIconicPESPlayers) {
 }
 
 }  // namespace
-

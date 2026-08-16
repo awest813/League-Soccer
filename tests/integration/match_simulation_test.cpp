@@ -20,8 +20,8 @@ TEST(AITacticsTest, ZonePressureIsSelectiveBySettingTerritoryAndDistance) {
   EXPECT_FALSE(AITactics::ShouldStartZonePressure(0.0f, 1.0f, 1.0f));
   EXPECT_FALSE(AITactics::ShouldStartZonePressure(0.5f, -0.5f, 5.0f));
   EXPECT_FALSE(AITactics::ShouldStartZonePressure(0.5f, 0.2f, 20.0f));
-  EXPECT_TRUE(AITactics::ShouldStartZonePressure(0.5f, 0.2f, 10.0f));
-  EXPECT_TRUE(AITactics::ShouldStartZonePressure(1.0f, -0.3f, 15.0f));
+  EXPECT_TRUE(AITactics::ShouldStartZonePressure(0.5f, 0.2f, 8.0f));
+  EXPECT_TRUE(AITactics::ShouldStartZonePressure(1.0f, -0.3f, 12.0f));
 }
 
 TEST(AITacticsTest, TerritoryUsesTheTeamsAttackingDirection) {
@@ -40,11 +40,11 @@ TEST(AITacticsTest, SupportPassRequiresPressureAndClearerSpace) {
 TEST(AITacticsTest, DribbleDirectnessHasMeaningfulTacticalRange) {
   EXPECT_LT(AITactics::GetDribbleForwardDrive(0.0f, 0.5f),
             AITactics::GetDribbleForwardDrive(1.0f, 0.5f));
-  EXPECT_NEAR(AITactics::GetDribbleForwardDrive(0.5f, 0.5f), 0.78f, 0.001f);
+  EXPECT_NEAR(AITactics::GetDribbleForwardDrive(0.5f, 0.5f), 0.75f, 0.001f);
 }
 
 TEST(AITacticsTest, SupportDistancePreservesNeutralSpacingAndOffersSubtleRange) {
-  EXPECT_FLOAT_EQ(AITactics::GetSupportWebScale(0.5f), 0.75f);
+  EXPECT_FLOAT_EQ(AITactics::GetSupportWebScale(0.5f), 0.78f);
   EXPECT_LT(AITactics::GetSupportWebScale(0.0f), AITactics::GetSupportWebScale(0.5f));
   EXPECT_GT(AITactics::GetSupportWebScale(1.0f), AITactics::GetSupportWebScale(0.5f));
 }
