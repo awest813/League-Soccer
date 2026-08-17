@@ -1,0 +1,13 @@
+# Normalize text files to LF in the repository (and on checkout).
+* text=auto
+
+# Shell scripts, the Nix shell, and CI/Docker assets must keep LF line
+# endings even on Windows checkouts (core.autocrlf would otherwise write
+# CRLF and break their shebangs when executed under Linux/WSL/Docker).
+*.sh       text eol=lf
+*.nix      text eol=lf
+*.yml      text eol=lf
+Dockerfile text eol=lf
+*.ps1      text eol=crlf
+*.bat      text eol=crlf
+*.cmd      text eol=crlf

@@ -1,0 +1,21 @@
+# Keep the Docker build context lean. Without this, the image build ships
+# thousands of files (git history, local build trees, vcpkg checkout, dist
+# artifacts) to the daemon, bloating the context and slowing every build.
+
+# VCS
+.git
+.gitignore
+
+# Local build trees
+build/
+build-*/
+build-win/
+vcpkg/
+dist/
+docs/
+
+# Runtime + editor noise
+*.log
+.vscode
+.idea
+.DS_Store
