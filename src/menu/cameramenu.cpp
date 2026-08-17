@@ -12,11 +12,11 @@ using namespace blunted;
 
 CameraPage::CameraPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
-  sliderZoom = new Gui2Slider(windowManager, "camzoomslider", 0, 0, 27, 6, "Zoom");
-  sliderHeight = new Gui2Slider(windowManager, "camheightslider", 0, 0, 27, 6, "Height");
-  sliderFOV = new Gui2Slider(windowManager, "camfovslider", 0, 0, 27, 6, "FOV (perspective)");
+  sliderZoom = new Gui2Slider(windowManager, "camzoomslider", 0, 0, 27, 6, TR("camera_zoom"));
+  sliderHeight = new Gui2Slider(windowManager, "camheightslider", 0, 0, 27, 6, TR("camera_height"));
+  sliderFOV = new Gui2Slider(windowManager, "camfovslider", 0, 0, 27, 6, TR("camera_fov"));
   sliderAngleFactor =
-      new Gui2Slider(windowManager, "camangleslider", 0, 0, 27, 6, "Horizontal angle");
+      new Gui2Slider(windowManager, "camangleslider", 0, 0, 27, 6, TR("camera_angle"));
   sliderZoom->AddHelperValue(Vector3(80, 80, 250), "default", _default_CameraZoom);
   sliderHeight->AddHelperValue(Vector3(80, 80, 250), "default", _default_CameraHeight);
   sliderFOV->AddHelperValue(Vector3(80, 80, 250), "default", _default_CameraFOV);
@@ -26,7 +26,7 @@ CameraPage::CameraPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_camera", 2, 2, 56, 3, "Camera");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_camera", 2, 2, 56, 3, TR("camera_title"));
   frame->AddView(title);
   title->Show();
 
@@ -46,11 +46,13 @@ CameraPage::CameraPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   this->sig_OnClose.connect([this](...) { OnClose(); });
 
   Gui2Button* buttonPresetStandard =
-      new Gui2Button(windowManager, "cam_preset_standard", 0, 0, 30, 3, "Standard (16:9)");
+      new Gui2Button(windowManager, "cam_preset_standard", 0, 0, 30, 3, TR("camera_preset_standard"));
   Gui2Button* buttonPresetWidescreen =
-      new Gui2Button(windowManager, "cam_preset_widescreen", 0, 0, 30, 3, "Widescreen (16:9)");
+      new Gui2Button(windowManager, "cam_preset_widescreen", 0, 0, 30, 3,
+                     TR("camera_preset_widescreen"));
   Gui2Button* buttonPresetUltrawide =
-      new Gui2Button(windowManager, "cam_preset_ultrawide", 0, 0, 30, 3, "Ultrawide (21:9)");
+      new Gui2Button(windowManager, "cam_preset_ultrawide", 0, 0, 30, 3,
+                     TR("camera_preset_ultrawide"));
   Gui2Button* backButton = new Gui2Button(windowManager, "cam_button_back", 0, 0, 30, 3,
                                           Localization::GetInstance().Translate("action_back"));
   backButton->sig_OnClick.connect([this](...) { GoBack(); });

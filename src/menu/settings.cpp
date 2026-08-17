@@ -361,7 +361,7 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
   Gui2Button* buttonDefaults =
       new Gui2Button(windowManager, "button_settings_gameplay_defaults", 16, 80, 22, 3.5,
-                     "Reset to defaults");
+                     Localization::GetInstance().Translate("settings_reset_defaults"));
   buttonDefaults->sig_OnClick.connect([this](...) { SetDefaults(); });
   frame->AddView(buttonDefaults);
   buttonDefaults->Show();
@@ -587,7 +587,8 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   }
 
   Gui2Button* buttonDefaults =
-      new Gui2Button(windowManager, "button_keyboard_defaults", 0, 0, 30, 3, "Reset to defaults");
+      new Gui2Button(windowManager, "button_keyboard_defaults", 0, 0, 30, 3,
+                     Localization::GetInstance().Translate("settings_reset_defaults"));
   buttonDefaults->sig_OnClick.connect([this](...) { SetDefaults(); });
 
   Gui2Caption* captionNorth =
@@ -948,7 +949,9 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
       std::bind(&GamepadSetupPage::GoGamepadFunctionPage, this, controllerID));
 
   Gui2Button* buttonReset = new Gui2Button(windowManager, "button_gamepadsetupmenu_reset", 0, 0,
-                                           36, 3, "reset to profile defaults");
+                                           36, 3,
+                                           Localization::GetInstance().Translate(
+                                               "settings_reset_defaults"));
   buttonReset->sig_OnClick.connect(
       std::bind(&GamepadSetupPage::ResetToAutoDetectProfile, this, controllerID));
 
@@ -1823,7 +1826,9 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   gridOffTheBall->AddView(offTheBallButtons[3], 3, 1);
 
   Gui2Button* buttonDefaults = new Gui2Button(windowManager, "button_gamepadfunction_defaults", 0,
-                                              0, 30, 3, "reset to defaults");
+                                              0, 30, 3,
+                                              Localization::GetInstance().Translate(
+                                                  "settings_reset_defaults"));
   buttonDefaults->sig_OnClick.connect([this](...) {
     SetDefaults();
     GoBack();

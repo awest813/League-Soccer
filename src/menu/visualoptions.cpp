@@ -17,7 +17,7 @@ VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_visualoptions", 2, 2, 56, 3, "Visual Options");
+      new Gui2Caption(windowManager, "caption_visualoptions", 2, 2, 56, 3, TR("visualoptions_title"));
   frame->AddView(title);
   title->Show();
 
@@ -27,25 +27,28 @@ VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui
       new Gui2Pulldown(windowManager, "pulldown_visualoptions_kitselection_t1", 0, 0, 30, 3);
   Gui2Caption* kitSelectionCaption1 =
       new Gui2Caption(windowManager, "caption_visualoptions_kitselection_t1", 0, 0, 20, 3,
-                      GetGameTask()->GetMatch()->GetTeam(0)->GetTeamData()->GetName() + " kit");
+                      TRF("visualoptions_team_kit",
+                          {GetGameTask()->GetMatch()->GetTeam(0)->GetTeamData()->GetName()}));
   kitSelectionPulldown[1] =
       new Gui2Pulldown(windowManager, "pulldown_visualoptions_kitselection_t2", 0, 0, 30, 3);
   Gui2Caption* kitSelectionCaption2 =
       new Gui2Caption(windowManager, "caption_visualoptions_kitselection_t2", 0, 0, 20, 3,
-                      GetGameTask()->GetMatch()->GetTeam(1)->GetTeamData()->GetName() + " kit");
+                      TRF("visualoptions_team_kit",
+                          {GetGameTask()->GetMatch()->GetTeam(1)->GetTeamData()->GetName()}));
 
-  kitSelectionPulldown[0]->AddEntry("Kit 01", "team1kit01");
-  kitSelectionPulldown[0]->AddEntry("Kit 02", "team1kit02");
-  kitSelectionPulldown[1]->AddEntry("Kit 01", "team2kit01");
-  kitSelectionPulldown[1]->AddEntry("Kit 02", "team2kit02");
+  kitSelectionPulldown[0]->AddEntry(TR("visualoptions_kit01"), "team1kit01");
+  kitSelectionPulldown[0]->AddEntry(TR("visualoptions_kit02"), "team1kit02");
+  kitSelectionPulldown[1]->AddEntry(TR("visualoptions_kit01"), "team2kit01");
+  kitSelectionPulldown[1]->AddEntry(TR("visualoptions_kit02"), "team2kit02");
   kitSelectionPulldown[1]->SetSelected(1);
   kitSelectionPulldown[0]->sig_OnChange.connect(
       std::bind(&VisualOptionsPage::OnChangeKit, this, kitSelectionPulldown[0]));
   kitSelectionPulldown[1]->sig_OnChange.connect(
       std::bind(&VisualOptionsPage::OnChangeKit, this, kitSelectionPulldown[1]));
 
-  Gui2Button* randomizeSunButton = new Gui2Button(
-      windowManager, "button_visualoptions_randomizesun", 0, 0, 20, 3, "Randomize sun position");
+  Gui2Button* randomizeSunButton =
+      new Gui2Button(windowManager, "button_visualoptions_randomizesun", 0, 0, 20, 3,
+                     TR("visualoptions_randomize_sun"));
   randomizeSunButton->sig_OnClick.connect([this](...) { OnRandomizeSun(); });
 
   Gui2Button* backButton = new Gui2Button(windowManager, "button_visualoptions_back", 0, 0, 20, 3,

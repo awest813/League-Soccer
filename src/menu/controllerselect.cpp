@@ -154,15 +154,13 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
   SetImagePositions();
 
   Gui2Caption* hintGamepad = new Gui2Caption(
-      windowManager, "caption_ctrl_hint_gp", 5, 72.0f, 70, 2.0f,
-      "🎮 GAMEPAD: [D-PAD / Stick / Bumpers] Move Team | [A / START] Confirm | [B] Back");
+      windowManager, "caption_ctrl_hint_gp", 5, 72.0f, 70, 2.0f, TR("ctrl_hint_gamepad"));
   hintGamepad->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   ctrlFrame->AddView(hintGamepad);
   hintGamepad->Show();
 
   Gui2Caption* hintKbd = new Gui2Caption(
-      windowManager, "caption_ctrl_hint_kbd", 5, 75.0f, 70, 2.0f,
-      "⌨️ KEYBOARD: [Left / Right / 1 / 2] Move Team | [Enter / Space] Confirm | [Esc] Back");
+      windowManager, "caption_ctrl_hint_kbd", 5, 75.0f, 70, 2.0f, TR("ctrl_hint_keyboard"));
   hintKbd->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   ctrlFrame->AddView(hintKbd);
   hintKbd->Show();

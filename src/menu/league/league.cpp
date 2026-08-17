@@ -49,11 +49,14 @@ LeaguePage::LeaguePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   this->AddView(bgPanel);
   bgPanel->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league", 2, 2, 66, 3, "League Mode");
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "caption_league", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("menu_leaguemode"));
   bgPanel->AddView(title);
   title->Show();
 
-  captionTime = new Gui2Caption(windowManager, "caption_league_time", 40, 2, 28, 3, "time");
+  captionTime = new Gui2Caption(windowManager, "caption_league_time", 40, 2, 28, 3,
+                                Localization::GetInstance().Translate("league_time"));
   bgPanel->AddView(captionTime);
   captionTime->Show();
 
@@ -62,16 +65,19 @@ LeaguePage::LeaguePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_main", 2, 8, 66, 60);
 
   Gui2Button* buttonForward =
-      new Gui2Button(windowManager, "button_league_forward", 0, 0, 36, 5, "Open Dashboard");
+      new Gui2Button(windowManager, "button_league_forward", 0, 0, 36, 5,
+                     Localization::GetInstance().Translate("league_open_dashboard"));
   buttonForward->sig_OnClick.connect([this](...) { GoForward(); });
   buttonForward->SetFocus();
 
   Gui2Button* buttonStepTime =
-      new Gui2Button(windowManager, "button_league_steptime", 0, 0, 36, 5, "Advance One Day");
+      new Gui2Button(windowManager, "button_league_steptime", 0, 0, 36, 5,
+                     Localization::GetInstance().Translate("league_advance_day"));
   buttonStepTime->sig_OnClick.connect([this](...) { StepTime(); });
 
   Gui2Button* buttonMainMenu =
-      new Gui2Button(windowManager, "button_league_mainmenu", 0, 0, 36, 5, "Return to Main Menu");
+      new Gui2Button(windowManager, "button_league_mainmenu", 0, 0, 36, 5,
+                     Localization::GetInstance().Translate("league_return_main_menu"));
   buttonMainMenu->sig_OnClick.connect([this](...) { GoMainMenu(); });
 
   grid->AddView(buttonForward, 0, 0);
@@ -180,15 +186,17 @@ LeagueStartPage::LeagueStartPage(Gui2WindowManager* windowManager, const Gui2Pag
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_start", 5, 4, 30, 3, "League Mode");
+      new Gui2Caption(windowManager, "caption_league_start", 5, 4, 30, 3,
+                      Localization::GetInstance().Translate("menu_leaguemode"));
   frame->AddView(title);
   title->Show();
 
   Gui2Button* buttonLoad = new Gui2Button(windowManager, "button_league_start_load", 0, 0, 30, 3,
-                                          "Continue Saved League");
+                                          Localization::GetInstance().Translate("league_load_saved"));
   buttonLoad->sig_OnClick.connect([this](...) { GoLoad(); });
   Gui2Button* buttonNew =
-      new Gui2Button(windowManager, "button_league_start_new", 0, 0, 30, 3, "Start New League");
+      new Gui2Button(windowManager, "button_league_start_new", 0, 0, 30, 3,
+                     Localization::GetInstance().Translate("league_start_new"));
   buttonNew->sig_OnClick.connect([this](...) { GoNew(); });
   Gui2Button* buttonBack = new Gui2Button(windowManager, "button_league_start_back", 0, 0, 30, 3,
                                           Localization::GetInstance().Translate("action_back"));
@@ -246,7 +254,8 @@ LeagueStartLoadPage::LeagueStartLoadPage(Gui2WindowManager* windowManager,
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_start_load", 2, 2, 76, 3, "Load Saved League");
+      new Gui2Caption(windowManager, "caption_league_start_load", 2, 2, 76, 3,
+                      Localization::GetInstance().Translate("league_load_saved"));
   frame->AddView(title);
   title->Show();
 
@@ -326,7 +335,8 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
   Gui2Frame* frame = new Gui2Frame(windowManager, "bg_league_start_new", 5, 5, 90, 90, true);
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_start_new", 5, 5, 20, 3, "Start new league");
+      new Gui2Caption(windowManager, "caption_league_start_new", 5, 5, 20, 3,
+                      Localization::GetInstance().Translate("league_start_new"));
   frame->AddView(title);
   title->Show();
 
@@ -381,7 +391,8 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
       "<>?;':\" ");
   managerNameInput->SetMaxLength(32);
   Gui2Button* proceedButton =
-      new Gui2Button(windowManager, "button_league_start_new_proceed", 0, 0, 30, 3, "Proceed");
+      new Gui2Button(windowManager, "button_league_start_new_proceed", 0, 0, 30, 3,
+                     Localization::GetInstance().Translate("league_proceed"));
   proceedButton->sig_OnClick.connect([this](...) { GoProceed(); });
 
   Gui2Grid* gridDBSelect =

@@ -51,7 +51,8 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
                          int_to_str(match->GetMatchData()->GetGoalCount(1)) + " " +
                          match->GetTeam(1)->GetTeamData()->GetName();
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_gameover_title", 2, 3, 76, 3, "FULL TIME");
+      new Gui2Caption(windowManager, "caption_gameover_title", 2, 3, 76, 3,
+                      Localization::GetInstance().Translate("ingame_fulltime"));
   title->SetPosition(40 - title->GetTextWidthPercent() * 0.5f, 3);
   frame->AddView(title);
   title->Show();

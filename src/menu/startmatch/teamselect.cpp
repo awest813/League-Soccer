@@ -71,7 +71,7 @@ int AddCompetitions(Gui2IconSelector* selector) {
   }
 
   if (competitionCount == 0) {
-    selector->AddEntry("", "No competitions found", kSelectorFallbackImage);
+    selector->AddEntry("", TR("teamselect_none_comp"), kSelectorFallbackImage);
   }
 
   return competitionCount;
@@ -79,7 +79,7 @@ int AddCompetitions(Gui2IconSelector* selector) {
 
 int AddTeams(Gui2IconSelector* selector, const std::string& competition_id) {
   if (competition_id.empty()) {
-    selector->AddEntry("", "No teams found", kSelectorFallbackImage);
+    selector->AddEntry("", TR("teamselect_none_team"), kSelectorFallbackImage);
     return 0;
   }
 
@@ -101,7 +101,7 @@ int AddTeams(Gui2IconSelector* selector, const std::string& competition_id) {
   }
 
   if (teamCount == 0) {
-    selector->AddEntry("", "No teams found", kSelectorFallbackImage);
+    selector->AddEntry("", TR("teamselect_none_team"), kSelectorFallbackImage);
   }
 
   selector->Show();
@@ -122,7 +122,7 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
   this->AddView(frame2);
 
   Gui2Caption* brandingNotice = new Gui2Caption(windowManager, "teamselect_brandingnotice", 19, 73,
-                                                28, 3, "Original League Soccer team branding");
+                                                28, 3, TR("teamselect_branding"));
   this->AddView(brandingNotice);
   brandingNotice->SetColor(Vector3(200, 200, 200));
   brandingNotice->SetTransparency(0.6f);
@@ -130,23 +130,25 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
   brandingNotice->Show();
 
   Gui2Caption* p1 =
-      new Gui2Caption(windowManager, "teamselect_caption_p1", 2, 2, 30, 3, "HOME TEAM (P1)");
+      new Gui2Caption(windowManager, "teamselect_caption_p1", 2, 2, 30, 3, TR("teamselect_home"));
   p1->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
-  p2 = new Gui2Caption(windowManager, "teamselect_caption_p2", 2, 2, 30, 3, "AWAY TEAM (P2)");
+  p2 = new Gui2Caption(windowManager, "teamselect_caption_p2", 2, 2, 30, 3, TR("teamselect_away"));
   p2->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   Gui2Grid* grid1 = new Gui2Grid(windowManager, "teamselect_grid_team1", 2, 8, 30, 42);
   grid2 = new Gui2Grid(windowManager, "teamselect_grid_team2", 2, 8, 30, 42);
 
   competitionSelect1 = new Gui2IconSelector(windowManager, "teamselect_iconselector_competition1",
-                                            0, 0, 29, 18, "Competition select");
+                                            0, 0, 29, 18, TR("teamselect_competition"));
   competitionSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_competition2",
-                                            0, 0, 29, 18, "Competition select");
+                                            0, 0, 29, 18, TR("teamselect_competition"));
   teamSelect1 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team1", 0, 0, 29, 18,
-                                     "Team select");
+                                     TR("teamselect_team"));
   teamSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team2", 0, 0, 29, 18,
-                                     "Team select");
-  buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 29, 3, "Confirm Home");
-  buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 29, 3, "Confirm Away");
+                                     TR("teamselect_team"));
+  buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 29, 3,
+                                TR("teamselect_confirm_home"));
+  buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 29, 3,
+                                TR("teamselect_confirm_away"));
   Gui2Button* buttonBack = new Gui2Button(windowManager, "teamselect_button_back", 0, 0, 29, 3,
                                           Localization::GetInstance().Translate("action_back"));
 

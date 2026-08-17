@@ -19,15 +19,20 @@ LeagueSystemPage::LeagueSystemPage(Gui2WindowManager* windowManager, const Gui2P
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_system", 2, 2, 66, 3, "System");
+      new Gui2Caption(windowManager, "caption_league_system", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("league_system"));
   frame->AddView(title);
   title->Show();
 
-  Gui2Button* btnSave = new Gui2Button(windowManager, "btn_system_save", 0, 0, 60, 3, "Save");
+  Gui2Button* btnSave =
+      new Gui2Button(windowManager, "btn_system_save", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("action_save"));
   Gui2Button* btnSettings =
-      new Gui2Button(windowManager, "btn_system_settings", 0, 0, 60, 3, "Settings");
+      new Gui2Button(windowManager, "btn_system_settings", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("settings_title"));
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_system_back", 0, 0, 60, 3, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_system_back", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_back_dashboard"));
 
   btnSave->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_System_Save); });
   btnSettings->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_System_Settings); });
@@ -75,22 +80,25 @@ LeagueSystemSavePage::LeagueSystemSavePage(Gui2WindowManager* windowManager,
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_system_save", 2, 2, 66, 3, "Save Game");
+      new Gui2Caption(windowManager, "caption_league_system_save", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("league_save_game"));
   frame->AddView(title);
   title->Show();
 
   std::string saveDir = GetActiveSaveDirectory();
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_save_info", 2, 10, 66, 6,
-                                      "Game saves automatically. Your current save: " + saveDir);
+  Gui2Caption* info = new Gui2Caption(
+      windowManager, "caption_save_info", 2, 10, 66, 6, TRF("league_save_info", {saveDir}));
   frame->AddView(info);
   info->Show();
 
   Gui2Button* btnSave =
-      new Gui2Button(windowManager, "btn_save_manual", 15, 40, 40, 3, "Manual Save");
+      new Gui2Button(windowManager, "btn_save_manual", 15, 40, 40, 3,
+                     Localization::GetInstance().Translate("league_manual_save"));
   btnSave->sig_OnClick.connect([this, windowManager, frame](...) {
     SaveAutosaveToDatabase();
     Gui2Caption* feedback =
-        new Gui2Caption(windowManager, "caption_save_feedback", 2, 30, 66, 3, "Save successful!");
+        new Gui2Caption(windowManager, "caption_save_feedback", 2, 30, 66, 3,
+                        Localization::GetInstance().Translate("league_save_success"));
     frame->AddView(feedback);
     feedback->Show();
   });
@@ -155,21 +163,25 @@ LeagueSystemSettingsPage::LeagueSystemSettingsPage(Gui2WindowManager* windowMana
   }
 
   Gui2Caption* lblMgr =
-      new Gui2Caption(windowManager, "caption_set_mgr", 0, 0, 24, 2.5, "Manager Name:");
+      new Gui2Caption(windowManager, "caption_set_mgr", 0, 0, 24, 2.5,
+                      Localization::GetInstance().Translate("league_manager_name"));
   editManagerName =
       new Gui2EditLine(windowManager, "editline_set_mgr", 0, 0, 40, 3, curManagerName);
   editManagerName->SetMaxLength(32);
   grid->AddView(lblMgr, row, 0);
   grid->AddView(editManagerName, row++, 1);
 
-  Gui2Caption* lblTeam = new Gui2Caption(windowManager, "caption_set_team", 0, 0, 24, 2.5, "Team:");
+  Gui2Caption* lblTeam = new Gui2Caption(
+      windowManager, "caption_set_team", 0, 0, 24, 2.5,
+      Localization::GetInstance().Translate("league_team_colon"));
   Gui2Caption* valTeam =
       new Gui2Caption(windowManager, "caption_set_team_val", 0, 0, 40, 2.5, curTeamName);
   grid->AddView(lblTeam, row, 0);
   grid->AddView(valTeam, row++, 1);
 
   Gui2Caption* lblCur =
-      new Gui2Caption(windowManager, "caption_set_currency", 0, 0, 24, 2.5, "Currency:");
+      new Gui2Caption(windowManager, "caption_set_currency", 0, 0, 24, 2.5,
+                      Localization::GetInstance().Translate("league_currency"));
   pulldownCurrency = new Gui2Pulldown(windowManager, "pulldown_set_currency", 0, 0, 40, 3);
   pulldownCurrency->AddEntry("Euro", "euro");
   pulldownCurrency->AddEntry("Dollar", "dollar");
@@ -186,14 +198,17 @@ LeagueSystemSettingsPage::LeagueSystemSettingsPage(Gui2WindowManager* windowMana
   grid->AddView(pulldownCurrency, row++, 1);
 
   Gui2Caption* lblDiff =
-      new Gui2Caption(windowManager, "caption_set_diff", 0, 0, 24, 2.5, "Difficulty:");
-  sliderDifficulty = new Gui2Slider(windowManager, "slider_set_diff", 0, 0, 40, 6, "Difficulty");
+      new Gui2Caption(windowManager, "caption_set_diff", 0, 0, 24, 2.5,
+                      Localization::GetInstance().Translate("league_difficulty_label"));
+  sliderDifficulty = new Gui2Slider(windowManager, "slider_set_diff", 0, 0, 40, 6,
+                                    Localization::GetInstance().Translate("league_difficulty"));
   sliderDifficulty->SetValue(curDifficulty);
   grid->AddView(lblDiff, row, 0);
   grid->AddView(sliderDifficulty, row++, 1);
 
   Gui2Caption* lblSeason =
-      new Gui2Caption(windowManager, "caption_set_season", 0, 0, 24, 2.5, "Season Year:");
+      new Gui2Caption(windowManager, "caption_set_season", 0, 0, 24, 2.5,
+                      Localization::GetInstance().Translate("league_season_year"));
   editSeasonYear =
       new Gui2EditLine(windowManager, "editline_set_season", 0, 0, 40, 3, curSeasonYear);
   editSeasonYear->SetAllowedChars("0123456789");
@@ -202,7 +217,8 @@ LeagueSystemSettingsPage::LeagueSystemSettingsPage(Gui2WindowManager* windowMana
   grid->AddView(editSeasonYear, row++, 1);
 
   Gui2Button* btnSave =
-      new Gui2Button(windowManager, "btn_settings_save", 0, 0, 24, 3, "Save Settings");
+      new Gui2Button(windowManager, "btn_settings_save", 0, 0, 24, 3,
+                     Localization::GetInstance().Translate("league_save_settings"));
   btnSave->sig_OnClick.connect([this](...) { SaveSettings(); });
   grid->AddView(btnSave, row++, 0);
 
@@ -234,7 +250,8 @@ void LeagueSystemSettingsPage::SaveSettings() {
                  ", seasonyear = " + editSeasonYear->GetText());
 
   Gui2Caption* feedback =
-      new Gui2Caption(windowManager, "caption_settings_saved", 2, 80, 66, 3, "Settings saved!");
+      new Gui2Caption(windowManager, "caption_settings_saved", 2, 80, 66, 3,
+                      Localization::GetInstance().Translate("league_settings_saved"));
   frame->AddView(feedback);
   feedback->Show();
 }

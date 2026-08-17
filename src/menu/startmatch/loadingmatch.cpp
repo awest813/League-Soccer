@@ -10,6 +10,7 @@
 #include "../pagefactory.hpp"
 #include "main.hpp"
 #include "utils/gui2/widgets/frame.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -43,7 +44,8 @@ LoadingMatchPage::LoadingMatchPage(Gui2WindowManager* windowManager, const Gui2P
   loadingPanel->Show();
 
   Gui2Caption* header =
-      new Gui2Caption(windowManager, "main_loading_header", 18, 28, 64, 4, "MATCH DAY");
+      new Gui2Caption(windowManager, "main_loading_header", 18, 28, 64, 4,
+                      Localization::GetInstance().Translate("loading_match_day"));
   header->SetPosition(50.0f - header->GetTextWidthPercent() * 0.5f, 28);
   this->AddView(header);
   header->Show();
@@ -55,7 +57,7 @@ LoadingMatchPage::LoadingMatchPage(Gui2WindowManager* windowManager, const Gui2P
   versus->Show();
 
   Gui2Caption* status = new Gui2Caption(windowManager, "main_loading_status", 18, 68, 64, 3,
-                                        "Preparing the pitch...");
+                                        Localization::GetInstance().Translate("loading_preparing"));
   status->SetPosition(50.0f - status->GetTextWidthPercent() * 0.5f, 68);
   this->AddView(status);
   status->Show();

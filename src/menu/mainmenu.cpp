@@ -133,12 +133,12 @@ OutroPage::OutroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
   this->AddView(messagePanel);
   messagePanel->Show();
   Gui2Caption* message = new Gui2Caption(windowManager, "caption_outro_message", 0, 3, 32, 3,
-                                         "Thanks for playing League Soccer");
+                                         TR("outro_thanks"));
   message->SetPosition(18.0f - message->GetTextWidthPercent() * 0.5f, 3);
   messagePanel->AddView(message);
   message->Show();
   Gui2Caption* prompt = new Gui2Caption(windowManager, "caption_outro_prompt", 0, 9, 32, 3,
-                                        "Press Enter, A, or Escape to Exit");
+                                        TR("outro_prompt"));
   prompt->SetPosition(18.0f - prompt->GetTextWidthPercent() * 0.5f, 9);
   messagePanel->AddView(prompt);
   prompt->Show();
@@ -186,19 +186,22 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Frame* navPanel = new Gui2Frame(windowManager, "frame_mm_nav", 4, 28, 38, 50, true);
   grid = new Gui2Grid(windowManager, "grid_main", 2, 2, 34, 46);
 
-  buttons.push_back(new Gui2Button(windowManager, "button_main_start", 0, 0, 34, 5, "Quick Match"));
   buttons.push_back(
-      new Gui2Button(windowManager, "button_main_league", 0, 0, 34, 5, "League Mode"));
+      new Gui2Button(windowManager, "button_main_start", 0, 0, 34, 5, TR("menu_quickmatch")));
   buttons.push_back(
-      new Gui2Button(windowManager, "button_main_career", 0, 0, 34, 5, "Career Mode"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_settings", 0, 0, 34, 5, "Settings"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_credits", 0, 0, 34, 5, "Credits"));
+      new Gui2Button(windowManager, "button_main_league", 0, 0, 34, 5, TR("menu_leaguemode")));
   buttons.push_back(
-      new Gui2Button(windowManager, "button_main_quit", 0, 0, 34, 5, "Quit to Desktop"));
+      new Gui2Button(windowManager, "button_main_career", 0, 0, 34, 5, TR("menu_careermode")));
+  buttons.push_back(
+      new Gui2Button(windowManager, "button_main_settings", 0, 0, 34, 5, TR("menu_settings")));
+  buttons.push_back(
+      new Gui2Button(windowManager, "button_main_credits", 0, 0, 34, 5, TR("menu_credits")));
+  buttons.push_back(
+      new Gui2Button(windowManager, "button_main_quit", 0, 0, 34, 5, TR("menu_quit")));
 
   if (!IsReleaseVersion()) {
     buttons.push_back(
-        new Gui2Button(windowManager, "button_main_import", 0, 0, 34, 5, "Import Data"));
+        new Gui2Button(windowManager, "button_main_import", 0, 0, 34, 5, TR("menu_import")));
   }
 
   buttons.at(0)->sig_OnClick.connect([this](...) { GoControllerSelect(); });
@@ -228,45 +231,54 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   CareerSave* activeSave = CareerDatabase::GetInstance().GetActiveSave();
   
   if (activeSave) {
-    Gui2Caption* activeTitle = new Gui2Caption(windowManager, "caption_mm_active", 2, 2, 46, 3, "RESUME CAREER");
+    Gui2Caption* activeTitle =
+        new Gui2Caption(windowManager, "caption_mm_active", 2, 2, 46, 3, TR("mainmenu_resume_title"));
     activeTitle->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
     infoPanel->AddView(activeTitle);
     activeTitle->Show();
-    
-    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_saveteam", 2, 8, "🏆 " + activeSave->name + " (" + activeSave->club.leagueName + ")");
-    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savemgr", 2, 12, "👔 Manager: " + activeSave->managerName);
-    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_saveseason", 2, 16, "📅 Season " + std::to_string(activeSave->season.currentSeason) + " (Week " + std::to_string(activeSave->season.currentWeek) + ")");
-    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savedesc", 2, 22, "Select 'Career Mode' from the main menu to resume this save.");
+
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_saveteam", 2, 8,
+                       TRF("mainmenu_save_team", {activeSave->name, activeSave->club.leagueName}));
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savemgr", 2, 12,
+                       TRF("mainmenu_save_manager", {activeSave->managerName}));
+    AddMainMenuCaption(
+        windowManager, infoPanel, "caption_mm_saveseason", 2, 16,
+        TRF("mainmenu_save_season",
+            {std::to_string(activeSave->season.currentSeason),
+             std::to_string(activeSave->season.currentWeek)}));
+    AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savedesc", 2, 22,
+                       TR("mainmenu_resume_hint"));
   } else {
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_welcome", 2, 3, "League Soccer");
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_tagline_1", 6, 2.2f,
-                       "Classic PES-style simulation with 3D match engine,");
+                       TR("mainmenu_tagline_1"));
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_tagline_2", 9, 2.2f,
-                       "advanced physics, and deep career modes.");
+                       TR("mainmenu_tagline_2"));
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_quick", 14, 2.3f,
-                       "Quick Match: Jump straight into a game.");
+                       TR("mainmenu_mode_quick"));
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_league", 18, 2.3f,
-                       "League Mode: Full season with standings.");
+                       TR("mainmenu_mode_league"));
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_modes_career", 22, 2.2f,
-                       "Career Mode: Master League-style progression.");
+                       TR("mainmenu_mode_career"));
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_hint_1", 28, 2.2f,
-                       "Arrow keys or gamepad to navigate.");
+                       TR("mainmenu_hint_nav"));
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_hint_2", 31, 2.2f,
-                       "Press Enter or A to select.");
+                       TR("mainmenu_hint_select"));
   }
   root->AddView(infoPanel);
   infoPanel->Show();
 
   Gui2Frame* tipsPanel = new Gui2Frame(windowManager, "frame_mm_tips", 46, 50, 50, 34, true);
-  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_title", 2, 2, "Pro Tips");
+  AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_title", 2, 2,
+                     TR("mainmenu_tips_title"));
   AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_supercancel", 6, 2.2f,
-                     "Use R1+R2 (RB+RT) for Super Cancel to manually move players.");
+                     TR("mainmenu_tips_supercancel"));
   AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_fakeshot", 10, 2.2f,
-                     "Press Pass right after Shoot to perform a Fake Shot.");
+                     TR("mainmenu_tips_fakeshot"));
   AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_condition", 14, 2.2f,
-                     "Check player Condition arrows before a match starts.");
+                     TR("mainmenu_tips_condition"));
   AddMainMenuCaption(windowManager, tipsPanel, "caption_mm_tips_chip", 18, 2.2f,
-                     "Hold L1 (LB) while shooting for a Chip Shot.");
+                     TR("mainmenu_tips_chip"));
   root->AddView(tipsPanel);
   tipsPanel->Show();
 

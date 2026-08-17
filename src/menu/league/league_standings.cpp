@@ -21,22 +21,29 @@ LeagueStandingsPage::LeagueStandingsPage(Gui2WindowManager* windowManager,
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_standings", 2, 2, 66, 3, "Standings");
+      new Gui2Caption(windowManager, "caption_league_standings", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("league_standings"));
   frame->AddView(title);
   title->Show();
 
   Gui2Button* btnLeague =
-      new Gui2Button(windowManager, "btn_standings_league", 0, 0, 60, 3, "League Table");
+      new Gui2Button(windowManager, "btn_standings_league", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_table"));
   Gui2Button* btnLeagueStats =
-      new Gui2Button(windowManager, "btn_standings_league_stats", 0, 0, 60, 3, "League Stats");
+      new Gui2Button(windowManager, "btn_standings_league_stats", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_stats"));
   Gui2Button* btnNCup =
-      new Gui2Button(windowManager, "btn_standings_ncup", 0, 0, 60, 3, "National Cup");
+      new Gui2Button(windowManager, "btn_standings_ncup", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_national_cup"));
   Gui2Button* btnICup1 =
-      new Gui2Button(windowManager, "btn_standings_icup1", 0, 0, 60, 3, "International Cup 1");
+      new Gui2Button(windowManager, "btn_standings_icup1", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_icup1"));
   Gui2Button* btnICup2 =
-      new Gui2Button(windowManager, "btn_standings_icup2", 0, 0, 60, 3, "International Cup 2");
+      new Gui2Button(windowManager, "btn_standings_icup2", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_icup2"));
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_standings_back", 0, 0, 60, 3, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_standings_back", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_back_dashboard"));
 
   btnLeague->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_League); });
   btnLeagueStats->sig_OnClick.connect(
@@ -94,14 +101,20 @@ LeagueStandingsLeaguePage::LeagueStandingsLeaguePage(Gui2WindowManager* windowMa
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_standings_league", 2, 2, 66, 3, "League");
+      new Gui2Caption(windowManager, "caption_league_standings_league", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("menu_league"));
   frame->AddView(title);
   title->Show();
 
-  Gui2Button* btnTable = new Gui2Button(windowManager, "btn_league_table", 0, 0, 60, 3, "Table");
-  Gui2Button* btnStats = new Gui2Button(windowManager, "btn_league_stats", 0, 0, 60, 3, "Stats");
+  Gui2Button* btnTable =
+      new Gui2Button(windowManager, "btn_league_table", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_table_short"));
+  Gui2Button* btnStats =
+      new Gui2Button(windowManager, "btn_league_stats", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_stats_short"));
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_league_back", 0, 0, 60, 3, "Back to Standings");
+      new Gui2Button(windowManager, "btn_league_back", 0, 0, 60, 3,
+                     Localization::GetInstance().Translate("league_back_standings"));
 
   btnTable->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_League_Table); });
   btnStats->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_League_Stats); });
@@ -372,7 +385,8 @@ LeagueStandingsNCupPage::LeagueStandingsNCupPage(Gui2WindowManager* windowManage
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_standings_ncup", 2, 2, 66, 3, "National Cup");
+      new Gui2Caption(windowManager, "caption_league_standings_ncup", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("league_national_cup"));
   frame->AddView(title);
   title->Show();
 

@@ -34,13 +34,14 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_management", 3, 2, 36, 3, "Management");
+      new Gui2Caption(windowManager, "caption_league_management", 3, 2, 36, 3,
+                      Localization::GetInstance().Translate("league_management"));
   frame->AddView(title);
   title->Show();
 
   Gui2Caption* subtitle =
       new Gui2Caption(windowManager, "caption_league_management_subtitle", 3, 6, 36, 4,
-                      "Handle contracts, monitor the market, and prepare your next squad move.");
+                      Localization::GetInstance().Translate("league_management_subtitle"));
   frame->AddView(subtitle);
   subtitle->Show();
 
@@ -50,16 +51,20 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   actionPanel->Show();
 
   Gui2Caption* actionTitle =
-      new Gui2Caption(windowManager, "caption_management_actions", 2, 2, 32, 2, "Front Office");
+      new Gui2Caption(windowManager, "caption_management_actions", 2, 2, 32, 2,
+                      Localization::GetInstance().Translate("league_front_office"));
   actionPanel->AddView(actionTitle);
   actionTitle->Show();
 
   Gui2Button* btnContracts =
-      new Gui2Button(windowManager, "btn_management_contracts", 0, 0, 34, 3, "Contracts");
+      new Gui2Button(windowManager, "btn_management_contracts", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("league_contracts"));
   Gui2Button* btnTransfers =
-      new Gui2Button(windowManager, "btn_management_transfers", 0, 0, 34, 3, "Transfers");
+      new Gui2Button(windowManager, "btn_management_transfers", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("league_transfers"));
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_management_back", 0, 0, 34, 3, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_management_back", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("league_back_dashboard"));
 
   btnContracts->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Management_Contracts); });
   btnTransfers->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Management_Transfers); });
@@ -79,13 +84,14 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   summaryPanel->Show();
 
   Gui2Caption* summaryTitle =
-      new Gui2Caption(windowManager, "caption_management_summary", 2, 2, 30, 2, "Contracts");
+      new Gui2Caption(windowManager, "caption_management_summary", 2, 2, 30, 2,
+                      Localization::GetInstance().Translate("league_contracts"));
   summaryPanel->AddView(summaryTitle);
   summaryTitle->Show();
 
   Gui2Caption* summaryBody =
       new Gui2Caption(windowManager, "caption_management_summary_body", 2, 6, 30, 8,
-                      squadContracts + " active player deals\nReview roles, ages, and squad depth");
+                      TRF("league_contracts_body", {squadContracts}));
   summaryPanel->AddView(summaryBody);
   summaryBody->Show();
 
@@ -95,13 +101,14 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   marketPanel->Show();
 
   Gui2Caption* marketTitle =
-      new Gui2Caption(windowManager, "caption_management_market", 2, 2, 30, 2, "Transfer Market");
+      new Gui2Caption(windowManager, "caption_management_market", 2, 2, 30, 2,
+                      Localization::GetInstance().Translate("league_transfer_market"));
   marketPanel->AddView(marketTitle);
   marketTitle->Show();
 
   Gui2Caption* marketBody = new Gui2Caption(
       windowManager, "caption_management_market_body", 2, 6, 30, 10,
-      marketTargets + " external players in the database\nStart with the highest-rated options");
+      TRF("league_market_body", {marketTargets}));
   marketPanel->AddView(marketBody);
   marketBody->Show();
 

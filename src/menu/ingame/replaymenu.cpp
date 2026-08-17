@@ -12,6 +12,7 @@
 #include "managers/environmentmanager.hpp"
 #include "utils/gui2/widgets/caption.hpp"
 #include "utils/gui2/widgets/frame.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -41,7 +42,8 @@ ReplayPage::ReplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   this->AddView(header);
   header->Show();
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_replay_title", 2, 2, 24, 3, "INSTANT REPLAY");
+      new Gui2Caption(windowManager, "caption_replay_title", 2, 2, 24, 3,
+                      Localization::GetInstance().Translate("ingame_replay_title"));
   header->AddView(title);
   title->Show();
 

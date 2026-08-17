@@ -38,7 +38,8 @@ LeagueTeamPage::LeagueTeamPage(Gui2WindowManager* windowManager, const Gui2PageD
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_team", 3, 2, 36, 3, "Team Management");
+      new Gui2Caption(windowManager, "caption_league_team", 3, 2, 36, 3,
+                      Localization::GetInstance().Translate("league_team_management"));
   frame->AddView(title);
   title->Show();
 
@@ -52,23 +53,32 @@ LeagueTeamPage::LeagueTeamPage(Gui2WindowManager* windowManager, const Gui2PageD
   actionPanel->Show();
 
   Gui2Caption* actionTitle =
-      new Gui2Caption(windowManager, "caption_team_actions", 2, 2, 32, 2, "Squad Tools");
+      new Gui2Caption(windowManager, "caption_team_actions", 2, 2, 32, 2,
+                      Localization::GetInstance().Translate("league_squad_tools"));
   actionPanel->AddView(actionTitle);
   actionTitle->Show();
 
   Gui2Button* btnFormation =
-      new Gui2Button(windowManager, "btn_team_formation", 0, 0, 34, 3, "Formation");
+      new Gui2Button(windowManager, "btn_team_formation", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("league_formation"));
   Gui2Button* btnPlayerSel =
-      new Gui2Button(windowManager, "btn_team_playersel", 0, 0, 34, 3, "Player Selection");
+      new Gui2Button(windowManager, "btn_team_playersel", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("league_player_selection"));
   Gui2Button* btnTactics =
-      new Gui2Button(windowManager, "btn_team_tactics", 0, 0, 34, 3, "Tactics");
+      new Gui2Button(windowManager, "btn_team_tactics", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("league_tactics"));
   Gui2Button* btnPlayerOvr =
-      new Gui2Button(windowManager, "btn_team_playerovr", 0, 0, 34, 3, "Player Overview");
+      new Gui2Button(windowManager, "btn_team_playerovr", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("league_player_overview"));
   Gui2Button* btnPlayerDev =
-      new Gui2Button(windowManager, "btn_team_playerdev", 0, 0, 34, 3, "Player Development");
-  Gui2Button* btnSetup = new Gui2Button(windowManager, "btn_team_setup", 0, 0, 34, 3, "Team Setup");
+      new Gui2Button(windowManager, "btn_team_playerdev", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("league_player_development"));
+  Gui2Button* btnSetup = new Gui2Button(
+      windowManager, "btn_team_setup", 0, 0, 34, 3,
+      Localization::GetInstance().Translate("league_team_setup"));
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_team_back", 0, 0, 34, 3, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_team_back", 0, 0, 34, 3,
+                     Localization::GetInstance().Translate("league_back_dashboard"));
 
   btnFormation->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Team_Formation); });
   btnPlayerSel->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Team_PlayerSelection); });
@@ -96,13 +106,14 @@ LeagueTeamPage::LeagueTeamPage(Gui2WindowManager* windowManager, const Gui2PageD
   squadPanel->Show();
 
   Gui2Caption* squadTitle =
-      new Gui2Caption(windowManager, "caption_team_summary", 2, 2, 30, 2, "Squad Snapshot");
+      new Gui2Caption(windowManager, "caption_team_summary", 2, 2, 30, 2,
+                      Localization::GetInstance().Translate("league_squad_snapshot"));
   squadPanel->AddView(squadTitle);
   squadTitle->Show();
 
-  Gui2Caption* squadBody = new Gui2Caption(windowManager, "caption_team_summary_body", 2, 6, 30, 10,
-                                           squadSize + " players\nAverage base stat: " + avgStat +
-                                               "\nAge range: " + youngestAge + " to " + oldestAge);
+  Gui2Caption* squadBody = new Gui2Caption(
+      windowManager, "caption_team_summary_body", 2, 6, 30, 10,
+      TRF("league_squad_body", {squadSize, avgStat, youngestAge, oldestAge}));
   squadPanel->AddView(squadBody);
   squadBody->Show();
 
@@ -112,14 +123,16 @@ LeagueTeamPage::LeagueTeamPage(Gui2WindowManager* windowManager, const Gui2PageD
   structurePanel->Show();
 
   Gui2Caption* structureTitle =
-      new Gui2Caption(windowManager, "caption_team_structure", 2, 2, 30, 2, "Structure");
+      new Gui2Caption(windowManager, "caption_team_structure", 2, 2, 30, 2,
+                      Localization::GetInstance().Translate("league_structure"));
   structurePanel->AddView(structureTitle);
   structureTitle->Show();
 
-  Gui2Caption* structureBody =
-      new Gui2Caption(windowManager, "caption_team_structure_body", 2, 6, 30, 6,
-                      std::string("Formation: ") + (hasFormation ? "Configured" : "Needs setup") +
-                          "\nTactics: " + (hasTactics ? "Configured" : "Needs setup"));
+  std::string formationStatus = hasFormation ? TR("league_configured") : TR("league_needs_setup");
+  std::string tacticsStatus = hasTactics ? TR("league_configured") : TR("league_needs_setup");
+  Gui2Caption* structureBody = new Gui2Caption(
+      windowManager, "caption_team_structure_body", 2, 6, 30, 6,
+      TRF("league_structure_body", {formationStatus, tacticsStatus}));
   structurePanel->AddView(structureBody);
   structureBody->Show();
 
@@ -129,13 +142,14 @@ LeagueTeamPage::LeagueTeamPage(Gui2WindowManager* windowManager, const Gui2PageD
   guidancePanel->Show();
 
   Gui2Caption* guidanceTitle =
-      new Gui2Caption(windowManager, "caption_team_guidance", 2, 2, 30, 2, "Recommended Flow");
+      new Gui2Caption(windowManager, "caption_team_guidance", 2, 2, 30, 2,
+                      Localization::GetInstance().Translate("league_recommended_flow"));
   guidancePanel->AddView(guidanceTitle);
   guidanceTitle->Show();
 
   Gui2Caption* guidanceBody =
       new Gui2Caption(windowManager, "caption_team_guidance_body", 2, 6, 30, 6,
-                      "Check the squad list, tune formation, then sharpen tactics before kickoff.");
+                      Localization::GetInstance().Translate("league_guidance_body"));
   guidancePanel->AddView(guidanceBody);
   guidanceBody->Show();
 
@@ -174,7 +188,8 @@ LeagueTeamFormationPage::LeagueTeamFormationPage(Gui2WindowManager* windowManage
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_team_formation", 2, 2, 66, 3, "Formation");
+      new Gui2Caption(windowManager, "caption_league_team_formation", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("league_formation"));
   frame->AddView(title);
   title->Show();
 
@@ -184,7 +199,8 @@ LeagueTeamFormationPage::LeagueTeamFormationPage(Gui2WindowManager* windowManage
     std::string teamName = result->data.at(0).at(0);
     std::string formationXML = result->data.at(0).at(1);
     Gui2Caption* info =
-        new Gui2Caption(windowManager, "caption_formation_team", 2, 6, 66, 3, "Team: " + teamName);
+        new Gui2Caption(windowManager, "caption_formation_team", 2, 6, 66, 3,
+                        TRF("league_team_line", {teamName}));
     frame->AddView(info);
     info->Show();
 
@@ -305,7 +321,8 @@ LeagueTeamTacticsPage::LeagueTeamTacticsPage(Gui2WindowManager* windowManager,
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_team_tactics", 2, 2, 66, 3, "Team Tactics");
+      new Gui2Caption(windowManager, "caption_league_team_tactics", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("league_team_tactics"));
   frame->AddView(title);
   title->Show();
 
@@ -315,7 +332,8 @@ LeagueTeamTacticsPage::LeagueTeamTacticsPage(Gui2WindowManager* windowManager,
     std::string teamName = result->data.at(0).at(0);
     std::string tacticsXML = result->data.at(0).at(1);
     Gui2Caption* info =
-        new Gui2Caption(windowManager, "caption_tactics_team", 2, 6, 66, 3, "Team: " + teamName);
+        new Gui2Caption(windowManager, "caption_tactics_team", 2, 6, 66, 3,
+                        TRF("league_team_line", {teamName}));
     frame->AddView(info);
     info->Show();
 
@@ -555,7 +573,8 @@ LeagueTeamSetupPage::LeagueTeamSetupPage(Gui2WindowManager* windowManager,
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_team_setup", 2, 2, 66, 3, "Team Setup");
+      new Gui2Caption(windowManager, "caption_league_team_setup", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("league_team_setup"));
   frame->AddView(title);
   title->Show();
 
@@ -571,7 +590,8 @@ LeagueTeamSetupPage::LeagueTeamSetupPage(Gui2WindowManager* windowManager,
   }
 
   Gui2Caption* infoTeam =
-      new Gui2Caption(windowManager, "caption_setup_team", 2, 6, 66, 2.5, "Team: " + teamName);
+      new Gui2Caption(windowManager, "caption_setup_team", 2, 6, 66, 2.5,
+                        TRF("league_team_line", {teamName}));
   frame->AddView(infoTeam);
   infoTeam->Show();
 

@@ -60,7 +60,8 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   Gui2Grid* statsGrid = new Gui2Grid(windowManager, "stats_grid", 40, 12, 38, 35);
   frame->AddView(statsGrid);
   Gui2Caption* h0 = new Gui2Caption(windowManager, "s_t1", 0, 0, 12, 3, md->GetTeamData(0)->GetShortName());
-  Gui2Caption* h1 = new Gui2Caption(windowManager, "s_l1", 0, 0, 14, 3, "MATCH STATS");
+  Gui2Caption* h1 = new Gui2Caption(windowManager, "s_l1", 0, 0, 14, 3,
+                                     Localization::GetInstance().Translate("ingame_match_stats"));
   Gui2Caption* h2 = new Gui2Caption(windowManager, "s_t2", 0, 0, 12, 3, md->GetTeamData(1)->GetShortName());
   h0->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   h1->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
@@ -69,16 +70,19 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   statsGrid->AddView(h1, 1, 0);
   statsGrid->AddView(h2, 2, 0);
   statsGrid->AddView(new Gui2Caption(windowManager, "s_v1", 0, 0, 12, 3, int_to_str(md->GetGoalCount(0))), 0, 1);
-  statsGrid->AddView(new Gui2Caption(windowManager, "s_l2", 0, 0, 14, 3, "Score"), 1, 1);
+  statsGrid->AddView(new Gui2Caption(windowManager, "s_l2", 0, 0, 14, 3,
+                                     Localization::GetInstance().Translate("ingame_score")), 1, 1);
   statsGrid->AddView(new Gui2Caption(windowManager, "s_v2", 0, 0, 12, 3, int_to_str(md->GetGoalCount(1))), 2, 1);
   unsigned long p0 = md->GetPossessionTime_ms(0);
   unsigned long p1 = md->GetPossessionTime_ms(1);
   int p0_pct = (p0 + p1 > 0) ? (p0 * 100) / (p0 + p1) : 50;
   statsGrid->AddView(new Gui2Caption(windowManager, "s_p1", 0, 0, 12, 3, int_to_str(p0_pct) + "%"), 0, 2);
-  statsGrid->AddView(new Gui2Caption(windowManager, "s_l3", 0, 0, 14, 3, "Possession"), 1, 2);
+  statsGrid->AddView(new Gui2Caption(windowManager, "s_l3", 0, 0, 14, 3,
+                                     Localization::GetInstance().Translate("ingame_possession")), 1, 2);
   statsGrid->AddView(new Gui2Caption(windowManager, "s_p2", 0, 0, 12, 3, int_to_str(100 - p0_pct) + "%"), 2, 2);
   statsGrid->AddView(new Gui2Caption(windowManager, "s_s1", 0, 0, 12, 3, int_to_str(md->GetShots(0))), 0, 3);
-  statsGrid->AddView(new Gui2Caption(windowManager, "s_l4", 0, 0, 14, 3, "Shots"), 1, 3);
+  statsGrid->AddView(new Gui2Caption(windowManager, "s_l4", 0, 0, 14, 3,
+                                     Localization::GetInstance().Translate("ingame_shots")), 1, 3);
   statsGrid->AddView(new Gui2Caption(windowManager, "s_s2", 0, 0, 12, 3, int_to_str(md->GetShots(1))), 2, 3);
   statsGrid->UpdateLayout(0.5);
   statsGrid->Show();
@@ -248,8 +252,8 @@ PreQuitPage::PreQuitPage(Gui2WindowManager* windowManager, const Gui2PageData& p
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_prequit", 2, 2, 46, 16);
 
   grid->AddView(restartCaption, 0, 0);
-  grid->AddView(okButton, 1, 0);
-  grid->AddView(cancelButton, 2, 0);
+  grid->AddView(okButton, 0, 1);
+  grid->AddView(cancelButton, 0, 2);
 
   grid->UpdateLayout(0.5);
 
