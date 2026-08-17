@@ -51,6 +51,11 @@ public:
 
   void SetQuantization(int steps) { quantizationSteps = std::max(steps, 2); }
 
+  // Replaces the automatic numeric readout on the right side of the slider
+  // with a custom label. Passing an empty string restores the default
+  // percentage readout.
+  void SetValueText(const std::string& text);
+
   int AddHelperValue(const Vector3& color, const std::string& description,
                      float initialValue = 0.0f);
   void SetHelperValue(int index, float value);
@@ -76,6 +81,12 @@ protected:
 
   float value;
   float quantizedValue;
+
+  Gui2Caption* valueCaption;
+  std::string customValueText;
+
+  void UpdateValueText();
+  void UpdateValuePosition();
 };
 
 }  // namespace blunted

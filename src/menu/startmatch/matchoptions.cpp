@@ -85,9 +85,9 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
   matchDurationSlider->sig_OnChange.connect([this](Gui2Slider*) { UpdateMatchDurationCaption(); });
 
   grid->AddView(difficultySlider, 0, 0);
-  grid->AddView(matchDurationSlider, 1, 0);
-  grid->AddView(buttonStart, 2, 0);
-  grid->AddView(buttonBack, 3, 0);
+  grid->AddView(matchDurationSlider, 0, 1);
+  grid->AddView(buttonStart, 0, 2);
+  grid->AddView(buttonBack, 0, 3);
   grid->UpdateLayout(0.5);
 
   frame->AddView(grid);
@@ -106,7 +106,8 @@ MatchOptionsPage::~MatchOptionsPage() {}
 void MatchOptionsPage::UpdateMatchDurationCaption() {
   const int minutes =
       static_cast<int>(std::round(MatchDurationMinutesFromSlider(matchDurationSlider->GetValue())));
-  matchDurationSlider->SetCaption(TRF("match_duration_minutes", {std::to_string(minutes)}));
+  matchDurationSlider->SetCaption(TR("match_duration"));
+  matchDurationSlider->SetValueText(TRF("match_duration_minutes_value", {std::to_string(minutes)}));
 }
 
 void MatchOptionsPage::UpdateDifficultyCaption() {
@@ -120,7 +121,8 @@ void MatchOptionsPage::UpdateDifficultyCaption() {
     case 4: label = "Top Player"; break;
     default: label = "Top Player"; break;
   }
-  difficultySlider->SetCaption("Difficulty: " + label);
+  difficultySlider->SetCaption(TR("match_difficulty"));
+  difficultySlider->SetValueText(label);
 }
 
 void MatchOptionsPage::Process() {

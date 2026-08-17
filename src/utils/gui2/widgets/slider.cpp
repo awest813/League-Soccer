@@ -38,6 +38,13 @@ Gui2Slider::Gui2Slider(Gui2WindowManager* windowManager, const std::string& name
   this->AddView(titleCaption);
   titleCaption->Show();
 
+  valueCaption =
+      new Gui2Caption(windowManager, name + "valuecaption", 1.0, 0.2, width_percent, 2.4, "");
+  this->AddView(valueCaption);
+  valueCaption->Show();
+
+  customValueText = "";
+
   Redraw();
 }
 
@@ -101,6 +108,7 @@ void Gui2Slider::Redraw() {
   Vector3 trackColor = windowManager->GetStyle()->GetColor(e_DecorationType_Dark2);
 
   float bias = IsFocussed() ? 0.0f : (fadeOut_ms / (float)fadeOutTime_ms);
+  bias = std::max(0.0f, std::min(1.0f, bias));
   Vector3 bgColor = brightColor * (1.0f - bias) + darkColor * bias;
   int bgAlpha = 180 + int(75.0f * (1.0f - bias));
 
@@ -155,6 +163,32 @@ void Gui2Slider::Redraw() {
   image->DrawRectangle(thumbX, thumbY + thumbH - 1, thumbW, 1, darkColor, 255);
 
   image->OnChange();
+  UpdateValueText();
+}
+
+void Gui2Slider::SetValueText(const std::string& text) {
+  customValueText = text;
+  UpdateValueText();
+}
+
+void Gui2Slider::UpdateValueText() {
+  if (!valueCaption)
+    return;
+
+  std::string text = customValueText;
+  if (text.empty()) {
+    text = std::to_string(static_cast<int>(std::round(quantizedValue * 100.0f))) + "%";
+  }
+  valueCaption->SetCaption(text);
+  UpdateValuePosition();
+}
+
+void Gui2Slider::UpdateValuePosition() {
+  if (!valueCaption)
+    return;
+  const float textWidth = valueCaption->GetTextWidthPercent();
+  const float x = std::max(1.0f, width_percent - textWidth - 1.0f);
+  valueCaption->SetPosition(x, 0.2f);
 }
 
 void Gui2Slider::ProcessWindowingEvent(WindowingEvent* event) {

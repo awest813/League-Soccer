@@ -12,11 +12,11 @@ using namespace blunted;
 
 CameraPage::CameraPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
-  sliderZoom = new Gui2Slider(windowManager, "camzoomslider", 0, 0, 30, 6, "Zoom");
-  sliderHeight = new Gui2Slider(windowManager, "camheightslider", 0, 0, 30, 6, "Height");
-  sliderFOV = new Gui2Slider(windowManager, "camfovslider", 0, 0, 30, 6, "FOV (perspective)");
+  sliderZoom = new Gui2Slider(windowManager, "camzoomslider", 0, 0, 27, 6, "Zoom");
+  sliderHeight = new Gui2Slider(windowManager, "camheightslider", 0, 0, 27, 6, "Height");
+  sliderFOV = new Gui2Slider(windowManager, "camfovslider", 0, 0, 27, 6, "FOV (perspective)");
   sliderAngleFactor =
-      new Gui2Slider(windowManager, "camangleslider", 0, 0, 30, 6, "Horizontal angle");
+      new Gui2Slider(windowManager, "camangleslider", 0, 0, 27, 6, "Horizontal angle");
   sliderZoom->AddHelperValue(Vector3(80, 80, 250), "default", _default_CameraZoom);
   sliderHeight->AddHelperValue(Vector3(80, 80, 250), "default", _default_CameraHeight);
   sliderFOV->AddHelperValue(Vector3(80, 80, 250), "default", _default_CameraFOV);
@@ -33,9 +33,9 @@ CameraPage::CameraPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   Gui2Grid* grid = new Gui2Grid(windowManager, "camgrid", 2, 6, 56, 28);
 
   grid->AddView(sliderZoom, 0, 0);
-  grid->AddView(sliderHeight, 1, 0);
-  grid->AddView(sliderFOV, 2, 0);
-  grid->AddView(sliderAngleFactor, 3, 0);
+  grid->AddView(sliderHeight, 0, 1);
+  grid->AddView(sliderFOV, 1, 0);
+  grid->AddView(sliderAngleFactor, 1, 1);
 
   grid->UpdateLayout(0.5);
 
