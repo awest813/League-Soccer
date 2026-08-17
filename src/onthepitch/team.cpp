@@ -188,6 +188,15 @@ void Team::DeleteHumanGamers() {
   switchPriority.clear();
 }
 
+std::vector<HumanGamer*> Team::GetHumanGamers() const {
+  std::vector<HumanGamer*> result;
+  result.reserve(humanGamers.size());
+  for (const auto& humanGamer : humanGamers) {
+    result.push_back(humanGamer.get());
+  }
+  return result;
+}
+
 e_PlayerColor Team::GetPlayerColor(int playerID) {
   for (unsigned int h = 0; h < humanGamers.size(); h++) {
     if (humanGamers.at(h)->GetSelectedPlayerID() == playerID)

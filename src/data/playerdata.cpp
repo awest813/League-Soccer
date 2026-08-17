@@ -120,6 +120,12 @@ const std::vector<e_PlayerRole>& PlayerData::GetRoles() const {
   return roles;
 }
 
+std::string PlayerData::GetRoleName() const {
+  if (roles.empty())
+    return "SUB";
+  return ::GetRoleName(roles.front());
+}
+
 void PlayerData::CalculateCondition(int matchSeed) {
   // PES condition distribution: ~15% Red, ~20% Orange, ~30% Yellow, ~20% Blue, ~15% Purple
   int val = (std::abs(databaseID * 37 + matchSeed * 17)) % 100;

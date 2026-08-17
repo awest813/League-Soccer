@@ -64,7 +64,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
   buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 28, 74, 24, 4,
                               Localization::GetInstance().Translate("gameover_continue"));
-  buttonOkay->SetPosition(40 - buttonOkay->GetTextWidthPercent() * 0.5f, 74);
+  buttonOkay->SetPosition(40 - buttonOkay->GetCaptionWidget()->GetTextWidthPercent() * 0.5f, 74);
   frame->AddView(buttonOkay);
   buttonOkay->Show();
   buttonOkay->sig_OnClick.connect([this](...) { GoMainMenu(); });

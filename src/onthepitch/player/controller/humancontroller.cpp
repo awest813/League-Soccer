@@ -613,9 +613,10 @@ void HumanController::_GetHidInput(Vector3& rawInputDirection, float& rawInputVe
       rawInputVelocityFloat = idleVelocity;
     } else {
       // Analog stick modulation: gentle stick displacement enables fine close control
-      if (stickLen < 0.75f) {
+      const float analogRange = 0.75f - analogStickDeadzone;
+      if (analogRange > 0.0f && stickLen < 0.75f) {
         float analogRatio =
-            clamp((stickLen - analogStickDeadzone) / (0.75f - analogStickDeadzone), 0.0f, 1.0f);
+            clamp((stickLen - analogStickDeadzone) / analogRange, 0.0f, 1.0f);
         rawInputVelocityFloat = slowDribbleSpeed + analogRatio * (runSpeed - slowDribbleSpeed);
       } else {
         rawInputVelocityFloat = runSpeed;

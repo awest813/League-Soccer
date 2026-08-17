@@ -504,7 +504,8 @@ void CareerNewGamePage::StartCareer() {
 
 // ---------------------------------------------------------------------------
 // CareerHubPage
-// ---------------------------------------------------------------------------CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
+// ---------------------------------------------------------------------------
+CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
   if (IsOwnerMode()) {
     CreatePage(e_PageID_OwnerHub);

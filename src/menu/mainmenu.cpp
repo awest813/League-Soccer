@@ -67,7 +67,6 @@ IntroPage::IntroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
     : Gui2Page(windowManager, pageData) {
   // Immersive full-screen background overlay
   Gui2Frame* splashBg = new Gui2Frame(windowManager, "frame_intro_bg", 0, 0, 100, 100, true);
-  splashBg->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Dark1));
   this->AddView(splashBg);
   splashBg->Show();
 

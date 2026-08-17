@@ -29,6 +29,7 @@ public:
   std::string GetLastName() const { return lastName; }
   int GetDatabaseID() const { return databaseID; }
   const std::vector<e_PlayerRole>& GetRoles() const;
+  std::string GetRoleName() const;
 
   float GetStat(const char* name);
 

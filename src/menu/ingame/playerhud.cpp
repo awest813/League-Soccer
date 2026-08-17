@@ -97,7 +97,7 @@ void Gui2PlayerHUD::Put() {
       activePlayer = team->GetPlayer(gamers[0]->GetSelectedPlayerID());
     }
     if (!activePlayer) {
-      activePlayer = team->GetDesignatedPossessionPlayer();
+      activePlayer = team->GetDesignatedTeamPossessionPlayer();
     }
     if (!activePlayer) {
       activePlayer = team->GetLastTouchPlayer();
@@ -152,9 +152,8 @@ void Gui2PlayerHUD::Put() {
 
     // Update PES Power Gauge for human controller
     float gaugeFactor = 0.0f;
-    const std::vector<HumanGamer*>& gamers = team->GetHumanGamers();
-    if (!gamers.empty() && gamers[0]->GetController()) {
-      HumanController* hc = dynamic_cast<HumanController*>(gamers[0]->GetController());
+    if (!gamers.empty() && gamers[0]->GetHumanController()) {
+      HumanController* hc = dynamic_cast<HumanController*>(gamers[0]->GetHumanController());
       if (hc) {
         gaugeFactor = hc->GetGaugeFactor();
       }
