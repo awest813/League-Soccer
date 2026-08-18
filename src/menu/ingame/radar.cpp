@@ -1,7 +1,4 @@
-// written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
-// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
-// :)
+
 
 #include "radar.hpp"
 
@@ -58,85 +55,55 @@ Gui2Radar::Gui2Radar(Gui2WindowManager* windowManager, const std::string& name, 
 Gui2Radar::~Gui2Radar() {}
 
 void Gui2Radar::ReloadAvatars(int teamID, unsigned int playerCount) {
-  if (teamID == 0) {
-    for (unsigned int i = 0; i < team1avatars.size(); i++) {
-      team1avatars.at(i)->Exit();
-      delete team1avatars.at(i);
-    }
-    team1avatars.clear();
-    for (unsigned int i = 0; i < playerCount; i++) {
-      Gui2Image* avatar =
-          new Gui2Image(windowManager, "radar_avatar_" + int_to_str(teamID) + "_" + int_to_str(i),
-                        0, 0, avatarWidthPercent, kAvatarHeightPercent);
-      this->AddView(avatar);
-      avatar->LoadImage("media/menu/radar/p1.png");
-      avatar->Show();
-      team1avatars.push_back(avatar);
-    }
-  }
+  auto& avatars = (teamID == 0) ? team1avatars : team2avatars;
+  std::string imgPath = (teamID == 0) ? "media/menu/radar/p1.png" : "media/menu/radar/p2.png";
 
-  // oof ugly c/p'ed code
-  if (teamID == 1) {
-    for (unsigned int i = 0; i < team2avatars.size(); i++) {
-      team2avatars.at(i)->Exit();
-      delete team2avatars.at(i);
-    }
-    team2avatars.clear();
-    for (unsigned int i = 0; i < playerCount; i++) {
-      Gui2Image* avatar =
-          new Gui2Image(windowManager, "radar_avatar_" + int_to_str(teamID) + "_" + int_to_str(i),
-                        0, 0, avatarWidthPercent, kAvatarHeightPercent);
-      this->AddView(avatar);
-      avatar->LoadImage("media/menu/radar/p2.png");
-      avatar->Show();
-      team2avatars.push_back(avatar);
-    }
+  for (auto* avatar : avatars) {
+    avatar->Exit();
+    delete avatar;
+  }
+  avatars.clear();
+
+  for (unsigned int i = 0; i < playerCount; i++) {
+    Gui2Image* avatar =
+        new Gui2Image(windowManager, "radar_avatar_" + int_to_str(teamID) + "_" + int_to_str(i),
+                      0, 0, avatarWidthPercent, kAvatarHeightPercent);
+    this->AddView(avatar);
+    avatar->LoadImage(imgPath);
+    avatar->Show();
+    avatars.push_back(avatar);
   }
 }
 
 void Gui2Radar::Process() {}
 
 void Gui2Radar::Put() {
-  Vector3 position = match->GetBall()->Predict(0).Get2D();
-  Vector3 pos2d = position * Vector3(1 / (pitchHalfW * 2), -(1 / (pitchHalfH * 2)), 0);
-  pos2d = pos2d + Vector3(0.5, 0.5, 0);
-  pos2d = pos2d * Vector3(0.96f, 0.96f, 0) + Vector3(0.02f, 0.02f, 0);  // margin
-  ball->SetPosition(radarXOffsetPercent + pos2d.coords[0] * radarWidthPercent -
-                        ballWidthPercent * 0.5f,
-                    pos2d.coords[1] * height_percent - kBallHeightPercent * 0.5f);
+  auto getRadarPos = [this](const Vector3& position, float elementWidth, float elementHeight) -> Vector3 {
+    Vector3 pos2d = position * Vector3(1 / (pitchHalfW * 2), -(1 / (pitchHalfH * 2)), 0);
+    pos2d = pos2d + Vector3(0.5, 0.5, 0);
+    pos2d = pos2d * Vector3(0.96f, 0.96f, 0) + Vector3(0.02f, 0.02f, 0);  // margin
+    return Vector3(radarXOffsetPercent + pos2d.coords[0] * radarWidthPercent - elementWidth * 0.5f,
+                   pos2d.coords[1] * height_percent - elementHeight * 0.5f, 0);
+  };
 
-  // get player positions
-  std::vector<Player*> team1players;
-  match->GetActiveTeamPlayers(0, team1players);
-  std::vector<Player*> team2players;
-  match->GetActiveTeamPlayers(1, team2players);
-
-  if (team1players.size() != team1avatars.size())
-    ReloadAvatars(0, team1players.size());
-  if (team2players.size() != team2avatars.size())
-    ReloadAvatars(1, team2players.size());
+  Vector3 ballPos = getRadarPos(match->GetBall()->Predict(0).Get2D(), ballWidthPercent, kBallHeightPercent);
+  ball->SetPosition(ballPos.coords[0], ballPos.coords[1]);
   ball->SetZPriority(1);  // ball on top
 
-  for (unsigned int i = 0; i < team1players.size(); i++) {
-    Vector3 position = team1players.at(i)->GetPosition();
-    Vector3 pos2d = position * Vector3(1 / (pitchHalfW * 2), -(1 / (pitchHalfH * 2)), 0);
-    pos2d = pos2d + Vector3(0.5, 0.5, 0);
-    pos2d = pos2d * Vector3(0.96f, 0.96f, 0) + Vector3(0.02f, 0.02f, 0);  // margin
+  // get player positions
+  for (int t = 0; t < 2; t++) {
+    std::vector<Player*> teamPlayers;
+    match->GetActiveTeamPlayers(t, teamPlayers);
+    auto& avatars = (t == 0) ? team1avatars : team2avatars;
 
-    team1avatars.at(i)->SetPosition(
-        radarXOffsetPercent + pos2d.coords[0] * radarWidthPercent - avatarWidthPercent * 0.5f,
-        pos2d.coords[1] * height_percent - kAvatarHeightPercent * 0.5f);
-  }
+    if (teamPlayers.size() != avatars.size()) {
+      ReloadAvatars(t, teamPlayers.size());
+    }
 
-  for (unsigned int i = 0; i < team2players.size(); i++) {
-    Vector3 position = team2players.at(i)->GetPosition();
-    Vector3 pos2d = position * Vector3(1 / (pitchHalfW * 2), -(1 / (pitchHalfH * 2)), 0);
-    pos2d = pos2d + Vector3(0.5, 0.5, 0);
-    pos2d = pos2d * Vector3(0.96f, 0.96f, 0) + Vector3(0.02f, 0.02f, 0);  // margin
-
-    team2avatars.at(i)->SetPosition(
-        radarXOffsetPercent + pos2d.coords[0] * radarWidthPercent - avatarWidthPercent * 0.5f,
-        pos2d.coords[1] * height_percent - kAvatarHeightPercent * 0.5f);
+    for (unsigned int i = 0; i < teamPlayers.size(); i++) {
+      Vector3 pos = getRadarPos(teamPlayers.at(i)->GetPosition(), avatarWidthPercent, kAvatarHeightPercent);
+      avatars.at(i)->SetPosition(pos.coords[0], pos.coords[1]);
+    }
   }
 }
 

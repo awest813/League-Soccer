@@ -103,6 +103,25 @@ void Gui2PlayerHUD::Put() {
       activePlayer = team->GetLastTouchPlayer();
     }
 
+    auto drawBar = [](boost::intrusive_ptr<Image2D>& img, float factor, const Vector3& color) {
+      if (!img) return;
+      Vector3 imgSize = img->GetSize();
+      int w = static_cast<int>(imgSize.coords[0]);
+      int h = static_cast<int>(imgSize.coords[1]);
+      if (w > 2 && h > 2) {
+        img->DrawRectangle(0, 0, w, h, Vector3(0, 0, 0), 180); // Background
+        img->DrawRectangle(0, 0, w, 1, Vector3(0, 0, 0), 255); // Border Top
+        img->DrawRectangle(0, h - 1, w, 1, Vector3(0, 0, 0), 255); // Border Bottom
+        img->DrawRectangle(0, 0, 1, h, Vector3(0, 0, 0), 255); // Border Left
+        img->DrawRectangle(w - 1, 0, 1, h, Vector3(0, 0, 0), 255); // Border Right
+        int fillW = static_cast<int>(factor * (w - 2));
+        if (fillW > 0) {
+          img->DrawRectangle(1, 1, fillW, h - 2, color, 220); // Fill
+        }
+        img->OnChange();
+      }
+    };
+
     if (activePlayer && activePlayer->GetPlayerData()) {
       PlayerData* pd = activePlayer->GetPlayerData();
       std::string name = pd->GetLastName();
@@ -127,25 +146,8 @@ void Gui2PlayerHUD::Put() {
       float stamina = activePlayer->GetFatigueFactorInv();
       if (std::fabs(stamina - lastStamina[t]) > 0.02f) {
         boost::intrusive_ptr<Image2D> stmImg = staminaImage[t]->GetImage2D();
-        if (stmImg) {
-          Vector3 imgSize = stmImg->GetSize();
-          int w = static_cast<int>(imgSize.coords[0]);
-          int h = static_cast<int>(imgSize.coords[1]);
-          if (w > 2 && h > 2) {
-            stmImg->DrawRectangle(0, 0, w, h, Vector3(0, 0, 0), 180); // Background
-            stmImg->DrawRectangle(0, 0, w, 1, Vector3(0, 0, 0), 255); // Border Top
-            stmImg->DrawRectangle(0, h - 1, w, 1, Vector3(0, 0, 0), 255); // Border Bottom
-            stmImg->DrawRectangle(0, 0, 1, h, Vector3(0, 0, 0), 255); // Border Left
-            stmImg->DrawRectangle(w - 1, 0, 1, h, Vector3(0, 0, 0), 255); // Border Right
-            
-            Vector3 color = (stamina < 0.25f) ? Vector3(220, 50, 50) : Vector3(100, 220, 100);
-            int fillW = static_cast<int>(stamina * (w - 2));
-            if (fillW > 0) {
-              stmImg->DrawRectangle(1, 1, fillW, h - 2, color, 220); // Fill
-            }
-            stmImg->OnChange();
-          }
-        }
+        Vector3 color = (stamina < 0.25f) ? Vector3(220, 50, 50) : Vector3(100, 220, 100);
+        drawBar(stmImg, stamina, color);
         lastStamina[t] = stamina;
       }
     }
@@ -161,33 +163,15 @@ void Gui2PlayerHUD::Put() {
     if (gaugeFactor > 0.01f) {
       if (std::fabs(gaugeFactor - lastPowerGauge[t]) > 0.02f) {
         boost::intrusive_ptr<Image2D> pwrImg = powerGaugeImage[t]->GetImage2D();
-        if (pwrImg) {
-          Vector3 imgSize = pwrImg->GetSize();
-          int w = static_cast<int>(imgSize.coords[0]);
-          int h = static_cast<int>(imgSize.coords[1]);
-          if (w > 2 && h > 2) {
-            pwrImg->DrawRectangle(0, 0, w, h, Vector3(0, 0, 0), 180); // Background
-            pwrImg->DrawRectangle(0, 0, w, 1, Vector3(0, 0, 0), 255); // Border Top
-            pwrImg->DrawRectangle(0, h - 1, w, 1, Vector3(0, 0, 0), 255); // Border Bottom
-            pwrImg->DrawRectangle(0, 0, 1, h, Vector3(0, 0, 0), 255); // Border Left
-            pwrImg->DrawRectangle(w - 1, 0, 1, h, Vector3(0, 0, 0), 255); // Border Right
-
-            Vector3 color;
-            if (gaugeFactor < 0.5f) {
-              color = Vector3(50, 240, 50); // Green
-            } else if (gaugeFactor < 0.8f) {
-              color = Vector3(240, 240, 50); // Yellow
-            } else {
-              color = Vector3(255, 50, 50); // Red
-            }
-
-            int fillW = static_cast<int>(gaugeFactor * (w - 2));
-            if (fillW > 0) {
-              pwrImg->DrawRectangle(1, 1, fillW, h - 2, color, 240); // Fill
-            }
-            pwrImg->OnChange();
-          }
+        Vector3 color;
+        if (gaugeFactor < 0.5f) {
+          color = Vector3(50, 240, 50); // Green
+        } else if (gaugeFactor < 0.8f) {
+          color = Vector3(240, 240, 50); // Yellow
+        } else {
+          color = Vector3(255, 50, 50); // Red
         }
+        drawBar(pwrImg, gaugeFactor, color);
         lastPowerGauge[t] = gaugeFactor;
       }
       powerGaugeImage[t]->Show();

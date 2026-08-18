@@ -1,7 +1,4 @@
-// written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
-// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
-// :)
+
 
 #include "scoreboard.hpp"
 
@@ -116,30 +113,7 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   this->Show();
 }
 
-Gui2ScoreBoard::~Gui2ScoreBoard() {
-  /* will be cleaned up while deleting gui2 tree automatically
-  bg->Exit();
-  delete bg;
-  leagueLogo->Exit();
-  delete leagueLogo;
-  timeCaption->Exit();
-  delete timeCaption;
-  teamNameCaption[0]->Exit();
-  delete teamNameCaption[0];
-  teamNameCaption[1]->Exit();
-  delete teamNameCaption[1];
-  goalCountCaption[0]->Exit();
-  delete goalCountCaption[0];
-  goalCountCaption[1]->Exit();
-  delete goalCountCaption[1];
-  teamLogo[0]->Exit();
-  delete teamLogo[0];
-  teamLogo[1]->Exit();
-  delete teamLogo[1];
-  tvLogo->Exit();
-  delete tvLogo;
-  */
-}
+Gui2ScoreBoard::~Gui2ScoreBoard() {}
 
 void Gui2ScoreBoard::GetImages(std::vector<boost::intrusive_ptr<Image2D>>& target) {
   Gui2View::GetImages(target);
