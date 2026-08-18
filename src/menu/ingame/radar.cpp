@@ -3,6 +3,7 @@
 #include "radar.hpp"
 
 #include <cmath>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_rotozoom.h>
 
@@ -31,8 +32,7 @@ Gui2Radar::Gui2Radar(Gui2WindowManager* windowManager, const std::string& name, 
       color2_2(color2_2) {
   // todo: use colors!
 
-  radarWidthPercent =
-      windowManager->GetWidthPercentForHeight(height_percent, kRadarAspectRatio);
+  radarWidthPercent = windowManager->GetWidthPercentForHeight(height_percent, kRadarAspectRatio);
   radarXOffsetPercent = (width_percent - radarWidthPercent) * 0.5f;
   ballWidthPercent = windowManager->GetWidthPercentForHeight(kBallHeightPercent, 1.0f);
   avatarWidthPercent = windowManager->GetWidthPercentForHeight(kAvatarHeightPercent, 1.0f);
@@ -43,8 +43,7 @@ Gui2Radar::Gui2Radar(Gui2WindowManager* windowManager, const std::string& name, 
   bg->LoadImage("media/menu/radar/radar.png");
   bg->Show();
 
-  ball = new Gui2Image(windowManager, "radar_ball", 0, 0, ballWidthPercent,
-                       kBallHeightPercent);
+  ball = new Gui2Image(windowManager, "radar_ball", 0, 0, ballWidthPercent, kBallHeightPercent);
   this->AddView(ball);
   ball->LoadImage("media/menu/radar/ball.png");
   ball->Show();
@@ -66,8 +65,8 @@ void Gui2Radar::ReloadAvatars(int teamID, unsigned int playerCount) {
 
   for (unsigned int i = 0; i < playerCount; i++) {
     Gui2Image* avatar =
-        new Gui2Image(windowManager, "radar_avatar_" + int_to_str(teamID) + "_" + int_to_str(i),
-                      0, 0, avatarWidthPercent, kAvatarHeightPercent);
+        new Gui2Image(windowManager, "radar_avatar_" + int_to_str(teamID) + "_" + int_to_str(i), 0,
+                      0, avatarWidthPercent, kAvatarHeightPercent);
     this->AddView(avatar);
     avatar->LoadImage(imgPath);
     avatar->Show();
@@ -78,7 +77,8 @@ void Gui2Radar::ReloadAvatars(int teamID, unsigned int playerCount) {
 void Gui2Radar::Process() {}
 
 void Gui2Radar::Put() {
-  auto getRadarPos = [this](const Vector3& position, float elementWidth, float elementHeight) -> Vector3 {
+  auto getRadarPos = [this](const Vector3& position, float elementWidth,
+                            float elementHeight) -> Vector3 {
     Vector3 pos2d = position * Vector3(1 / (pitchHalfW * 2), -(1 / (pitchHalfH * 2)), 0);
     pos2d = pos2d + Vector3(0.5, 0.5, 0);
     pos2d = pos2d * Vector3(0.96f, 0.96f, 0) + Vector3(0.02f, 0.02f, 0);  // margin
@@ -86,7 +86,8 @@ void Gui2Radar::Put() {
                    pos2d.coords[1] * height_percent - elementHeight * 0.5f, 0);
   };
 
-  Vector3 ballPos = getRadarPos(match->GetBall()->Predict(0).Get2D(), ballWidthPercent, kBallHeightPercent);
+  Vector3 ballPos =
+      getRadarPos(match->GetBall()->Predict(0).Get2D(), ballWidthPercent, kBallHeightPercent);
   ball->SetPosition(ballPos.coords[0], ballPos.coords[1]);
   ball->SetZPriority(1);  // ball on top
 
@@ -101,7 +102,8 @@ void Gui2Radar::Put() {
     }
 
     for (unsigned int i = 0; i < teamPlayers.size(); i++) {
-      Vector3 pos = getRadarPos(teamPlayers.at(i)->GetPosition(), avatarWidthPercent, kAvatarHeightPercent);
+      Vector3 pos =
+          getRadarPos(teamPlayers.at(i)->GetPosition(), avatarWidthPercent, kAvatarHeightPercent);
       avatars.at(i)->SetPosition(pos.coords[0], pos.coords[1]);
     }
   }

@@ -15,7 +15,8 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   height_percent = 4;
 
   Vector3 textColor = 255;
-  Vector3 timeColor = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2); // Yellow/Gold for Time
+  Vector3 timeColor =
+      windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);  // Yellow/Gold for Time
   Vector3 textOutlineColor = 0;
 
   goalCount[0] = 0;
@@ -34,12 +35,11 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   float content_xOffset = 0.2f;
 
   constexpr float kScoreboardBackgroundAspectRatio = 1024.0f / 64.0f;
-  const float scoreboardBackgroundWidth = windowManager->GetWidthPercentForHeight(
-      height_percent, kScoreboardBackgroundAspectRatio);
+  const float scoreboardBackgroundWidth =
+      windowManager->GetWidthPercentForHeight(height_percent, kScoreboardBackgroundAspectRatio);
   const float scoreboardBackgroundX = (width_percent - scoreboardBackgroundWidth) * 0.5f;
-  Gui2Image* bg = new Gui2Image(windowManager, "image_scoreboard_bg",
-                                scoreboardBackgroundX, 0, scoreboardBackgroundWidth,
-                                height_percent);
+  Gui2Image* bg = new Gui2Image(windowManager, "image_scoreboard_bg", scoreboardBackgroundX, 0,
+                                scoreboardBackgroundWidth, height_percent);
   bg->LoadImage("media/menu/scoreboard_bg.png");
   this->AddView(bg);
   bg->Show();
@@ -78,8 +78,8 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   goalCountCaption[1]->SetOutlineColor(textOutlineColor);
 
   const float tvLogoWidth = windowManager->GetWidthPercentForHeight(height_percent, 2.0f);
-  tvLogo = new Gui2Image(windowManager, "game_scoreboard_tvlogo",
-                         width_percent - tvLogoWidth, 0, tvLogoWidth, height_percent);
+  tvLogo = new Gui2Image(windowManager, "game_scoreboard_tvlogo", width_percent - tvLogoWidth, 0,
+                         tvLogoWidth, height_percent);
   this->AddView(tvLogo);
   tvLogo->LoadImage("media/menu/tvlogo.png");
   tvLogo->Show();

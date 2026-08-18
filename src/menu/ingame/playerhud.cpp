@@ -52,7 +52,8 @@ Gui2PlayerHUD::Gui2PlayerHUD(Gui2WindowManager* windowManager, Match* match)
   this->AddView(roleCaption[1]);
   roleCaption[1]->Show();
 
-  playerNameCaption[1] = new Gui2Caption(windowManager, "hud_player1_name", 78, 92.5f, 15, 2.8f, "");
+  playerNameCaption[1] =
+      new Gui2Caption(windowManager, "hud_player1_name", 78, 92.5f, 15, 2.8f, "");
   playerNameCaption[1]->SetColor(textColor);
   playerNameCaption[1]->SetOutlineColor(textOutlineColor);
   this->AddView(playerNameCaption[1]);
@@ -104,19 +105,20 @@ void Gui2PlayerHUD::Put() {
     }
 
     auto drawBar = [](boost::intrusive_ptr<Image2D>& img, float factor, const Vector3& color) {
-      if (!img) return;
+      if (!img)
+        return;
       Vector3 imgSize = img->GetSize();
       int w = static_cast<int>(imgSize.coords[0]);
       int h = static_cast<int>(imgSize.coords[1]);
       if (w > 2 && h > 2) {
-        img->DrawRectangle(0, 0, w, h, Vector3(0, 0, 0), 180); // Background
-        img->DrawRectangle(0, 0, w, 1, Vector3(0, 0, 0), 255); // Border Top
-        img->DrawRectangle(0, h - 1, w, 1, Vector3(0, 0, 0), 255); // Border Bottom
-        img->DrawRectangle(0, 0, 1, h, Vector3(0, 0, 0), 255); // Border Left
-        img->DrawRectangle(w - 1, 0, 1, h, Vector3(0, 0, 0), 255); // Border Right
+        img->DrawRectangle(0, 0, w, h, Vector3(0, 0, 0), 180);      // Background
+        img->DrawRectangle(0, 0, w, 1, Vector3(0, 0, 0), 255);      // Border Top
+        img->DrawRectangle(0, h - 1, w, 1, Vector3(0, 0, 0), 255);  // Border Bottom
+        img->DrawRectangle(0, 0, 1, h, Vector3(0, 0, 0), 255);      // Border Left
+        img->DrawRectangle(w - 1, 0, 1, h, Vector3(0, 0, 0), 255);  // Border Right
         int fillW = static_cast<int>(factor * (w - 2));
         if (fillW > 0) {
-          img->DrawRectangle(1, 1, fillW, h - 2, color, 220); // Fill
+          img->DrawRectangle(1, 1, fillW, h - 2, color, 220);  // Fill
         }
         img->OnChange();
       }
@@ -165,11 +167,11 @@ void Gui2PlayerHUD::Put() {
         boost::intrusive_ptr<Image2D> pwrImg = powerGaugeImage[t]->GetImage2D();
         Vector3 color;
         if (gaugeFactor < 0.5f) {
-          color = Vector3(50, 240, 50); // Green
+          color = Vector3(50, 240, 50);  // Green
         } else if (gaugeFactor < 0.8f) {
-          color = Vector3(240, 240, 50); // Yellow
+          color = Vector3(240, 240, 50);  // Yellow
         } else {
-          color = Vector3(255, 50, 50); // Red
+          color = Vector3(255, 50, 50);  // Red
         }
         drawBar(pwrImg, gaugeFactor, color);
         lastPowerGauge[t] = gaugeFactor;
