@@ -374,6 +374,7 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
 
   difficultySlider = new Gui2Slider(windowManager, "slider_league_start_new_difficulty", 0, 0, 30,
                                     6, "Initial difficulty");
+  difficultySlider->SetQuantization(5);
   saveNameInput = new Gui2EditLine(windowManager, "editline_league_start_new_savegamename", 0, 0,
                                    30, 3, "NewLeague");
   saveNameInput->SetAllowedChars(

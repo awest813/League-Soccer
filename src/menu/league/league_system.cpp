@@ -202,6 +202,7 @@ LeagueSystemSettingsPage::LeagueSystemSettingsPage(Gui2WindowManager* windowMana
                       Localization::GetInstance().Translate("league_difficulty_label"));
   sliderDifficulty = new Gui2Slider(windowManager, "slider_set_diff", 0, 0, 40, 6,
                                     Localization::GetInstance().Translate("league_difficulty"));
+  sliderDifficulty->SetQuantization(5);
   sliderDifficulty->SetValue(curDifficulty);
   grid->AddView(lblDiff, row, 0);
   grid->AddView(sliderDifficulty, row++, 1);

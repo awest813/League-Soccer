@@ -126,10 +126,6 @@ void Gui2Slider::Redraw() {
   // Track background (unfilled)
   image->DrawRectangle(trackX, trackY, trackW, trackH, trackColor, 220);
 
-  // Track border / outline
-  image->DrawRectangle(trackX, trackY, trackW, 1, darkColor, 255);
-  image->DrawRectangle(trackX, trackY + trackH - 1, trackW, 1, darkColor, 255);
-
   // Filled progress bar (from start to slider thumb)
   int fillW = int(round(quantizedValue * trackW));
   if (fillW > 0) {
@@ -140,16 +136,22 @@ void Gui2Slider::Redraw() {
   // Helper value markers (e.g. factory default ticks)
   for (unsigned int i = 0; i < helperValues.size(); i++) {
     float helperVal = helperValues.at(i).value;
-    int tickX = trackX + int(round(helperVal * (trackW - 2)));
+    int tickX = trackX + int(round(helperVal * trackW)) - 1; // Center tick of width 2
     Vector3 helperCol = helperValues.at(i).color;
     image->DrawRectangle(tickX, trackY - 2, 2, trackH + 4, helperCol, 255);
   }
+
+  // Track border / outline (drawn last so it overlays the fill and ticks cleanly)
+  image->DrawRectangle(trackX, trackY, trackW, 1, darkColor, 255);
+  image->DrawRectangle(trackX, trackY + trackH - 1, trackW, 1, darkColor, 255);
+  image->DrawRectangle(trackX, trackY, 1, trackH, darkColor, 255);
+  image->DrawRectangle(trackX + trackW - 1, trackY, 1, trackH, darkColor, 255);
 
   // Slider thumb / knob
   int thumbW = std::max(4, int(round(x_ratio * 0.5f)));
   int thumbH = std::max(8, int(h * 0.42f));
   int thumbY = trackY - (thumbH - trackH) / 2;
-  int thumbX = trackX + int(round(quantizedValue * (trackW - thumbW)));
+  int thumbX = trackX + int(round(quantizedValue * trackW)) - thumbW / 2;
 
   // Thumb body and border
   Vector3 thumbCol = IsFocussed() ? accentColor : brightColor;
