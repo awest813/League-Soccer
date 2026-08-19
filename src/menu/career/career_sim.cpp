@@ -42,30 +42,45 @@ int EstimateLeaguePosition(int wins, int draws, int losses) {
 }
 
 void ProcessPlayerGrowth(PlayerCareerState& player) {
-  int growthChance = 15;
-  if (player.age <= 21)
-    growthChance = 55;
-  else if (player.age <= 24)
-    growthChance = 35;
-  else if (player.age >= 31)
-    growthChance = 8;
-
-  if (player.matchForm >= 85)
-    growthChance += 15;
-  else if (player.matchForm >= 60)
-    growthChance += 5;
-  if (player.morale >= 75)
-    growthChance += 5;
+  int growthPoints = 0;
 
   if (player.ovr < player.pot) {
-    if (RandomInt(1, 100) <= growthChance)
-      player.ovr = std::min(player.ovr + 1, player.pot);
-  } else if (player.age >= 31) {
-    // Players at their ceiling age out so squads must turn over; the decline
-    // risk rises with age instead of switching on abruptly at 32.
-    int declineChance = player.age >= 33 ? 35 : 18;
-    if (RandomInt(1, 100) <= declineChance)
-      player.ovr = std::max(40, player.ovr - 1);
+    int formBonus = (player.matchForm >= 80) ? 20 : ((player.matchForm >= 60) ? 5 : 0);
+    int playBonus = std::min(30, player.matchesPlayed); // up to 30% bonus for playing games
+
+    int growthChance = 0;
+    if (player.age <= 21)
+      growthChance = 45 + formBonus + playBonus;
+    else if (player.age <= 25)
+      growthChance = 25 + formBonus + playBonus;
+    else if (player.age <= 29)
+      growthChance = 5 + formBonus + (playBonus / 2);
+
+    // Roll multiple times to allow breakout seasons
+    for (int i = 0; i < 3; i++) {
+      if (RandomInt(1, 100) <= growthChance) {
+        growthPoints++;
+        growthChance /= 2; // diminishing returns
+      }
+    }
+    
+    player.ovr = std::min(player.ovr + growthPoints, player.pot);
+  } 
+
+  if (player.age >= 31) {
+    // Decline accelerates with age and poor fitness
+    int ageFactor = (player.age - 30) * 8;
+    int fitnessPenalty = (player.fitness < 70) ? 15 : 0;
+    int declineChance = ageFactor + fitnessPenalty;
+    
+    // Roll twice for potential steeper decline
+    int declinePoints = 0;
+    for (int i = 0; i < 2; i++) {
+      if (RandomInt(1, 100) <= declineChance) {
+        declinePoints++;
+      }
+    }
+    player.ovr = std::max(40, player.ovr - declinePoints);
   }
 
   player.matchForm = ClampInt(player.matchForm - RandomInt(2, 8), 0, 100);
@@ -149,6 +164,12 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
   int oppAttack = opponentOVR + RandomInt(-2, 4);
   int oppDefense = opponentOVR + RandomInt(-2, 3);
 
+  // Inject a bit more variance to allow for upsets
+  baseAttack += RandomInt(-4, 5);
+  baseDefense += RandomInt(-4, 5);
+  oppAttack += RandomInt(-4, 5);
+  oppDefense += RandomInt(-4, 5);
+
   if (strategy == "Attacking") {
     baseAttack += 4;
     baseDefense -= 3;
@@ -182,21 +203,45 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
                                    30, 70);
   result.played = true;
 
-  std::vector<int> scorerIndices;
   int rosterSize = static_cast<int>(save.roster.size());
   if (rosterSize <= 0)
     return result;
+
+  // Calculate weights for goalscorers based on position
+  std::vector<int> weights(rosterSize, 1);
+  int totalWeight = 0;
+  for (int i = 0; i < rosterSize; i++) {
+    const std::string& pos = save.roster[i].preferredPosition;
+    if (pos == "ST" || pos == "CF") weights[i] = 25;
+    else if (pos == "AM" || pos == "LW" || pos == "RW" || pos == "LM" || pos == "RM") weights[i] = 10;
+    else if (pos == "CM" || pos == "WM") weights[i] = 4;
+    else if (pos == "DM" || pos == "LB" || pos == "RB" || pos == "CB") weights[i] = 1;
+    else if (pos == "GK") weights[i] = 0;
+    
+    // Boost based on form/OVR relative to squad
+    if (save.roster[i].ovr >= teamOVR + 3) weights[i] += 3;
+    if (save.roster[i].matchForm >= 80) weights[i] += 2;
+    
+    totalWeight += weights[i];
+  }
+
   for (int g = 0; g < result.homeGoals; g++) {
-    int attempts = 0;
-    int pIdx;
-    do {
-      pIdx = RandomInt(0, rosterSize - 1);
-      attempts++;
-    } while (attempts < 20 &&
-             std::find(scorerIndices.begin(), scorerIndices.end(), pIdx) != scorerIndices.end() &&
-             rosterSize > static_cast<int>(scorerIndices.size()));
-    scorerIndices.push_back(pIdx);
-    result.scorers.push_back(save.roster[pIdx].name);
+    if (totalWeight <= 0) {
+      result.scorers.push_back(save.roster[0].name); // fallback
+      continue;
+    }
+    
+    int r = RandomInt(0, totalWeight - 1);
+    int currentWeight = 0;
+    int selectedIdx = 0;
+    for (int i = 0; i < rosterSize; i++) {
+      currentWeight += weights[i];
+      if (r < currentWeight) {
+        selectedIdx = i;
+        break;
+      }
+    }
+    result.scorers.push_back(save.roster[selectedIdx].name);
   }
 
   return result;
