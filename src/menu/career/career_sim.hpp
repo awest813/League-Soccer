@@ -14,7 +14,7 @@ namespace CareerSim {
 int EstimateLeaguePosition(int wins, int draws, int losses);
 
 // Advances a player's attributes, form, morale, and fitness across a season.
-void ProcessPlayerGrowth(PlayerCareerState& player);
+void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save = nullptr);
 
 // Recomputes a player's market value / wage from current attributes.
 void UpdatePlayerValue(PlayerCareerState& player);

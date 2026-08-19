@@ -343,7 +343,7 @@ std::vector<CareerEvent> CareerDatabase::GetRecentEvents(int limit) const {
 }
 
 void CareerDatabase::ProcessPlayerGrowth(PlayerCareerState& player) {
-  CareerSim::ProcessPlayerGrowth(player);
+  CareerSim::ProcessPlayerGrowth(player, m_activeSave.get());
 }
 
 void CareerDatabase::UpdatePlayerValue(PlayerCareerState& player) {

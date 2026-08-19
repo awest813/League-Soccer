@@ -41,8 +41,16 @@ int EstimateLeaguePosition(int wins, int draws, int losses) {
   return 19;
 }
 
-void ProcessPlayerGrowth(PlayerCareerState& player) {
+void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save) {
   int growthPoints = 0;
+
+  int facilityBonus = 0;
+  if (save != nullptr) {
+    for (const auto& upgrade : save->stadium.upgrades) {
+      if (upgrade.name == "Training Complex") facilityBonus += 15;
+      if (upgrade.name == "Youth Academy") facilityBonus += 25;
+    }
+  }
 
   if (player.ovr < player.pot) {
     int formBonus = (player.matchForm >= 80) ? 20 : ((player.matchForm >= 60) ? 5 : 0);
@@ -50,9 +58,9 @@ void ProcessPlayerGrowth(PlayerCareerState& player) {
 
     int growthChance = 0;
     if (player.age <= 21)
-      growthChance = 45 + formBonus + playBonus;
+      growthChance = 45 + formBonus + playBonus + facilityBonus;
     else if (player.age <= 25)
-      growthChance = 25 + formBonus + playBonus;
+      growthChance = 25 + formBonus + playBonus + (facilityBonus / 2);
     else if (player.age <= 29)
       growthChance = 5 + formBonus + (playBonus / 2);
 
@@ -63,29 +71,29 @@ void ProcessPlayerGrowth(PlayerCareerState& player) {
         growthChance /= 2; // diminishing returns
       }
     }
+  } else if (player.age >= 30) {
+    // Decline logic
+    int declineChance = (player.age - 29) * 15; // 30=15%, 33=60%
+    if (player.fitness < 70) declineChance += 10;
+    if (player.fitness < 50) declineChance += 15; // bad fitness accelerates decline
+    if (player.matchesPlayed == 0) declineChance += 10;
     
-    player.ovr = std::min(player.ovr + growthPoints, player.pot);
-  } 
+    // Better facilities slightly stave off decline
+    declineChance -= (facilityBonus / 4);
+    declineChance = std::max(5, declineChance);
 
-  if (player.age >= 31) {
-    // Decline accelerates with age and poor fitness
-    int ageFactor = (player.age - 30) * 8;
-    int fitnessPenalty = (player.fitness < 70) ? 15 : 0;
-    int declineChance = ageFactor + fitnessPenalty;
-    
-    // Roll twice for potential steeper decline
-    int declinePoints = 0;
     for (int i = 0; i < 2; i++) {
       if (RandomInt(1, 100) <= declineChance) {
-        declinePoints++;
+        growthPoints--;
+        declineChance /= 2;
       }
     }
-    player.ovr = std::max(40, player.ovr - declinePoints);
   }
 
-  player.matchForm = ClampInt(player.matchForm - RandomInt(2, 8), 0, 100);
-  player.morale = ClampInt(player.morale + RandomInt(-3, 4), 0, 100);
-  player.fitness = ClampInt(player.fitness - RandomInt(0, 5), 55, 100);
+  player.ovr = std::min(99, std::max(1, player.ovr + growthPoints));
+  player.morale = std::min(100, std::max(0, player.morale + RandomInt(-10, 10)));
+  player.fitness = 100; // Reset fitness for new season
+  player.matchForm = 50; // Reset form
 }
 
 void UpdatePlayerValue(PlayerCareerState& player) {
@@ -315,7 +323,7 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
     player.age++;
     if (player.contract.yearsRemaining > 0)
       player.contract.yearsRemaining--;
-    ProcessPlayerGrowth(player);
+    ProcessPlayerGrowth(player, &save);
     UpdatePlayerValue(player);
     player.matchesPlayed = 0;
     player.careerGoals = std::max(0, player.careerGoals);
