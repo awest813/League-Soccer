@@ -16,6 +16,33 @@ MenuScene::MenuScene() {
   currentOrientation = Quaternion(QUATERNION_IDENTITY);
   SetTargetLocation(currentPosition, currentOrientation);
 
+  // Sounds
+  try {
+    boost::intrusive_ptr<Resource<SoundBuffer>> clickRes =
+        ResourceManagerPool::GetInstance().GetManager<SoundBuffer>(e_ResourceType_SoundBuffer)
+            ->Fetch("media/sounds/click.wav", true, true);
+    clickSound = boost::static_pointer_cast<Sound>(
+        ObjectFactory::GetInstance().CreateObject("menuclick", e_ObjectType_Sound));
+    GetScene3D()->CreateSystemObjects(clickSound);
+    clickSound->SetSoundBuffer(clickRes);
+    clickSound->SetGain(0.6f * GetConfiguration()->GetReal("audio_volume", 0.5f));
+    clickSound->SetLoop(false);
+    GetScene3D()->AddObject(clickSound);
+
+    boost::intrusive_ptr<Resource<SoundBuffer>> hoverRes =
+        ResourceManagerPool::GetInstance().GetManager<SoundBuffer>(e_ResourceType_SoundBuffer)
+            ->Fetch("media/sounds/hover.wav", true, true);
+    hoverSound = boost::static_pointer_cast<Sound>(
+        ObjectFactory::GetInstance().CreateObject("menuhover", e_ObjectType_Sound));
+    GetScene3D()->CreateSystemObjects(hoverSound);
+    hoverSound->SetSoundBuffer(hoverRes);
+    hoverSound->SetGain(0.3f * GetConfiguration()->GetReal("audio_volume", 0.5f));
+    hoverSound->SetLoop(false);
+    GetScene3D()->AddObject(hoverSound);
+  } catch (const std::exception& e) {
+    Log(e_Error, "MenuScene", "MenuScene", "Failed to load menu sounds");
+  }
+
   // camera
 
   Log(e_Notice, "MenuScene", "MenuScene", "Creating camera object");
@@ -73,7 +100,29 @@ MenuScene::MenuScene() {
 }
 
 MenuScene::~MenuScene() {
+  if (clickSound) {
+    scene3D->DeleteObject(clickSound);
+    clickSound.reset();
+  }
+  if (hoverSound) {
+    scene3D->DeleteObject(hoverSound);
+    hoverSound.reset();
+  }
   scene3D->DeleteNode(containerNode);
+}
+
+void MenuScene::PlayClickSound() {
+  if (clickSound) {
+    clickSound->SetPitch(1.0f);
+    clickSound->Poke(e_SystemType_Audio);
+  }
+}
+
+void MenuScene::PlayHoverSound() {
+  if (hoverSound) {
+    hoverSound->SetPitch(1.0f);
+    hoverSound->Poke(e_SystemType_Audio);
+  }
 }
 
 void MenuScene::Get() {}

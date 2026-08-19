@@ -5,6 +5,7 @@
 #include "scene/objects/camera.hpp"
 #include "scene/objects/geometry.hpp"
 #include "scene/objects/light.hpp"
+#include "scene/objects/sound.hpp"
 #include "scene/scene3d/node.hpp"
 
 using namespace blunted;
@@ -33,11 +34,17 @@ public:
   void SetTargetLocation(const Vector3& position, radian angle);
   void SetTargetLocation(const Vector3& position, const Quaternion& orientation);
 
+  void PlayClickSound();
+  void PlayHoverSound();
+
 protected:
   boost::intrusive_ptr<Node> containerNode;
   boost::intrusive_ptr<Camera> camera;
   boost::intrusive_ptr<Light> mainLight;
   boost::intrusive_ptr<Geometry> geom;
+
+  boost::intrusive_ptr<Sound> clickSound;
+  boost::intrusive_ptr<Sound> hoverSound;
 
   boost::intrusive_ptr<Light> hoverLights[3];
   Vector3 hoverLightPosition;

@@ -1,6 +1,8 @@
 #ifndef _HPP_GUI2_WINDOWMANAGER
 #define _HPP_GUI2_WINDOWMANAGER
 
+#include <functional>
+#include <vector>
 #include "defines.hpp"
 #include "page.hpp"
 #include "scene/objects/image2d.hpp"
@@ -38,6 +40,7 @@ public:
     assert(contentAspectRatio > 0.0f);
     return width_percent * aspectRatio / contentAspectRatio;
   }
+
   boost::intrusive_ptr<Image2D> CreateImage2D(const std::string& name, int width, int height,
                                               bool sceneRegister = false);
   void UpdateImagePosition(Gui2View* view) const;
@@ -70,6 +73,12 @@ public:
   }
   Gui2PageFactory* GetPageFactory() { return pageFactory; }
   Gui2PagePath* GetPagePath() { return pagePath; }
+
+  std::function<void()> onSoundClick;
+  std::function<void()> onSoundHover;
+
+  void PlayClickSound() { if (onSoundClick) onSoundClick(); }
+  void PlayHoverSound() { if (onSoundHover) onSoundHover(); }
 
 protected:
   std::shared_ptr<Scene2D> scene2D;

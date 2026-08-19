@@ -94,6 +94,7 @@ void Gui2Button::Redraw() {
 
 void Gui2Button::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsActivate() && active) {
+    windowManager->PlayClickSound();
     if (toggleable) {
       if (toggled) {
         toggled = false;
@@ -109,6 +110,7 @@ void Gui2Button::ProcessWindowingEvent(WindowingEvent* event) {
 }
 
 void Gui2Button::OnGainFocus() {
+  windowManager->PlayHoverSound();
   Redraw();
   sig_OnGainFocus(this);
 }

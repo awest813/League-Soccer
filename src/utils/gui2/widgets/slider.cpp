@@ -212,7 +212,18 @@ void Gui2Slider::ProcessWindowingEvent(WindowingEvent* event) {
       value = 1.0f;
     if (value < 0.0f)
       value = 0.0f;
-    quantizedValue = round(value * (quantizationSteps - 1)) / (quantizationSteps - 1.0f);
+
+    float oldValue = value;
+
+    if (fullStep) {
+      // Quantize to steps
+      value = round(value * (quantizationSteps - 1.0f)) / (quantizationSteps - 1.0f);
+    }
+    
+    // Play sound if value actually changed by user input
+    windowManager->PlayClickSound();
+
+    Redraw();
     sig_OnChange(this);
     Redraw();
   } else {
@@ -221,6 +232,7 @@ void Gui2Slider::ProcessWindowingEvent(WindowingEvent* event) {
 }
 
 void Gui2Slider::OnGainFocus() {
+  windowManager->PlayHoverSound();
   Redraw();
 }
 

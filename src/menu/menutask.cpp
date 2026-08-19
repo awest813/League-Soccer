@@ -53,6 +53,17 @@ MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font* defaultFont,
     : Gui2Task(GetScene2D(), aspectRatio, margin), menuBackground(nullptr) {
   Gui2Style* style = windowManager->GetStyle();
 
+  windowManager->onSoundClick = [this]() {
+    if (GetGameTask() && GetGameTask()->GetMenuScene()) {
+      GetGameTask()->GetMenuScene()->PlayClickSound();
+    }
+  };
+  windowManager->onSoundHover = [this]() {
+    if (GetGameTask() && GetGameTask()->GetMenuScene()) {
+      GetGameTask()->GetMenuScene()->PlayHoverSound();
+    }
+  };
+
   style->SetFont(e_TextType_Default, defaultFont);
   style->SetFont(e_TextType_DefaultOutline, defaultOutlineFont);
   style->SetFont(e_TextType_Caption, defaultFont);
