@@ -32,7 +32,7 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
       buttonStart(nullptr),
       pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
       autoAdvanceTriggered(false) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "matchoptions_frame", 25, 15, 50, 75, true);
+  Gui2Frame* frame = new Gui2Frame(windowManager, "matchoptions_frame", 25, 10, 50, 80, true);
   this->AddView(frame);
   frame->Show();
 

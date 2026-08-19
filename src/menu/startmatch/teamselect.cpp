@@ -109,19 +109,19 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
     : Gui2Page(windowManager, pageData),
       autoAdvanceTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
       autoAdvanceStage(0) {
-  Gui2Frame* frame1 = new Gui2Frame(windowManager, "teamselect_frame1", 15, 18, 34, 52, true);
+  Gui2Frame* frame1 = new Gui2Frame(windowManager, "teamselect_frame1", 15, 24, 34, 52, true);
   this->AddView(frame1);
   frame1->Show();
 
-  frame2 = new Gui2Frame(windowManager, "teamselect_frame2", 51, 18, 34, 52, true);
+  frame2 = new Gui2Frame(windowManager, "teamselect_frame2", 51, 24, 34, 52, true);
   this->AddView(frame2);
 
-  Gui2Caption* brandingNotice = new Gui2Caption(windowManager, "teamselect_brandingnotice", 19, 73,
+  Gui2Caption* brandingNotice = new Gui2Caption(windowManager, "teamselect_brandingnotice", 19, 85,
                                                 28, 3, TR("teamselect_branding"));
   this->AddView(brandingNotice);
   brandingNotice->SetColor(Vector3(200, 200, 200));
   brandingNotice->SetTransparency(0.6f);
-  brandingNotice->SetPosition(50.0f - brandingNotice->GetTextWidthPercent() * 0.5f, 73);
+  brandingNotice->SetPosition(50.0f - brandingNotice->GetTextWidthPercent() * 0.5f, 85);
   brandingNotice->Show();
 
   Gui2Caption* p1 =
