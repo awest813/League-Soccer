@@ -1,8 +1,3 @@
-// written by bastiaan konings schuiling 2008 - 2015
-// this work is public domain. the code is undocumented, scruffy, untested, and should generally not
-// be used for anything important. i do not offer support, so don't ask. to be used for inspiration
-// :)
-
 // ScriptedGamepad: an autonomous IHIDevice used only by the headless
 // "gamepad controls" smoke match (data/menu_smoke_gamepad_match.config). It
 // drives a single team through the normal HumanController path with scripted
