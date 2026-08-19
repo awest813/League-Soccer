@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include <sqlite3.h>
 #include "career_common.hpp"
 #include "utils/localization.hpp"
 
@@ -40,35 +41,79 @@ void ReleasePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
   if (it == save.roster.end())
     return;
 
+  // Severance pay: ~25 weeks of wages
+  long long severance = it->wage * 25;
+  if (save.finances.netWorth < severance) {
+    events.AddEvent("financial", "Cannot afford severance pay (" + std::to_string(severance) + ") to release " + playerName, 0, false);
+    return;
+  }
+
+  save.finances.netWorth -= severance;
   save.wageBudget += it->wage;
   save.finance.wageBudget = save.wageBudget;
   PlayerCareerState released = *it;
   released.transferStatus = TransferStatus::NONE;
   save.freeAgents.push_back(released);
   save.roster.erase(it);
-  events.AddEvent("squad", "Released player " + playerName, -1, false);
+  events.AddEvent("squad", "Released player " + playerName + " (Severance: " + std::to_string(severance) + ")", -1, false);
   events.ModifyBoardConfidence(-1);
 }
 
 void SeedFreeAgents(CareerSave& save) {
   if (!save.freeAgents.empty())
     return;
-  static const std::vector<std::string> firstNames = {"Marco", "Rafa", "Osman", "Dimitri", "Luca"};
-  static const std::vector<std::string> lastNames = {"Ferrer", "Vidal", "Kowalski", "Petrov",
-                                                     "Moretti"};
-  static const std::vector<std::string> positions = {"CM", "AM", "CB", "GK", "CF"};
-  for (int i = 0; i < 5; ++i) {
-    PlayerCareerState fa;
-    fa.name = firstNames[i] + " " + lastNames[i];
-    fa.position = positions[i];
-    fa.preferredPosition = positions[i];
-    fa.age = 21 + i * 3;  // 21..33 — a realistic free-agent mix
-    fa.ovr = 58 + i * 4;
-    fa.pot = std::min(90, fa.ovr + 8);
-    fa.wage = 5000 + i * 2500;
-    fa.value = ComputeMarketValue(fa.ovr, fa.pot, fa.age);
-    fa.transferStatus = TransferStatus::NONE;
-    save.freeAgents.push_back(fa);
+
+  bool loadedFromDb = false;
+  sqlite3* db;
+  if (sqlite3_open("databases/default/database.sqlite", &db) == SQLITE_OK) {
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, "SELECT firstname, lastname, role, age, base_stat FROM players WHERE base_stat <= 70 ORDER BY RANDOM() LIMIT 10", -1, &stmt, nullptr) == SQLITE_OK) {
+      while (sqlite3_step(stmt) == SQLITE_ROW) {
+        PlayerCareerState fa;
+        const char* firstRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        const char* lastRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        const char* roleRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        
+        std::string first = firstRaw ? firstRaw : "";
+        std::string last = lastRaw ? lastRaw : "";
+        fa.name = first.empty() ? last : (first + " " + last);
+        fa.position = roleRaw ? roleRaw : "CM";
+        fa.preferredPosition = fa.position;
+        fa.age = sqlite3_column_int(stmt, 3);
+        fa.ovr = sqlite3_column_int(stmt, 4);
+        
+        fa.pot = std::min(90, fa.ovr + CareerCommon::RandomInt(2, 8));
+        fa.value = ComputeMarketValue(fa.ovr, fa.pot, fa.age);
+        fa.wage = std::max(1500LL, fa.value / 1400LL);
+        fa.transferStatus = TransferStatus::NONE;
+        fa.morale = 75;
+        fa.fitness = 90;
+        fa.matchForm = 50;
+        
+        save.freeAgents.push_back(fa);
+        loadedFromDb = true;
+      }
+      sqlite3_finalize(stmt);
+    }
+    sqlite3_close(db);
+  }
+
+  if (!loadedFromDb) {
+    // Fallback if DB query fails
+    static const std::vector<std::string> lastNames = {"Smith", "Silva", "Muller", "Rossi", "Garcia"};
+    for (int i = 0; i < 5; ++i) {
+      PlayerCareerState fa;
+      fa.name = "FreeAgent " + lastNames[i];
+      fa.position = "CM";
+      fa.preferredPosition = "CM";
+      fa.age = 22 + i * 2;
+      fa.ovr = 60 + i * 2;
+      fa.pot = fa.ovr + 5;
+      fa.value = ComputeMarketValue(fa.ovr, fa.pot, fa.age);
+      fa.wage = 5000;
+      fa.transferStatus = TransferStatus::NONE;
+      save.freeAgents.push_back(fa);
+    }
   }
 }
 
@@ -86,33 +131,58 @@ long long ComputeMarketValue(int overallRating, int potentialRating, int age) {
 void PopulateTransferMarket(std::vector<TransferTarget>& targets) {
   if (!targets.empty())
     return;
-  static const std::vector<std::string> firstNames = {"Alex", "Bruno", "Marco", "Noah",
-                                                      "Theo", "Rayan", "Luis",  "Evan"};
-  static const std::vector<std::string> lastNames = {"Silva",  "Rossi",   "Meyer", "Costa",
-                                                     "Santos", "Fischer", "Lopez", "Ibrahim"};
-  static const std::vector<std::string> positions = {"GK", "CB", "LB", "RB", "DM",
-                                                     "CM", "AM", "CF", "ST"};
 
   targets.clear();
-  for (int i = 0; i < 18; ++i) {
-    TransferTarget target;
-    target.name = firstNames[RandomInt(0, static_cast<int>(firstNames.size()) - 1)] + " " +
-                  lastNames[RandomInt(0, static_cast<int>(lastNames.size()) - 1)] + " " +
-                  std::to_string(i + 1);
-    target.preferredPosition = positions[RandomInt(0, static_cast<int>(positions.size()) - 1)];
-    target.age = RandomInt(18, 31);
-    target.overallRating = RandomInt(62, 84);
-    target.potentialRating =
-        std::max(target.overallRating, target.overallRating + RandomInt(1, 10));
-    // Age- and potential-aware valuation so the market is consistent with how
-    // squad players are valued: young high-ceiling players carry a premium,
-    // veterans are discounted, mirrors CareerSim::UpdatePlayerValue.
-    target.value = ComputeMarketValue(target.overallRating, target.potentialRating, target.age);
-    target.askingPrice = target.value + target.value * RandomInt(10, 30) / 100;
-    target.wage = std::max(1500LL, target.value / 1400LL);
-    target.teamID = 1000 + i;
-    target.isListed = true;
-    targets.push_back(target);
+  bool loadedFromDb = false;
+  sqlite3* db;
+  if (sqlite3_open("databases/default/database.sqlite", &db) == SQLITE_OK) {
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, "SELECT firstname, lastname, role, age, base_stat, team_id FROM players ORDER BY RANDOM() LIMIT 20", -1, &stmt, nullptr) == SQLITE_OK) {
+      while (sqlite3_step(stmt) == SQLITE_ROW) {
+        TransferTarget target;
+        const char* firstRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        const char* lastRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        const char* roleRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        
+        std::string first = firstRaw ? firstRaw : "";
+        std::string last = lastRaw ? lastRaw : "";
+        target.name = first.empty() ? last : (first + " " + last);
+        target.preferredPosition = roleRaw ? roleRaw : "CM";
+        target.age = sqlite3_column_int(stmt, 3);
+        target.overallRating = sqlite3_column_int(stmt, 4);
+        target.teamID = sqlite3_column_int(stmt, 5);
+        
+        target.potentialRating = std::max(target.overallRating, target.overallRating + RandomInt(1, 10));
+        target.value = ComputeMarketValue(target.overallRating, target.potentialRating, target.age);
+        target.askingPrice = target.value + target.value * RandomInt(10, 30) / 100;
+        target.wage = std::max(1500LL, target.value / 1400LL);
+        target.isListed = true;
+        targets.push_back(target);
+        loadedFromDb = true;
+      }
+      sqlite3_finalize(stmt);
+    }
+    sqlite3_close(db);
+  }
+
+  if (!loadedFromDb) {
+    // Fallback if DB query fails
+    static const std::vector<std::string> lastNames = {"Silva", "Rossi", "Meyer", "Costa", "Lopez"};
+    static const std::vector<std::string> positions = {"GK", "CB", "CM", "ST", "AM"};
+    for (int i = 0; i < 15; ++i) {
+      TransferTarget target;
+      target.name = "Target " + lastNames[i % 5] + " " + std::to_string(i);
+      target.preferredPosition = positions[i % 5];
+      target.age = RandomInt(18, 31);
+      target.overallRating = RandomInt(62, 84);
+      target.potentialRating = std::max(target.overallRating, target.overallRating + RandomInt(1, 10));
+      target.value = ComputeMarketValue(target.overallRating, target.potentialRating, target.age);
+      target.askingPrice = target.value + target.value * RandomInt(10, 30) / 100;
+      target.wage = std::max(1500LL, target.value / 1400LL);
+      target.teamID = 1000 + i;
+      target.isListed = true;
+      targets.push_back(target);
+    }
   }
 }
 
