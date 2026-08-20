@@ -72,6 +72,16 @@ static bool IsOwnerMode() {
   return save && save->mode == CareerMode::OWNER;
 }
 
+static bool IsGMMode() {
+  CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+  return save && save->mode == CareerMode::GM;
+}
+
+static bool IsCoachMode() {
+  CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+  return save && save->mode == CareerMode::COACH;
+}
+
 static int GetHubPageID() {
   return IsOwnerMode() ? e_PageID_OwnerHub : e_PageID_CareerHub;
 }
@@ -119,14 +129,14 @@ CareerMenuPage::CareerMenuPage(Gui2WindowManager* windowManager, const Gui2PageD
   modesTitle->Show();
 
   Gui2Button* btnCoach =
-      new Gui2Button(windowManager, "btn_mycoach", 0, 0, 47, 6, TR("career_menu_coach"));
-  Gui2Button* btnGM = new Gui2Button(windowManager, "btn_mygm", 0, 0, 47, 6, TR("career_menu_gm"));
+      new Gui2Button(windowManager, "btn_mycoach", 0, 0, 48, 6, TR("career_menu_coach"));
+  Gui2Button* btnGM = new Gui2Button(windowManager, "btn_mygm", 0, 0, 48, 6, TR("career_menu_gm"));
   Gui2Button* btnPlayer =
-      new Gui2Button(windowManager, "btn_playercareer", 0, 0, 47, 6, TR("career_menu_player"));
+      new Gui2Button(windowManager, "btn_playercareer", 0, 0, 48, 6, TR("career_menu_player"));
   Gui2Button* btnManager =
-      new Gui2Button(windowManager, "btn_managercareer", 0, 0, 47, 6, TR("career_menu_manager"));
+      new Gui2Button(windowManager, "btn_managercareer", 0, 0, 48, 6, TR("career_menu_manager"));
   Gui2Button* btnOwner =
-      new Gui2Button(windowManager, "btn_ownercareer", 0, 0, 47, 6, TR("career_menu_owner"));
+      new Gui2Button(windowManager, "btn_ownercareer", 0, 0, 48, 6, TR("career_menu_owner"));
 
   btnCoach->sig_OnClick.connect([this](...) { GoMyCoach(); });
   btnGM->sig_OnClick.connect([this](...) { GoMyGM(); });
@@ -134,7 +144,7 @@ CareerMenuPage::CareerMenuPage(Gui2WindowManager* windowManager, const Gui2PageD
   btnManager->sig_OnClick.connect([this](...) { GoManagerCareer(); });
   btnOwner->sig_OnClick.connect([this](...) { GoOwnerCareer(); });
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "career_grid", 2, 7, 49, 56);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "career_grid", 2, 7, 48, 56);
   grid->AddView(btnCoach, 0, 0);
   grid->AddView(btnGM, 1, 0);
   grid->AddView(btnPlayer, 2, 0);
@@ -555,29 +565,29 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
 
   std::string matchdayBtnLabel = "⚽ NEXT MATCHDAY (Week " + std::to_string(week) + ")";
   Gui2Button* btnMatchday =
-      new Gui2Button(windowManager, "btn_matchday", 0, 0, 38, 3, matchdayBtnLabel);
+      new Gui2Button(windowManager, "btn_matchday", 0, 0, 40, 3, matchdayBtnLabel);
   Gui2Button* btnSeason =
-      new Gui2Button(windowManager, "btn_season_end", 0, 0, 38, 2.6f, "📅 Season Review & Standings");
+      new Gui2Button(windowManager, "btn_season_end", 0, 0, 40, 2.6f, "📅 Season Review & Standings");
   Gui2Button* btnSquad =
-      new Gui2Button(windowManager, "btn_squad", 0, 0, 38, 2.6f, "📋 Squad Roster & Form");
+      new Gui2Button(windowManager, "btn_squad", 0, 0, 40, 2.6f, "📋 Squad Roster & Form");
   Gui2Button* btnStrategy =
-      new Gui2Button(windowManager, "btn_strategy", 0, 0, 38, 2.6f, "📐 Tactics & Strategy");
+      new Gui2Button(windowManager, "btn_strategy", 0, 0, 40, 2.6f, "📐 Tactics & Strategy");
   Gui2Button* btnTraining =
-      new Gui2Button(windowManager, "btn_training", 0, 0, 38, 2.6f, "⚡ Squad Development & Training");
+      new Gui2Button(windowManager, "btn_training", 0, 0, 40, 2.6f, "⚡ Squad Development & Training");
   Gui2Button* btnYouth =
-      new Gui2Button(windowManager, "btn_youth", 0, 0, 38, 2.6f, "⭐ Youth Scouting & Academy");
+      new Gui2Button(windowManager, "btn_youth", 0, 0, 40, 2.6f, "⭐ Youth Scouting & Academy");
   Gui2Button* btnTransfers =
-      new Gui2Button(windowManager, "btn_transfers", 0, 0, 38, 2.6f, "💼 Transfer Market & Bids");
+      new Gui2Button(windowManager, "btn_transfers", 0, 0, 40, 2.6f, "💼 Transfer Market & Bids");
   Gui2Button* btnFreeAgency =
-      new Gui2Button(windowManager, "btn_freeagency", 0, 0, 38, 2.6f, "🔍 Free Agent Recruiting");
+      new Gui2Button(windowManager, "btn_freeagency", 0, 0, 40, 2.6f, "🔍 Free Agent Recruiting");
   Gui2Button* btnPressConf =
-      new Gui2Button(windowManager, "btn_pressconf", 0, 0, 38, 2.6f, "🎙️ Press Conference & Media");
+      new Gui2Button(windowManager, "btn_pressconf", 0, 0, 40, 2.6f, "🎙️ Press Conference & Media");
   Gui2Button* btnLeagueExp =
-      new Gui2Button(windowManager, "btn_leagueexp", 0, 0, 38, 2.6f, "🌐 League Expansion & Rules");
+      new Gui2Button(windowManager, "btn_leagueexp", 0, 0, 40, 2.6f, "🌐 League Expansion & Rules");
   Gui2Button* btnCustomLeague =
-      new Gui2Button(windowManager, "btn_customleague", 0, 0, 38, 2.6f, "⚙️ Custom League Setup");
+      new Gui2Button(windowManager, "btn_customleague", 0, 0, 40, 2.6f, "⚙️ Custom League Setup");
   Gui2Button* btnExit =
-      new Gui2Button(windowManager, "btn_hub_exit", 0, 0, 38, 2.6f, "🚪 Exit to Career Modes");
+      new Gui2Button(windowManager, "btn_hub_exit", 0, 0, 40, 2.6f, "🚪 Exit to Career Modes");
 
   btnMatchday->sig_OnClick.connect([this](...) { GoMatchday(); });
   btnSeason->sig_OnClick.connect([this](...) { GoSeason(); });
@@ -591,6 +601,16 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
   btnTransfers->sig_OnClick.connect([this](...) { GoTransferMarket(); });
   btnFreeAgency->sig_OnClick.connect([this](...) { GoFreeAgency(); });
   btnExit->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerMenu); });
+
+  if (IsGMMode()) {
+    btnStrategy->SetActive(false);
+    btnTraining->SetActive(false);
+  }
+  if (IsCoachMode()) {
+    btnTransfers->SetActive(false);
+    btnFreeAgency->SetActive(false);
+    btnLeagueExp->SetActive(false);
+  }
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "hub_grid", 2, 4.5f, 40, 80);
   grid->AddView(btnMatchday, 0, 0);
@@ -2204,6 +2224,9 @@ void CareerMatchdayPage::PopulateGrid() {
   Gui2Button* btnPlayTop =
       new Gui2Button(windowManager, "btn_md_playtop", 0, 0, 42, 2.8f, "🎮 PLAY 3D MATCH");
   btnPlayTop->sig_OnClick.connect([this](...) { PlayMatch(); });
+  if (IsGMMode()) {
+    btnPlayTop->SetActive(false);
+  }
   fixtureGrid->AddView(btnPlayTop, row, 0);
 
   Gui2Button* btnSimAllTop =
@@ -2307,7 +2330,11 @@ void CareerMatchdayPage::PopulateGrid() {
   frame->AddView(fixtureGrid);
   fixtureGrid->Show();
 
-  btnPlayTop->SetFocus();
+  if (IsGMMode()) {
+    btnSimAllTop->SetFocus();
+  } else {
+    btnPlayTop->SetFocus();
+  }
 
   UpdateSummary();
 }
