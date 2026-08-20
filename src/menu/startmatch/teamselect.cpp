@@ -133,18 +133,18 @@ TeamSelectPage::TeamSelectPage(Gui2WindowManager* windowManager, const Gui2PageD
   grid2 = new Gui2Grid(windowManager, "teamselect_grid_team2", 2, 8, 30, 42);
 
   competitionSelect1 = new Gui2IconSelector(windowManager, "teamselect_iconselector_competition1",
-                                            0, 0, 29, 18, TR("teamselect_competition"));
+                                            0, 0, 30, 18, TR("teamselect_competition"));
   competitionSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_competition2",
-                                            0, 0, 29, 18, TR("teamselect_competition"));
-  teamSelect1 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team1", 0, 0, 29, 18,
+                                            0, 0, 30, 18, TR("teamselect_competition"));
+  teamSelect1 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team1", 0, 0, 30, 18,
                                      TR("teamselect_team"));
-  teamSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team2", 0, 0, 29, 18,
+  teamSelect2 = new Gui2IconSelector(windowManager, "teamselect_iconselector_team2", 0, 0, 30, 18,
                                      TR("teamselect_team"));
-  buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 29, 3,
+  buttonStart1 = new Gui2Button(windowManager, "teamselect_button_start1", 0, 0, 30, 3,
                                 TR("teamselect_confirm_home"));
-  buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 29, 3,
+  buttonStart2 = new Gui2Button(windowManager, "teamselect_button_start2", 0, 0, 30, 3,
                                 TR("teamselect_confirm_away"));
-  Gui2Button* buttonBack = new Gui2Button(windowManager, "teamselect_button_back", 0, 0, 29, 3,
+  Gui2Button* buttonBack = new Gui2Button(windowManager, "teamselect_button_back", 0, 0, 30, 3,
                                           Localization::GetInstance().Translate("action_back"));
 
   competitionSelect1->sig_OnClick.connect([this](...) { FocusTeamSelect1(); });

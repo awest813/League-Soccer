@@ -18,11 +18,11 @@ GamePlanPage::GamePlanPage(Gui2WindowManager* windowManager, const Gui2PageData&
   frame->Show();
 
   Gui2Caption* header = new Gui2Caption(
-      windowManager, "gameplan_header", xOffset, 11, 35, 3,
+      windowManager, "gameplan_header", 0.5f, 1, 34, 3,
       Localization::GetInstance().Translate("gameplan_header") + " " + int_to_str(teamID + 1));
   header->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
-  grid = new Gui2Grid(windowManager, "gameplan_grid", xOffset, 15, 0, 0);
-  gridNav = new Gui2Grid(windowManager, "gameplan_grid_navigation", xOffset, 0, 0, 0);
+  grid = new Gui2Grid(windowManager, "gameplan_grid", 0.5f, 5, 34, 75);
+  gridNav = new Gui2Grid(windowManager, "gameplan_grid_navigation", 0.5f, 0, 34, 20);
 
   map = new Gui2PlanMap(windowManager, "gameplan_planmap", 0, 0, 35, 28, teamData);
   buttonLineup = new Gui2Button(windowManager, "gameplan_button_lineup", 0, 0, 34, 3,

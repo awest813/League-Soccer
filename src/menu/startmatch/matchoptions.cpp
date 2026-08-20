@@ -43,13 +43,13 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "matchoptions_grid", 2, 10, 46, 60);
 
-  difficultySlider = new Gui2Slider(windowManager, "matchoptions_slider_difficulty", 0, 0, 29, 6,
+  difficultySlider = new Gui2Slider(windowManager, "matchoptions_slider_difficulty", 0, 0, 46, 6,
                                     TR("match_difficulty"));
   difficultySlider->SetQuantization(5);
   difficultySlider->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                   _default_Difficulty);
 
-  matchDurationSlider = new Gui2Slider(windowManager, "matchoptions_slider_matchduration", 0, 0, 29,
+  matchDurationSlider = new Gui2Slider(windowManager, "matchoptions_slider_matchduration", 0, 0, 46,
                                        6, TR("match_duration"));
   matchDurationSlider->SetQuantization(kMatchDurationSliderSteps);
   matchDurationSlider->AddHelperValue(
@@ -57,9 +57,9 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
       MatchDurationSliderFromMinutes(kDefaultMatchDurationMinutes));
 
   buttonStart =
-      new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 29, 3.5, TR("match_start"));
-  Gui2Button* buttonBack = new Gui2Button(windowManager, "matchoptions_button_back", 0, 0, 29, 3.5,
-                                          Localization::GetInstance().Translate("action_back"));
+      new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 46, 3.5, TR("match_start"));
+  Gui2Button* buttonBack = new Gui2Button(windowManager, "matchoptions_button_back", 0, 0, 46, 3.5,
+                                          TR("action_back"));
 
   float difficulty = GetConfiguration()->GetReal("match_difficulty", _default_Difficulty);
   float matchDurationMinutes = kDefaultMatchDurationMinutes;

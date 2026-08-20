@@ -2,7 +2,7 @@
 
 GamePlanSubMenu::GamePlanSubMenu(Gui2WindowManager* windowManager, Gui2View* parentFocus,
                                  Gui2Grid* mainGrid, const std::string& name)
-    : Gui2View(windowManager, name, 0, 0, 100, 100), mainGrid(mainGrid), parentFocus(parentFocus) {
+    : Gui2View(windowManager, name, 0, 0, 34, 20), mainGrid(mainGrid), parentFocus(parentFocus) {
   grid = new Gui2Grid(windowManager, "gameplan_grid_" + name, 0, 0, 0, 0);
   this->AddView(grid);
   mainGrid->AddView(this, 1, 0);
