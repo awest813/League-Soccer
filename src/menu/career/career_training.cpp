@@ -14,9 +14,17 @@ bool TrainSquad(CareerSave& save, CareerCommon::CareerEvents& events) {
   if (save.trainingPoints <= 0)
     return false;
   save.trainingPoints--;
-  for (auto& player : save.roster)
-    player.matchForm = std::min(100, player.matchForm + 3);
-  events.AddEvent("training", "Conducted squad training session", 1, false);
+  const bool isCoach = (save.mode == CareerMode::COACH);
+  const int formDelta = isCoach ? 6 : 3;
+  const int moraleDelta = isCoach ? 3 : 1;
+  for (auto& player : save.roster) {
+    player.matchForm = std::min(100, player.matchForm + formDelta);
+    player.morale = std::min(100, player.morale + moraleDelta);
+  }
+  events.AddEvent("training",
+                  isCoach ? "Head Coach conducted masterclass squad tactical drills."
+                          : "Conducted squad training session.",
+                  1, false);
   return true;
 }
 
@@ -25,23 +33,38 @@ bool TrainFocus(CareerSave& save, CareerCommon::CareerEvents& events,
   if (save.trainingPoints <= 0)
     return false;
   save.trainingPoints--;
+  const bool isCoach = (save.mode == CareerMode::COACH);
   int playersImproved = 0;
+
   for (auto& player : save.roster) {
-    if ((focusArea == "Attacking" || focusArea == "Shooting") &&
-        (player.preferredPosition == "CF" || player.preferredPosition == "AM")) {
-      player.ovr++;
-      playersImproved++;
-    } else if (focusArea == "Defending" &&
-               (player.preferredPosition == "CB" || player.preferredPosition == "LB" ||
-                player.preferredPosition == "RB")) {
-      player.ovr++;
-      playersImproved++;
+    bool eligible = false;
+    const std::string& pos = player.preferredPosition;
+
+    if (focusArea == "Attacking" || focusArea == "Shooting") {
+      eligible = (pos == "CF" || pos == "ST" || pos == "AM" || pos == "LW" || pos == "RW" || pos == "FW");
+    } else if (focusArea == "Defending") {
+      eligible = (pos == "CB" || pos == "LB" || pos == "RB" || pos == "DM" || pos == "GK");
+    } else if (focusArea == "Tactical") {
+      eligible = (pos == "CM" || pos == "DM" || pos == "AM" || pos == "LM" || pos == "RM" || pos == "WM");
+    } else if (focusArea == "Physical") {
+      eligible = (player.age <= 28);
     }
-    player.matchForm = std::min(100, player.matchForm + 3);
+
+    if (eligible) {
+      if (player.ovr < player.pot || isCoach) {
+        player.ovr = std::min(99, player.ovr + 1);
+        playersImproved++;
+      }
+    }
+    player.matchForm = std::min(100, player.matchForm + (isCoach ? 5 : 3));
+    if (isCoach) {
+      player.morale = std::min(100, player.morale + 2);
+    }
   }
+
   events.AddEvent("training",
                   "Focused training on " + focusArea + " (" + std::to_string(playersImproved) +
-                      " players improved)",
+                      " players improved" + (isCoach ? " - Coach Boost Active" : "") + ")",
                   1, false);
   return true;
 }
@@ -50,6 +73,35 @@ void SetStrategy(CareerSave& save, CareerCommon::CareerEvents& events,
                  const std::string& strategy) {
   save.activeStrategy = strategy;
   events.AddEvent("strategy", "Changed team strategy to " + strategy, 0, false);
+}
+
+bool MotivatePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
+                    const std::string& playerName) {
+  for (auto& p : save.roster) {
+    if (p.name == playerName) {
+      p.morale = std::min(100, p.morale + 15);
+      p.matchForm = std::min(100, p.matchForm + 6);
+      events.AddEvent("talk", "Head Coach conducted motivational 1-on-1 talk with " + playerName + ".", 1, false);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool DrillPlayer(CareerSave& save, CareerCommon::CareerEvents& events,
+                 const std::string& playerName) {
+  if (save.trainingPoints <= 0)
+    return false;
+  for (auto& p : save.roster) {
+    if (p.name == playerName) {
+      save.trainingPoints--;
+      p.ovr = std::min(99, p.ovr + 1);
+      p.matchForm = std::min(100, p.matchForm + 10);
+      events.AddEvent("training", "Conducted intensive individual tactical drill with " + playerName + " (+1 OVR).", 1, false);
+      return true;
+    }
+  }
+  return false;
 }
 
 void ScoutYouthPlayer(CareerSave& save, CareerCommon::CareerEvents& events) {

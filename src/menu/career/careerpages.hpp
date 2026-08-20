@@ -191,6 +191,8 @@ protected:
   void ExtendContract(const std::string& playerName);
   void ToggleTransferList(const std::string& playerName);
   void ReleasePlayer(const std::string& playerName);
+  void MotivatePlayer(const std::string& playerName);
+  void DrillPlayer(const std::string& playerName);
 };
 
 // Season End / Advance

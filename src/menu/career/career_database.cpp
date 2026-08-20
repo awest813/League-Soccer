@@ -188,6 +188,14 @@ bool CareerDatabase::TrainFocus(const std::string& focusArea) {
   return m_activeSave && CareerTraining::TrainFocus(*m_activeSave, *this, focusArea);
 }
 
+bool CareerDatabase::MotivatePlayer(const std::string& playerName) {
+  return m_activeSave && CareerTraining::MotivatePlayer(*m_activeSave, *this, playerName);
+}
+
+bool CareerDatabase::DrillPlayer(const std::string& playerName) {
+  return m_activeSave && CareerTraining::DrillPlayer(*m_activeSave, *this, playerName);
+}
+
 void CareerDatabase::SetStrategy(const std::string& strategy) {
   if (m_activeSave)
     CareerTraining::SetStrategy(*m_activeSave, *this, strategy);

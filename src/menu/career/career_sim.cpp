@@ -178,12 +178,27 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
   oppAttack += RandomInt(-4, 5);
   oppDefense += RandomInt(-4, 5);
 
+  int stratPossessionDelta = 0;
   if (strategy == "Attacking") {
     baseAttack += 4;
     baseDefense -= 3;
+    stratPossessionDelta = 5;
   } else if (strategy == "Defensive") {
     baseAttack -= 3;
     baseDefense += 4;
+    stratPossessionDelta = -5;
+  } else if (strategy == "High Pressing") {
+    baseAttack += 5;
+    baseDefense -= 1;
+    stratPossessionDelta = 8;
+  } else if (strategy == "Counter Attack") {
+    baseAttack += 4;
+    baseDefense += 2;
+    stratPossessionDelta = -8;
+  } else if (strategy == "Possession") {
+    baseAttack += 2;
+    baseDefense += 3;
+    stratPossessionDelta = 10;
   }
 
   // homeGoals/awayGoals mean "us" / "them" for ApplyMatchResult bookkeeping.
@@ -204,9 +219,7 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
   result.homeShots = result.homeGoals + RandomInt(2, 8);
   result.awayShots = result.awayGoals + RandomInt(2, 8);
   result.homePossession = ClampInt(50 + (teamOVR - opponentOVR) + RandomInt(-5, 5) +
-                                       (strategy == "Attacking"   ? 5
-                                        : strategy == "Defensive" ? -5
-                                                                  : 0) +
+                                       stratPossessionDelta +
                                        (isHome ? 3 : -3),
                                    30, 70);
   result.played = true;
