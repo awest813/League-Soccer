@@ -148,8 +148,8 @@ void main(void) {
     //shaded += 0.6;
     //shaded *= 0.5;
     //shaded += 0.5;
-    shaded *= 0.75;
-    shaded += 0.25;
+    shaded *= 0.85; // slightly deeper shadows for more contrast (PES style)
+    shaded += 0.15;
   }
 
   vec3 fragColor = (base.rgb * lighted + specular) * shaded;

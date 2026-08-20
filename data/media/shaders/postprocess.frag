@@ -120,8 +120,8 @@ void main(void) {
   if (depth > 0.999f) fragColor = fogColor; // fill 'background'/sky
 
   float brightness = 1.0f;
-  float contrastBias = 0.3f;//0.1f; // 0 == normal .. 1 == 'fake hdri'
-  float saturation = 0.95f * (0.4f + SSAO * 0.6f); // SSAO shadows are less saturated
+  float contrastBias = 0.35f;//0.1f; // 0 == normal .. 1 == 'fake hdri'. 0.35 gives punchy PES 5/6 feel.
+  float saturation = 1.15f * (0.4f + SSAO * 0.6f); // SSAO shadows are less saturated, 1.15x global boost
 
   // now happens automagically because of glEnable(GL_FRAMEBUFFER_SRGB)
 /*
