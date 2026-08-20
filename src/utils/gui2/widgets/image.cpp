@@ -16,6 +16,8 @@
 
 #include "../windowmanager.hpp"
 #include "base/log.hpp"
+#include "managers/resourcemanagerpool.hpp"
+#include "scene/objectfactory.hpp"
 #include "SDL2/SDL2_rotozoom.h"
 
 namespace blunted {
@@ -49,20 +51,19 @@ Gui2Image::Gui2Image(Gui2WindowManager* windowManager, const std::string& name, 
 Gui2Image::~Gui2Image() {}
 
 void Gui2Image::LoadImage(const std::string& filename) {
-  SDL_Surface* imageSurfTmp = IMG_Load(filename.c_str());
-  if (!imageSurfTmp) {
-    Log(e_Warning, "Gui2Image", "LoadImage",
-        "Failed to load \"" + filename + "\": " + IMG_GetError());
+  boost::intrusive_ptr<Resource<Surface>> surfaceRes =
+      ResourceManagerPool::GetInstance()
+          .GetManager<Surface>(e_ResourceType_Surface)
+          ->Fetch(filename, true, true);
+
+  if (!surfaceRes || !surfaceRes->GetResource() || !surfaceRes->GetResource()->GetData()) {
+    Log(e_Warning, "Gui2Image", "LoadImage", "Failed to load \"" + filename + "\" via resource manager");
     return;
   }
 
-  imageSource =
-      windowManager->CreateImage2D(name + "source", imageSurfTmp->w, imageSurfTmp->h, false);
-
-  boost::intrusive_ptr<Resource<Surface>> surfaceRes = imageSource->GetImage();
-  surfaceRes->resourceMutex.lock();
-  surfaceRes->GetResource()->SetData(imageSurfTmp);
-  surfaceRes->resourceMutex.unlock();
+  imageSource = boost::static_pointer_cast<Image2D>(
+      ObjectFactory::GetInstance().CreateObject(name + "source", e_ObjectType_Image2D));
+  imageSource->SetImage(surfaceRes);
 
   Redraw();
 }
