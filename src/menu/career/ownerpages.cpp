@@ -46,6 +46,11 @@ std::string BuildOwnerFinanceLine(const CareerSave* save) {
               std::to_string(save->seasonLosses)});
 }
 
+int GetHubPageID() {
+  CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+  return (save && save->mode == CareerMode::OWNER) ? (int)e_PageID_OwnerHub : (int)e_PageID_CareerHub;
+}
+
 }  // namespace
 
 // ---------------------------------------------------------------------------
@@ -703,8 +708,8 @@ OwnerStaffPage::OwnerStaffPage(Gui2WindowManager* windowManager, const Gui2PageD
   btnHire->Show();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_staff_back", 50, 87, 34, 3, TR("career_back_owner_hub"));
-  btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerHub); });
+      new Gui2Button(windowManager, "btn_staff_back", 50, 87, 34, 3, TR("career_back_hub"));
+  btnBack->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
   root->AddView(btnBack);
   btnBack->Show();
 

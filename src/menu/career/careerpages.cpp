@@ -586,6 +586,11 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
       new Gui2Button(windowManager, "btn_leagueexp", 0, 0, 40, 2.6f, "🌐 League Expansion & Rules");
   Gui2Button* btnCustomLeague =
       new Gui2Button(windowManager, "btn_customleague", 0, 0, 40, 2.6f, "⚙️ Custom League Setup");
+  Gui2Button* btnGMStaff = nullptr;
+  if (IsGMMode()) {
+    btnGMStaff = new Gui2Button(windowManager, "btn_gm_staff", 0, 0, 40, 2.6f, "👥 Hire & Fire Staff");
+    btnGMStaff->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerStaff); });
+  }
   Gui2Button* btnExit =
       new Gui2Button(windowManager, "btn_hub_exit", 0, 0, 40, 2.6f, "🚪 Exit to Career Modes");
 
@@ -624,7 +629,11 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
   grid->AddView(btnPressConf, 8, 0);
   grid->AddView(btnLeagueExp, 9, 0);
   grid->AddView(btnCustomLeague, 10, 0);
-  grid->AddView(btnExit, 11, 0);
+  int nextRow = 11;
+  if (btnGMStaff) {
+    grid->AddView(btnGMStaff, nextRow++, 0);
+  }
+  grid->AddView(btnExit, nextRow, 0);
   grid->UpdateLayout(0.5f, 0.5f, 0.25f, 0.25f);
 
   navFrame->AddView(grid);
