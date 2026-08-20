@@ -182,36 +182,36 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Grid* navGrid = new Gui2Grid(windowManager, "oh_nav_grid", 1, 3, 23, 58);
 
   Gui2Button* btnStadium =
-      new Gui2Button(windowManager, "btn_oh_stadium", 0, 0, 22, 3, TR("career_owner_stadium_nav"));
-  Gui2Button* btnFinances = new Gui2Button(windowManager, "btn_oh_finances", 0, 0, 22, 3,
+      new Gui2Button(windowManager, "btn_oh_stadium", 0, 0, 23, 3, TR("career_owner_stadium_nav"));
+  Gui2Button* btnFinances = new Gui2Button(windowManager, "btn_oh_finances", 0, 0, 23, 3,
                                            TR("career_owner_finances_nav"));
-  Gui2Button* btnSponsors = new Gui2Button(windowManager, "btn_oh_sponsors", 0, 0, 22, 3,
+  Gui2Button* btnSponsors = new Gui2Button(windowManager, "btn_oh_sponsors", 0, 0, 23, 3,
                                            TR("career_owner_sponsors_nav"));
   Gui2Button* btnStaff =
-      new Gui2Button(windowManager, "btn_oh_staff", 0, 0, 22, 3, TR("career_owner_staff_nav"));
+      new Gui2Button(windowManager, "btn_oh_staff", 0, 0, 23, 3, TR("career_owner_staff_nav"));
   Gui2Button* btnBoard =
-      new Gui2Button(windowManager, "btn_oh_board", 0, 0, 22, 3, TR("career_owner_boardroom_nav"));
+      new Gui2Button(windowManager, "btn_oh_board", 0, 0, 23, 3, TR("career_owner_boardroom_nav"));
 
   Gui2Caption* navSep1 =
-      new Gui2Caption(windowManager, "cap_oh_sep1", 0, 0, 22, 2, TR("career_section_squad"));
-  Gui2Button* btnTransfers = new Gui2Button(windowManager, "btn_oh_transfers", 0, 0, 22, 3,
+      new Gui2Caption(windowManager, "cap_oh_sep1", 0, 0, 23, 2, TR("career_section_squad"));
+  Gui2Button* btnTransfers = new Gui2Button(windowManager, "btn_oh_transfers", 0, 0, 23, 3,
                                             TR("career_owner_transfers_nav"));
   Gui2Button* btnSquad =
-      new Gui2Button(windowManager, "btn_oh_squad", 0, 0, 22, 3, TR("career_squad_title"));
+      new Gui2Button(windowManager, "btn_oh_squad", 0, 0, 23, 3, TR("career_squad_title"));
   Gui2Button* btnTraining =
-      new Gui2Button(windowManager, "btn_oh_training", 0, 0, 22, 3, TR("career_training_title"));
+      new Gui2Button(windowManager, "btn_oh_training", 0, 0, 23, 3, TR("career_training_title"));
   Gui2Button* btnFreeAgency =
-      new Gui2Button(windowManager, "btn_oh_freeagency", 0, 0, 22, 3, TR("career_fa_title"));
+      new Gui2Button(windowManager, "btn_oh_freeagency", 0, 0, 23, 3, TR("career_fa_title"));
   Gui2Button* btnYouth =
-      new Gui2Button(windowManager, "btn_oh_youth", 0, 0, 22, 3, TR("career_youth_title"));
+      new Gui2Button(windowManager, "btn_oh_youth", 0, 0, 23, 3, TR("career_youth_title"));
 
   Gui2Button* btnSeason =
-      new Gui2Button(windowManager, "btn_oh_season", 0, 0, 22, 4, TR("career_advance_season"));
+      new Gui2Button(windowManager, "btn_oh_season", 0, 0, 23, 4, TR("career_advance_season"));
   Gui2Button* btnMatchday =
-      new Gui2Button(windowManager, "btn_oh_matchday", 0, 0, 22, 4, TR("career_play_matchday"));
+      new Gui2Button(windowManager, "btn_oh_matchday", 0, 0, 23, 4, TR("career_play_matchday"));
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_oh_back_main", 0, 0, 22, 4, TR("career_menu_back_modes"));
+      new Gui2Button(windowManager, "btn_oh_back_main", 0, 0, 23, 4, TR("career_menu_back_modes"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerMenu); });
 
   btnStadium->sig_OnClick.connect([this](...) { GoStadium(); });
@@ -245,7 +245,7 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
   // Section separator
   Gui2Caption* navSep2 =
-      new Gui2Caption(windowManager, "cap_oh_sep2", 0, 0, 22, 2, TR("career_section_season"));
+      new Gui2Caption(windowManager, "cap_oh_sep2", 0, 0, 23, 2, TR("career_section_season"));
   navGrid->AddView(navSep2, row++, 0);
 
   navGrid->AddView(btnSeason, row++, 0);
@@ -565,24 +565,24 @@ OwnerFinancesPage::OwnerFinancesPage(Gui2WindowManager* windowManager, const Gui
 
     int currentPrice = fin.ticketPrice;
 
-    Gui2Button* btnTicketUp = new Gui2Button(windowManager, "btn_ticket_up", 0, 0, 38, 2.5,
+    Gui2Button* btnTicketUp = new Gui2Button(windowManager, "btn_ticket_up", 0, 0, 40, 2.5,
                                              TRF("career_ticket_inc", {std::to_string(10)}));
     btnTicketUp->sig_OnClick.connect(
         [this, currentPrice](...) { SetTicketPrice(currentPrice + 10); });
     actGrid->AddView(btnTicketUp, row, 0);
 
-    Gui2Button* btnTicketDown = new Gui2Button(windowManager, "btn_ticket_down", 0, 0, 38, 2.5,
+    Gui2Button* btnTicketDown = new Gui2Button(windowManager, "btn_ticket_down", 0, 0, 40, 2.5,
                                                TRF("career_ticket_dec", {std::to_string(10)}));
     btnTicketDown->sig_OnClick.connect(
         [this, currentPrice](...) { SetTicketPrice(currentPrice - 10); });
     actGrid->AddView(btnTicketDown, row++, 1);
 
     Gui2Button* btnFanInvest =
-        new Gui2Button(windowManager, "btn_fan_invest", 0, 0, 38, 2.5, TR("career_invest_fan"));
+        new Gui2Button(windowManager, "btn_fan_invest", 0, 0, 40, 2.5, TR("career_invest_fan"));
     btnFanInvest->sig_OnClick.connect([this](...) { InvestFanBase(); });
     actGrid->AddView(btnFanInvest, row, 0);
 
-    Gui2Button* btnPrestige = new Gui2Button(windowManager, "btn_prestige_invest", 0, 0, 38, 2.5,
+    Gui2Button* btnPrestige = new Gui2Button(windowManager, "btn_prestige_invest", 0, 0, 40, 2.5,
                                              TR("career_invest_prestige"));
     btnPrestige->sig_OnClick.connect([this](...) { InvestPrestige(); });
     actGrid->AddView(btnPrestige, row++, 1);
@@ -703,7 +703,7 @@ OwnerStaffPage::OwnerStaffPage(Gui2WindowManager* windowManager, const Gui2PageD
   btnHire->Show();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_staff_back", 48, 87, 34, 3, TR("career_back_owner_hub"));
+      new Gui2Button(windowManager, "btn_staff_back", 50, 87, 34, 3, TR("career_back_owner_hub"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerHub); });
   root->AddView(btnBack);
   btnBack->Show();
