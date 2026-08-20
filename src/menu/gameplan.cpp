@@ -84,6 +84,11 @@ void GamePlanPage::Deactivate() {
 }
 
 void GamePlanPage::Reactivate() {
+  grid->RemoveView(map);
+  delete map;
+  map = new Gui2PlanMap(windowManager, "gameplan_planmap", 0, 0, 35, 28, teamData);
+  grid->AddView(map, 0, 0);
+  
   grid->AddView(gridNav, 1, 0);
   grid->UpdateLayout(0.0);
   gridNav->Show();
