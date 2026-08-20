@@ -125,6 +125,7 @@ bool CareerDatabase::CreateNewCareer(const std::string& careerName, const std::s
   m_activeSave->season.inPreseason = true;
   m_activeSave->season.maxWeeks = 38;
   m_activeSave->season.transferWindowOpen = true;
+  m_activeSave->trainingPoints = (m_activeSave->mode == CareerMode::COACH) ? 20 : 10;
   m_activeSave->stadium.name = careerName + " Stadium";
   CareerFinance::InitializeOwnerData(*m_activeSave);
   CareerBoard::GenerateBoardObjectives(*m_activeSave);

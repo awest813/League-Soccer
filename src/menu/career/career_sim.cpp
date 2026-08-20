@@ -364,7 +364,7 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
   save.season.currentWeek = 1;
   save.season.inPreseason = true;
   save.season.transferWindowOpen = true;
-  save.trainingPoints = 10;
+  save.trainingPoints = (save.mode == CareerMode::COACH) ? 20 : 10;
   save.availableSponsorOffers.clear();
   bids.clear();
   targets.clear();

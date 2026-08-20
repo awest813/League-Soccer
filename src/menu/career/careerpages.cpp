@@ -615,6 +615,8 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
     btnTransfers->SetActive(false);
     btnFreeAgency->SetActive(false);
     btnLeagueExp->SetActive(false);
+    btnYouth->SetActive(false);
+    btnCustomLeague->SetActive(false);
   }
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "hub_grid", 2, 4.5f, 40, 80);
