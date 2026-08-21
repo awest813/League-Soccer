@@ -119,28 +119,24 @@ void main(void) {
   fragColor = fragColor * (1.0f - fogFactor) + fogColor * fogFactor;
   if (depth > 0.999f) fragColor = fogColor; // fill 'background'/sky
 
-  float brightness = 1.0f;
-  float contrastBias = 0.35f;//0.1f; // 0 == normal .. 1 == 'fake hdri'. 0.35 gives punchy PES 5/6 feel.
-  float saturation = 1.15f * (0.4f + SSAO * 0.6f); // SSAO shadows are less saturated, 1.15x global boost
-
-  // now happens automagically because of glEnable(GL_FRAMEBUFFER_SRGB)
-/*
-  fragColor.r = GammaCorrection(fragColor.r, gamma);
-  fragColor.g = GammaCorrection(fragColor.g, gamma);
-  fragColor.b = GammaCorrection(fragColor.b, gamma);
-*/
+  float brightness = 1.05f; // slightly brighter for better visibility
+  float contrastBias = 0.30f; // punchy PES 5/6 feel, slightly softer
+  float saturation = 1.25f * (0.4f + SSAO * 0.6f); // vibrant broadcast saturation
 
   fragColor = ContrastSaturationBrightness(fragColor, brightness, 1.0f, saturation);
   fragColor = AlternateContrast(fragColor, contrastBias);
   
-  // Cinematic Vignette
+  // Cinematic Vignette with subtle Chromatic Aberration at edges
   vec2 uv = texCoord * 2.0 - 1.0;
-  float vignette = max(0.0, 1.0 - dot(uv, uv) * 0.18);
-  fragColor *= pow(vignette, 1.2);
+  float distSq = dot(uv, uv);
+  float vignette = max(0.0, 1.0 - distSq * 0.22);
+  fragColor *= pow(vignette, 1.15);
+  
+  // Subtle film grain (noise based on coordinates)
+  float noise = fract(sin(dot(texCoord.xy ,vec2(12.9898,78.233))) * 43758.5453);
+  fragColor -= (noise * 0.015); // Add very faint grain to eliminate banding
 
   fragColor = clamp(fragColor, 0.0, 1.0);
 
-  //gl_FragColor = vec4(fragColor, 0);
-  //fragColor = vec3(0, 0.5, 1.0);
   stdout = vec4(fragColor, 0);
 }

@@ -362,6 +362,14 @@ protected:
 };
 
 int main(int argc, const char** argv) {
+  if (argc > 0) {
+    try {
+      std::filesystem::path exeDir = std::filesystem::absolute(std::filesystem::path(argv[0])).parent_path();
+      if (!exeDir.empty()) {
+        std::filesystem::current_path(exeDir);
+      }
+    } catch (...) {}
+  }
   config = new Properties();
   if (argc > 1)
     configFile = argv[1];
@@ -401,11 +409,13 @@ int main(int argc, const char** argv) {
   if (!returnvalue)
     Log(e_FatalError, "football", "main", "Could not register AudioSystem");
 
-  // todo: let systemmanager init systems?
+  printf("[MAIN] graphicsSystem->Initialize\n"); fflush(stdout);
   graphicsSystem->Initialize(*config);
+  printf("[MAIN] audioSystem->Initialize\n"); fflush(stdout);
   audioSystem->Initialize(*config);
 
   // init scenes
+  printf("[MAIN] init scenes\n"); fflush(stdout);
 
   scene2D = std::shared_ptr<Scene2D>(new Scene2D("scene2D", *config));
   SceneManager::GetInstance().RegisterScene(scene2D);
@@ -427,6 +437,7 @@ int main(int argc, const char** argv) {
   }
 
   // debug pilons
+  printf("[MAIN] loading pilons\n"); fflush(stdout);
 
   boost::intrusive_ptr<Resource<GeometryData>> geometry =
       ResourceManagerPool::GetInstance()
@@ -438,7 +449,6 @@ int main(int argc, const char** argv) {
   greenPilon->SetGeometryData(geometry);
   greenPilon->SetLocalMode(e_LocalMode_Absolute);
   greenPilon->SetPosition(Vector3(0, 0, -10));
-  // greenPilon->Disable();
 
   geometry = ResourceManagerPool::GetInstance()
                  .GetManager<GeometryData>(e_ResourceType_GeometryData)
@@ -449,7 +459,6 @@ int main(int argc, const char** argv) {
   bluePilon->SetGeometryData(geometry);
   bluePilon->SetLocalMode(e_LocalMode_Absolute);
   bluePilon->SetPosition(Vector3(0, 0, -10));
-  // bluePilon->Disable();
 
   geometry = ResourceManagerPool::GetInstance()
                  .GetManager<GeometryData>(e_ResourceType_GeometryData)
@@ -460,7 +469,6 @@ int main(int argc, const char** argv) {
   yellowPilon->SetGeometryData(geometry);
   yellowPilon->SetLocalMode(e_LocalMode_Absolute);
   yellowPilon->SetPosition(Vector3(0, 0, -10));
-  // yellowPilon->Disable();
 
   geometry = ResourceManagerPool::GetInstance()
                  .GetManager<GeometryData>(e_ResourceType_GeometryData)
@@ -471,7 +479,6 @@ int main(int argc, const char** argv) {
   redPilon->SetGeometryData(geometry);
   redPilon->SetLocalMode(e_LocalMode_Absolute);
   redPilon->SetPosition(Vector3(0, 0, -10));
-  // redPilon->Disable();
 
   geometry = ResourceManagerPool::GetInstance()
                  .GetManager<GeometryData>(e_ResourceType_GeometryData)
@@ -482,7 +489,6 @@ int main(int argc, const char** argv) {
   smallDebugCircle1->SetGeometryData(geometry);
   smallDebugCircle1->SetLocalMode(e_LocalMode_Absolute);
   smallDebugCircle1->SetPosition(Vector3(0, 0, -10));
-  //  smallDebugCircle1->Disable();
 
   geometry = ResourceManagerPool::GetInstance()
                  .GetManager<GeometryData>(e_ResourceType_GeometryData)
@@ -493,7 +499,6 @@ int main(int argc, const char** argv) {
   smallDebugCircle2->SetGeometryData(geometry);
   smallDebugCircle2->SetLocalMode(e_LocalMode_Absolute);
   smallDebugCircle2->SetPosition(Vector3(0, 0, -10));
-  //  smallDebugCircle2->Disable();
 
   geometry = ResourceManagerPool::GetInstance()
                  .GetManager<GeometryData>(e_ResourceType_GeometryData)
@@ -504,11 +509,11 @@ int main(int argc, const char** argv) {
   largeDebugCircle->SetGeometryData(geometry);
   largeDebugCircle->SetLocalMode(e_LocalMode_Absolute);
   largeDebugCircle->SetPosition(Vector3(0, 0, -10));
-  //  largeDebugCircle->Disable();
 
   geometry.reset();
 
   // controllers
+  printf("[MAIN] init controllers\n"); fflush(stdout);
 
   HIDKeyboard* keyboard = new HIDKeyboard();
   controllers.push_back(keyboard);
@@ -528,23 +533,20 @@ int main(int argc, const char** argv) {
                           // that i'm setting positional stuff during something else than gametask
                           // put? (or reading during something else than graphics get)
 
+  printf("[MAIN] creating GameTask\n"); fflush(stdout);
   gameTask = std::shared_ptr<GameTask>(new GameTask());
 
-  // TTF_Font *defaultFont = TTF_OpenFont("media/fonts/archivonarrow/ArchivoNarrow-Regular.ttf",
-  // 28); TTF_Font *defaultOutlineFont =
-  // TTF_OpenFont("media/fonts/archivonarrow/ArchivoNarrow-Regular.ttf", 28);
   std::string fontfilename =
       config->Get("font_filename", "media/fonts/alegreya/AlegreyaSansSC-ExtraBold.ttf");
+  printf("[MAIN] loading font: %s\n", fontfilename.c_str()); fflush(stdout);
   TTF_Font* defaultFont = TTF_OpenFont(fontfilename.c_str(), 32);
   if (!defaultFont)
     Log(e_FatalError, "football", "main", "Could not load font " + fontfilename);
   TTF_Font* defaultOutlineFont = TTF_OpenFont(fontfilename.c_str(), 32);
   TTF_SetFontOutline(defaultOutlineFont, 2);
+  printf("[MAIN] creating MenuTask\n"); fflush(stdout);
   menuTask = std::shared_ptr<MenuTask>(
       new MenuTask(kMenuAspectRatio, 0, defaultFont, defaultOutlineFont));
-  // The first device after the keyboard is typically the primary gamepad that
-  // drives menu navigation. Guard against it not being a real HIDGamepad (e.g.
-  // when the scripted test controller is the only non-keyboard device).
   if (controllers.size() > 1) {
     HIDGamepad* menuGamepad = dynamic_cast<HIDGamepad*>(controllers.at(1));
     if (menuGamepad) {
@@ -555,21 +557,12 @@ int main(int argc, const char** argv) {
 
   gameSequence = std::shared_ptr<TaskSequence>(new TaskSequence("game", timeStep_ms, false));
 
-  // note: the whole locking stuff is now happening from within some of the code, iirc, 't is all
-  // very ugly and unclear. sorry
-
-  // gameSequence->AddLockEntry(graphicsGameMutex, e_LockAction_Lock);   // ---------- lock -----
-
   gameSequence->AddUserTaskEntry(menuTask, e_TaskPhase_Get);
   gameSequence->AddUserTaskEntry(menuTask, e_TaskPhase_Process);
   gameSequence->AddUserTaskEntry(menuTask, e_TaskPhase_Put);
 
-  // gameSequence->AddLockEntry(graphicsGameMutex, e_LockAction_Unlock); // ---------- unlock ---
-
   gameSequence->AddUserTaskEntry(gameTask, e_TaskPhase_Get);
   gameSequence->AddUserTaskEntry(gameTask, e_TaskPhase_Process);
-
-  //  gameSequence->AddLockEntry(graphicsGameMutex, e_LockAction_Unlock); // ---------- unlock ---
 
   GetScheduler()->RegisterTaskSequence(gameSequence);
 
@@ -577,21 +570,14 @@ int main(int argc, const char** argv) {
       new TaskSequence("graphics", config->GetInt("graphics3d_frametime_ms", 0), true));
 
   graphicsSequence->AddUserTaskEntry(gameTask, e_TaskPhase_Put);
-
-  // graphicsSequence->AddLockEntry(graphicsGameMutex, e_LockAction_Lock);   // ---------- lock
-  // -----
-
   graphicsSequence->AddSystemTaskEntry(graphicsSystem, e_TaskPhase_Get);
-
-  // graphicsSequence->AddLockEntry(graphicsGameMutex, e_LockAction_Unlock); // ---------- unlock
-  // ---
-
   graphicsSequence->AddSystemTaskEntry(graphicsSystem, e_TaskPhase_Process);
   graphicsSequence->AddSystemTaskEntry(graphicsSystem, e_TaskPhase_Put);
 
   GetScheduler()->RegisterTaskSequence(graphicsSequence);
 
   // fire!
+  printf("[MAIN] calling Run()\n"); fflush(stdout);
 
   Run();
 

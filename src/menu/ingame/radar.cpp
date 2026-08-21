@@ -67,6 +67,7 @@ void Gui2Radar::ReloadAvatars(int teamID, unsigned int playerCount) {
     Gui2Image* avatar =
         new Gui2Image(windowManager, "radar_avatar_" + int_to_str(teamID) + "_" + int_to_str(i), 0,
                       0, avatarWidthPercent, kAvatarHeightPercent);
+    avatar->SetZPriority(0);
     this->AddView(avatar);
     avatar->LoadImage(imgPath);
     avatar->Show();

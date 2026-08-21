@@ -187,7 +187,7 @@ TEST(CareerFinanceModuleTest, FinancialHealthStringTiers) {
 TEST(LocalizationTest, FormatsMultilineCareerTextAndFallsBackToEnglish) {
   ASSERT_TRUE(Localization::GetInstance().Load("en"));
   EXPECT_EQ(TR("career_hub_title"), "Career Hub");
-  EXPECT_EQ(TR("career_menu_coach"), "Coach\nMatchday leadership");
+  EXPECT_EQ(TR("career_menu_coach"), "Head Coach\nMatchday leadership");
   EXPECT_EQ(TRF("career_progress_line", {"2", "38", "1", "0", "1", "3", "2"}),
             "Week 2/38 | W 1  D 0  L 1 | GF 3  GA 2");
   EXPECT_EQ(TR("career_hub_club_snapshot"), "Club Snapshot");

@@ -1657,7 +1657,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
       windowManager, "caption_gamepadfunction_ontheball", 0, 0, 30, 3, "on the ball controls");
 
   Gui2Caption* captionLongPass =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_longpass", 0, 0, 10, 3, "long pass");
+      new Gui2Caption(windowManager, "caption_gamepadfunction_longpass", 0, 0, 10, 3, "through pass");
   onTheBallButtons[0] = new Gui2Button(windowManager, "button_gamepadfunction_ontheball0", 0, 0, 8,
                                        3, onTheBallStr[0]);
   onTheBallButtons[0]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1671,7 +1671,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   onTheBallButtons[0]->SetToggleable(true);
 
   Gui2Caption* captionHighPass =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_highpass", 0, 0, 10, 3, "high pass");
+      new Gui2Caption(windowManager, "caption_gamepadfunction_highpass", 0, 0, 10, 3, "cross / loft");
   onTheBallButtons[1] = new Gui2Button(windowManager, "button_gamepadfunction_ontheball1", 0, 0, 8,
                                        3, onTheBallStr[1]);
   onTheBallButtons[1]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1738,7 +1738,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
       windowManager, "caption_gamepadfunction_offtheball", 0, 0, 30, 3, "off the ball controls");
 
   Gui2Caption* captionKeeper = new Gui2Caption(windowManager, "caption_gamepadfunction_keeper", 0,
-                                               0, 10, 3, "keeper to ball");
+                                               0, 10, 3, "keeper rush");
   offTheBallButtons[0] = new Gui2Button(windowManager, "button_gamepadfunction_offtheball0", 0, 0,
                                         8, 3, offTheBallStr[0]);
   offTheBallButtons[0]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1752,7 +1752,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   offTheBallButtons[0]->SetToggleable(true);
 
   Gui2Caption* captionSliding =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_sliding", 0, 0, 10, 3, "sliding");
+      new Gui2Caption(windowManager, "caption_gamepadfunction_sliding", 0, 0, 10, 3, "sliding tackle");
   offTheBallButtons[1] = new Gui2Button(windowManager, "button_gamepadfunction_offtheball1", 0, 0,
                                         8, 3, offTheBallStr[1]);
   offTheBallButtons[1]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1766,7 +1766,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   offTheBallButtons[1]->SetToggleable(true);
 
   Gui2Caption* captionPressure =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_pressure", 0, 0, 10, 3, "pressure");
+      new Gui2Caption(windowManager, "caption_gamepadfunction_pressure", 0, 0, 10, 3, "pressure / contain");
   offTheBallButtons[2] = new Gui2Button(windowManager, "button_gamepadfunction_offtheball2", 0, 0,
                                         8, 3, offTheBallStr[2]);
   offTheBallButtons[2]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1780,7 +1780,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   offTheBallButtons[2]->SetToggleable(true);
 
   Gui2Caption* captionTeamPressure = new Gui2Caption(
-      windowManager, "caption_gamepadfunction_teampressure", 0, 0, 10, 3, "team pressure");
+      windowManager, "caption_gamepadfunction_teampressure", 0, 0, 10, 3, "2nd man press");
   offTheBallButtons[3] = new Gui2Button(windowManager, "button_gamepadfunction_offtheball3", 0, 0,
                                         8, 3, offTheBallStr[3]);
   offTheBallButtons[3]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,

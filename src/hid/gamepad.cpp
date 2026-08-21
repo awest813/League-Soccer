@@ -305,64 +305,63 @@ std::string HIDGamepad::GetControllerTypeName() const {
 }
 
 std::string HIDGamepad::GetButtonGlyphPath(e_ButtonFunction buttonFunction) const {
+  e_ControllerButton mappedBtn;
+  {
+    // Temporarily cast away const to lock the mutex and access functionMapping
+    std::unique_lock<std::mutex> blah(const_cast<std::mutex&>(mutex));
+    mappedBtn = functionMapping[buttonFunction];
+  }
+
   if (controllerType == e_ControllerType_PlayStation) {
-    switch (buttonFunction) {
-      case e_ButtonFunction_ShortPass:
-      case e_ButtonFunction_Pressure:
+    switch (mappedBtn) {
+      case e_ControllerButton_A:
         return "media/menu/buttons/ps_cross.png";
-      case e_ButtonFunction_HighPass:
-      case e_ButtonFunction_Sliding:
+      case e_ControllerButton_B:
         return "media/menu/buttons/ps_circle.png";
-      case e_ButtonFunction_Shot:
-      case e_ButtonFunction_TeamPressure:
+      case e_ControllerButton_X:
         return "media/menu/buttons/ps_square.png";
-      case e_ButtonFunction_LongPass:
-      case e_ButtonFunction_KeeperRush:
+      case e_ControllerButton_Y:
         return "media/menu/buttons/ps_triangle.png";
-      case e_ButtonFunction_Switch:
+      case e_ControllerButton_L1:
         return "media/menu/buttons/ps_l1.png";
-      case e_ButtonFunction_Special:
+      case e_ControllerButton_L2:
         return "media/menu/buttons/ps_l2.png";
-      case e_ButtonFunction_Sprint:
+      case e_ControllerButton_R1:
         return "media/menu/buttons/ps_r1.png";
-      case e_ButtonFunction_Dribble:
+      case e_ControllerButton_R2:
         return "media/menu/buttons/ps_r2.png";
-      case e_ButtonFunction_Start:
+      case e_ControllerButton_Start:
         return "media/menu/buttons/ps_options.png";
-      case e_ButtonFunction_Select:
+      case e_ControllerButton_Select:
         return "media/menu/buttons/ps_share.png";
-      case e_ButtonFunction_Up:
+      case e_ControllerButton_Up:
         return "media/menu/buttons/xbox_dpad_up.png";
-      case e_ButtonFunction_Down:
+      case e_ControllerButton_Down:
         return "media/menu/buttons/xbox_dpad_down.png";
-      case e_ButtonFunction_Left:
+      case e_ControllerButton_Left:
         return "media/menu/buttons/xbox_dpad_left.png";
-      case e_ButtonFunction_Right:
+      case e_ControllerButton_Right:
         return "media/menu/buttons/xbox_dpad_right.png";
       default:
         break;
     }
   } else if (controllerType == e_ControllerType_NintendoSwitch) {
-    switch (buttonFunction) {
-      case e_ButtonFunction_ShortPass:
-      case e_ButtonFunction_Pressure:
+    switch (mappedBtn) {
+      case e_ControllerButton_A:
         return "media/menu/buttons/switch_b.png";
-      case e_ButtonFunction_HighPass:
-      case e_ButtonFunction_Sliding:
+      case e_ControllerButton_B:
         return "media/menu/buttons/switch_a.png";
-      case e_ButtonFunction_Shot:
-      case e_ButtonFunction_TeamPressure:
+      case e_ControllerButton_X:
         return "media/menu/buttons/switch_y.png";
-      case e_ButtonFunction_LongPass:
-      case e_ButtonFunction_KeeperRush:
+      case e_ControllerButton_Y:
         return "media/menu/buttons/switch_x.png";
-      case e_ButtonFunction_Switch:
+      case e_ControllerButton_L1:
         return "media/menu/buttons/xbox_lb.png";
-      case e_ButtonFunction_Special:
+      case e_ControllerButton_L2:
         return "media/menu/buttons/xbox_lt.png";
-      case e_ButtonFunction_Sprint:
+      case e_ControllerButton_R1:
         return "media/menu/buttons/xbox_rb.png";
-      case e_ButtonFunction_Dribble:
+      case e_ControllerButton_R2:
         return "media/menu/buttons/xbox_rt.png";
       default:
         break;
@@ -370,38 +369,34 @@ std::string HIDGamepad::GetButtonGlyphPath(e_ButtonFunction buttonFunction) cons
   }
 
   // Default Xbox / Standard layout
-  switch (buttonFunction) {
-    case e_ButtonFunction_ShortPass:
-    case e_ButtonFunction_Pressure:
+  switch (mappedBtn) {
+    case e_ControllerButton_A:
       return "media/menu/buttons/xbox_a.png";
-    case e_ButtonFunction_HighPass:
-    case e_ButtonFunction_Sliding:
+    case e_ControllerButton_B:
       return "media/menu/buttons/xbox_b.png";
-    case e_ButtonFunction_Shot:
-    case e_ButtonFunction_TeamPressure:
+    case e_ControllerButton_X:
       return "media/menu/buttons/xbox_x.png";
-    case e_ButtonFunction_LongPass:
-    case e_ButtonFunction_KeeperRush:
+    case e_ControllerButton_Y:
       return "media/menu/buttons/xbox_y.png";
-    case e_ButtonFunction_Switch:
+    case e_ControllerButton_L1:
       return "media/menu/buttons/xbox_lb.png";
-    case e_ButtonFunction_Special:
+    case e_ControllerButton_L2:
       return "media/menu/buttons/xbox_lt.png";
-    case e_ButtonFunction_Sprint:
+    case e_ControllerButton_R1:
       return "media/menu/buttons/xbox_rb.png";
-    case e_ButtonFunction_Dribble:
+    case e_ControllerButton_R2:
       return "media/menu/buttons/xbox_rt.png";
-    case e_ButtonFunction_Start:
+    case e_ControllerButton_Start:
       return "media/menu/buttons/xbox_start.png";
-    case e_ButtonFunction_Select:
+    case e_ControllerButton_Select:
       return "media/menu/buttons/xbox_back.png";
-    case e_ButtonFunction_Up:
+    case e_ControllerButton_Up:
       return "media/menu/buttons/xbox_dpad_up.png";
-    case e_ButtonFunction_Down:
+    case e_ControllerButton_Down:
       return "media/menu/buttons/xbox_dpad_down.png";
-    case e_ButtonFunction_Left:
+    case e_ControllerButton_Left:
       return "media/menu/buttons/xbox_dpad_left.png";
-    case e_ButtonFunction_Right:
+    case e_ControllerButton_Right:
       return "media/menu/buttons/xbox_dpad_right.png";
     default:
       return "media/menu/buttons/xbox_a.png";

@@ -39,6 +39,16 @@ bool TrainFocus(CareerSave& save, CareerCommon::CareerEvents& events,
   for (auto& player : save.roster) {
     bool eligible = false;
     const std::string& pos = player.preferredPosition;
+    
+    if (focusArea == "Individual") {
+      if (player.databaseID == save.controlledEntityID) {
+        player.ovr = std::min(99, player.ovr + 1);
+        player.matchForm = std::min(100, player.matchForm + 10);
+        player.morale = std::min(100, player.morale + 10);
+        events.AddEvent("training", "Completed intense individual training. Attributes improved.", 1, false);
+      }
+      continue;
+    }
 
     if (focusArea == "Attacking" || focusArea == "Shooting") {
       eligible = (pos == "CF" || pos == "ST" || pos == "AM" || pos == "LW" || pos == "RW" || pos == "FW");
@@ -62,10 +72,12 @@ bool TrainFocus(CareerSave& save, CareerCommon::CareerEvents& events,
     }
   }
 
-  events.AddEvent("training",
-                  "Focused training on " + focusArea + " (" + std::to_string(playersImproved) +
-                      " players improved" + (isCoach ? " - Coach Boost Active" : "") + ")",
-                  1, false);
+  if (focusArea != "Individual") {
+    events.AddEvent("training",
+                    "Focused training on " + focusArea + " (" + std::to_string(playersImproved) +
+                        " players improved" + (isCoach ? " - Coach Boost Active" : "") + ")",
+                    1, false);
+  }
   return true;
 }
 

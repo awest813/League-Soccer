@@ -111,15 +111,26 @@ void Gui2PlayerHUD::Put() {
       int w = static_cast<int>(imgSize.coords[0]);
       int h = static_cast<int>(imgSize.coords[1]);
       if (w > 2 && h > 2) {
-        img->DrawRectangle(0, 0, w, h, Vector3(0, 0, 0), 180);      // Background
-        img->DrawRectangle(0, 0, w, 1, Vector3(0, 0, 0), 255);      // Border Top
-        img->DrawRectangle(0, h - 1, w, 1, Vector3(0, 0, 0), 255);  // Border Bottom
-        img->DrawRectangle(0, 0, 1, h, Vector3(0, 0, 0), 255);      // Border Left
-        img->DrawRectangle(w - 1, 0, 1, h, Vector3(0, 0, 0), 255);  // Border Right
+        // Clear background
+        img->DrawRectangle(0, 0, w, h, Vector3(20, 20, 20), 160);
+
+        // Draw inner fill with a slight vertical gradient for a glossy look
         int fillW = static_cast<int>(factor * (w - 2));
         if (fillW > 0) {
-          img->DrawRectangle(1, 1, fillW, h - 2, color, 220);  // Fill
+          for (int y = 1; y < h - 1; y++) {
+            float dist = std::abs((float)y - (h / 2.0f)) / (h / 2.0f);
+            float brightness = 0.6f + 0.4f * (1.0f - dist); // Brighter in the middle
+            Vector3 rowColor = color * brightness;
+            img->DrawRectangle(1, y, fillW, 1, rowColor, 220);
+          }
         }
+        
+        // Borders (Inner Bevel)
+        img->DrawRectangle(0, 0, w, 1, Vector3(0, 0, 0), 200);      // Top
+        img->DrawRectangle(0, h - 1, w, 1, Vector3(0, 0, 0), 250);  // Bottom
+        img->DrawRectangle(0, 0, 1, h, Vector3(0, 0, 0), 250);      // Left
+        img->DrawRectangle(w - 1, 0, 1, h, Vector3(0, 0, 0), 200);  // Right
+        
         img->OnChange();
       }
     };

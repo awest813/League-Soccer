@@ -82,6 +82,11 @@ static bool IsCoachMode() {
   return save && save->mode == CareerMode::COACH;
 }
 
+static bool IsPlayerMode() {
+  CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+  return save && save->mode == CareerMode::PLAYER;
+}
+
 static int GetHubPageID() {
   return IsOwnerMode() ? e_PageID_OwnerHub : e_PageID_CareerHub;
 }
@@ -503,6 +508,24 @@ void CareerNewGamePage::StartCareer() {
       save->transferBudget = 60000000;
       save->wageBudget = totalWage * 150 / 100;
     }
+    
+    if (m_mode == "player") {
+      PlayerCareerState pro;
+      pro.name = managerNameInput->GetText();
+      if (pro.name.empty()) pro.name = "My Pro";
+      pro.position = "CF";
+      pro.preferredPosition = "CF";
+      pro.ovr = 65;
+      pro.pot = 92;
+      pro.age = 18;
+      pro.value = 1500000;
+      pro.wage = 2500;
+      pro.databaseID = 99999;
+      pro.contract.yearsRemaining = 3;
+      pro.role = ClubRole::PROSPECT;
+      save->roster.push_back(pro);
+      save->controlledEntityID = pro.databaseID;
+    }
   }
 
   if (IsOwnerMode()) {
@@ -541,7 +564,7 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
   int maxWeeks = activeSave ? activeSave->season.maxWeeks : 38;
   int seasonNum = activeSave ? activeSave->season.currentSeason : 1;
 
-  std::string roleTitle = IsCoachMode() ? "Head Coach: " : (IsGMMode() ? "General Manager: " : "Manager: ");
+  std::string roleTitle = IsPlayerMode() ? "Player Pro: " : (IsCoachMode() ? "Head Coach: " : (IsGMMode() ? "General Manager: " : "Club Manager: "));
   std::string statusHeader = activeSave ?
       (roleTitle + activeSave->managerName + " | Season " + std::to_string(seasonNum) + " | Week " + std::to_string(week) + "/" + std::to_string(maxWeeks) +
        " | Budget: " + FormatCareerMoney(activeSave->transferBudget) + " | Wage: " + FormatCareerMoney(activeSave->wageBudget) +
@@ -617,6 +640,14 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
     btnFreeAgency->SetActive(false);
     btnLeagueExp->SetActive(false);
     btnYouth->SetActive(false);
+    btnCustomLeague->SetActive(false);
+  }
+  if (IsPlayerMode()) {
+    btnStrategy->SetActive(false);
+    btnYouth->SetActive(false);
+    btnTransfers->SetActive(false);
+    btnFreeAgency->SetActive(false);
+    btnLeagueExp->SetActive(false);
     btnCustomLeague->SetActive(false);
   }
 
@@ -1499,35 +1530,50 @@ CareerTrainingPage::CareerTrainingPage(Gui2WindowManager* windowManager,
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "train_grid", 15, 30, 70, 50);
 
-  Gui2Button* btnGeneral =
-      new Gui2Button(windowManager, "btn_train_gen", 0, 0, 66, 3, TR("career_train_general"));
-  btnGeneral->sig_OnClick.connect([this](...) { TrainSquad(); });
-  grid->AddView(btnGeneral, 0, 0);
+  Gui2Button* btnIndiv = nullptr;
+  Gui2Button* btnGeneral = nullptr;
+  Gui2Button* btnAttacking = nullptr;
+  Gui2Button* btnDefending = nullptr;
+  Gui2Button* btnPhysical = nullptr;
+  Gui2Button* btnTactical = nullptr;
+  Gui2Button* btnShooting = nullptr;
 
-  Gui2Button* btnAttacking =
-      new Gui2Button(windowManager, "btn_train_atk", 0, 0, 66, 3, TR("career_train_attacking"));
-  btnAttacking->sig_OnClick.connect([this](...) { TrainFocus("Attacking"); });
-  grid->AddView(btnAttacking, 1, 0);
+  if (IsPlayerMode()) {
+    btnIndiv =
+        new Gui2Button(windowManager, "btn_train_indiv", 0, 0, 66, 3, "🏋️ Individual Training Session (+1 OVR)");
+    btnIndiv->sig_OnClick.connect([this](...) { TrainFocus("Individual"); });
+    grid->AddView(btnIndiv, 0, 0);
+  } else {
+    btnGeneral =
+        new Gui2Button(windowManager, "btn_train_gen", 0, 0, 66, 3, TR("career_train_general"));
+    btnGeneral->sig_OnClick.connect([this](...) { TrainSquad(); });
+    grid->AddView(btnGeneral, 0, 0);
 
-  Gui2Button* btnDefending =
-      new Gui2Button(windowManager, "btn_train_def", 0, 0, 66, 3, TR("career_train_defending"));
-  btnDefending->sig_OnClick.connect([this](...) { TrainFocus("Defending"); });
-  grid->AddView(btnDefending, 2, 0);
+    btnAttacking =
+        new Gui2Button(windowManager, "btn_train_atk", 0, 0, 66, 3, TR("career_train_attacking"));
+    btnAttacking->sig_OnClick.connect([this](...) { TrainFocus("Attacking"); });
+    grid->AddView(btnAttacking, 1, 0);
 
-  Gui2Button* btnPhysical =
-      new Gui2Button(windowManager, "btn_train_phy", 0, 0, 66, 3, TR("career_train_physical"));
-  btnPhysical->sig_OnClick.connect([this](...) { TrainFocus("Physical"); });
-  grid->AddView(btnPhysical, 3, 0);
+    btnDefending =
+        new Gui2Button(windowManager, "btn_train_def", 0, 0, 66, 3, TR("career_train_defending"));
+    btnDefending->sig_OnClick.connect([this](...) { TrainFocus("Defending"); });
+    grid->AddView(btnDefending, 2, 0);
 
-  Gui2Button* btnTactical =
-      new Gui2Button(windowManager, "btn_train_tac", 0, 0, 66, 3, TR("career_train_tactical"));
-  btnTactical->sig_OnClick.connect([this](...) { TrainFocus("Tactical"); });
-  grid->AddView(btnTactical, 4, 0);
+    btnPhysical =
+        new Gui2Button(windowManager, "btn_train_phy", 0, 0, 66, 3, TR("career_train_physical"));
+    btnPhysical->sig_OnClick.connect([this](...) { TrainFocus("Physical"); });
+    grid->AddView(btnPhysical, 3, 0);
 
-  Gui2Button* btnShooting =
-      new Gui2Button(windowManager, "btn_train_shoot", 0, 0, 66, 3, TR("career_train_shooting"));
-  btnShooting->sig_OnClick.connect([this](...) { TrainFocus("Shooting"); });
-  grid->AddView(btnShooting, 5, 0);
+    btnTactical =
+        new Gui2Button(windowManager, "btn_train_tac", 0, 0, 66, 3, TR("career_train_tactical"));
+    btnTactical->sig_OnClick.connect([this](...) { TrainFocus("Tactical"); });
+    grid->AddView(btnTactical, 4, 0);
+
+    btnShooting =
+        new Gui2Button(windowManager, "btn_train_shoot", 0, 0, 66, 3, TR("career_train_shooting"));
+    btnShooting->sig_OnClick.connect([this](...) { TrainFocus("Shooting"); });
+    grid->AddView(btnShooting, 5, 0);
+  }
 
   grid->UpdateLayout(0.5);
   this->AddView(grid);
@@ -1538,17 +1584,26 @@ CareerTrainingPage::CareerTrainingPage(Gui2WindowManager* windowManager,
   btnBack->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
   this->AddView(btnBack);
   btnBack->Show();
+
   const bool canTrain = tp > 0;
-  btnGeneral->SetActive(canTrain);
-  btnAttacking->SetActive(canTrain);
-  btnDefending->SetActive(canTrain);
-  btnPhysical->SetActive(canTrain);
-  btnTactical->SetActive(canTrain);
-  btnShooting->SetActive(canTrain);
-  if (canTrain)
-    btnGeneral->SetFocus();
-  else
+  if (IsPlayerMode() && btnIndiv) {
+    btnIndiv->SetActive(canTrain);
+    if (canTrain) btnIndiv->SetFocus();
+    else btnBack->SetFocus();
+  } else if (!IsPlayerMode() && btnGeneral) {
+    btnGeneral->SetActive(canTrain);
+    btnAttacking->SetActive(canTrain);
+    btnDefending->SetActive(canTrain);
+    btnPhysical->SetActive(canTrain);
+    btnTactical->SetActive(canTrain);
+    btnShooting->SetActive(canTrain);
+    if (canTrain)
+      btnGeneral->SetFocus();
+    else
+      btnBack->SetFocus();
+  } else {
     btnBack->SetFocus();
+  }
 
   this->Show();
 }
@@ -1918,7 +1973,7 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
     });
     btnDrill->SetActive(tp > 0);
     actionGrid->AddView(btnDrill, actRow++, 0);
-  } else {
+  } else if (!IsPlayerMode()) {
     Gui2Button* btnExtend = new Gui2Button(windowManager, "btn_extend_contract", 0, 0, 58, 2.5f,
                                            "📝 Offer Contract Extension (+2 Years, +10% Wage)");
     btnExtend->sig_OnClick.connect([this, pName, dialog](...) {
@@ -1945,6 +2000,15 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
       ReleasePlayer(pName);
     });
     actionGrid->AddView(btnRelease, actRow++, 0);
+  } else if (IsPlayerMode() && save && player.databaseID == save->controlledEntityID) {
+    std::string listLabel = player.contract.transferListed ? "💼 Withdraw Transfer Request" : "💼 Request Transfer";
+    Gui2Button* btnToggleList = new Gui2Button(windowManager, "btn_toggle_list", 0, 0, 58, 2.5f, listLabel);
+    btnToggleList->sig_OnClick.connect([this, pName, dialog](...) {
+      dialog->Exit();
+      delete dialog;
+      ToggleTransferList(pName);
+    });
+    actionGrid->AddView(btnToggleList, actRow++, 0);
   }
 
   Gui2Button* btnClose = new Gui2Button(windowManager, "btn_close_profile", 0, 0, 58, 2.5f,
@@ -2490,7 +2554,7 @@ void CareerMatchdayPage::PlayMatch() {
   GetMenuTask()->SetTeamIDs(std::to_string(teamDBID), std::to_string(opponentDBID));
 
   Properties props;
-  windowManager->GetPageFactory()->CreatePage((int)e_PageID_MatchOptions, props, 0);
+  CreatePage((int)e_PageID_MatchOptions, props);
 }
 
 void CareerMatchdayPage::PlayMatchFixture(int fixtureIndex) {
@@ -2527,7 +2591,7 @@ void CareerMatchdayPage::PlayMatchFixture(int fixtureIndex) {
   GetMenuTask()->SetTeamIDs(std::to_string(teamDBID), std::to_string(opponentDBID));
 
   Properties props;
-  windowManager->GetPageFactory()->CreatePage((int)e_PageID_MatchOptions, props, 0);
+  CreatePage((int)e_PageID_MatchOptions, props);
 }
 
 void CareerMatchdayPage::UpdateSummary() {

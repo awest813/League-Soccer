@@ -371,7 +371,12 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
   SDL_SetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, "0");
   SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 #endif
-  SDL_Init(SDL_INIT_VIDEO);
+#ifdef WIN32
+  // Windows: allow SDL window creation from a non-main thread and handle DPI correctly
+  SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
+  SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+#endif
+  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -401,13 +406,16 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
   // #endif
 
   window = SDL_CreateWindow(
-      "Gameplay Football", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height,
-      SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
+      "League Soccer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
+      SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_SHOWN |
+          (fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
   if (!window) {
     Log(e_FatalError, "OpenGLRenderer3D", "CreateContext",
         "Failed to create SDL window: " + std::string(SDL_GetError()));
     return false;
   }
+  SDL_RaiseWindow(window);
+  SDL_SetWindowTitle(window, "League Soccer");
 
   context = SDL_GL_CreateContext(window);
   if (!context) {
@@ -2523,6 +2531,12 @@ void OpenGLRenderer3D::operator()() {
   if ((inited & flags) != flags) {
     printf("IMG_Init: Failed to init required jpg and png support!\n");
     printf("IMG_Init: %s\n", IMG_GetError());
+  }
+
+  // Explicitly show and bring the window to front now that the render thread is running
+  if (window) {
+    SDL_ShowWindow(window);
+    SDL_RaiseWindow(window);
   }
 
   SDL_Event event;
