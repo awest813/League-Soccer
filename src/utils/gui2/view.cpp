@@ -266,7 +266,9 @@ void Gui2View::SetZPriority(int prio) {
   std::vector<boost::intrusive_ptr<Image2D>> images;
   GetImages(images);
   for (unsigned int i = 0; i < images.size(); i++) {
-    images.at(i)->SetPokePriority(prio);
+    if (images.at(i)) {
+      images.at(i)->SetPokePriority(prio);
+    }
   }
 }
 
