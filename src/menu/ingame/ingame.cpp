@@ -6,6 +6,7 @@
 #include "../gameplan.hpp"
 #include "../pagefactory.hpp"
 #include "../settings.hpp"
+#include "../../league/leaguecode.hpp"
 #include "main.hpp"
 #include "replaymenu.hpp"
 #include "utils/localization.hpp"
@@ -263,6 +264,9 @@ PreQuitPage::PreQuitPage(Gui2WindowManager* windowManager, const Gui2PageData& p
 PreQuitPage::~PreQuitPage() {}
 
 void PreQuitPage::GoMenu() {
+  // Forfeiting a league match must not leave a stale fixture armed for the
+  // next 3D game's result flow-back.
+  LeagueClearPendingFixture();
   this->Exit();
   GetMenuTask()->SetMenuAction(e_MenuAction_Menu);
   delete this;

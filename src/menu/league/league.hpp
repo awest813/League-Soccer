@@ -22,7 +22,9 @@ public:
 
 protected:
   void GoForward();
+  void GoPreMatch();
   void GoMainMenu();
+  void AdvanceMatchday();
   void StepTime();
   void SetTimeCaption();
 
@@ -53,6 +55,8 @@ public:
 
 protected:
   void GoLoadSave();
+  void DeleteSaveDir(const std::string& saveName);
+  void LoadSaveDir(const std::string& saveName);
 
   Gui2FileBrowser* browser;
 };

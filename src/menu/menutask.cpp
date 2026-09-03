@@ -148,7 +148,10 @@ void MenuTask::ProcessPhase() {
 
     menuBackground->Show();
     Properties properties;
-    if (GetConfiguration()->GetBool("career_resume_hub", false)) {
+    if (GetConfiguration()->GetBool("league_resume_hub", false)) {
+      GetConfiguration()->SetBool("league_resume_hub", false);
+      windowManager->GetPageFactory()->CreatePage((int)e_PageID_League_Matchday, properties, 0);
+    } else if (GetConfiguration()->GetBool("career_resume_hub", false)) {
       GetConfiguration()->SetBool("career_resume_hub", false);
       CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
       const int hubPage = (save && save->mode == CareerMode::OWNER) ? (int)e_PageID_OwnerHub

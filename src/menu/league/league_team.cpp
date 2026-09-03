@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "../../league/leaguecode.hpp"
 #include "../../main.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
@@ -9,6 +10,112 @@
 #include "utils/gui2/widgets/dialog.hpp"
 #include "utils/gui2/widgets/text.hpp"
 #include "utils/localization.hpp"
+#include "utils/xmlloader.hpp"
+
+namespace {
+
+struct FormationSlot {
+  const char* role;
+  float x, y;
+};
+
+// Standard presets in the pitch-coordinate space the match engine consumes
+// (x: own goal -1 .. opponent goal 1, y: +left / -right).
+const std::vector<FormationSlot>& GetFormationPreset(const std::string& name) {
+  static const std::map<std::string, std::vector<FormationSlot>> presets = {
+      {"4-4-2",
+       {{"GK", -1.0f, 0.0f},
+        {"LB", -0.7f, 0.75f},
+        {"CB", -1.0f, 0.25f},
+        {"CB", -1.0f, -0.25f},
+        {"RB", -0.7f, -0.75f},
+        {"LM", -0.2f, 0.75f},
+        {"CM", -0.2f, 0.25f},
+        {"CM", -0.2f, -0.25f},
+        {"RM", -0.2f, -0.75f},
+        {"CF", 0.8f, 0.3f},
+        {"CF", 0.8f, -0.3f}}},
+      {"4-3-3",
+       {{"GK", -1.0f, 0.0f},
+        {"LB", -0.7f, 0.8f},
+        {"CB", -1.0f, 0.28f},
+        {"CB", -1.0f, -0.28f},
+        {"RB", -0.7f, -0.8f},
+        {"CM", -0.3f, 0.45f},
+        {"DM", -0.45f, 0.0f},
+        {"CM", -0.3f, -0.45f},
+        {"LM", 0.7f, 0.7f},
+        {"CF", 0.95f, 0.0f},
+        {"RM", 0.7f, -0.7f}}},
+      {"4-2-3-1",
+       {{"GK", -1.0f, 0.0f},
+        {"LB", -0.7f, 0.8f},
+        {"CB", -1.0f, 0.28f},
+        {"CB", -1.0f, -0.28f},
+        {"RB", -0.7f, -0.8f},
+        {"DM", -0.35f, 0.25f},
+        {"DM", -0.35f, -0.25f},
+        {"LM", 0.15f, 0.7f},
+        {"AM", 0.25f, 0.0f},
+        {"RM", 0.15f, -0.7f},
+        {"CF", 0.9f, 0.0f}}},
+      {"3-5-2",
+       {{"GK", -1.0f, 0.0f},
+        {"CB", -1.0f, 0.4f},
+        {"CB", -1.0f, 0.0f},
+        {"CB", -1.0f, -0.4f},
+        {"LM", -0.4f, 0.9f},
+        {"CM", -0.3f, 0.4f},
+        {"DM", -0.5f, 0.0f},
+        {"CM", -0.3f, -0.4f},
+        {"RM", -0.4f, -0.9f},
+        {"CF", 0.85f, 0.25f},
+        {"CF", 0.85f, -0.25f}}},
+      {"5-3-2",
+       {{"GK", -1.0f, 0.0f},
+        {"LB", -0.65f, 0.9f},
+        {"CB", -1.0f, 0.45f},
+        {"CB", -1.0f, 0.0f},
+        {"CB", -1.0f, -0.45f},
+        {"RB", -0.65f, -0.9f},
+        {"CM", -0.25f, 0.4f},
+        {"DM", -0.4f, 0.0f},
+        {"CM", -0.25f, -0.4f},
+        {"CF", 0.85f, 0.25f},
+        {"CF", 0.85f, -0.25f}}},
+  };
+  return presets.at(name);
+}
+
+std::string SerializeFormation(const std::vector<FormationSlot>& slots) {
+  std::string xml;
+  for (unsigned int i = 0; i < slots.size(); i++) {
+    char buf[128];
+    snprintf(buf, sizeof(buf), "<p%u><position>%.2f, %.2f</position><role>%s</role></p%u>", i + 1,
+             slots.at(i).x, slots.at(i).y, slots.at(i).role, i + 1);
+    xml += buf;
+  }
+  return xml;
+}
+
+bool IsGoalkeeperRole(const std::string& role) { return role.compare(0, 2, "GK") == 0; }
+
+std::string FormationSummary(const std::string& formationXML) {
+  XMLLoader loader;
+  XMLTree tree = loader.Load(formationXML);
+  std::string summary;
+  for (int num = 1; num <= 11; num++) {
+    auto it = tree.children.find("p" + int_to_str(num));
+    if (it == tree.children.end()) continue;
+    auto roleIt = it->second.children.find("role");
+    if (roleIt == it->second.children.end()) continue;
+    if (!summary.empty()) summary += " ";
+    summary += roleIt->second.value;
+  }
+  return summary;
+}
+
+}  // namespace
 
 LeagueTeamPage::LeagueTeamPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
@@ -181,43 +288,73 @@ void LeagueTeamPage::GoPage(e_PageID pageID) {
 
 LeagueTeamFormationPage::LeagueTeamFormationPage(Gui2WindowManager* windowManager,
                                                  const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_league_team_formation", 15, 5, 70, 90, true);
+    : Gui2Page(windowManager, pageData),
+      frame(nullptr) {
+  frame = new Gui2Frame(windowManager, "frame_league_team_formation", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
 
+  auto& loc = Localization::GetInstance();
+
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_league_team_formation", 2, 2, 66, 3,
-                      Localization::GetInstance().Translate("league_formation"));
+                      loc.Translate("league_formation"));
   frame->AddView(title);
   title->Show();
 
   auto result = GetDB()->Query(
-      "SELECT t.name, t.formation_xml FROM teams t, settings s WHERE t.id = s.team_id LIMIT 1");
+      "SELECT t.name, t.formation_xml, t.formation_factory_xml "
+      "FROM teams t, settings s WHERE t.id = s.team_id LIMIT 1");
   if (!result->data.empty()) {
     std::string teamName = result->data.at(0).at(0);
     std::string formationXML = result->data.at(0).at(1);
+    std::string factoryXML =
+        (result->data.at(0).size() > 2) ? result->data.at(0).at(2) : std::string();
+
     Gui2Caption* info =
         new Gui2Caption(windowManager, "caption_formation_team", 2, 6, 66, 3,
                         TRF("league_team_line", {teamName}));
     frame->AddView(info);
     info->Show();
 
-    Gui2Text* formationText =
-        new Gui2Text(windowManager, "text_formation", 2, 12, 66, 70, 2.5, 60, "");
-    if (formationXML.empty()) {
-      formationText->AddText(
-          "No formation data available. Use the match engine to set a formation.");
-    } else {
-      formationText->AddText(formationXML);
+    std::string summary = FormationSummary(formationXML);
+    if (summary.empty()) summary = loc.Translate("league_needs_setup");
+    Gui2Caption* current = new Gui2Caption(
+        windowManager, "caption_formation_current", 2, 10, 66, 2.5,
+        loc.TranslateAndFormat("league_formation_current", {summary}));
+    frame->AddView(current);
+    current->Show();
+
+    // One button per standard preset, plus a factory reset.
+    std::vector<std::string> presetNames = {"4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "5-3-2"};
+    Gui2Grid* presetGrid = new Gui2Grid(windowManager, "grid_formation_presets", 2, 15, 66, 50);
+    int row = 0;
+    for (const auto& name : presetNames) {
+      Gui2Button* btn = new Gui2Button(windowManager, "btn_formation_" + name, 0, 0, 64, 3, name);
+      std::string presetXML = SerializeFormation(GetFormationPreset(name));
+      btn->sig_OnClick.connect([this, windowManager, presetXML](...) {
+        ApplyFormation(presetXML);
+      });
+      presetGrid->AddView(btn, row++, 0);
     }
-    frame->AddView(formationText);
-    formationText->Show();
+
+    Gui2Button* btnFactory = new Gui2Button(windowManager, "btn_formation_factory", 0, 0, 64, 3,
+                                            loc.Translate("league_formation_factory"));
+    btnFactory->sig_OnClick.connect([this, windowManager, factoryXML](...) {
+      if (!factoryXML.empty()) {
+        ApplyFormation(factoryXML);
+      }
+    });
+    presetGrid->AddView(btnFactory, row++, 0);
+
+    presetGrid->UpdateLayout(0.4);
+    frame->AddView(presetGrid);
+    presetGrid->Show();
+    presetGrid->SetFocus();
   }
 
   Gui2Button* btnBack = new Gui2Button(windowManager, "btn_formation_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
+                                       loc.Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -227,128 +364,257 @@ LeagueTeamFormationPage::LeagueTeamFormationPage(Gui2WindowManager* windowManage
   });
   frame->AddView(btnBack);
   btnBack->Show();
-  btnBack->SetFocus();
   this->Show();
+}
+
+void LeagueTeamFormationPage::ApplyFormation(const std::string& formationXML) {
+  int userTeamID = 0;
+  if (LeagueGetUserTeamID(userTeamID)) {
+    GetDB()->Query("UPDATE teams SET formation_xml = '" + formationXML +
+                   "' WHERE id = " + int_to_str(userTeamID));
+    GetDB()->Query(
+        "INSERT INTO inbox_messages (sender, subject, body) VALUES "
+        "('Kit Man', 'Formation changed', 'The gaffer has set a new formation. It takes effect in "
+        "the next match.')");
+  }
+
+  // Recreate so the summary reflects the new formation.
+  this->Exit();
+  Properties properties;
+  windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Team_Formation),
+                                              properties, 0);
+  delete this;
 }
 
 LeagueTeamFormationPage::~LeagueTeamFormationPage() {}
 
 LeagueTeamPlayerSelectionPage::LeagueTeamPlayerSelectionPage(Gui2WindowManager* windowManager,
                                                              const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_league_team_playersel", 15, 5, 70, 90, true);
+    : Gui2Page(windowManager, pageData),
+      frame(nullptr),
+      squadGrid(nullptr),
+      feedbackCaption(nullptr),
+      selectedPlayerDBID(-1),
+      selectedIsGoalkeeper(false) {
+  frame = new Gui2Frame(windowManager, "frame_league_team_playersel", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_team_playerselection", 2, 2,
-                                       66, 3, "Player Selection");
-  frame->AddView(title);
-  title->Show();
+  feedbackCaption = new Gui2Caption(windowManager, "caption_playersel_feedback", 2, 6, 66, 2.5,
+                                    Localization::GetInstance().Translate("league_lineup_hint"));
+  frame->AddView(feedbackCaption);
+  feedbackCaption->Show();
+
+  RefreshSquad();
+
+  this->Show();
+}
+
+void LeagueTeamPlayerSelectionPage::RefreshSquad() {
+  if (squadGrid) {
+    squadGrid->Exit();
+    delete squadGrid;
+    squadGrid = nullptr;
+  }
+
+  auto& loc = Localization::GetInstance();
+
+  squadGrid = new Gui2Grid(windowManager, "grid_playersel", 2, 9, 66, 74);
+  int row = 0;
 
   auto result = GetDB()->Query(
-      "SELECT p.id, p.firstname, p.lastname, p.role FROM players p, teams t, settings s "
+      "SELECT p.id, p.firstname, p.lastname, p.role, p.base_stat, p.formationorder "
+      "FROM players p, teams t, settings s "
       "WHERE p.team_id = t.id AND t.id = s.team_id ORDER BY p.formationorder");
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_playersel", 2, 8, 66, 80);
-  int row = 0;
+
   if (!result->data.empty()) {
     for (const auto& r : result->data) {
-      std::string playerID = r.at(0);
-      std::string label = r.at(1) + " " + r.at(2) + " (" + r.at(3) + ")";
-      Gui2Button* btn =
-          new Gui2Button(windowManager, "btn_player_" + r.at(0), 0, 0, 65, 2.5, label);
-      btn->sig_OnClick.connect([this, windowManager, playerID, label](...) {
-        auto detail = GetDB()->Query(
-            "SELECT firstname, lastname, role, age, base_stat FROM players WHERE id = " + playerID);
-        Gui2Dialog* dlg =
-            new Gui2Dialog(windowManager, "dialog_player_detail", 25, 20, 50, 60, label);
-        if (!detail->data.empty()) {
-          Gui2Text* txt =
-              new Gui2Text(windowManager, "text_player_detail", 5, 5, 90, 80, 2.5, 40, "");
-          const auto& d = detail->data.at(0);
-          txt->AddText("Name: " + d.at(0) + " " + d.at(1));
-          txt->AddText("Role: " + d.at(2));
-          txt->AddText("Age: " + d.at(3));
-          txt->AddText("Base Stat: " + d.at(4));
-          dlg->AddContent(txt);
+      int playerDBID = atoi(r.at(0).c_str());
+      int order = atoi(r.at(5).c_str());
+      bool starter = order < 11;
+      std::string slotLabel =
+          starter ? int_to_str(order + 1) : loc.Translate("league_lineup_bench");
+      std::string label = "[" + slotLabel + "] " + r.at(1) + " " + r.at(2) + " (" + r.at(3) + ")";
+
+      Gui2Button* btn = new Gui2Button(windowManager, "btn_player_" + r.at(0), 0, 0, 65, 2.5,
+                                       label);
+      if (playerDBID == selectedPlayerDBID) {
+        btn->SetColor(Vector3(250, 210, 60));
+      } else if (!starter) {
+        btn->SetColor(Vector3(170, 170, 170));
+      }
+      btn->sig_OnClick.connect([this, playerDBID, r](...) {
+        bool isGK = IsGoalkeeperRole(r.at(3));
+        int order = atoi(r.at(5).c_str());
+
+        if (selectedPlayerDBID == -1) {
+          selectedPlayerDBID = playerDBID;
+          selectedIsGoalkeeper = isGK;
+          if (feedbackCaption) {
+            feedbackCaption->SetCaption(Localization::GetInstance().TranslateAndFormat(
+                "league_lineup_selected",
+                {r.at(1) + " " + r.at(2)}));
+          }
+          RefreshSquad();
+          return;
         }
-        (dlg->AddSingleButton("Close"))->SetFocus();
-        dlg->sig_OnPositive.connect([this, dlg](...) {
+
+        if (selectedPlayerDBID == playerDBID) {
+          // Clicking again deselects.
+          selectedPlayerDBID = -1;
+          if (feedbackCaption) {
+            feedbackCaption->SetCaption(
+                Localization::GetInstance().Translate("league_lineup_hint"));
+          }
+          RefreshSquad();
+          return;
+        }
+
+        if (isGK != selectedIsGoalkeeper) {
+          if (feedbackCaption) {
+            feedbackCaption->SetCaption(
+                Localization::GetInstance().Translate("league_lineup_gk_rule"));
+          }
+          return;
+        }
+        if (isGK && order >= 11) {
+          // Both are goalkeepers; the second GK on the bench stays there.
+          if (feedbackCaption) {
+            feedbackCaption->SetCaption(
+                Localization::GetInstance().Translate("league_lineup_gk_rule"));
+          }
+          return;
+        }
+
+        Gui2Dialog* dlg = new Gui2Dialog(
+            windowManager, "dialog_playersel_swap", 25, 30, 50, 25,
+            Localization::GetInstance().Translate("league_lineup_swap_prompt"));
+        (dlg->AddPosNegButtons(Localization::GetInstance().Translate("league_yes"),
+                               Localization::GetInstance().Translate("league_no")))
+            ->SetFocus();
+        dlg->sig_OnPositive.connect([this, dlg, playerDBID](...) {
+          dlg->Exit();
+          delete dlg;
+          SwapPlayers(selectedPlayerDBID, playerDBID);
+        });
+        dlg->sig_OnNegative.connect([this, dlg](...) {
           dlg->Exit();
           delete dlg;
         });
         this->AddView(dlg);
         dlg->Show();
       });
-      grid->AddView(btn, row++, 0);
+      squadGrid->AddView(btn, row++, 0);
     }
   } else {
     Gui2Caption* emptyCap = new Gui2Caption(windowManager, "caption_playersel_empty", 0, 0, 65, 3,
                                             "No players in the squad.");
-    grid->AddView(emptyCap, row++, 0);
+    squadGrid->AddView(emptyCap, row++, 0);
   }
 
   // Back lives in the same grid so keyboard/gamepad can reach it too.
   Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playersel_back", 0, 0, 65, 2.5,
                                        Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
+  btnBack->sig_OnClick.connect([this](...) {
     this->Exit();
     Properties properties;
     windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Team), properties,
                                                 0);
     delete this;
   });
-  grid->AddView(btnBack, row, 0);
+  squadGrid->AddView(btnBack, row, 0);
 
-  grid->UpdateLayout(0.5);
-  frame->AddView(grid);
-  grid->Show();
+  squadGrid->UpdateLayout(0.5);
+  frame->AddView(squadGrid);
+  squadGrid->Show();
+}
 
-  if (grid->IsSelectable()) {
-    grid->SetFocus();
+void LeagueTeamPlayerSelectionPage::SwapPlayers(int idA, int idB) {
+  auto orders = GetDB()->Query(
+      "SELECT id, formationorder FROM players WHERE id = " + int_to_str(idA) +
+      " OR id = " + int_to_str(idB));
+  if (orders->data.size() < 2) {
+    return;
   }
+  int orderA = atoi(orders->data.at(0).at(1).c_str());
+  int orderB = atoi(orders->data.at(1).at(1).c_str());
 
-  this->Show();
+  GetDB()->Query("UPDATE players SET formationorder = " + int_to_str(orderB) +
+                 " WHERE id = " + int_to_str(idA));
+  GetDB()->Query("UPDATE players SET formationorder = " + int_to_str(orderA) +
+                 " WHERE id = " + int_to_str(idB));
+
+  selectedPlayerDBID = -1;
+  if (feedbackCaption) {
+    feedbackCaption->SetCaption(Localization::GetInstance().Translate("league_lineup_swapped"));
+  }
+  RefreshSquad();
 }
 
 LeagueTeamPlayerSelectionPage::~LeagueTeamPlayerSelectionPage() {}
 
 LeagueTeamTacticsPage::LeagueTeamTacticsPage(Gui2WindowManager* windowManager,
                                              const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_league_team_tactics", 15, 5, 70, 90, true);
+    : Gui2Page(windowManager, pageData),
+      frame(nullptr),
+      feedbackCaption(nullptr) {
+  frame = new Gui2Frame(windowManager, "frame_league_team_tactics", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
 
+  auto& loc = Localization::GetInstance();
+
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_league_team_tactics", 2, 2, 66, 3,
-                      Localization::GetInstance().Translate("league_team_tactics"));
+                      loc.Translate("league_team_tactics"));
   frame->AddView(title);
   title->Show();
 
   auto result = GetDB()->Query(
-      "SELECT t.name, t.tactics_xml FROM teams t, settings s WHERE t.id = s.team_id LIMIT 1");
-  if (!result->data.empty()) {
-    std::string teamName = result->data.at(0).at(0);
-    std::string tacticsXML = result->data.at(0).at(1);
-    Gui2Caption* info =
-        new Gui2Caption(windowManager, "caption_tactics_team", 2, 6, 66, 3,
-                        TRF("league_team_line", {teamName}));
-    frame->AddView(info);
-    info->Show();
+      "SELECT t.tactics_xml, t.tactics_factory_xml FROM teams t, settings s "
+      "WHERE t.id = s.team_id LIMIT 1");
 
-    Gui2Text* tacticsText = new Gui2Text(windowManager, "text_tactics", 2, 12, 66, 70, 2.5, 60, "");
-    if (tacticsXML.empty()) {
-      tacticsText->AddText("No tactics data available. Use the match engine to set tactics.");
-    } else {
-      tacticsText->AddText(tacticsXML);
+  if (!result->data.empty() && !result->data.at(0).at(0).empty()) {
+    std::string tacticsXML = result->data.at(0).at(0);
+
+    // One slider per tactic key currently stored for the team; values are the
+    // 0..1 factors the match engine reads from tactics_xml.
+    XMLLoader loader;
+    XMLTree tree = loader.Load(tacticsXML);
+    Gui2Grid* sliderGrid = new Gui2Grid(windowManager, "grid_tactics", 2, 7, 66, 70);
+    int row = 0;
+    for (auto& kv : tree.children) {
+      float value = atof(kv.second.value.c_str());
+      std::string label = kv.first;
+      std::replace(label.begin(), label.end(), '_', ' ');
+      Gui2Slider* slider =
+          new Gui2Slider(windowManager, "slider_tactics_" + kv.first, 0, 0, 62, 4.5, label);
+      slider->SetQuantization(20);
+      slider->SetValue(value);
+      tacticSliders.push_back({kv.first, slider});
+      sliderGrid->AddView(slider, row++, 0);
+      if (row >= 14) {
+        break;  // grid gets scrollable beyond that; keep initial layout sane
+      }
     }
-    frame->AddView(tacticsText);
-    tacticsText->Show();
+
+    Gui2Button* btnSave = new Gui2Button(windowManager, "btn_tactics_save", 0, 0, 62, 3,
+                                         loc.Translate("league_tactics_save"));
+    btnSave->sig_OnClick.connect([this](...) { SaveTactics(); });
+    sliderGrid->AddView(btnSave, row++, 0);
+
+    sliderGrid->UpdateLayout(0.3);
+    frame->AddView(sliderGrid);
+    sliderGrid->Show();
+    sliderGrid->SetFocus();
   }
 
+  feedbackCaption = new Gui2Caption(windowManager, "caption_tactics_feedback", 2, 81, 66, 3, "");
+  frame->AddView(feedbackCaption);
+  feedbackCaption->Show();
+
   Gui2Button* btnBack = new Gui2Button(windowManager, "btn_tactics_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
+                                       loc.Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -358,8 +624,30 @@ LeagueTeamTacticsPage::LeagueTeamTacticsPage(Gui2WindowManager* windowManager,
   });
   frame->AddView(btnBack);
   btnBack->Show();
-  btnBack->SetFocus();
   this->Show();
+}
+
+void LeagueTeamTacticsPage::SaveTactics() {
+  if (tacticSliders.empty()) {
+    return;
+  }
+
+  std::string tacticsXML;
+  for (const auto& entry : tacticSliders) {
+    char buf[64];
+    snprintf(buf, sizeof(buf), "<%s>%.6f</%s>", entry.first.c_str(), entry.second->GetValue(),
+             entry.first.c_str());
+    tacticsXML += buf;
+  }
+
+  int userTeamID = 0;
+  if (LeagueGetUserTeamID(userTeamID)) {
+    GetDB()->Query("UPDATE teams SET tactics_xml = '" + tacticsXML +
+                   "' WHERE id = " + int_to_str(userTeamID));
+  }
+  if (feedbackCaption) {
+    feedbackCaption->SetCaption(Localization::GetInstance().Translate("league_tactics_saved"));
+  }
 }
 
 LeagueTeamTacticsPage::~LeagueTeamTacticsPage() {}
@@ -375,7 +663,8 @@ LeagueTeamPlayerOverviewPage::LeagueTeamPlayerOverviewPage(Gui2WindowManager* wi
   frame->Show();
 
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_team_playeroverview", 2, 2,
-                                       66, 3, "Player Overview");
+                                       66, 3,
+                                        Localization::GetInstance().Translate("league_player_overview"));
   frame->AddView(title);
   title->Show();
 
@@ -466,90 +755,59 @@ void LeagueTeamPlayerOverviewPage::Process() {
 
 LeagueTeamPlayerDevelopmentPage::LeagueTeamPlayerDevelopmentPage(Gui2WindowManager* windowManager,
                                                                  const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_league_team_playerdev", 15, 5, 70, 90, true);
+    : Gui2Page(windowManager, pageData),
+      frame(nullptr),
+      squadGrid(nullptr),
+      feedbackCaption(nullptr),
+      selectedPlayerDBID(-1) {
+  frame = new Gui2Frame(windowManager, "frame_league_team_playerdev", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_team_playerdevelopment", 2, 2,
-                                       66, 3, "Player Development");
+  auto& loc = Localization::GetInstance();
+
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "caption_league_team_playerdevelopment", 2, 2, 66, 3,
+                      loc.Translate("league_player_development"));
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* header =
-      new Gui2Caption(windowManager, "caption_playerdev_header", 2, 6, 66, 2,
-                      "Name                  | Role                | Age | Base Stat");
-  frame->AddView(header);
-  header->Show();
+  feedbackCaption = new Gui2Caption(windowManager, "caption_playerdev_feedback", 2, 6, 66, 2.5,
+                                    loc.Translate("league_train_hint"));
+  frame->AddView(feedbackCaption);
+  feedbackCaption->Show();
 
-  auto result = GetDB()->Query(
-      "SELECT p.id, p.firstname, p.lastname, p.role, p.age, p.base_stat FROM players p "
-      "JOIN teams t ON p.team_id = t.id JOIN settings s ON t.id = s.team_id "
-      "ORDER BY p.age ASC, p.base_stat DESC");
+  RefreshSquad();
 
-  if (!result->data.empty()) {
-    Gui2Grid* grid = new Gui2Grid(windowManager, "grid_playerdev", 2, 9, 66, 72);
-    int row = 0;
-    for (const auto& r : result->data) {
-      std::string playerID = r.at(0);
-      std::string fullName = r.at(1) + " " + r.at(2);
-      char buf[256];
-      snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s | %s", fullName.c_str(), r.at(3).c_str(),
-               r.at(4).c_str(), r.at(5).c_str());
-      std::string btnLabel(buf);
-      Gui2Button* btn =
-          new Gui2Button(windowManager, "btn_pdev_" + std::to_string(row), 0, 0, 65, 2.5, btnLabel);
-      btn->sig_OnClick.connect([this, windowManager, playerID, fullName](...) {
-        auto detail = GetDB()->Query(
-            "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat FROM players "
-            "WHERE id = " +
-            playerID);
-        Gui2Dialog* dlg =
-            new Gui2Dialog(windowManager, "dialog_pdev_" + playerID, 20, 15, 60, 70, fullName);
-        if (!detail->data.empty()) {
-          Gui2Text* txt =
-              new Gui2Text(windowManager, "text_pdev_" + playerID, 5, 5, 90, 70, 2.5, 40, "");
-          const auto& d = detail->data.at(0);
-          int age = atoi(d.at(3).c_str());
-          txt->AddText("Name: " + d.at(0) + " " + d.at(1));
-          txt->AddText("Role: " + d.at(2));
-          txt->AddText("Age: " + d.at(3));
-          txt->AddText("Base Stat: " + d.at(4));
-          txt->AddEmptyLine();
-          if (age < 24) {
-            txt->AddText("Growth potential: High - young players develop faster.");
-          } else if (age < 30) {
-            txt->AddText("Growth potential: Moderate - prime years.");
-          } else {
-            txt->AddText("Growth potential: Low - likely to decline.");
-          }
-          txt->AddEmptyLine();
-          txt->AddText("Training programs will be available in a future update.");
-          dlg->AddContent(txt);
-        }
-        (dlg->AddSingleButton("Close"))->SetFocus();
-        dlg->sig_OnPositive.connect([this, dlg](...) {
-          dlg->Exit();
-          delete dlg;
-        });
-        this->AddView(dlg);
-        dlg->Show();
-      });
-      grid->AddView(btn, row++, 0);
-    }
-    grid->UpdateLayout(0.5);
-    frame->AddView(grid);
-    grid->Show();
-  } else {
-    Gui2Caption* info = new Gui2Caption(windowManager, "caption_playerdev_info", 2, 10, 66, 4,
-                                        "No players found on your squad.");
-    frame->AddView(info);
-    info->Show();
+  // Training focus actions: pick a player above, then a focus below.
+  Gui2Grid* trainGrid = new Gui2Grid(windowManager, "grid_playerdev_train", 2, 75, 66, 8);
+  struct TrainFocus {
+    const char* labelKey;
+    const char* attributeName;
+  };
+  std::vector<TrainFocus> focuses = {
+      {"league_train_accel", "physical_acceleration"},
+      {"league_train_stamina", "physical_stamina"},
+      {"league_train_dribble", "technical_dribble"},
+      {"league_train_shot", "technical_shot"},
+  };
+  int col = 0;
+  for (const auto& focus : focuses) {
+    Gui2Button* btn = new Gui2Button(windowManager, "btn_train_" + std::string(focus.attributeName),
+                                     0, 0, 15.5, 3, loc.Translate(focus.labelKey));
+    std::string attributeName(focus.attributeName);
+    std::string label(focus.labelKey);
+    btn->sig_OnClick.connect([this, attributeName, label](...) {
+      TrainSelected(attributeName, Localization::GetInstance().Translate(label));
+    });
+    trainGrid->AddView(btn, 0, col++);
   }
+  trainGrid->UpdateLayout(0.3);
+  frame->AddView(trainGrid);
+  trainGrid->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerdev_back", 10, 86, 50, 3,
-                                       Localization::GetInstance().Translate("action_back"));
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerdev_back", 2, 84, 66, 3,
+                                       loc.Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -559,8 +817,125 @@ LeagueTeamPlayerDevelopmentPage::LeagueTeamPlayerDevelopmentPage(Gui2WindowManag
   });
   frame->AddView(btnBack);
   btnBack->Show();
-  btnBack->SetFocus();
+
   this->Show();
+}
+
+void LeagueTeamPlayerDevelopmentPage::RefreshSquad() {
+  if (squadGrid) {
+    squadGrid->Exit();
+    delete squadGrid;
+    squadGrid = nullptr;
+  }
+
+  squadGrid = new Gui2Grid(windowManager, "grid_playerdev", 2, 9, 66, 64);
+  int row = 0;
+
+  auto result = GetDB()->Query(
+      "SELECT p.id, p.firstname, p.lastname, p.role, p.age, p.base_stat FROM players p "
+      "JOIN teams t ON p.team_id = t.id JOIN settings s ON t.id = s.team_id "
+      "ORDER BY p.age ASC, p.base_stat DESC");
+
+  if (result->data.empty()) {
+    Gui2Caption* info = new Gui2Caption(windowManager, "caption_playerdev_info", 0, 0, 65, 3,
+                                        "No players found on your squad.");
+    squadGrid->AddView(info, row++, 0);
+  }
+
+  for (const auto& r : result->data) {
+    int playerDBID = atoi(r.at(0).c_str());
+    std::string fullName = r.at(1) + " " + r.at(2);
+    char buf[256];
+    snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s | %s", fullName.c_str(), r.at(3).c_str(),
+             r.at(4).c_str(), r.at(5).c_str());
+    Gui2Button* btn =
+        new Gui2Button(windowManager, "btn_pdev_" + r.at(0), 0, 0, 65, 2.5, buf);
+    if (playerDBID == selectedPlayerDBID) {
+      btn->SetColor(Vector3(250, 210, 60));
+    }
+    btn->sig_OnClick.connect([this, playerDBID, fullName](...) {
+      selectedPlayerDBID = playerDBID;
+      if (feedbackCaption) {
+        feedbackCaption->SetCaption(
+            Localization::GetInstance().TranslateAndFormat("league_lineup_selected", {fullName}));
+      }
+      RefreshSquad();
+    });
+    squadGrid->AddView(btn, row++, 0);
+  }
+
+  squadGrid->UpdateLayout(0.5);
+  frame->AddView(squadGrid);
+  squadGrid->Show();
+}
+
+void LeagueTeamPlayerDevelopmentPage::TrainSelected(const std::string& attributeName,
+                                                    const std::string& attributeLabel) {
+  auto& loc = Localization::GetInstance();
+
+  if (selectedPlayerDBID == -1) {
+    if (feedbackCaption) {
+      feedbackCaption->SetCaption(loc.Translate("league_train_select_first"));
+    }
+    return;
+  }
+
+  auto result = GetDB()->Query(
+      "SELECT p.profile_xml, p.age, p.firstname, p.lastname FROM players WHERE id = " +
+      int_to_str(selectedPlayerDBID));
+  if (result->data.empty() || result->data.at(0).at(0).empty()) {
+    return;
+  }
+  std::string profileXML = result->data.at(0).at(0);
+  int age = atoi(result->data.at(0).at(1).c_str());
+  std::string fullName = result->data.at(0).at(2) + " " + result->data.at(0).at(3);
+
+  XMLLoader loader;
+  XMLTree tree = loader.Load(profileXML);
+  auto it = tree.children.find(attributeName);
+  if (it == tree.children.end()) {
+    return;
+  }
+  float oldValue = atof(it->second.value.c_str());
+
+  // Younger players grow faster; veterans barely at all.
+  float growth = 0.02f;
+  if (age <= 23) {
+    growth = 0.03f;
+  } else if (age >= 32) {
+    growth = 0.005f;
+  } else if (age >= 29) {
+    growth = 0.01f;
+  }
+  float newValue = std::min(0.99f, oldValue + growth);
+  if (newValue <= oldValue) {
+    if (feedbackCaption) {
+      feedbackCaption->SetCaption(loc.Translate("league_train_maxed"));
+    }
+    return;
+  }
+
+  char buf[96];
+  snprintf(buf, sizeof(buf), "<%s>%.6f</%s>", attributeName.c_str(), newValue,
+           attributeName.c_str());
+  std::string oldTagStart = "<" + attributeName + ">";
+  std::string oldTagEnd = "</" + attributeName + ">";
+  size_t start = profileXML.find(oldTagStart);
+  size_t end = profileXML.find(oldTagEnd, start);
+  if (start == std::string::npos || end == std::string::npos) {
+    return;
+  }
+  std::string updatedXML = profileXML.substr(0, start) + buf +
+                           profileXML.substr(end + oldTagEnd.size());
+  GetDB()->Query("UPDATE players SET profile_xml = '" + updatedXML + "' WHERE id = " +
+                 int_to_str(selectedPlayerDBID));
+
+  if (feedbackCaption) {
+    feedbackCaption->SetCaption(loc.TranslateAndFormat(
+        "league_train_applied",
+        {fullName + " - " + attributeLabel, real_to_str(oldValue), real_to_str(newValue)}));
+  }
+  RefreshSquad();
 }
 
 LeagueTeamPlayerDevelopmentPage::~LeagueTeamPlayerDevelopmentPage() {}

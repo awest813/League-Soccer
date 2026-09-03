@@ -19,6 +19,8 @@
 #include "league/league_forward.hpp"
 #include "league/league_inbox.hpp"
 #include "league/league_management.hpp"
+#include "league/league_matchday.hpp"
+#include "league/league_prematch.hpp"
 #include "league/league_standings.hpp"
 #include "league/league_system.hpp"
 #include "league/league_team.hpp"
@@ -215,60 +217,12 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
       page = new LeagueStandingsPage(windowManager, pageData);
       break;
 
-    case e_PageID_League_Standings_League:
-      page = new LeagueStandingsLeaguePage(windowManager, pageData);
-      break;
-
     case e_PageID_League_Standings_League_Table:
       page = new LeagueStandingsLeagueTablePage(windowManager, pageData);
       break;
 
     case e_PageID_League_Standings_League_Stats:
       page = new LeagueStandingsLeagueStatsPage(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_NCup:
-      page = new LeagueStandingsNCupPage(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_NCup_Tree:
-      page = new LeagueStandingsNCupTreePage(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_NCup_Stats:
-      page = new LeagueStandingsNCupStatsPage(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_ICup1:
-      page = new LeagueStandingsICup1Page(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_ICup1_GroupTable:
-      page = new LeagueStandingsICup1GroupTablePage(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_ICup1_Tree:
-      page = new LeagueStandingsICup1TreePage(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_ICup1_Stats:
-      page = new LeagueStandingsICup1StatsPage(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_ICup2:
-      page = new LeagueStandingsICup2Page(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_ICup2_GroupTable:
-      page = new LeagueStandingsICup2GroupTablePage(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_ICup2_Tree:
-      page = new LeagueStandingsICup2TreePage(windowManager, pageData);
-      break;
-
-    case e_PageID_League_Standings_ICup2_Stats:
-      page = new LeagueStandingsICup2StatsPage(windowManager, pageData);
       break;
 
     case e_PageID_League_Management:
@@ -293,6 +247,14 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
 
     case e_PageID_League_System_Settings:
       page = new LeagueSystemSettingsPage(windowManager, pageData);
+      break;
+
+    case e_PageID_League_PreMatch:
+      page = new LeaguePreMatchPage(windowManager, pageData);
+      break;
+
+    case e_PageID_League_Matchday:
+      page = new LeagueMatchdayPage(windowManager, pageData);
       break;
 
     case e_PageID_MatchHistory:

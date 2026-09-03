@@ -74,8 +74,11 @@ void LeagueSystemPage::GoPage(e_PageID pageID) {
 
 LeagueSystemSavePage::LeagueSystemSavePage(Gui2WindowManager* windowManager,
                                            const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_league_save", 15, 5, 70, 90, true);
+    : Gui2Page(windowManager, pageData),
+      frame(nullptr),
+      feedbackCaption(nullptr),
+      slotsGrid(nullptr) {
+  frame = new Gui2Frame(windowManager, "frame_league_save", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
 
@@ -87,25 +90,29 @@ LeagueSystemSavePage::LeagueSystemSavePage(Gui2WindowManager* windowManager,
 
   std::string saveDir = GetActiveSaveDirectory();
   Gui2Caption* info = new Gui2Caption(
-      windowManager, "caption_save_info", 2, 10, 66, 6, TRF("league_save_info", {saveDir}));
+      windowManager, "caption_save_info", 2, 6, 66, 4, TRF("league_save_info", {saveDir}));
   frame->AddView(info);
   info->Show();
 
   Gui2Button* btnSave =
-      new Gui2Button(windowManager, "btn_save_manual", 15, 40, 40, 3,
+      new Gui2Button(windowManager, "btn_save_manual", 2, 11, 66, 3,
                      Localization::GetInstance().Translate("league_manual_save"));
-  btnSave->sig_OnClick.connect([this, windowManager, frame](...) {
+  btnSave->sig_OnClick.connect([this](...) {
     SaveAutosaveToDatabase();
-    Gui2Caption* feedback =
-        new Gui2Caption(windowManager, "caption_save_feedback", 2, 30, 66, 3,
-                        Localization::GetInstance().Translate("league_save_success"));
-    frame->AddView(feedback);
-    feedback->Show();
+    SetFeedback(Localization::GetInstance().Translate("league_save_success"));
   });
   frame->AddView(btnSave);
   btnSave->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_save_back", 15, 86, 40, 3,
+  // One replaceable feedback caption instead of a stacking pile of captions.
+  feedbackCaption =
+      new Gui2Caption(windowManager, "caption_save_feedback", 2, 84, 66, 3, "");
+  frame->AddView(feedbackCaption);
+  feedbackCaption->Show();
+
+  RefreshSlots();
+
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_save_back", 2, 81, 66, 3,
                                        Localization::GetInstance().Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
@@ -116,11 +123,162 @@ LeagueSystemSavePage::LeagueSystemSavePage(Gui2WindowManager* windowManager,
   });
   frame->AddView(btnBack);
   btnBack->Show();
+
   btnSave->SetFocus();
   this->Show();
 }
 
 LeagueSystemSavePage::~LeagueSystemSavePage() {}
+
+void LeagueSystemSavePage::SetFeedback(const std::string& message) {
+  if (feedbackCaption) {
+    feedbackCaption->SetCaption(message);
+  }
+}
+
+void LeagueSystemSavePage::RefreshSlots() {
+  if (slotsGrid) {
+    slotsGrid->Exit();
+    delete slotsGrid;
+    slotsGrid = nullptr;
+  }
+
+  auto& loc = Localization::GetInstance();
+
+  slotsGrid = new Gui2Grid(windowManager, "grid_save_slots", 2, 16, 66, 62);
+  for (int slot = 1; slot <= kLeagueMaxSaveSlots; slot++) {
+    namespace fs = std::filesystem;
+    bool occupied = fs::exists(fs::path("saves") / GetActiveSaveDirectory() /
+                               ("slot_" + int_to_str(slot) + ".sqlite"));
+    std::string state = occupied ? loc.Translate("league_slot_inuse")
+                                 : loc.Translate("league_slot_empty");
+
+    Gui2Caption* label = new Gui2Caption(
+        windowManager, "caption_slot_" + int_to_str(slot), 0, 0, 26, 2.5,
+        loc.TranslateAndFormat("league_save_slot", {int_to_str(slot)}) + " (" + state + ")");
+    slotsGrid->AddView(label, slot - 1, 0);
+
+    Gui2Button* btnSave = new Gui2Button(
+        windowManager, "btn_slot_save_" + int_to_str(slot), 0, 0, 12, 2.5,
+        loc.Translate("league_slot_save"));
+    btnSave->sig_OnClick.connect([this, slot, occupied](...) {
+      if (occupied) {
+        Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_slot_overwrite", 25, 30, 50, 30,
+                                         Localization::GetInstance().Translate(
+                                             "league_slot_overwrite"));
+        (dlg->AddPosNegButtons(Localization::GetInstance().Translate("league_yes"),
+                               Localization::GetInstance().Translate("league_no")))
+            ->SetFocus();
+        dlg->sig_OnPositive.connect([this, dlg, slot](...) {
+          dlg->Exit();
+          delete dlg;
+          SaveToSlot(slot);
+        });
+        dlg->sig_OnNegative.connect([this, dlg](...) {
+          dlg->Exit();
+          delete dlg;
+        });
+        this->AddView(dlg);
+        dlg->Show();
+      } else {
+        SaveToSlot(slot);
+      }
+    });
+    slotsGrid->AddView(btnSave, slot - 1, 1);
+
+    Gui2Button* btnLoad = new Gui2Button(
+        windowManager, "btn_slot_load_" + int_to_str(slot), 0, 0, 12, 2.5,
+        loc.Translate("league_slot_load"));
+    btnLoad->sig_OnClick.connect([this, slot](...) { LoadSlot(slot); });
+    slotsGrid->AddView(btnLoad, slot - 1, 2);
+
+    Gui2Button* btnDelete = new Gui2Button(
+        windowManager, "btn_slot_delete_" + int_to_str(slot), 0, 0, 12, 2.5,
+        loc.Translate("league_slot_delete"));
+    btnDelete->sig_OnClick.connect([this, slot](...) { DeleteSlot(slot); });
+    slotsGrid->AddView(btnDelete, slot - 1, 3);
+  }
+
+  slotsGrid->UpdateLayout(0.4);
+  frame->AddView(slotsGrid);
+  slotsGrid->Show();
+}
+
+void LeagueSystemSavePage::SaveToSlot(int slotIndex) {
+  if (LeagueSaveToSlot(slotIndex)) {
+    SetFeedback(Localization::GetInstance().TranslateAndFormat("league_slot_saved",
+                                                               {int_to_str(slotIndex)}));
+    RefreshSlots();
+  } else {
+    SetFeedback(Localization::GetInstance().Translate("league_slot_failed"));
+  }
+}
+
+void LeagueSystemSavePage::LoadSlot(int slotIndex) {
+  namespace fs = std::filesystem;
+  if (!fs::exists(fs::path("saves") / GetActiveSaveDirectory() /
+                  ("slot_" + int_to_str(slotIndex) + ".sqlite"))) {
+    return;
+  }
+
+  Gui2Dialog* dlg =
+      new Gui2Dialog(windowManager, "dialog_slot_load", 25, 30, 50, 30,
+                     Localization::GetInstance().Translate("league_slot_load_confirm"));
+  (dlg->AddPosNegButtons(Localization::GetInstance().Translate("league_yes"),
+                         Localization::GetInstance().Translate("league_no")))
+      ->SetFocus();
+  dlg->sig_OnPositive.connect([this, dlg, slotIndex](...) {
+    dlg->Exit();
+    delete dlg;
+    if (LeagueLoadSlot(slotIndex)) {
+      // Everything on screen was built from the old database; restart into the
+      // league hub so every page re-queries the freshly loaded slot.
+      this->Exit();
+      Properties properties;
+      windowManager->GetPageFactory()->CreatePage((int)e_PageID_League, properties, 0);
+      delete this;
+    } else {
+      SetFeedback(Localization::GetInstance().Translate("league_slot_failed"));
+    }
+  });
+  dlg->sig_OnNegative.connect([this, dlg](...) {
+    dlg->Exit();
+    delete dlg;
+  });
+  this->AddView(dlg);
+  dlg->Show();
+}
+
+void LeagueSystemSavePage::DeleteSlot(int slotIndex) {
+  namespace fs = std::filesystem;
+  fs::path slotFile = fs::path("saves") / GetActiveSaveDirectory() /
+                      ("slot_" + int_to_str(slotIndex) + ".sqlite");
+  if (!fs::exists(slotFile)) {
+    return;
+  }
+
+  Gui2Dialog* dlg =
+      new Gui2Dialog(windowManager, "dialog_slot_delete", 25, 30, 50, 30,
+                     Localization::GetInstance().Translate("league_slot_delete_confirm"));
+  (dlg->AddPosNegButtons(Localization::GetInstance().Translate("league_yes"),
+                         Localization::GetInstance().Translate("league_no")))
+      ->SetFocus();
+  dlg->sig_OnPositive.connect([this, dlg, slotFile](...) {
+    dlg->Exit();
+    delete dlg;
+    std::error_code error;
+    fs::remove(slotFile, error);
+    SetFeedback(error ? Localization::GetInstance().Translate("league_slot_failed")
+                      : Localization::GetInstance().Translate("league_slot_deleted"));
+    RefreshSlots();
+  });
+  dlg->sig_OnNegative.connect([this, dlg](...) {
+    dlg->Exit();
+    delete dlg;
+  });
+  this->AddView(dlg);
+  dlg->Show();
+}
 
 LeagueSystemSettingsPage::LeagueSystemSettingsPage(Gui2WindowManager* windowManager,
                                                    const Gui2PageData& pageData)

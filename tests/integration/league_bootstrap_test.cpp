@@ -222,9 +222,78 @@ TEST(LeagueBootstrapIntegrationTest, GenerateSeasonCalendarsCreatesRoundRobinFix
       "VALUES ('Coach Test', 1, 'euro', 0.5, 2013, '2013-10-23')");
   GenerateSeasonCalendars();
 
+  // The season starts at the settings date; generation no longer skips ahead.
   EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM calendar"), 12);
   EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT COUNT(DISTINCT timestamp) FROM calendar"), 6);
-  EXPECT_NE(QuerySingleString(GetDB(), "SELECT timestamp FROM settings LIMIT 1"), "2013-10-23");
+  EXPECT_EQ(QuerySingleString(GetDB(), "SELECT timestamp FROM settings LIMIT 1"), "2013-10-23");
+}
+
+TEST(LeagueBootstrapIntegrationTest, SeasonCompletesAdvancesAndSupportsSaveSlots) {
+  ScopedWorkspace workspace;
+  ScopedCurrentPath cwd(workspace.root());
+  CreateFoundationDatabase(workspace.root(), "default");
+
+  ASSERT_TRUE(
+      GetDB()->Load((workspace.root() / "databases" / "default" / "database.sqlite").string()));
+  ASSERT_TRUE(PrepareDatabaseForLeague());
+
+  GetDB()->Query(
+      "INSERT INTO settings(managername, team_id, currency, difficulty, seasonyear, timestamp) "
+      "VALUES ('Coach Test', 1, 'euro', 0.5, 2013, '2013-06-01')");
+  GenerateSeasonCalendars();
+
+  EXPECT_FALSE(LeagueSeasonComplete());
+
+  // Play out the entire season matchday by matchday.
+  std::string matchdayDate;
+  int resolvedMatchdays = 0;
+  while (LeagueGetNextMatchdayDate(matchdayDate)) {
+    EXPECT_GT(LeagueResolveMatchday(matchdayDate), 0);
+    resolvedMatchdays++;
+  }
+  EXPECT_EQ(resolvedMatchdays, 6);
+  EXPECT_TRUE(LeagueSeasonComplete());
+  EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM match_results WHERE played = 1"), 12);
+
+  // Rolling into the next season resets results and regenerates the calendar.
+  ASSERT_TRUE(LeagueAdvanceSeason());
+  EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT seasonyear FROM settings LIMIT 1"), 2014);
+  EXPECT_EQ(QuerySingleString(GetDB(), "SELECT timestamp FROM settings LIMIT 1"), "2014-06-01");
+  EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM match_results"), 0);
+  EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM calendar"), 12);
+  EXPECT_FALSE(LeagueSeasonComplete());
+
+  // Save slots: save, count, load, bounds.
+  SetActiveSaveDirectory("slotworkspace");
+  std::filesystem::create_directories(std::filesystem::path("saves") / "slotworkspace");
+  {
+    std::ofstream autosave(std::filesystem::path("saves") / "slotworkspace" / "autosave.sqlite",
+                           std::ios::binary);
+    autosave << "autosave-bytes";
+  }
+  EXPECT_EQ(LeagueGetSlotCount(), 0);
+  EXPECT_TRUE(LeagueSaveToSlot(1));
+  EXPECT_TRUE(LeagueSaveToSlot(3));
+  EXPECT_EQ(LeagueGetSlotCount(), 3);
+  EXPECT_TRUE(LeagueSaveToSlot(3));  // overwrite is allowed
+  EXPECT_FALSE(LeagueSaveToSlot(0));
+  EXPECT_FALSE(LeagueSaveToSlot(kLeagueMaxSaveSlots + 1));
+
+  EXPECT_TRUE(std::filesystem::exists(std::filesystem::path("saves") / "slotworkspace" /
+                                      "slot_3.sqlite"));
+  // Loading rewrites the live autosave from the slot.
+  {
+    std::ofstream slot3(std::filesystem::path("saves") / "slotworkspace" / "slot_3.sqlite",
+                        std::ios::binary);
+    slot3 << "slot-bytes";
+  }
+  EXPECT_TRUE(LeagueLoadSlot(3));
+  std::ifstream autosaveBack(std::filesystem::path("saves") / "slotworkspace" / "autosave.sqlite",
+                             std::ios::binary);
+  std::string contents((std::istreambuf_iterator<char>(autosaveBack)),
+                       std::istreambuf_iterator<char>());
+  EXPECT_EQ(contents, "slot-bytes");
+  EXPECT_FALSE(LeagueLoadSlot(2));  // empty slot
 }
 
 TEST(LeagueBootstrapIntegrationTest, StepLeagueTimeAdvancesMatchDaysAndRollsSeason) {
@@ -247,6 +316,78 @@ TEST(LeagueBootstrapIntegrationTest, StepLeagueTimeAdvancesMatchDaysAndRollsSeas
   ASSERT_TRUE(StepLeagueTime());
   EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT seasonyear FROM settings LIMIT 1"), 2014);
   EXPECT_GT(QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM calendar"), 0);
+}
+
+TEST(LeagueBootstrapIntegrationTest, MatchdayLoopRecordsSimulatedAndPlayedResults) {
+  ScopedWorkspace workspace;
+  ScopedCurrentPath cwd(workspace.root());
+  CreateFoundationDatabase(workspace.root(), "default");
+
+  ASSERT_TRUE(
+      GetDB()->Load((workspace.root() / "databases" / "default" / "database.sqlite").string()));
+  ASSERT_TRUE(PrepareDatabaseForLeague());
+
+  GetDB()->Query(
+      "INSERT INTO settings(managername, team_id, currency, difficulty, seasonyear, timestamp) "
+      "VALUES ('Coach Test', 1, 'euro', 0.5, 2013, '2013-10-23')");
+  GenerateSeasonCalendars();
+
+  // Round 1 pairs (1 vs 4) and (2 vs 3); the user controls team 1.
+  LeagueFixtureInfo fixture;
+  ASSERT_TRUE(LeagueGetUserNextFixture(fixture));
+  EXPECT_EQ(fixture.homeTeamID, 1);
+  EXPECT_EQ(fixture.awayTeamID, 4);
+  EXPECT_EQ(fixture.date, "2013-10-23");
+
+  int homeGoals = 0;
+  int awayGoals = 0;
+  LeagueSimulateFixture(fixture, homeGoals, awayGoals);
+  EXPECT_GE(homeGoals, 0);
+  EXPECT_GE(awayGoals, 0);
+  LeagueRecordResult(fixture, homeGoals, awayGoals);
+
+  // Resolving the matchday plays out the remaining round-1 fixture.
+  EXPECT_EQ(LeagueResolveMatchday(fixture.date), 1);
+  EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM match_results WHERE played = 1"), 2);
+  EXPECT_EQ(
+      QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM inbox_messages WHERE subject LIKE 'Match Result:%'"),
+      2);
+  EXPECT_EQ(LeagueGetLastMatchdayDate(), "2013-10-23");
+  EXPECT_EQ(QuerySingleString(GetDB(), "SELECT timestamp FROM settings LIMIT 1"), "2013-10-23");
+
+  // The next user fixture is on the following matchday (team 1 hosts team 3).
+  LeagueFixtureInfo next;
+  ASSERT_TRUE(LeagueGetUserNextFixture(next));
+  EXPECT_EQ(next.homeTeamID, 1);
+  EXPECT_EQ(next.awayTeamID, 3);
+  EXPECT_EQ(next.date, "2013-10-30");
+
+  // Kick off in the 3D engine and write the final score back.
+  LeagueSetPendingFixture(next);
+  EXPECT_TRUE(LeagueHasPendingFixture());
+  ASSERT_TRUE(LeagueConsumePlayedFixture(3, 1));
+  EXPECT_FALSE(LeagueHasPendingFixture());
+
+  auto playedRow = GetDB()->Query("SELECT team1_goals, team2_goals FROM match_results "
+                                  "WHERE calendar_id = " +
+                                  std::to_string(next.calendarID));
+  ASSERT_FALSE(playedRow->data.empty());
+  EXPECT_EQ(std::stoi(playedRow->data.at(0).at(0)), 3);
+  EXPECT_EQ(std::stoi(playedRow->data.at(0).at(1)), 1);
+  EXPECT_EQ(QuerySingleString(GetDB(), "SELECT timestamp FROM settings LIMIT 1"), "2013-10-30");
+
+  // Reporting the same fixture twice is rejected.
+  LeagueSetPendingFixture(next);
+  EXPECT_FALSE(LeagueConsumePlayedFixture(9, 9));
+  EXPECT_EQ(std::stoi(playedRow->data.at(0).at(0)), 3);
+  LeagueClearPendingFixture();
+
+  // Advancing without playing sims the entire next matchday.
+  std::string matchdayDate;
+  ASSERT_TRUE(LeagueGetNextMatchdayDate(matchdayDate));
+  EXPECT_EQ(matchdayDate, "2013-11-06");
+  EXPECT_EQ(LeagueResolveMatchday(matchdayDate), 2);
+  EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM match_results WHERE played = 1"), 6);
 }
 
 }  // namespace

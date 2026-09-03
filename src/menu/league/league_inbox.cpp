@@ -4,6 +4,7 @@
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
 #include "menu_smoke.hpp"
+#include "utils/localization.hpp"
 
 LeagueInboxPage::LeagueInboxPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
@@ -16,7 +17,8 @@ LeagueInboxPage::LeagueInboxPage(Gui2WindowManager* windowManager, const Gui2Pag
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_inbox", 2, 2, 66, 3, "Inbox");
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_inbox", 2, 2, 66, 3,
+                                      Localization::GetInstance().Translate("league_inbox"));
   frame->AddView(title);
   title->Show();
 
@@ -46,7 +48,7 @@ void LeagueInboxPage::RefreshMessages() {
   if (!countResult->data.empty()) {
     total = atoi(countResult->data.at(0).at(0).c_str());
   }
-  countCaption->SetCaption(std::to_string(total) + " unread message" + (total != 1 ? "s" : ""));
+  countCaption->SetCaption(Localization::GetInstance().TranslateAndFormat("league_inbox_unread", {std::to_string(total)}));
 
   messageGrid = new Gui2Grid(windowManager, "grid_inbox", 2, 9, 66, 78);
 
@@ -54,7 +56,7 @@ void LeagueInboxPage::RefreshMessages() {
   if (result->data.empty()) {
     Gui2Caption* emptyCap =
         new Gui2Caption(windowManager, "caption_inbox_empty", 0, 0, 65, 3,
-                        "No messages yet. Messages will appear as you play matches.");
+                        Localization::GetInstance().Translate("league_inbox_empty"));
     messageGrid->AddView(emptyCap, row++, 0);
   } else {
     for (const auto& r : result->data) {
@@ -71,7 +73,7 @@ void LeagueInboxPage::RefreshMessages() {
         GetDB()->Query("UPDATE inbox_messages SET read = 1 WHERE id = " + msgID);
 
         auto bodyResult = GetDB()->Query("SELECT body FROM inbox_messages WHERE id = " + msgID);
-        std::string body = "No content.";
+        std::string body = Localization::GetInstance().Translate("league_inbox_no_content");
         if (!bodyResult->data.empty() && !bodyResult->data.at(0).at(0).empty()) {
           body = bodyResult->data.at(0).at(0);
         }
@@ -79,17 +81,25 @@ void LeagueInboxPage::RefreshMessages() {
         Gui2Dialog* dlg =
             new Gui2Dialog(windowManager, "dialog_msg_" + msgID, 20, 15, 60, 70, subject);
         Gui2Text* txt = new Gui2Text(windowManager, "text_msg_" + msgID, 5, 5, 90, 70, 2.5, 50, "");
-        txt->AddText("From: " + sender);
-        txt->AddText("Date: " + timestamp);
+        txt->AddText(Localization::GetInstance().TranslateAndFormat("league_inbox_from", {sender}));
+        txt->AddText(Localization::GetInstance().TranslateAndFormat("league_inbox_date", {timestamp}));
         txt->AddEmptyLine();
         txt->AddText(body);
         dlg->AddContent(txt);
 
-        (dlg->AddSingleButton("Close"))->SetFocus();
+        Gui2Button* btnClose = dlg->AddPosNegButtons(
+            Localization::GetInstance().Translate("league_inbox_close"),
+            Localization::GetInstance().Translate("league_delete"));
+        btnClose->SetFocus();
         dlg->sig_OnPositive.connect([this, dlg](...) {
           dlg->Exit();
           delete dlg;
           RefreshMessages();
+        });
+        dlg->sig_OnNegative.connect([this, dlg, msgID](...) {
+          dlg->Exit();
+          delete dlg;
+          DeleteMessage(atoi(msgID.c_str()));
         });
         this->AddView(dlg);
         dlg->Show();
@@ -98,9 +108,19 @@ void LeagueInboxPage::RefreshMessages() {
     }
   }
 
+  Gui2Button* btnMarkAll =
+      new Gui2Button(windowManager, "btn_inbox_markall", 0, 0, 65, 2.5,
+                     Localization::GetInstance().Translate("league_inbox_mark_all_read"));
+  btnMarkAll->sig_OnClick.connect([this](...) {
+    GetDB()->Query("UPDATE inbox_messages SET read = 1 WHERE read = 0");
+    RefreshMessages();
+  });
+  messageGrid->AddView(btnMarkAll, row++, 0);
+
   // Back lives in the same grid so keyboard/gamepad can reach it too.
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_inbox_back", 0, 0, 65, 2.5, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_inbox_back", 0, 0, 65, 2.5,
+                     Localization::GetInstance().Translate("league_back_dashboard"));
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   messageGrid->AddView(btnBack, row, 0);
 

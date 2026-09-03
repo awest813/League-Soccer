@@ -59,25 +59,31 @@ LeaguePage::LeaguePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_main", 2, 8, 66, 60);
 
+  Gui2Button* buttonPlayMatch =
+      new Gui2Button(windowManager, "button_league_playmatch", 0, 0, 36, 5,
+                     Localization::GetInstance().Translate("league_play_next_match"));
+  buttonPlayMatch->sig_OnClick.connect([this](...) { GoPreMatch(); });
+  buttonPlayMatch->SetFocus();
+
+  Gui2Button* buttonAdvanceMatchday = new Gui2Button(
+      windowManager, "button_league_advancematchday", 0, 0, 36, 5,
+      Localization::GetInstance().Translate("league_advance_matchday"));
+  buttonAdvanceMatchday->sig_OnClick.connect([this](...) { AdvanceMatchday(); });
+
   Gui2Button* buttonForward =
       new Gui2Button(windowManager, "button_league_forward", 0, 0, 36, 5,
                      Localization::GetInstance().Translate("league_open_dashboard"));
   buttonForward->sig_OnClick.connect([this](...) { GoForward(); });
-  buttonForward->SetFocus();
-
-  Gui2Button* buttonStepTime =
-      new Gui2Button(windowManager, "button_league_steptime", 0, 0, 36, 5,
-                     Localization::GetInstance().Translate("league_advance_day"));
-  buttonStepTime->sig_OnClick.connect([this](...) { StepTime(); });
 
   Gui2Button* buttonMainMenu =
       new Gui2Button(windowManager, "button_league_mainmenu", 0, 0, 36, 5,
                      Localization::GetInstance().Translate("league_return_main_menu"));
   buttonMainMenu->sig_OnClick.connect([this](...) { GoMainMenu(); });
 
-  grid->AddView(buttonForward, 0, 0);
-  grid->AddView(buttonStepTime, 0, 1);
-  grid->AddView(buttonMainMenu, 1, 0);
+  grid->AddView(buttonPlayMatch, 0, 0);
+  grid->AddView(buttonAdvanceMatchday, 0, 1);
+  grid->AddView(buttonForward, 1, 0);
+  grid->AddView(buttonMainMenu, 1, 1);
 
   bgPanel->AddView(grid);
   grid->UpdateLayout();
@@ -121,13 +127,37 @@ void LeaguePage::GoForward() {
   delete this;
 }
 
+void LeaguePage::GoPreMatch() {
+  this->Exit();
+
+  Properties properties;
+  windowManager->GetPageFactory()->CreatePage((int)e_PageID_League_PreMatch, properties, 0);
+
+  delete this;
+}
+
 void LeaguePage::GoMainMenu() {
   SaveAutosaveToDatabase();
+  LeagueClearPendingFixture();
 
   this->Exit();
 
   Properties properties;
   windowManager->GetPageFactory()->CreatePage((int)e_PageID_MainMenu, properties, 0);
+
+  delete this;
+}
+
+void LeaguePage::AdvanceMatchday() {
+  std::string matchdayDate;
+  if (LeagueGetNextMatchdayDate(matchdayDate)) {
+    LeagueResolveMatchday(matchdayDate);
+  }
+
+  this->Exit();
+
+  Properties properties;
+  windowManager->GetPageFactory()->CreatePage((int)e_PageID_League_Matchday, properties, 0);
 
   delete this;
 }
@@ -270,6 +300,61 @@ LeagueStartLoadPage::~LeagueStartLoadPage() {}
 
 void LeagueStartLoadPage::GoLoadSave() {
   std::string saveName = browser->GetClickedEntry().name;
+  if (saveName.empty()) {
+    return;
+  }
+
+  auto& loc = Localization::GetInstance();
+
+  Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_league_load_save", 25, 30, 50, 25,
+                                   loc.Translate("league_load_confirm"));
+  (dlg->AddPosNegButtons(loc.Translate("league_load"), loc.Translate("league_delete")))
+      ->SetFocus();
+  dlg->sig_OnPositive.connect([this, dlg, saveName](...) {
+    dlg->Exit();
+    delete dlg;
+    LoadSaveDir(saveName);
+  });
+  dlg->sig_OnNegative.connect([this, dlg, saveName](...) {
+    dlg->Exit();
+    delete dlg;
+    DeleteSaveDir(saveName);
+  });
+  this->AddView(dlg);
+  dlg->Show();
+}
+
+void LeagueStartLoadPage::DeleteSaveDir(const std::string& saveName) {
+  auto& loc = Localization::GetInstance();
+
+  Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_league_delete_save", 25, 30, 50, 25,
+                                   loc.Translate("league_delete_confirm"));
+  (dlg->AddPosNegButtons(loc.Translate("league_yes"), loc.Translate("league_no")))->SetFocus();
+  dlg->sig_OnPositive.connect([this, dlg, saveName](...) {
+    dlg->Exit();
+    delete dlg;
+
+    std::error_code error;
+    std::filesystem::remove_all(std::filesystem::path("saves") / saveName, error);
+    if (saveName == GetActiveSaveDirectory()) {
+      SetActiveSaveDirectory("");
+    }
+
+    // Recreate the page so the browser rescans the saves directory.
+    this->Exit();
+    Properties properties;
+    windowManager->GetPageFactory()->CreatePage((int)e_PageID_League_Start_Load, properties, 0);
+    delete this;
+  });
+  dlg->sig_OnNegative.connect([this, dlg](...) {
+    dlg->Exit();
+    delete dlg;
+  });
+  this->AddView(dlg);
+  dlg->Show();
+}
+
+void LeagueStartLoadPage::LoadSaveDir(const std::string& saveName) {
   SetActiveSaveDirectory(saveName);
 
   std::filesystem::path saveLoc("saves");
@@ -337,18 +422,22 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_start_new_choices", 5, 15, 90, 80);
 
-  Gui2Caption* databaseSelectCaption =
-      new Gui2Caption(windowManager, "caption_league_start_new_dbselect", 0, 0, 30, 2.5,
-                      "Select foundation database");
+  Gui2Caption* databaseSelectCaption = new Gui2Caption(
+      windowManager, "caption_league_start_new_dbselect", 0, 0, 30, 2.5,
+      Localization::GetInstance().Translate("league_newdb_select"));
   Gui2Caption* currencySelectCaption = new Gui2Caption(
-      windowManager, "caption_league_start_new_currency", 0, 0, 30, 2.5, "Select currency");
+      windowManager, "caption_league_start_new_currency", 0, 0, 30, 2.5,
+      Localization::GetInstance().Translate("league_currency_select"));
   Gui2Caption* saveNameCaption = new Gui2Caption(
-      windowManager, "caption_league_start_new_savegamename", 0, 0, 30, 2.5, "Savegame name");
+      windowManager, "caption_league_start_new_savegamename", 0, 0, 30, 2.5,
+      Localization::GetInstance().Translate("league_savegame_name"));
   Gui2Caption* managerNameCaption = new Gui2Caption(
-      windowManager, "caption_league_start_new_managername", 0, 0, 30, 2.5, "Manager name");
+      windowManager, "caption_league_start_new_managername", 0, 0, 30, 2.5,
+      Localization::GetInstance().Translate("league_manager_name"));
 
   Gui2Caption* teamSelectCaption = new Gui2Caption(
-      windowManager, "caption_league_start_new_teamselect", 0, 0, 30, 2.5, "Select your team");
+      windowManager, "caption_league_start_new_teamselect", 0, 0, 30, 2.5,
+      Localization::GetInstance().Translate("league_select_team"));
 
   databaseSelectButton = new Gui2Button(windowManager, "button_league_start_new_dbselect", 0, 0, 30,
                                         3, data_SelectedDatabase);
@@ -372,8 +461,9 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
   currencySelectPulldown->AddEntry("Hong Kong dollar", "hongkongdollar");
   currencySelectPulldown->AddEntry("Norwegian krone", "norkrone");
 
-  difficultySlider = new Gui2Slider(windowManager, "slider_league_start_new_difficulty", 0, 0, 30,
-                                    6, "Initial difficulty");
+  difficultySlider = new Gui2Slider(
+      windowManager, "slider_league_start_new_difficulty", 0, 0, 30, 6,
+      Localization::GetInstance().Translate("league_initial_difficulty"));
   difficultySlider->SetQuantization(5);
   saveNameInput = new Gui2EditLine(windowManager, "editline_league_start_new_savegamename", 0, 0,
                                    30, 3, "NewLeague");
@@ -442,13 +532,9 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
   Gui2Text* explanationText = new Gui2Text(
       windowManager, "grid_league_start_new_choices_explanation", 40, 15, 40, 75, 2.5, 40, "");
 
-  explanationText->AddText((std::string)
-                           "The foundation database will be copied to a new directory that will serve as a 'save file' for your league. So, this database is what " +
-                           "your league will be based on; any changes to the foundation database later on won't affect your league save (or the other way round).");
+  explanationText->AddText(Localization::GetInstance().Translate("league_newdb_help1"));
   explanationText->AddEmptyLine();
-  explanationText->AddText((std::string)
-                           "Foundation databases are stored in the 'databases' subdirectory of your League Soccer installation. " +
-                           "Saved leagues and cups are stored in the 'saves' directory.");
+  explanationText->AddText(Localization::GetInstance().Translate("league_newdb_help2"));
 
   frame->AddView(explanationText);
   explanationText->Show();
@@ -495,8 +581,9 @@ void LeagueStartNewPage::Process() {
 }
 
 void LeagueStartNewPage::GoDatabaseSelectDialog() {
-  databaseSelectDialog = new Gui2Dialog(windowManager, "dialog_league_start_new_dbselect", 30, 25,
-                                        40, 50, "Select source database");
+  databaseSelectDialog = new Gui2Dialog(
+      windowManager, "dialog_league_start_new_dbselect", 30, 25, 40, 50,
+      Localization::GetInstance().Translate("league_select_source_db"));
   previousFocus = windowManager->GetFocus();
 
   databaseSelectBrowser =

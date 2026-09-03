@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "../../league/leaguecode.hpp"
 #include "../../main.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
@@ -32,34 +33,19 @@ LeagueStandingsPage::LeagueStandingsPage(Gui2WindowManager* windowManager,
   Gui2Button* btnLeagueStats =
       new Gui2Button(windowManager, "btn_standings_league_stats", 0, 0, 60, 3,
                      Localization::GetInstance().Translate("league_stats"));
-  Gui2Button* btnNCup =
-      new Gui2Button(windowManager, "btn_standings_ncup", 0, 0, 60, 3,
-                     Localization::GetInstance().Translate("league_national_cup"));
-  Gui2Button* btnICup1 =
-      new Gui2Button(windowManager, "btn_standings_icup1", 0, 0, 60, 3,
-                     Localization::GetInstance().Translate("league_icup1"));
-  Gui2Button* btnICup2 =
-      new Gui2Button(windowManager, "btn_standings_icup2", 0, 0, 60, 3,
-                     Localization::GetInstance().Translate("league_icup2"));
   Gui2Button* btnBack =
       new Gui2Button(windowManager, "btn_standings_back", 0, 0, 60, 3,
                      Localization::GetInstance().Translate("league_back_dashboard"));
 
-  btnLeague->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_League); });
+  btnLeague->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_League_Table); });
   btnLeagueStats->sig_OnClick.connect(
       [this](...) { GoPage(e_PageID_League_Standings_League_Stats); });
-  btnNCup->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_NCup); });
-  btnICup1->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_ICup1); });
-  btnICup2->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_ICup2); });
   btnBack->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Forward); });
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_standings", 2, 10, 66, 60);
   grid->AddView(btnLeague, 0, 0);
   grid->AddView(btnLeagueStats, 1, 0);
-  grid->AddView(btnNCup, 2, 0);
-  grid->AddView(btnICup1, 3, 0);
-  grid->AddView(btnICup2, 4, 0);
-  grid->AddView(btnBack, 5, 0);
+  grid->AddView(btnBack, 2, 0);
   grid->UpdateLayout(0.5);
   frame->AddView(grid);
   grid->Show();
@@ -80,74 +66,10 @@ void LeagueStandingsPage::Process() {
 
   autoAdvanceTriggered = true;
   printf("[menu-smoke] Standings page opening league standings\n");
-  GoPage(e_PageID_League_Standings_League);
-}
-
-void LeagueStandingsPage::GoPage(e_PageID pageID) {
-  this->Exit();
-  Properties properties;
-  windowManager->GetPageFactory()->CreatePage(static_cast<int>(pageID), properties, 0);
-  delete this;
-}
-
-LeagueStandingsLeaguePage::LeagueStandingsLeaguePage(Gui2WindowManager* windowManager,
-                                                     const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData),
-      pageCreatedTime_ms(league_menu_smoke::Now_ms()),
-      autoAdvanceTriggered(false) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_league_standings_league", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_standings_league", 2, 2, 66, 3,
-                      Localization::GetInstance().Translate("menu_league"));
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Button* btnTable =
-      new Gui2Button(windowManager, "btn_league_table", 0, 0, 60, 3,
-                     Localization::GetInstance().Translate("league_table_short"));
-  Gui2Button* btnStats =
-      new Gui2Button(windowManager, "btn_league_stats", 0, 0, 60, 3,
-                     Localization::GetInstance().Translate("league_stats_short"));
-  Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_league_back", 0, 0, 60, 3,
-                     Localization::GetInstance().Translate("league_back_standings"));
-
-  btnTable->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_League_Table); });
-  btnStats->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings_League_Stats); });
-  btnBack->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings); });
-
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_sub", 2, 10, 66, 50);
-  grid->AddView(btnTable, 0, 0);
-  grid->AddView(btnStats, 1, 0);
-  grid->AddView(btnBack, 2, 0);
-  grid->UpdateLayout(0.5);
-  frame->AddView(grid);
-  grid->Show();
-
-  btnTable->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsLeaguePage::~LeagueStandingsLeaguePage() {}
-
-void LeagueStandingsLeaguePage::Process() {
-  Gui2Page::Process();
-
-  if (!league_menu_smoke::RouteEnabled("standings_table") || autoAdvanceTriggered ||
-      league_menu_smoke::Now_ms() < pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
-    return;
-  }
-
-  autoAdvanceTriggered = true;
-  printf("[menu-smoke] League standings opening table\n");
   GoPage(e_PageID_League_Standings_League_Table);
 }
 
-void LeagueStandingsLeaguePage::GoPage(e_PageID pageID) {
+void LeagueStandingsPage::GoPage(e_PageID pageID) {
   this->Exit();
   Properties properties;
   windowManager->GetPageFactory()->CreatePage(static_cast<int>(pageID), properties, 0);
@@ -163,14 +85,15 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_league_table", 2, 2,
-                                       86, 3, "League Table");
+  Gui2Caption* title = new Gui2Caption(
+      windowManager, "caption_league_standings_league_table", 2, 2, 86, 3,
+      Localization::GetInstance().Translate("league_table_title"));
   frame->AddView(title);
   title->Show();
 
   Gui2Caption* header =
       new Gui2Caption(windowManager, "caption_table_header", 2, 6, 86, 2,
-                      "Team                          | P  | W  | D  | L  | GF | GA | GD | Pts");
+                      Localization::GetInstance().Translate("league_table_header"));
   frame->AddView(header);
   header->Show();
 
@@ -205,9 +128,34 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
 
   struct TeamRow {
     std::string id, name, league;
-    std::string p, w, d, l, gf, ga, gd, pts;
+    std::string p, w, d, l, gf, ga, gd, pts, form;
     int ptsVal, gdVal;
   };
+
+  // Recent form per team: last five results, oldest first (e.g. "WDWLM").
+  std::map<int, std::string> formMap;
+  {
+    auto formResult = GetDB()->Query(
+        "SELECT mr.team1_id, mr.team2_id, mr.team1_goals, mr.team2_goals "
+        "FROM match_results mr "
+        "JOIN calendar c ON mr.calendar_id = c.id "
+        "WHERE mr.played = 1 ORDER BY date(c.timestamp), mr.id");
+    auto appendResult = [&formMap](int teamID, int goalsFor, int goalsAgainst) {
+      std::string& form = formMap[teamID];
+      form += (goalsFor > goalsAgainst) ? 'W' : (goalsFor == goalsAgainst) ? 'D' : 'L';
+      if (form.size() > 5) {
+        form.erase(0, form.size() - 5);
+      }
+    };
+    for (const auto& row : formResult->data) {
+      int t1 = atoi(row.at(0).c_str());
+      int t2 = atoi(row.at(1).c_str());
+      int g1 = atoi(row.at(2).c_str());
+      int g2 = atoi(row.at(3).c_str());
+      appendResult(t1, g1, g2);
+      appendResult(t2, g2, g1);
+    }
+  }
 
   std::vector<TeamRow> allTeams;
   for (const auto& r : result->data) {
@@ -239,6 +187,10 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
       tr.pts = s.at(8);
       tr.ptsVal = atoi(tr.pts.c_str());
     }
+    auto formIt = formMap.find(atoi(tr.id.c_str()));
+    if (formIt != formMap.end()) {
+      tr.form = formIt->second;
+    }
     allTeams.push_back(tr);
   }
 
@@ -253,18 +205,43 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_table", 2, 9, 86, 78);
   int row = 0;
   std::string currentLeague;
+  int leaguePos = 0;
+  int leagueSize = 0;
+  int userTeamID = 0;
+  LeagueGetUserTeamID(userTeamID);
+
+  const Vector3 colorUser(250, 210, 60);
+  const Vector3 colorLeader(110, 220, 110);
+  const Vector3 colorBottom(235, 105, 105);
+
   for (const auto& tr : allTeams) {
     if (tr.league != currentLeague) {
       currentLeague = tr.league;
+      leaguePos = 0;
+      leagueSize = static_cast<int>(std::count_if(allTeams.begin(), allTeams.end(),
+                                                  [&tr](const TeamRow& t) {
+                                                    return t.league == tr.league;
+                                                  }));
       Gui2Caption* sep = new Gui2Caption(windowManager, "caption_league_sep_" + int_to_str(row), 0,
                                          0, 85, 2.5, "--- " + currentLeague + " ---");
       grid->AddView(sep, row++, 0);
     }
+    leaguePos++;
+
+    const bool isUserTeam = (atoi(tr.id.c_str()) == userTeamID);
     char buf[256];
-    snprintf(buf, sizeof(buf), "%-29s | %2s | %2s | %2s | %2s | %2s | %2s | %2s | %3s",
-             tr.name.c_str(), tr.p.c_str(), tr.w.c_str(), tr.d.c_str(), tr.l.c_str(), tr.gf.c_str(),
-             tr.ga.c_str(), tr.gd.c_str(), tr.pts.c_str());
+    snprintf(buf, sizeof(buf), "%-2s%-27s | %2s | %2s | %2s | %2s | %2s | %2s | %2s | %3s | %-5s",
+             isUserTeam ? "> " : "", tr.name.c_str(), tr.p.c_str(), tr.w.c_str(), tr.d.c_str(),
+             tr.l.c_str(), tr.gf.c_str(), tr.ga.c_str(), tr.gd.c_str(), tr.pts.c_str(),
+             tr.form.c_str());
     Gui2Button* btn = new Gui2Button(windowManager, "btn_table_" + tr.id, 0, 0, 85, 2.5, buf);
+    if (isUserTeam) {
+      btn->SetColor(colorUser);
+    } else if (leaguePos == 1 && leagueSize > 1) {
+      btn->SetColor(colorLeader);
+    } else if (leaguePos == leagueSize && leagueSize > 2) {
+      btn->SetColor(colorBottom);
+    }
     grid->AddView(btn, row++, 0);
   }
 
@@ -274,7 +251,7 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings_League),
+    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
                                                 properties, 0);
     delete this;
   });
@@ -313,8 +290,9 @@ LeagueStandingsLeagueStatsPage::LeagueStandingsLeagueStatsPage(Gui2WindowManager
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_league_stats", 2, 2,
-                                       66, 3, "League Stats");
+  Gui2Caption* title = new Gui2Caption(
+      windowManager, "caption_league_standings_league_stats", 2, 2, 66, 3,
+      Localization::GetInstance().Translate("league_stats"));
   frame->AddView(title);
   title->Show();
 
@@ -332,13 +310,15 @@ LeagueStandingsLeagueStatsPage::LeagueStandingsLeagueStatsPage(Gui2WindowManager
   int row = 0;
 
   std::string totalMatches = totalResult->data.empty() ? "0" : totalResult->data.at(0).at(0);
-  Gui2Caption* totalCap = new Gui2Caption(windowManager, "caption_stats_total", 0, 0, 65, 2.5,
-                                          "Total Matches Played: " + totalMatches);
+  Gui2Caption* totalCap = new Gui2Caption(
+      windowManager, "caption_stats_total", 0, 0, 65, 2.5,
+      Localization::GetInstance().TranslateAndFormat("league_stats_total", {totalMatches}));
   grid->AddView(totalCap, row++, 0);
 
   if (!highScoring->data.empty()) {
-    Gui2Caption* hdrCap = new Gui2Caption(windowManager, "caption_stats_high", 0, 0, 65, 2.5,
-                                          "--- Highest Scoring Matches ---");
+    Gui2Caption* hdrCap = new Gui2Caption(
+        windowManager, "caption_stats_high", 0, 0, 65, 2.5,
+        Localization::GetInstance().Translate("league_stats_high_header"));
     grid->AddView(hdrCap, row++, 0);
 
     for (const auto& r : highScoring->data) {
@@ -352,7 +332,7 @@ LeagueStandingsLeagueStatsPage::LeagueStandingsLeagueStatsPage(Gui2WindowManager
   } else {
     Gui2Caption* noData =
         new Gui2Caption(windowManager, "caption_stats_nodata", 0, 0, 65, 2.5,
-                        "No matches played yet. Simulate matches from the Calendar.");
+                        Localization::GetInstance().Translate("league_stats_none"));
     grid->AddView(noData, row++, 0);
   }
 
@@ -365,7 +345,7 @@ LeagueStandingsLeagueStatsPage::LeagueStandingsLeagueStatsPage(Gui2WindowManager
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings_League),
+    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
                                                 properties, 0);
     delete this;
   });
@@ -376,388 +356,3 @@ LeagueStandingsLeagueStatsPage::LeagueStandingsLeagueStatsPage(Gui2WindowManager
 }
 
 LeagueStandingsLeagueStatsPage::~LeagueStandingsLeagueStatsPage() {}
-
-LeagueStandingsNCupPage::LeagueStandingsNCupPage(Gui2WindowManager* windowManager,
-                                                 const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_standings_ncup", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_standings_ncup", 2, 2, 66, 3,
-                      Localization::GetInstance().Translate("league_national_cup"));
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_ncup_info", 2, 10, 66, 8,
-                                      "National Cup tournaments are planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_ncup_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings); });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsNCupPage::~LeagueStandingsNCupPage() {}
-
-void LeagueStandingsNCupPage::GoPage(e_PageID pageID) {
-  this->Exit();
-  Properties properties;
-  windowManager->GetPageFactory()->CreatePage(static_cast<int>(pageID), properties, 0);
-  delete this;
-}
-
-LeagueStandingsNCupTreePage::LeagueStandingsNCupTreePage(Gui2WindowManager* windowManager,
-                                                         const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_standings_ncup_tree", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_ncup_tree", 2, 2,
-                                       66, 3, "National Cup - Tournament Tree");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_ncup_tree_info", 2, 10, 66, 8,
-                                      "National Cup tournaments are planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_ncup_tree_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
-    Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
-                                                properties, 0);
-    delete this;
-  });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsNCupTreePage::~LeagueStandingsNCupTreePage() {}
-
-LeagueStandingsNCupStatsPage::LeagueStandingsNCupStatsPage(Gui2WindowManager* windowManager,
-                                                           const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_standings_ncup_stats", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_ncup_stats", 2, 2,
-                                       66, 3, "National Cup - Stats");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_ncup_stats_info", 2, 10, 66, 8,
-                                      "National Cup tournaments are planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_ncup_stats_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
-    Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
-                                                properties, 0);
-    delete this;
-  });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsNCupStatsPage::~LeagueStandingsNCupStatsPage() {}
-
-LeagueStandingsICup1Page::LeagueStandingsICup1Page(Gui2WindowManager* windowManager,
-                                                   const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_standings_icup1", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup1", 2, 2, 66, 3,
-                                       "International Cup 1");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup1_info", 2, 10, 66, 8,
-                                      "International Cup 1 is planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings); });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsICup1Page::~LeagueStandingsICup1Page() {}
-
-void LeagueStandingsICup1Page::GoPage(e_PageID pageID) {
-  this->Exit();
-  Properties properties;
-  windowManager->GetPageFactory()->CreatePage(static_cast<int>(pageID), properties, 0);
-  delete this;
-}
-
-LeagueStandingsICup1GroupTablePage::LeagueStandingsICup1GroupTablePage(
-    Gui2WindowManager* windowManager, const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_standings_icup1_grouptable", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup1_grouptable",
-                                       2, 2, 66, 3, "International Cup 1 - Group Table");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup1_gt_info", 2, 10, 66, 8,
-                                      "International Cup 1 is planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_gt_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
-    Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
-                                                properties, 0);
-    delete this;
-  });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsICup1GroupTablePage::~LeagueStandingsICup1GroupTablePage() {}
-
-LeagueStandingsICup1TreePage::LeagueStandingsICup1TreePage(Gui2WindowManager* windowManager,
-                                                           const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_standings_icup1_tree", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup1_tree", 2, 2,
-                                       66, 3, "International Cup 1 - Tournament Tree");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup1_tree_info", 2, 10, 66, 8,
-                                      "International Cup 1 is planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_tree_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
-    Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
-                                                properties, 0);
-    delete this;
-  });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsICup1TreePage::~LeagueStandingsICup1TreePage() {}
-
-LeagueStandingsICup1StatsPage::LeagueStandingsICup1StatsPage(Gui2WindowManager* windowManager,
-                                                             const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_standings_icup1_stats", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup1_stats", 2, 2,
-                                       66, 3, "International Cup 1 - Stats");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup1_stats_info", 2, 10, 66, 8,
-                                      "International Cup 1 is planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup1_stats_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
-    Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
-                                                properties, 0);
-    delete this;
-  });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsICup1StatsPage::~LeagueStandingsICup1StatsPage() {}
-
-LeagueStandingsICup2Page::LeagueStandingsICup2Page(Gui2WindowManager* windowManager,
-                                                   const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame = new Gui2Frame(windowManager, "frame_standings_icup2", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup2", 2, 2, 66, 3,
-                                       "International Cup 2");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup2_info", 2, 10, 66, 8,
-                                      "International Cup 2 is planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings); });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsICup2Page::~LeagueStandingsICup2Page() {}
-
-void LeagueStandingsICup2Page::GoPage(e_PageID pageID) {
-  this->Exit();
-  Properties properties;
-  windowManager->GetPageFactory()->CreatePage(static_cast<int>(pageID), properties, 0);
-  delete this;
-}
-
-LeagueStandingsICup2GroupTablePage::LeagueStandingsICup2GroupTablePage(
-    Gui2WindowManager* windowManager, const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_standings_icup2_grouptable", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup2_grouptable",
-                                       2, 2, 66, 3, "International Cup 2 - Group Table");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup2_gt_info", 2, 10, 66, 8,
-                                      "International Cup 2 is planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_gt_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
-    Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
-                                                properties, 0);
-    delete this;
-  });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsICup2GroupTablePage::~LeagueStandingsICup2GroupTablePage() {}
-
-LeagueStandingsICup2TreePage::LeagueStandingsICup2TreePage(Gui2WindowManager* windowManager,
-                                                           const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_standings_icup2_tree", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup2_tree", 2, 2,
-                                       66, 3, "International Cup 2 - Tournament Tree");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup2_tree_info", 2, 10, 66, 8,
-                                      "International Cup 2 is planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_tree_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
-    Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
-                                                properties, 0);
-    delete this;
-  });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsICup2TreePage::~LeagueStandingsICup2TreePage() {}
-
-LeagueStandingsICup2StatsPage::LeagueStandingsICup2StatsPage(Gui2WindowManager* windowManager,
-                                                             const Gui2PageData& pageData)
-    : Gui2Page(windowManager, pageData) {
-  Gui2Frame* frame =
-      new Gui2Frame(windowManager, "frame_standings_icup2_stats", 15, 5, 70, 90, true);
-  this->AddView(frame);
-  frame->Show();
-
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings_icup2_stats", 2, 2,
-                                       66, 3, "International Cup 2 - Stats");
-  frame->AddView(title);
-  title->Show();
-
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_icup2_stats_info", 2, 10, 66, 8,
-                                      "International Cup 2 is planned for a future update.");
-  frame->AddView(info);
-  info->Show();
-
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_icup2_stats_back", 15, 86, 40, 3,
-                                       Localization::GetInstance().Translate("action_back"));
-  btnBack->sig_OnClick.connect([this, windowManager](...) {
-    this->Exit();
-    Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Standings),
-                                                properties, 0);
-    delete this;
-  });
-  frame->AddView(btnBack);
-  btnBack->Show();
-  btnBack->SetFocus();
-  this->Show();
-}
-
-LeagueStandingsICup2StatsPage::~LeagueStandingsICup2StatsPage() {}

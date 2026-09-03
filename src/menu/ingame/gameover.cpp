@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "../../data/matchhistory.hpp"
+#include "../../league/leaguecode.hpp"
 #include "../../onthepitch/match.hpp"
 #include "../career/career_database.hpp"
 #include "../pagefactory.hpp"
@@ -299,9 +300,23 @@ void GameOverPage::GoRematch() {
 }
 
 void GameOverPage::GoMainMenu() {
+  // A league fixture was played: write its score back into the season before
+  // leaving the game flow, and resume into the matchday summary.
+  bool leagueMatchPlayed = false;
+  if (match && LeagueHasPendingFixture()) {
+    auto* matchData = match->GetMatchData();
+    if (matchData) {
+      // MatchData team 0/1 mirror the fixture's home/away sides.
+      leagueMatchPlayed =
+          LeagueConsumePlayedFixture(matchData->GetGoalCount(0), matchData->GetGoalCount(1));
+    } else {
+      LeagueClearPendingFixture();
+    }
+  }
+
   // Preserve the finished 3D match in career bookkeeping before leaving the game flow.
   bool resumeCareer = false;
-  if (match && CareerDatabase::GetInstance().GetActiveSave()) {
+  if (!leagueMatchPlayed && match && CareerDatabase::GetInstance().GetActiveSave()) {
     auto* matchData = match->GetMatchData();
     if (matchData) {
       CareerDatabase::GetInstance().Process3DMatchResult(matchData->GetGoalCount(0),
@@ -312,6 +327,9 @@ void GameOverPage::GoMainMenu() {
   }
   if (resumeCareer) {
     GetConfiguration()->SetBool("career_resume_hub", true);
+  }
+  if (leagueMatchPlayed) {
+    GetConfiguration()->SetBool("league_resume_hub", true);
   }
   this->Exit();
   GetMenuTask()->SetMenuAction(e_MenuAction_Menu);

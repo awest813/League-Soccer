@@ -3,6 +3,9 @@
 #define BOOST_FILESYSTEM_VERSION 3
 
 #include <algorithm>
+#include <cstdlib>
+#include <filesystem>
+#include <functional>
 #include <vector>
 
 #include "base/utils.hpp"
@@ -26,6 +29,36 @@ bool DatabaseHasColumn(Database* database, const std::string& tableName,
     }
   }
   return false;
+}
+
+LeagueFixtureInfo g_pendingFixture;
+bool g_pendingFixtureActive = false;
+std::string g_lastMatchdayDate;
+
+const std::string& StringOrEmpty(const std::vector<std::string>& row, size_t index) {
+  static const std::string kEmpty;
+  return index < row.size() ? row.at(index) : kEmpty;
+}
+
+LeagueFixtureInfo FixtureFromRow(const std::vector<std::string>& row) {
+  // c.id, c.team1_id, c.team2_id, c.competition_id, t1.name, t2.name, l.name, date(c.timestamp)
+  LeagueFixtureInfo fixture;
+  fixture.calendarID = atoi(StringOrEmpty(row, 0).c_str());
+  fixture.homeTeamID = atoi(StringOrEmpty(row, 1).c_str());
+  fixture.awayTeamID = atoi(StringOrEmpty(row, 2).c_str());
+  fixture.competitionID = atoi(StringOrEmpty(row, 3).c_str());
+  fixture.homeTeamName = StringOrEmpty(row, 4);
+  fixture.awayTeamName = StringOrEmpty(row, 5);
+  fixture.competitionName = StringOrEmpty(row, 6);
+  fixture.date = StringOrEmpty(row, 7);
+  return fixture;
+}
+
+std::string FixtureQueryJoins() {
+  return "FROM calendar c "
+         "JOIN teams t1 ON c.team1_id = t1.id "
+         "JOIN teams t2 ON c.team2_id = t2.id "
+         "LEFT JOIN leagues l ON c.competition_id = l.id ";
 }
 
 }  // namespace
@@ -354,17 +387,6 @@ void GenerateSeasonCalendars() {
     int leagueID = atoi(row.at(0).c_str());
     GenerateRoundRobinFixtures(leagueID, seasonYear, startDate);
   }
-
-  int totalFixtures = 0;
-  auto countResult = GetDB()->Query("SELECT COUNT(*) FROM calendar");
-  if (!countResult->data.empty() && !countResult->data.at(0).empty()) {
-    totalFixtures = atoi(countResult->data.at(0).at(0).c_str());
-  }
-
-  int numWeeks = totalFixtures > 0 ? 20 : 0;
-  result =
-      GetDB()->Query("UPDATE settings SET timestamp = date(timestamp, '+" +
-                     int_to_str(numWeeks * 7) + " day'), seasonyear = " + int_to_str(seasonYear));
 }
 
 bool StepLeagueTime() {
@@ -401,4 +423,292 @@ bool StepLeagueTime() {
   }
 
   return true;
+}
+
+// ---------------------------------------------------------------------------
+// Season matchday loop: fixture lookup, simulation, results, pending 3D match
+// ---------------------------------------------------------------------------
+
+bool LeagueHasPendingFixture() { return g_pendingFixtureActive; }
+
+const LeagueFixtureInfo& LeagueGetPendingFixture() { return g_pendingFixture; }
+
+void LeagueSetPendingFixture(const LeagueFixtureInfo& fixture) {
+  g_pendingFixture = fixture;
+  g_pendingFixtureActive = fixture.calendarID > 0;
+}
+
+void LeagueClearPendingFixture() { g_pendingFixtureActive = false; }
+
+bool LeagueGetUserTeamID(int& teamID) {
+  auto result = GetDB()->Query("SELECT team_id FROM settings LIMIT 1");
+  if (result->data.empty() || result->data.at(0).empty()) {
+    return false;
+  }
+  teamID = atoi(result->data.at(0).at(0).c_str());
+  return true;
+}
+
+std::string LeagueResolveLogoPath(int teamID) {
+  auto result =
+      GetDB()->Query("SELECT logo_url FROM teams WHERE id = " + int_to_str(teamID));
+  if (result->data.empty() || result->data.at(0).empty()) {
+    return "";
+  }
+  std::string logoUrl = result->data.at(0).at(0);
+  if (logoUrl.empty()) {
+    return "";
+  }
+
+  std::string saveDir = GetActiveSaveDirectory();
+  std::filesystem::path path;
+  if (!saveDir.empty()) {
+    path = std::filesystem::path("saves") / saveDir / logoUrl;
+    if (std::filesystem::exists(path)) {
+      return path.generic_string();  // forward slashes, like the rest of the asset pipeline
+    }
+  }
+  path = std::filesystem::path("databases") / "default" / logoUrl;
+  if (std::filesystem::exists(path)) {
+    return path.generic_string();
+  }
+  return "";
+}
+
+bool LeagueGetUserNextFixture(LeagueFixtureInfo& out) {
+  int userTeamID = 0;
+  if (!LeagueGetUserTeamID(userTeamID)) {
+    return false;
+  }
+
+  auto result = GetDB()->Query(
+      "SELECT c.id, c.team1_id, c.team2_id, c.competition_id, t1.name, t2.name, l.name, "
+      "date(c.timestamp) " +
+      FixtureQueryJoins() +
+      "JOIN settings s ON (c.team1_id = s.team_id OR c.team2_id = s.team_id) "
+      "WHERE (c.team1_id = " +
+      int_to_str(userTeamID) + " OR c.team2_id = " + int_to_str(userTeamID) + ") "
+      "AND c.id NOT IN (SELECT calendar_id FROM match_results WHERE played = 1) "
+      "ORDER BY c.timestamp LIMIT 1");
+
+  if (result->data.empty()) {
+    return false;
+  }
+  out = FixtureFromRow(result->data.at(0));
+  return true;
+}
+
+bool LeagueGetFixtureByCalendarID(int calendarID, LeagueFixtureInfo& out) {
+  auto result = GetDB()->Query(
+      "SELECT c.id, c.team1_id, c.team2_id, c.competition_id, t1.name, t2.name, l.name, "
+      "date(c.timestamp) " +
+      FixtureQueryJoins() + "WHERE c.id = " + int_to_str(calendarID));
+  if (result->data.empty()) {
+    return false;
+  }
+  out = FixtureFromRow(result->data.at(0));
+  return true;
+}
+
+bool LeagueGetNextMatchdayDate(std::string& outDate) {
+  auto result = GetDB()->Query(
+      "SELECT date(MIN(c.timestamp)) FROM calendar c "
+      "WHERE c.id NOT IN (SELECT calendar_id FROM match_results WHERE played = 1)");
+  if (result->data.empty() || result->data.at(0).empty() || result->data.at(0).at(0).empty()) {
+    return false;
+  }
+  outDate = result->data.at(0).at(0);
+  return true;
+}
+
+void LeagueRecordResult(const LeagueFixtureInfo& fixture, int homeGoals, int awayGoals) {
+  GetDB()->Query("DELETE FROM match_results WHERE calendar_id = " +
+                 int_to_str(fixture.calendarID));
+  GetDB()->Query(
+      "INSERT INTO match_results (calendar_id, team1_id, team2_id, team1_goals, team2_goals, "
+      "played, competition_id) "
+      "VALUES (" +
+      int_to_str(fixture.calendarID) + ", " + int_to_str(fixture.homeTeamID) + ", " +
+      int_to_str(fixture.awayTeamID) + ", " + int_to_str(homeGoals) + ", " +
+      int_to_str(awayGoals) + ", 1, " + int_to_str(fixture.competitionID) + ")");
+
+  std::string resultStr = fixture.homeTeamName + " " + int_to_str(homeGoals) + " - " +
+                          int_to_str(awayGoals) + " " + fixture.awayTeamName;
+  GetDB()->Query(
+      "INSERT INTO inbox_messages (sender, subject, body) VALUES "
+      "('Match Reporter', 'Match Result: " +
+      resultStr +
+      "', "
+      "'Full-time: " +
+      resultStr + ". Check the Standings page for updated league tables.')");
+}
+
+void LeagueSimulateFixture(const LeagueFixtureInfo& fixture, int& homeGoals, int& awayGoals) {
+  // Strength-aware result: the league stores no explicit ratings, so derive a
+  // stable rating from each team's name and give the home side an edge.
+  auto teamRating = [](const std::string& name) {
+    return 50 + static_cast<int>(std::hash<std::string>{}(name) % 41);  // 50..90
+  };
+  auto sampleGoals = [](int attack, int defense) {
+    float expected = 1.35f * static_cast<float>(attack) / static_cast<float>(std::max(1, defense));
+    int goals = static_cast<int>(expected);
+    float frac = expected - static_cast<float>(goals);
+    // Stochastic rounding keeps the expected goal average honest.
+    if ((rand() % 1000) / 1000.0f < frac)
+      goals += 1;
+    // Occasional flair for the odd extra goal.
+    if (rand() % 100 < 15)
+      goals += rand() % 2;
+    return std::max(0, std::min(6, goals));
+  };
+  int homeRating = teamRating(fixture.homeTeamName) + 6;  // home advantage
+  int awayRating = teamRating(fixture.awayTeamName);
+  homeGoals = sampleGoals(homeRating, awayRating);
+  awayGoals = sampleGoals(awayRating, homeRating);
+}
+
+int LeagueResolveMatchday(const std::string& date) {
+  auto result = GetDB()->Query(
+      "SELECT c.id, c.team1_id, c.team2_id, c.competition_id, t1.name, t2.name, l.name, "
+      "date(c.timestamp) " +
+      FixtureQueryJoins() +
+      "WHERE date(c.timestamp) <= date('" + date + "') "
+      "AND c.id NOT IN (SELECT calendar_id FROM match_results WHERE played = 1) "
+      "ORDER BY c.timestamp, c.id");
+
+  int simulated = 0;
+  for (const auto& row : result->data) {
+    LeagueFixtureInfo fixture = FixtureFromRow(row);
+    int homeGoals = 0;
+    int awayGoals = 0;
+    LeagueSimulateFixture(fixture, homeGoals, awayGoals);
+    LeagueRecordResult(fixture, homeGoals, awayGoals);
+    simulated++;
+  }
+
+  if (simulated > 0) {
+    // The clock now sits on the resolved matchday; season rollover is handled
+    // by the end-of-season flow, not here.
+    GetDB()->Query("UPDATE settings SET timestamp = date('" + date + "')");
+    g_lastMatchdayDate = date;
+  }
+  return simulated;
+}
+
+std::string LeagueGetLastMatchdayDate() {
+  if (!g_lastMatchdayDate.empty()) {
+    return g_lastMatchdayDate;
+  }
+  auto result = GetDB()->Query(
+      "SELECT date(MAX(c.timestamp)) FROM calendar c "
+      "JOIN match_results mr ON mr.calendar_id = c.id AND mr.played = 1");
+  if (result->data.empty() || result->data.at(0).empty()) {
+    return "";
+  }
+  return result->data.at(0).at(0);
+}
+
+bool LeagueConsumePlayedFixture(int homeGoals, int awayGoals) {
+  if (!g_pendingFixtureActive) {
+    return false;
+  }
+
+  LeagueFixtureInfo fixture = g_pendingFixture;
+  g_pendingFixtureActive = false;
+
+  // Sanity-check the fixture still exists and has not been recorded meanwhile.
+  auto existing = GetDB()->Query("SELECT id FROM calendar WHERE id = " +
+                                 int_to_str(fixture.calendarID));
+  if (existing->data.empty()) {
+    return false;
+  }
+  auto played = GetDB()->Query("SELECT id FROM match_results WHERE calendar_id = " +
+                               int_to_str(fixture.calendarID) + " AND played = 1");
+  if (!played->data.empty()) {
+    return false;
+  }
+
+  LeagueRecordResult(fixture, homeGoals, awayGoals);
+  LeagueResolveMatchday(fixture.date);
+  return true;
+}
+
+bool LeagueSeasonComplete() {
+  auto result = GetDB()->Query(
+      "SELECT COUNT(*) FROM calendar c "
+      "WHERE c.id NOT IN (SELECT calendar_id FROM match_results WHERE played = 1)");
+  if (result->data.empty() || result->data.at(0).empty()) {
+    return false;
+  }
+  return atoi(result->data.at(0).at(0).c_str()) == 0;
+}
+
+bool LeagueAdvanceSeason() {
+  auto result = GetDB()->Query("SELECT seasonyear FROM settings LIMIT 1");
+  if (result->data.empty() || result->data.at(0).empty()) {
+    return false;
+  }
+  int newYear = atoi(result->data.at(0).at(0).c_str()) + 1;
+  std::string startDate = int_to_str(newYear) + "-06-01";
+
+  // The standings are recomputed from match_results, so a new season must
+  // start with a clean results sheet.
+  GetDB()->Query("DELETE FROM match_results");
+  GetDB()->Query("DELETE FROM calendar");
+  GetDB()->Query("UPDATE settings SET seasonyear = " + int_to_str(newYear) + ", timestamp = date('" +
+                 startDate + "')");
+  g_lastMatchdayDate.clear();
+  GenerateSeasonCalendars();
+  GetDB()->Query(
+      "INSERT INTO inbox_messages (sender, subject, body) VALUES "
+      "('League Office', 'New season begins', 'A new season is underway! The calendar has been "
+      "regenerated and the standings reset. Good luck this year.')");
+  return true;
+}
+
+bool LeagueSaveToSlot(int slotIndex) {
+  if (slotIndex < 1 || slotIndex > kLeagueMaxSaveSlots) {
+    return false;
+  }
+  namespace fs = std::filesystem;
+  fs::path dest("saves");
+  dest /= GetActiveSaveDirectory();
+  std::error_code error;
+  fs::copy_file(fs::path("saves") / GetActiveSaveDirectory() / "autosave.sqlite",
+                dest / ("slot_" + int_to_str(slotIndex) + ".sqlite"),
+                fs::copy_options::overwrite_existing, error);
+  return !error;
+}
+
+bool LeagueLoadSlot(int slotIndex) {
+  if (slotIndex < 1 || slotIndex > kLeagueMaxSaveSlots) {
+    return false;
+  }
+  namespace fs = std::filesystem;
+  fs::path slotFile = fs::path("saves") / GetActiveSaveDirectory() /
+                      ("slot_" + int_to_str(slotIndex) + ".sqlite");
+  if (!fs::exists(slotFile)) {
+    return false;
+  }
+
+  // The loaded slot becomes the new live autosave.
+  fs::path autosave = fs::path("saves") / GetActiveSaveDirectory() / "autosave.sqlite";
+  std::error_code error;
+  fs::copy_file(slotFile, autosave, fs::copy_options::overwrite_existing, error);
+  if (error) {
+    return false;
+  }
+  return GetDB()->Load(autosave.string());
+}
+
+int LeagueGetSlotCount() {
+  namespace fs = std::filesystem;
+  fs::path saveDir = fs::path("saves") / GetActiveSaveDirectory();
+  int count = 0;
+  for (int i = 1; i <= kLeagueMaxSaveSlots; i++) {
+    if (fs::exists(saveDir / ("slot_" + int_to_str(i) + ".sqlite"))) {
+      count = i;  // highest occupied slot
+    }
+  }
+  return count;
 }

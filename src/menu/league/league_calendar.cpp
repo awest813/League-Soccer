@@ -4,12 +4,14 @@
 #include <cstdlib>
 #include <functional>
 
+#include "../../league/leaguecode.hpp"
 #include "../../main.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
 #include "menu_smoke.hpp"
 #include "utils/gui2/widgets/dialog.hpp"
 #include "utils/gui2/widgets/text.hpp"
+#include "utils/localization.hpp"
 
 LeagueCalendarPage::LeagueCalendarPage(Gui2WindowManager* windowManager,
                                        const Gui2PageData& pageData)
@@ -18,17 +20,21 @@ LeagueCalendarPage::LeagueCalendarPage(Gui2WindowManager* windowManager,
       fixturesGrid(nullptr),
       pageCreatedTime_ms(league_menu_smoke::Now_ms()),
       autoAdvanceTriggered(false) {
+  auto& loc = Localization::GetInstance();
+
   frame = new Gui2Frame(windowManager, "frame_league_cal", 15, 5, 70, 90, true);
   this->AddView(frame);
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_calendar", 2, 2, 66, 3, "Calendar / Fixtures");
+      new Gui2Caption(windowManager, "caption_league_calendar", 2, 2, 66, 3,
+                      loc.Translate("league_calendar"));
   frame->AddView(title);
   title->Show();
 
   Gui2Caption* filterLabel =
-      new Gui2Caption(windowManager, "caption_cal_filter", 2, 6, 20, 2.5, "Filter by League:");
+      new Gui2Caption(windowManager, "caption_cal_filter", 2, 6, 20, 2.5,
+                      loc.Translate("league_calendar_filter"));
   frame->AddView(filterLabel);
   filterLabel->Show();
 
@@ -80,7 +86,9 @@ void LeagueCalendarPage::RefreshFixtures() {
   }
 
   std::string query =
-      "SELECT c.id, c.timestamp, t1.name, t2.name, l.name "
+      "SELECT c.id, c.timestamp, t1.name, t2.name, l.name, "
+      "(c.team1_id = (SELECT team_id FROM settings) OR "
+      " c.team2_id = (SELECT team_id FROM settings)) AS mine "
       "FROM calendar c "
       "JOIN teams t1 ON c.team1_id = t1.id "
       "JOIN teams t2 ON c.team2_id = t2.id "
@@ -93,7 +101,7 @@ void LeagueCalendarPage::RefreshFixtures() {
   auto result = GetDB()->Query(query);
   fixturesHeader =
       new Gui2Caption(windowManager, "caption_cal_header", 2, 10, 66, 2,
-                      "Date              | Home                | Away                | League");
+                      Localization::GetInstance().Translate("league_calendar_header"));
   frame->AddView(fixturesHeader);
   fixturesHeader->Show();
 
@@ -106,64 +114,30 @@ void LeagueCalendarPage::RefreshFixtures() {
              r.at(3).c_str(), r.at(4).c_str());
     std::string homeTeam = r.at(2);
     std::string awayTeam = r.at(3);
+    const bool isUserFixture = (r.size() > 5 && r.at(5) == "1");
     Gui2Button* btn =
         new Gui2Button(windowManager, "btn_fixture_" + std::to_string(row), 0, 0, 65, 2.5, buf);
+    if (isUserFixture) {
+      btn->SetColor(Vector3(250, 210, 60));
+    }
     btn->sig_OnClick.connect([this, calID, homeTeam, awayTeam](...) {
       Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_fixture", 25, 25, 50, 50,
                                        homeTeam + " vs " + awayTeam);
       Gui2Text* txt = new Gui2Text(windowManager, "text_fixture", 5, 5, 90, 70, 2.5, 40, "");
       txt->AddText(homeTeam + " vs " + awayTeam);
       txt->AddEmptyLine();
-      txt->AddText("Simulate this match to generate a result?");
+      txt->AddText(Localization::GetInstance().Translate("league_simulate_prompt"));
       dlg->AddContent(txt);
 
-      (dlg->AddSingleButton("Simulate"))->SetFocus();
-      dlg->sig_OnPositive.connect([this, dlg, calID, homeTeam, awayTeam](...) {
-        // Strength-aware result: the league stores no explicit ratings, so
-        // derive a stable rating from each team's name and give the home side
-        // an edge. Fixtures are no longer pure coin-flips.
-        auto teamRating = [](const std::string& name) {
-          return 50 + static_cast<int>(std::hash<std::string>{}(name) % 41);  // 50..90
-        };
-        auto sampleGoals = [](int attack, int defense) {
-          float expected =
-              1.35f * static_cast<float>(attack) / static_cast<float>(std::max(1, defense));
-          int goals = static_cast<int>(expected);
-          float frac = expected - static_cast<float>(goals);
-          // Stochastic rounding keeps the expected goal average honest.
-          if ((rand() % 1000) / 1000.0f < frac)
-            goals += 1;
-          // Occasional flair for the odd extra goal.
-          if (rand() % 100 < 15)
-            goals += rand() % 2;
-          return std::max(0, std::min(6, goals));
-        };
-        int homeRating = teamRating(homeTeam) + 6;  // home advantage
-        int awayRating = teamRating(awayTeam);
-        int goals1 = sampleGoals(homeRating, awayRating);
-        int goals2 = sampleGoals(awayRating, homeRating);
-        auto calRow = GetDB()->Query(
-            "SELECT team1_id, team2_id, competition_id FROM calendar WHERE id = " + calID);
-        if (!calRow->data.empty()) {
-          std::string t1 = calRow->data.at(0).at(0);
-          std::string t2 = calRow->data.at(0).at(1);
-          std::string comp = calRow->data.at(0).at(2);
-          GetDB()->Query(
-              "INSERT INTO match_results (calendar_id, team1_id, team2_id, team1_goals, "
-              "team2_goals, played, competition_id) "
-              "VALUES (" +
-              calID + ", " + t1 + ", " + t2 + ", " + std::to_string(goals1) + ", " +
-              std::to_string(goals2) + ", 1, " + comp + ")");
-
-          std::string resultStr = homeTeam + " " + std::to_string(goals1) + " - " +
-                                  std::to_string(goals2) + " " + awayTeam;
-          GetDB()->Query(
-              "INSERT INTO inbox_messages (sender, subject, body) VALUES "
-              "('Match Reporter', 'Match Result: " +
-              resultStr +
-              "', "
-              "'Full-time: " +
-              resultStr + ". Check the Standings page for updated league tables.')");
+      (dlg->AddSingleButton(Localization::GetInstance().Translate("league_simulate")))
+          ->SetFocus();
+      dlg->sig_OnPositive.connect([this, dlg, calID](...) {
+        LeagueFixtureInfo fixture;
+        if (LeagueGetFixtureByCalendarID(atoi(calID.c_str()), fixture)) {
+          int goals1 = 0;
+          int goals2 = 0;
+          LeagueSimulateFixture(fixture, goals1, goals2);
+          LeagueRecordResult(fixture, goals1, goals2);
         }
         dlg->Exit();
         delete dlg;
@@ -176,7 +150,8 @@ void LeagueCalendarPage::RefreshFixtures() {
   }
   // Back lives in the same grid so keyboard/gamepad can reach it too.
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_cal_back", 0, 0, 65, 2.5, "Back to Dashboard");
+      new Gui2Button(windowManager, "btn_cal_back", 0, 0, 65, 2.5,
+                     Localization::GetInstance().Translate("league_back_dashboard"));
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   fixturesGrid->AddView(btnBack, row, 0);
 

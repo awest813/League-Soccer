@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "../../league/leaguecode.hpp"
 #include "../../main.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
@@ -164,7 +165,7 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
   header->Show();
 
   auto result = GetDB()->Query(
-      "SELECT p.firstname, p.lastname, p.role, p.age FROM players p "
+      "SELECT p.id, p.firstname, p.lastname, p.role, p.age FROM players p "
       "JOIN teams t ON p.team_id = t.id JOIN settings s ON t.id = s.team_id "
       "ORDER BY p.formationorder");
 
@@ -172,39 +173,43 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
   int row = 0;
   if (!result->data.empty()) {
     for (const auto& r : result->data) {
-      std::string fullName = r.at(0) + " " + r.at(1);
+      std::string playerID = r.at(0);
+      std::string fullName = r.at(1) + " " + r.at(2);
       char buf[256];
-      snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s", fullName.c_str(), r.at(2).c_str(),
-               r.at(3).c_str());
+      snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s", fullName.c_str(), r.at(3).c_str(),
+               r.at(4).c_str());
       std::string btnLabel(buf);
-      Gui2Button* btn = new Gui2Button(windowManager, "btn_contract_" + std::to_string(row), 0, 0,
-                                       65, 2.5, btnLabel);
-      btn->sig_OnClick.connect([this, windowManager, fullName](...) {
+      Gui2Button* btn = new Gui2Button(windowManager, "btn_contract_" + playerID, 0, 0, 65, 2.5,
+                                       btnLabel);
+      btn->sig_OnClick.connect([this, windowManager, playerID, fullName](...) {
         auto detail = GetDB()->Query(
-            "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
-            "FROM players p JOIN teams t ON p.team_id = t.id "
-            "JOIN settings s ON t.id = s.team_id "
-            "WHERE p.firstname || ' ' || p.lastname = '" +
-            fullName + "' LIMIT 1");
+            "SELECT p.role, p.age, p.base_stat FROM players WHERE id = " + playerID);
         Gui2Dialog* dlg =
-            new Gui2Dialog(windowManager, "dialog_contract_detail", 25, 20, 50, 60, fullName);
+            new Gui2Dialog(windowManager, "dialog_contract_detail", 25, 20, 50, 50, fullName);
         if (!detail->data.empty()) {
           Gui2Text* txt =
               new Gui2Text(windowManager, "text_contract_detail", 5, 5, 90, 80, 2.5, 40, "");
           const auto& d = detail->data.at(0);
-          txt->AddText("Name: " + d.at(0) + " " + d.at(1));
-          txt->AddText("Role: " + d.at(2));
-          txt->AddText("Age: " + d.at(3));
-          txt->AddText("Base Stat: " + d.at(4));
-          txt->AddText("Team: " + d.at(5));
+          txt->AddText("Name: " + fullName);
+          txt->AddText("Role: " + d.at(0));
+          txt->AddText("Age: " + d.at(1));
+          txt->AddText("Base Stat: " + d.at(2));
           txt->AddEmptyLine();
-          txt->AddText("Contract management features coming soon.");
+          txt->AddText(Localization::GetInstance().Translate("league_release_hint"));
           dlg->AddContent(txt);
         }
-        (dlg->AddSingleButton("Close"))->SetFocus();
+        Gui2Button* btnClose = dlg->AddPosNegButtons(
+            Localization::GetInstance().Translate("league_inbox_close"),
+            Localization::GetInstance().Translate("league_release"));
+        btnClose->SetFocus();
         dlg->sig_OnPositive.connect([this, dlg](...) {
           dlg->Exit();
           delete dlg;
+        });
+        dlg->sig_OnNegative.connect([this, dlg, playerID, fullName](...) {
+          dlg->Exit();
+          delete dlg;
+          ReleasePlayer(atoi(playerID.c_str()), fullName);
         });
         this->AddView(dlg);
         dlg->Show();
@@ -240,6 +245,54 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
 
 LeagueManagementContractsPage::~LeagueManagementContractsPage() {}
 
+void LeagueManagementContractsPage::ReleasePlayer(int playerID, const std::string& fullName) {
+  auto& loc = Localization::GetInstance();
+
+  auto squad = GetDB()->Query(
+      "SELECT COUNT(*) FROM players WHERE team_id = (SELECT team_id FROM settings LIMIT 1)");
+  int squadSize = squad->data.empty() ? 0 : atoi(squad->data.at(0).at(0).c_str());
+  if (squadSize <= kLeagueSquadMinSize) {
+    Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_release_toosmall", 25, 30, 50, 25,
+                                     loc.TranslateAndFormat("league_release_too_small",
+                                                            {int_to_str(kLeagueSquadMinSize)}));
+    (dlg->AddSingleButton(loc.Translate("league_inbox_close")))->SetFocus();
+    dlg->sig_OnPositive.connect([this, dlg](...) {
+      dlg->Exit();
+      delete dlg;
+    });
+    this->AddView(dlg);
+    dlg->Show();
+    return;
+  }
+
+  Gui2Dialog* dlg = new Gui2Dialog(
+      windowManager, "dialog_release_confirm", 25, 30, 50, 25,
+      loc.TranslateAndFormat("league_release_confirm", {fullName}));
+  (dlg->AddPosNegButtons(loc.Translate("league_yes"), loc.Translate("league_no")))->SetFocus();
+  dlg->sig_OnPositive.connect([this, dlg, playerID, fullName](...) {
+    dlg->Exit();
+    delete dlg;
+    GetDB()->Query(
+        "UPDATE players SET team_id = 0, formationorder = 99 WHERE id = " + int_to_str(playerID));
+    GetDB()->Query(
+        "INSERT INTO inbox_messages (sender, subject, body) VALUES "
+        "('Board Office', 'Player released', '" +
+        fullName + " has left the club.')");
+    // Recreate the page so the squad list reflects the departure.
+    this->Exit();
+    Properties properties;
+    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management_Contracts),
+                                                properties, 0);
+    delete this;
+  });
+  dlg->sig_OnNegative.connect([this, dlg](...) {
+    dlg->Exit();
+    delete dlg;
+  });
+  this->AddView(dlg);
+  dlg->Show();
+}
+
 void LeagueManagementContractsPage::Process() {
   Gui2Page::Process();
 
@@ -272,9 +325,10 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
   header->Show();
 
   auto result = GetDB()->Query(
-      "SELECT p.id, p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
-      "FROM players p JOIN teams t ON p.team_id = t.id "
-      "WHERE t.id != (SELECT team_id FROM settings LIMIT 1) "
+      "SELECT p.id, p.firstname, p.lastname, p.role, p.age, p.base_stat, "
+      "COALESCE(t.name, '(FA)') "
+      "FROM players p LEFT JOIN teams t ON p.team_id = t.id "
+      "WHERE p.team_id != (SELECT team_id FROM settings LIMIT 1) "
       "ORDER BY p.base_stat DESC LIMIT 20");
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_transfers", 2, 9, 66, 75);
@@ -308,13 +362,21 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
           txt->AddText("Base Stat: " + d.at(4));
           txt->AddText("Current Team: " + d.at(5));
           txt->AddEmptyLine();
-          txt->AddText("Transfer negotiations coming soon.");
+          txt->AddText(Localization::GetInstance().Translate("league_sign_hint"));
           dlg->AddContent(txt);
         }
-        (dlg->AddSingleButton("Close"))->SetFocus();
+        Gui2Button* btnClose = dlg->AddPosNegButtons(
+            Localization::GetInstance().Translate("league_inbox_close"),
+            Localization::GetInstance().Translate("league_sign"));
+        btnClose->SetFocus();
         dlg->sig_OnPositive.connect([this, dlg](...) {
           dlg->Exit();
           delete dlg;
+        });
+        dlg->sig_OnNegative.connect([this, dlg, playerID, fullName](...) {
+          dlg->Exit();
+          delete dlg;
+          SignPlayer(atoi(playerID.c_str()), fullName);
         });
         this->AddView(dlg);
         dlg->Show();
@@ -349,3 +411,42 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
 }
 
 LeagueManagementTransfersPage::~LeagueManagementTransfersPage() {}
+
+void LeagueManagementTransfersPage::SignPlayer(int playerID, const std::string& fullName) {
+  auto& loc = Localization::GetInstance();
+
+  auto squad = GetDB()->Query(
+      "SELECT COUNT(*) FROM players WHERE team_id = (SELECT team_id FROM settings LIMIT 1)");
+  int squadSize = squad->data.empty() ? 0 : atoi(squad->data.at(0).at(0).c_str());
+  if (squadSize >= kLeagueSquadMaxSize) {
+    Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_sign_toobig", 25, 30, 50, 25,
+                                     loc.TranslateAndFormat("league_sign_too_big",
+                                                            {int_to_str(kLeagueSquadMaxSize)}));
+    (dlg->AddSingleButton(loc.Translate("league_inbox_close")))->SetFocus();
+    dlg->sig_OnPositive.connect([this, dlg](...) {
+      dlg->Exit();
+      delete dlg;
+    });
+    this->AddView(dlg);
+    dlg->Show();
+    return;
+  }
+
+  GetDB()->Query(
+      "UPDATE players SET team_id = (SELECT team_id FROM settings LIMIT 1), "
+      "formationorder = (SELECT COALESCE(MAX(formationorder), 10) + 1 FROM players "
+      "WHERE team_id = (SELECT team_id FROM settings LIMIT 1)) "
+      "WHERE id = " +
+      int_to_str(playerID));
+  GetDB()->Query(
+      "INSERT INTO inbox_messages (sender, subject, body) VALUES "
+      "('Board Office', 'New signing', '" +
+      fullName + " has joined the first team squad!')");
+
+  // Recreate the page so the market list reflects the transfer.
+  this->Exit();
+  Properties properties;
+  windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management_Transfers),
+                                              properties, 0);
+  delete this;
+}

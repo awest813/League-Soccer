@@ -7,6 +7,7 @@
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
 #include "menu_smoke.hpp"
+#include "utils/localization.hpp"
 
 namespace {
 
@@ -25,6 +26,8 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
     : Gui2Page(windowManager, pageData),
       pageCreatedTime_ms(league_menu_smoke::Now_ms()),
       autoAdvanceTriggered(false) {
+  auto& loc = Localization::GetInstance();
+
   auto result = GetDB()->Query("SELECT managername, timestamp FROM settings LIMIT 1");
   std::string mgrName = "Manager";
   std::string dateStr = "";
@@ -57,13 +60,14 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
     unreadMessages = SafeValue(unreadResult.get(), 0, 0, "0");
   }
 
-  std::string nextFixture = "No upcoming fixture scheduled";
+  std::string nextFixture = loc.Translate("league_no_fixture");
   auto fixtureResult = GetDB()->Query(
       "SELECT c.timestamp, t1.name, t2.name "
       "FROM calendar c "
       "JOIN teams t1 ON c.team1_id = t1.id "
       "JOIN teams t2 ON c.team2_id = t2.id "
       "JOIN settings s ON (c.team1_id = s.team_id OR c.team2_id = s.team_id) "
+      "WHERE c.id NOT IN (SELECT calendar_id FROM match_results WHERE played = 1) "
       "ORDER BY c.timestamp LIMIT 1");
   if (!fixtureResult->data.empty()) {
     nextFixture = SafeValue(fixtureResult.get(), 0, 0, "-").substr(0, 10) + "  " +
@@ -71,7 +75,7 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
                   SafeValue(fixtureResult.get(), 0, 2, "Away");
   }
 
-  std::string standingsLine = "No standings data yet";
+  std::string standingsLine = loc.Translate("league_no_standings_data");
   auto standingsResult = GetDB()->Query(
       "SELECT "
       "  SUM(CASE WHEN goals_for > goals_against THEN 3 "
@@ -85,8 +89,9 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
       "WHERE team_id = " +
       teamID);
   if (!standingsResult->data.empty()) {
-    standingsLine = SafeValue(standingsResult.get(), 0, 1, "0") + " matches played, " +
-                    SafeValue(standingsResult.get(), 0, 0, "0") + " points earned";
+    standingsLine = loc.TranslateAndFormat("league_season_pulse_body",
+                                           {SafeValue(standingsResult.get(), 0, 1, "0"),
+                                            SafeValue(standingsResult.get(), 0, 0, "0")});
   }
 
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_league_forward", 6, 5, 88, 90, true);
@@ -94,12 +99,13 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   frame->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_forward", 3, 2, 40, 3, "League Dashboard");
+      new Gui2Caption(windowManager, "caption_league_forward", 3, 2, 40, 3,
+                      loc.Translate("league_dashboard"));
   frame->AddView(title);
   title->Show();
 
   Gui2Caption* info = new Gui2Caption(windowManager, "caption_forward_info", 3, 6, 40, 2,
-                                      "Manager: " + mgrName + " | Date: " + dateStr);
+                                      loc.TranslateAndFormat("league_manager_date", {mgrName, dateStr}));
   frame->AddView(info);
   info->Show();
 
@@ -108,26 +114,49 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   navPanel->Show();
 
   Gui2Caption* navTitle =
-      new Gui2Caption(windowManager, "caption_forward_nav_title", 2, 2, 36, 2, "Club Actions");
+      new Gui2Caption(windowManager, "caption_forward_nav_title", 2, 2, 36, 2,
+                      loc.Translate("league_club_actions"));
   navPanel->AddView(navTitle);
   navTitle->Show();
 
+  Gui2Button* btnPlayMatch =
+      new Gui2Button(windowManager, "btn_forward_playmatch", 0, 0, 36, 4,
+                     loc.Translate("league_play_next_match"));
+  Gui2Button* btnAdvance =
+      new Gui2Button(windowManager, "btn_forward_advance", 0, 0, 36, 4,
+                     loc.Translate("league_advance_matchday"));
   Gui2Button* btnTeam =
-      new Gui2Button(windowManager, "btn_forward_team", 0, 0, 36, 4, "Team Management");
+      new Gui2Button(windowManager, "btn_forward_team", 0, 0, 36, 4,
+                     loc.Translate("league_team_management"));
   Gui2Button* btnCalendar =
-      new Gui2Button(windowManager, "btn_forward_calendar", 0, 0, 36, 4, "Calendar / Fixtures");
+      new Gui2Button(windowManager, "btn_forward_calendar", 0, 0, 36, 4,
+                     loc.Translate("league_calendar"));
   Gui2Button* btnStandings =
-      new Gui2Button(windowManager, "btn_forward_standings", 0, 0, 36, 4, "Standings");
+      new Gui2Button(windowManager, "btn_forward_standings", 0, 0, 36, 4,
+                     loc.Translate("league_standings"));
   Gui2Button* btnManagement =
-      new Gui2Button(windowManager, "btn_forward_management", 0, 0, 36, 4, "Management");
-  Gui2Button* btnInbox = new Gui2Button(windowManager, "btn_forward_inbox", 0, 0, 36, 4, "Inbox");
+      new Gui2Button(windowManager, "btn_forward_management", 0, 0, 36, 4,
+                     loc.Translate("league_management"));
+  Gui2Button* btnInbox =
+      new Gui2Button(windowManager, "btn_forward_inbox", 0, 0, 36, 4, loc.Translate("league_inbox"));
   Gui2Button* btnSystem =
-      new Gui2Button(windowManager, "btn_forward_system", 0, 0, 36, 4, "System");
+      new Gui2Button(windowManager, "btn_forward_system", 0, 0, 36, 4,
+                     loc.Translate("league_system"));
   Gui2Button* btnLeagueHub =
-      new Gui2Button(windowManager, "btn_forward_league", 0, 0, 36, 4, "Back to League Hub");
+      new Gui2Button(windowManager, "btn_forward_league", 0, 0, 36, 4,
+                     loc.Translate("league_back_hub"));
   Gui2Button* btnMainMenu =
-      new Gui2Button(windowManager, "btn_forward_mainmenu", 0, 0, 36, 4, "Return to Main Menu");
+      new Gui2Button(windowManager, "btn_forward_mainmenu", 0, 0, 36, 4,
+                     loc.Translate("league_return_main_menu"));
 
+  btnPlayMatch->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_PreMatch); });
+  btnAdvance->sig_OnClick.connect([this](...) {
+    std::string matchdayDate;
+    if (LeagueGetNextMatchdayDate(matchdayDate)) {
+      LeagueResolveMatchday(matchdayDate);
+    }
+    GoPage(e_PageID_League_Matchday);
+  });
   btnTeam->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Team); });
   btnCalendar->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Calendar); });
   btnStandings->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_Standings); });
@@ -138,14 +167,16 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   btnMainMenu->sig_OnClick.connect([this](...) { GoMainMenu(); });
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_forward", 2, 7, 36, 60);
-  grid->AddView(btnTeam, 0, 0);
-  grid->AddView(btnCalendar, 1, 0);
-  grid->AddView(btnStandings, 2, 0);
-  grid->AddView(btnManagement, 3, 0);
-  grid->AddView(btnInbox, 4, 0);
-  grid->AddView(btnSystem, 5, 0);
-  grid->AddView(btnLeagueHub, 6, 0);
-  grid->AddView(btnMainMenu, 7, 0);
+  grid->AddView(btnPlayMatch, 0, 0);
+  grid->AddView(btnAdvance, 1, 0);
+  grid->AddView(btnTeam, 2, 0);
+  grid->AddView(btnCalendar, 3, 0);
+  grid->AddView(btnStandings, 4, 0);
+  grid->AddView(btnManagement, 5, 0);
+  grid->AddView(btnInbox, 6, 0);
+  grid->AddView(btnSystem, 7, 0);
+  grid->AddView(btnLeagueHub, 8, 0);
+  grid->AddView(btnMainMenu, 9, 0);
   grid->UpdateLayout(0.25, 0.25, 0.3, 0.3);
   navPanel->AddView(grid);
   grid->Show();
@@ -155,13 +186,26 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   clubPanel->Show();
 
   Gui2Caption* clubTitle =
-      new Gui2Caption(windowManager, "caption_forward_club_title", 2, 2, 32, 2, "Club Snapshot");
+      new Gui2Caption(windowManager, "caption_forward_club_title", 2, 2, 32, 2,
+                      loc.Translate("league_club_snapshot"));
   clubPanel->AddView(clubTitle);
   clubTitle->Show();
 
-  Gui2Caption* clubBody =
-      new Gui2Caption(windowManager, "caption_forward_club_body", 2, 6, 32, 10,
-                      teamName + "\n" + leagueName + "\n" + squadSize + " registered players");
+  // Club crest beside the snapshot text.
+  Gui2Image* clubLogo =
+      new Gui2Image(windowManager, "image_forward_club_logo", 25, 6.5f, 9,
+                    windowManager->GetHeightPercentForWidth(9, 1.0f));
+  clubPanel->AddView(clubLogo);
+  {
+    std::string logoPath = LeagueResolveLogoPath(atoi(teamID.c_str()));
+    clubLogo->LoadImage(logoPath.empty() ? "media/menu/league.png" : logoPath);
+  }
+  clubLogo->Show();
+
+  Gui2Caption* clubBody = new Gui2Caption(
+      windowManager, "caption_forward_club_body", 2, 6, 22, 10,
+      teamName + "\n" + leagueName + "\n" +
+          loc.TranslateAndFormat("league_players_registered", {squadSize}));
   clubPanel->AddView(clubBody);
   clubBody->Show();
 
@@ -171,12 +215,15 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   seasonPanel->Show();
 
   Gui2Caption* seasonTitle =
-      new Gui2Caption(windowManager, "caption_forward_season_title", 2, 2, 32, 2, "Season Pulse");
+      new Gui2Caption(windowManager, "caption_forward_season_title", 2, 2, 32, 2,
+                      loc.Translate("league_season_pulse"));
   seasonPanel->AddView(seasonTitle);
   seasonTitle->Show();
 
-  Gui2Caption* seasonBody = new Gui2Caption(windowManager, "caption_forward_season_body", 2, 6, 32,
-                                            8, standingsLine + "\nUnread inbox: " + unreadMessages);
+  Gui2Caption* seasonBody =
+      new Gui2Caption(windowManager, "caption_forward_season_body", 2, 6, 32, 8,
+                      standingsLine + "\n" + loc.TranslateAndFormat("league_unread_inbox",
+                                                                   {unreadMessages}));
   seasonPanel->AddView(seasonBody);
   seasonBody->Show();
 
@@ -186,7 +233,8 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   fixturePanel->Show();
 
   Gui2Caption* fixtureTitle =
-      new Gui2Caption(windowManager, "caption_forward_fixture_title", 2, 2, 32, 2, "Next Fixture");
+      new Gui2Caption(windowManager, "caption_forward_fixture_title", 2, 2, 32, 2,
+                      loc.Translate("league_next_fixture"));
   fixturePanel->AddView(fixtureTitle);
   fixtureTitle->Show();
 
@@ -195,7 +243,7 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   fixturePanel->AddView(fixtureBody);
   fixtureBody->Show();
 
-  btnTeam->SetFocus();
+  btnPlayMatch->SetFocus();
   this->Show();
 }
 
@@ -222,7 +270,7 @@ void LeagueForwardPage::Process() {
     GoPage(e_PageID_League_Calendar);
   } else if (league_menu_smoke::RouteEnabled("standings_table")) {
     printf("[menu-smoke] League dashboard opening Standings\n");
-    GoPage(e_PageID_League_Standings);
+    GoPage(e_PageID_League_Standings_League_Table);
   } else if (league_menu_smoke::RouteEnabled("team_overview")) {
     printf("[menu-smoke] League dashboard opening Team Management\n");
     GoPage(e_PageID_League_Team);
@@ -235,6 +283,16 @@ void LeagueForwardPage::Process() {
   } else if (league_menu_smoke::RouteEnabled("system_settings")) {
     printf("[menu-smoke] League dashboard opening System\n");
     GoPage(e_PageID_League_System);
+  } else if (league_menu_smoke::RouteEnabled("prematch")) {
+    printf("[menu-smoke] League dashboard opening pre-match screen\n");
+    GoPage(e_PageID_League_PreMatch);
+  } else if (league_menu_smoke::RouteEnabled("matchday")) {
+    printf("[menu-smoke] League dashboard advancing to next matchday\n");
+    std::string matchdayDate;
+    if (LeagueGetNextMatchdayDate(matchdayDate)) {
+      LeagueResolveMatchday(matchdayDate);
+    }
+    GoPage(e_PageID_League_Matchday);
   } else {
     printf("[menu-smoke] League dashboard route '%s' is unsupported\n",
            league_menu_smoke::GetRoute().c_str());
@@ -251,6 +309,7 @@ void LeagueForwardPage::GoPage(e_PageID pageID) {
 
 void LeagueForwardPage::GoMainMenu() {
   SaveAutosaveToDatabase();
+  LeagueClearPendingFixture();
 
   this->Exit();
   Properties properties;

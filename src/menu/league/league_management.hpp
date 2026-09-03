@@ -33,6 +33,8 @@ public:
   virtual void Process();
 
 protected:
+  void ReleasePlayer(int playerID, const std::string& fullName);
+
   unsigned long pageCreatedTime_ms;
   bool autoAdvanceTriggered;
 };
@@ -43,6 +45,7 @@ public:
   virtual ~LeagueManagementTransfersPage();
 
 protected:
+  void SignPlayer(int playerID, const std::string& fullName);
 };
 
 #endif

@@ -508,6 +508,8 @@ set(MENU_HEADERS
    src/menu/league/league_system.hpp
    src/menu/league/league_inbox.hpp
    src/menu/league/league_forward.hpp
+   src/menu/league/league_prematch.hpp
+   src/menu/league/league_matchday.hpp
    src/menu/gameplan.hpp
    src/menu/cameramenu.hpp
    src/menu/pagefactory.hpp
@@ -558,6 +560,8 @@ set(MENU_SOURCES
    src/menu/league/league_calendar.cpp
    src/menu/league/league_inbox.cpp
    src/menu/league/league_forward.cpp
+   src/menu/league/league_prematch.cpp
+   src/menu/league/league_matchday.cpp
    src/menu/league/league_standings.cpp
    src/menu/gameplan.cpp
    src/menu/widgets/planmap.cpp

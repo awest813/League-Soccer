@@ -4,6 +4,7 @@
 #include "utils/gui2/page.hpp"
 #include "utils/gui2/widgets/button.hpp"
 #include "utils/gui2/widgets/caption.hpp"
+#include "utils/gui2/widgets/dialog.hpp"
 #include "utils/gui2/widgets/editline.hpp"
 #include "utils/gui2/widgets/frame.hpp"
 #include "utils/gui2/widgets/grid.hpp"
@@ -33,6 +34,15 @@ public:
   virtual ~LeagueSystemSavePage();
 
 protected:
+  void RefreshSlots();
+  void SaveToSlot(int slotIndex);
+  void LoadSlot(int slotIndex);
+  void DeleteSlot(int slotIndex);
+  void SetFeedback(const std::string& message);
+
+  Gui2Frame* frame;
+  Gui2Caption* feedbackCaption;
+  Gui2Grid* slotsGrid;
 };
 
 class LeagueSystemSettingsPage : public Gui2Page {
