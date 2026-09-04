@@ -22,6 +22,7 @@ int ClampInt(int value, int minValue, int maxValue);
 int SafeStoi(const std::string& s, int fallback = 0);
 long long SafeStoll(const std::string& s, long long fallback = 0);
 float SafeStof(const std::string& s, float fallback = 0.0f);
+std::string FormatCareerMoney(long long amount);
 
 // Splits a '|'-delimited record (empty fields preserved) and strips the field
 // separator / newlines from free-text so it cannot corrupt the text format.
@@ -45,6 +46,7 @@ public:
 };
 
 }  // namespace CareerCommon
+using CareerCommon::FormatCareerMoney;
 }  // namespace blunted
 
 #endif  // CAREER_COMMON_HPP

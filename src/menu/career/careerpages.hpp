@@ -60,6 +60,7 @@ public:
   virtual ~CareerHubPage();
 
 protected:
+  void GoStandings();
   void GoTransferMarket();
   void GoSquad();
   void GoPressConference();
@@ -229,6 +230,7 @@ protected:
   Gui2Caption* summaryCaption;
   std::vector<Gui2Caption*> fixtureScoreCaps;
   std::vector<std::string> m_opponents;
+  std::vector<int> m_opponentDBIDs;
   std::vector<bool> m_isHome;
   std::vector<SimulatedMatch> m_results;
   int m_week;

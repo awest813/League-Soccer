@@ -47,14 +47,16 @@ void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save) {
   int facilityBonus = 0;
   if (save != nullptr) {
     for (const auto& upgrade : save->stadium.upgrades) {
-      if (upgrade.name == "Training Complex") facilityBonus += 15;
-      if (upgrade.name == "Youth Academy") facilityBonus += 25;
+      if (upgrade.name == "Training Complex")
+        facilityBonus += 15;
+      if (upgrade.name == "Youth Academy")
+        facilityBonus += 25;
     }
   }
 
   if (player.ovr < player.pot) {
     int formBonus = (player.matchForm >= 80) ? 20 : ((player.matchForm >= 60) ? 5 : 0);
-    int playBonus = std::min(30, player.matchesPlayed); // up to 30% bonus for playing games
+    int playBonus = std::min(30, player.matchesPlayed);  // up to 30% bonus for playing games
 
     int growthChance = 0;
     if (player.age <= 21)
@@ -68,16 +70,19 @@ void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save) {
     for (int i = 0; i < 3; i++) {
       if (RandomInt(1, 100) <= growthChance) {
         growthPoints++;
-        growthChance /= 2; // diminishing returns
+        growthChance /= 2;  // diminishing returns
       }
     }
   } else if (player.age >= 30) {
     // Decline logic
-    int declineChance = (player.age - 29) * 15; // 30=15%, 33=60%
-    if (player.fitness < 70) declineChance += 10;
-    if (player.fitness < 50) declineChance += 15; // bad fitness accelerates decline
-    if (player.matchesPlayed == 0) declineChance += 10;
-    
+    int declineChance = (player.age - 29) * 15;  // 30=15%, 33=60%
+    if (player.fitness < 70)
+      declineChance += 10;
+    if (player.fitness < 50)
+      declineChance += 15;  // bad fitness accelerates decline
+    if (player.matchesPlayed == 0)
+      declineChance += 10;
+
     // Better facilities slightly stave off decline
     declineChance -= (facilityBonus / 4);
     declineChance = std::max(5, declineChance);
@@ -92,8 +97,8 @@ void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save) {
 
   player.ovr = std::min(99, std::max(1, player.ovr + growthPoints));
   player.morale = std::min(100, std::max(0, player.morale + RandomInt(-10, 10)));
-  player.fitness = 100; // Reset fitness for new season
-  player.matchForm = 50; // Reset form
+  player.fitness = 100;   // Reset fitness for new season
+  player.matchForm = 50;  // Reset form
 }
 
 void UpdatePlayerValue(PlayerCareerState& player) {
@@ -218,10 +223,9 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
   result.awayGoals = ClampInt(expectedAwayGoals, 0, 7);
   result.homeShots = result.homeGoals + RandomInt(2, 8);
   result.awayShots = result.awayGoals + RandomInt(2, 8);
-  result.homePossession = ClampInt(50 + (teamOVR - opponentOVR) + RandomInt(-5, 5) +
-                                       stratPossessionDelta +
-                                       (isHome ? 3 : -3),
-                                   30, 70);
+  result.homePossession = ClampInt(
+      50 + (teamOVR - opponentOVR) + RandomInt(-5, 5) + stratPossessionDelta + (isHome ? 3 : -3),
+      30, 70);
   result.played = true;
 
   int rosterSize = static_cast<int>(save.roster.size());
@@ -233,25 +237,32 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
   int totalWeight = 0;
   for (int i = 0; i < rosterSize; i++) {
     const std::string& pos = save.roster[i].preferredPosition;
-    if (pos == "ST" || pos == "CF") weights[i] = 25;
-    else if (pos == "AM" || pos == "LW" || pos == "RW" || pos == "LM" || pos == "RM") weights[i] = 10;
-    else if (pos == "CM" || pos == "WM") weights[i] = 4;
-    else if (pos == "DM" || pos == "LB" || pos == "RB" || pos == "CB") weights[i] = 1;
-    else if (pos == "GK") weights[i] = 0;
-    
+    if (pos == "ST" || pos == "CF")
+      weights[i] = 25;
+    else if (pos == "AM" || pos == "LW" || pos == "RW" || pos == "LM" || pos == "RM")
+      weights[i] = 10;
+    else if (pos == "CM" || pos == "WM")
+      weights[i] = 4;
+    else if (pos == "DM" || pos == "LB" || pos == "RB" || pos == "CB")
+      weights[i] = 1;
+    else if (pos == "GK")
+      weights[i] = 0;
+
     // Boost based on form/OVR relative to squad
-    if (save.roster[i].ovr >= teamOVR + 3) weights[i] += 3;
-    if (save.roster[i].matchForm >= 80) weights[i] += 2;
-    
+    if (save.roster[i].ovr >= teamOVR + 3)
+      weights[i] += 3;
+    if (save.roster[i].matchForm >= 80)
+      weights[i] += 2;
+
     totalWeight += weights[i];
   }
 
   for (int g = 0; g < result.homeGoals; g++) {
     if (totalWeight <= 0) {
-      result.scorers.push_back(save.roster[0].name); // fallback
+      result.scorers.push_back(save.roster[0].name);  // fallback
       continue;
     }
-    
+
     int r = RandomInt(0, totalWeight - 1);
     int currentWeight = 0;
     int selectedIdx = 0;
@@ -310,42 +321,419 @@ void Process3DMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, 
   save.season.currentWeek++;
 }
 
+long long CalculateSeasonPrizeMoney(int leaguePosition) {
+  switch (leaguePosition) {
+    case 1:
+      return 35000000LL;
+    case 2:
+      return 28000000LL;
+    case 3:
+      return 22000000LL;
+    case 4:
+      return 18000000LL;
+    case 5:
+      return 15000000LL;
+    case 6:
+      return 14000000LL;
+    case 7:
+      return 13000000LL;
+    case 8:
+      return 12000000LL;
+    case 9:
+      return 11000000LL;
+    case 10:
+      return 10000000LL;
+    case 11:
+      return 9000000LL;
+    case 12:
+      return 8000000LL;
+    case 13:
+      return 7000000LL;
+    case 14:
+      return 6500000LL;
+    case 15:
+      return 6000000LL;
+    case 16:
+      return 5500000LL;
+    case 17:
+      return 5000000LL;
+    case 18:
+      return 4000000LL;
+    case 19:
+      return 3500000LL;
+    default:
+      return 3000000LL;
+  }
+}
+
+static std::vector<std::pair<int, std::string>> GetDefaultLeagueClubs(
+    const std::string& leagueName) {
+  if (leagueName == "Premier League") {
+    return {{101, "Manchester City"},
+            {102, "Arsenal"},
+            {103, "Liverpool"},
+            {104, "Aston Villa"},
+            {105, "Tottenham"},
+            {106, "Chelsea"},
+            {107, "Newcastle"},
+            {108, "Manchester United"},
+            {109, "West Ham"},
+            {110, "Brighton"},
+            {111, "Wolves"},
+            {112, "Fulham"},
+            {113, "Bournemouth"},
+            {114, "Crystal Palace"},
+            {115, "Brentford"},
+            {116, "Everton"},
+            {117, "Nottingham Forest"},
+            {118, "Luton Town"},
+            {119, "Burnley"},
+            {120, "Sheffield United"}};
+  } else if (leagueName == "La Liga") {
+    return {{201, "Real Madrid"},     {202, "FC Barcelona"},    {203, "Girona"},
+            {204, "Atletico Madrid"}, {205, "Athletic Bilbao"}, {206, "Real Sociedad"},
+            {207, "Real Betis"},      {208, "Villarreal"},      {209, "Valencia"},
+            {210, "Getafe"},          {211, "Osasuna"},         {212, "Sevilla"},
+            {213, "Mallorca"},        {214, "Las Palmas"},      {215, "Alaves"},
+            {216, "Rayo Vallecano"},  {217, "Celta Vigo"},      {218, "Cadiz"},
+            {219, "Granada"},         {220, "Almeria"}};
+  } else if (leagueName == "Bundesliga") {
+    return {{301, "Bayer Leverkusen"},
+            {302, "Bayern Munich"},
+            {303, "VfB Stuttgart"},
+            {304, "Borussia Dortmund"},
+            {305, "RB Leipzig"},
+            {306, "Eintracht Frankfurt"},
+            {307, "Hoffenheim"},
+            {308, "Freiburg"},
+            {309, "Heidenheim"},
+            {310, "Werder Bremen"},
+            {311, "Augsburg"},
+            {312, "Wolfsburg"},
+            {313, "Mainz"},
+            {314, "Borussia Monchengladbach"},
+            {315, "Union Berlin"},
+            {316, "Bochum"},
+            {317, "Koln"},
+            {318, "Darmstadt"}};
+  } else if (leagueName == "Eredivisie") {
+    return {{401, "PSV Eindhoven"},
+            {402, "Feyenoord"},
+            {403, "Twente"},
+            {404, "AZ Alkmaar"},
+            {405, "Ajax"},
+            {406, "NEC Nijmegen"},
+            {407, "Utrecht"},
+            {408, "Sparta Rotterdam"},
+            {409, "Go Ahead Eagles"},
+            {410, "Fortuna Sittard"},
+            {411, "Heerenveen"},
+            {412, "PEC Zwolle"},
+            {413, "Almere City"},
+            {414, "Heracles"},
+            {415, "Excelsior"},
+            {416, "RKC Waalwijk"},
+            {417, "Volendam"},
+            {418, "Vitesse"}};
+  }
+  // Default balanced 20-club European League
+  return {{501, "Real Madrid"},
+          {502, "Manchester City"},
+          {503, "Bayern Munich"},
+          {504, "FC Barcelona"},
+          {505, "Arsenal"},
+          {506, "Paris Saint-Germain"},
+          {507, "Liverpool"},
+          {508, "Inter Milan"},
+          {509, "Bayer Leverkusen"},
+          {510, "Atletico Madrid"},
+          {511, "Borussia Dortmund"},
+          {512, "Juventus"},
+          {513, "AC Milan"},
+          {514, "Napoli"},
+          {515, "Chelsea"},
+          {516, "Manchester United"},
+          {517, "Ajax"},
+          {518, "Benfica"},
+          {519, "Sporting CP"},
+          {520, "FC Porto"}};
+}
+
+std::vector<CareerLeagueTableRow> GenerateLeagueStandings(
+    const CareerSave& save, const std::vector<std::pair<int, std::string>>& leagueClubs) {
+  std::vector<std::pair<int, std::string>> clubs = leagueClubs;
+  if (clubs.empty()) {
+    clubs = GetDefaultLeagueClubs(save.club.leagueName);
+  }
+
+  // Ensure user team is present in clubs list
+  bool userFound = false;
+  for (const auto& c : clubs) {
+    if (c.first == save.club.clubID || c.second == save.name || c.second == save.club.clubName) {
+      userFound = true;
+      break;
+    }
+  }
+  if (!userFound) {
+    if (!clubs.empty()) {
+      clubs.back() = {save.club.clubID > 0 ? save.club.clubID : 999, save.name};
+    } else {
+      clubs.push_back({save.club.clubID > 0 ? save.club.clubID : 999, save.name});
+    }
+  }
+
+  std::vector<CareerLeagueTableRow> table;
+  table.reserve(clubs.size());
+
+  // Current games played across league
+  const int userPlayed = save.seasonWins + save.seasonDraws + save.seasonLosses;
+  const int leaguePlayed = std::min(38, std::max(userPlayed, save.season.currentWeek - 1));
+
+  for (const auto& c : clubs) {
+    const bool isUser =
+        (c.first == save.club.clubID || c.second == save.name || c.second == save.club.clubName);
+    CareerLeagueTableRow row;
+    row.teamID = c.first;
+    row.name = c.second;
+    row.isUserTeam = isUser;
+
+    if (isUser) {
+      row.played = userPlayed;
+      row.wins = save.seasonWins;
+      row.draws = save.seasonDraws;
+      row.losses = save.seasonLosses;
+      row.goalsFor = save.seasonGoalsFor;
+      row.goalsAgainst = save.seasonGoalsAgainst;
+      row.goalDiff = row.goalsFor - row.goalsAgainst;
+      row.points = row.wins * 3 + row.draws;
+
+      // Build form guide from recent win/draw/loss ratio
+      std::string formStr;
+      int remWins = row.wins;
+      int remDraws = row.draws;
+      int remLosses = row.losses;
+      for (int f = 0; f < std::min(5, row.played); ++f) {
+        if (remWins > 0) {
+          formStr += "W";
+          remWins--;
+        } else if (remDraws > 0) {
+          formStr += "D";
+          remDraws--;
+        } else if (remLosses > 0) {
+          formStr += "L";
+          remLosses--;
+        }
+      }
+      row.form = formStr.empty() ? "-" : formStr;
+    } else {
+      row.played = leaguePlayed;
+      if (leaguePlayed == 0) {
+        row.wins = 0;
+        row.draws = 0;
+        row.losses = 0;
+        row.goalsFor = 0;
+        row.goalsAgainst = 0;
+        row.goalDiff = 0;
+        row.points = 0;
+        row.form = "-";
+      } else {
+        // Deterministic rating based on club name and season
+        uint32_t seed = 0;
+        for (char ch : c.second)
+          seed = seed * 31 + static_cast<unsigned char>(ch);
+        seed += static_cast<uint32_t>(save.season.currentSeason * 1009);
+
+        // Rating roughly 55 to 88
+        int rating = 55 + (seed % 34);
+
+        // Win probability from rating: top ~62%, mid ~38%, weak ~20%
+        float winProb = 0.20f + (rating - 55) * (0.42f / 33.0f);
+        float drawProb = 0.26f - (rating - 55) * (0.06f / 33.0f);
+
+        int simWins = 0;
+        int simDraws = 0;
+        int simLosses = 0;
+        std::string formStr;
+
+        std::mt19937 rng(seed + static_cast<uint32_t>(leaguePlayed * 97));
+        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+
+        for (int m = 0; m < leaguePlayed; ++m) {
+          float roll = dist(rng);
+          char res = 'L';
+          if (roll < winProb) {
+            simWins++;
+            res = 'W';
+          } else if (roll < winProb + drawProb) {
+            simDraws++;
+            res = 'D';
+          } else {
+            simLosses++;
+            res = 'L';
+          }
+          if (m >= leaguePlayed - 5) {
+            formStr += res;
+          }
+        }
+
+        row.wins = simWins;
+        row.draws = simDraws;
+        row.losses = simLosses;
+        row.points = row.wins * 3 + row.draws;
+
+        // Goals estimation: top teams score ~1.8-2.3, concede ~0.8-1.1
+        float gfPerGame = 0.8f + (rating - 55) * (1.4f / 33.0f);
+        float gaPerGame = 1.9f - (rating - 55) * (1.1f / 33.0f);
+        row.goalsFor = std::max(
+            0, static_cast<int>(gfPerGame * leaguePlayed + (static_cast<int>(seed % 5) - 2)));
+        row.goalsAgainst = std::max(
+            0, static_cast<int>(gaPerGame * leaguePlayed + (static_cast<int>((seed / 7) % 5) - 2)));
+        row.goalDiff = row.goalsFor - row.goalsAgainst;
+        row.form = formStr.empty() ? "-" : formStr;
+      }
+    }
+    table.push_back(row);
+  }
+
+  // Sort by Points DESC, GoalDiff DESC, GoalsFor DESC, Name ASC
+  std::sort(table.begin(), table.end(),
+            [](const CareerLeagueTableRow& a, const CareerLeagueTableRow& b) {
+              if (a.points != b.points)
+                return a.points > b.points;
+              if (a.goalDiff != b.goalDiff)
+                return a.goalDiff > b.goalDiff;
+              if (a.goalsFor != b.goalsFor)
+                return a.goalsFor > b.goalsFor;
+              return a.name < b.name;
+            });
+
+  return table;
+}
+
+std::vector<CareerTopScorer> GetTopScorers(const CareerSave& save) {
+  std::vector<CareerTopScorer> scorers;
+
+  // Add user squad scorers
+  for (const auto& p : save.roster) {
+    if (p.careerGoals > 0) {
+      scorers.push_back({p.name, save.name, p.careerGoals, true});
+    }
+  }
+
+  // Add simulated stars based on league games played
+  const int userPlayed = save.seasonWins + save.seasonDraws + save.seasonLosses;
+  const int played = std::min(38, std::max(userPlayed, save.season.currentWeek - 1));
+
+  static const std::vector<std::pair<std::string, std::string>> starPlayers = {
+      {"Erling Haaland", "Manchester City"}, {"Kylian Mbappe", "Real Madrid"},
+      {"Harry Kane", "Bayern Munich"},       {"Vinicius Junior", "Real Madrid"},
+      {"Mohamed Salah", "Liverpool"},        {"Robert Lewandowski", "FC Barcelona"},
+      {"Lautaro Martinez", "Inter Milan"},   {"Bukayo Saka", "Arsenal"},
+      {"Phil Foden", "Manchester City"},     {"Jude Bellingham", "Real Madrid"}};
+
+  for (size_t i = 0; i < starPlayers.size(); ++i) {
+    uint32_t seed = static_cast<uint32_t>(i * 101 + save.season.currentSeason * 37);
+    int goals = 0;
+    if (played > 0) {
+      float goalRate = 0.55f - static_cast<float>(i) * 0.035f;
+      goals = std::max(0, static_cast<int>(goalRate * played + (static_cast<int>(seed % 5) - 2)));
+    }
+    scorers.push_back({starPlayers[i].first, starPlayers[i].second, goals, false});
+  }
+
+  std::sort(scorers.begin(), scorers.end(), [](const CareerTopScorer& a, const CareerTopScorer& b) {
+    if (a.goals != b.goals)
+      return a.goals > b.goals;
+    return a.playerName < b.playerName;
+  });
+
+  if (scorers.size() > 10) {
+    scorers.resize(10);
+  }
+
+  return scorers;
+}
+
 void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
                    std::vector<TransferBid>& bids, std::vector<TransferTarget>& targets) {
+  int userPos = EstimateLeaguePosition(save.seasonWins, save.seasonDraws, save.seasonLosses);
+
   SeasonRecord record;
   record.season = save.season.currentSeason;
   record.teamID = save.club.clubID;
-  if (save.seasonWins > 0 || save.seasonDraws > 0 || save.seasonLosses > 0) {
-    record.wins = save.seasonWins;
-    record.draws = save.seasonDraws;
-    record.losses = save.seasonLosses;
-    record.goalsFor = save.seasonGoalsFor;
-    record.goalsAgainst = save.seasonGoalsAgainst;
-  } else {
-    record.wins = RandomInt(8, 28);
-    record.draws = RandomInt(4, 12);
-    record.losses = std::max(0, 38 - record.wins - record.draws);
-    record.goalsFor = RandomInt(30, 85);
-    record.goalsAgainst = RandomInt(20, 70);
-  }
-  record.leaguePosition = EstimateLeaguePosition(record.wins, record.draws, record.losses);
-  record.wonTitle = (record.leaguePosition == 1);
+  record.wins = save.seasonWins;
+  record.draws = save.seasonDraws;
+  record.losses = save.seasonLosses;
+  record.goalsFor = save.seasonGoalsFor;
+  record.goalsAgainst = save.seasonGoalsAgainst;
+  record.leaguePosition = userPos;
+  record.wonTitle = (userPos == 1);
   save.history.push_back(record);
 
-  for (auto& player : save.roster) {
-    player.age++;
-    if (player.contract.yearsRemaining > 0)
-      player.contract.yearsRemaining--;
-    ProcessPlayerGrowth(player, &save);
-    UpdatePlayerValue(player);
-    player.matchesPlayed = 0;
-    player.careerGoals = std::max(0, player.careerGoals);
-    player.careerAssists = std::max(0, player.careerAssists);
+  // Prize money award
+  long long prizeMoney = CalculateSeasonPrizeMoney(userPos);
+  save.transferBudget += prizeMoney;
+  events.AddEvent("finance",
+                  "Season " + std::to_string(save.season.currentSeason) +
+                      " prize money awarded: EUR " + std::to_string(prizeMoney) +
+                      " for finishing #" + std::to_string(userPos),
+                  2, true);
+
+  // Title achievement and board feedback
+  if (userPos == 1) {
+    save.legacyStats["titles"]++;
+    events.AddEvent("trophy",
+                    "🏆 LEAGUE CHAMPIONS: " + save.name + " won the title in Season " +
+                        std::to_string(save.season.currentSeason) + "!",
+                    5, true);
+    events.ModifyBoardConfidence(15);
+  } else if (userPos <= 4) {
+    events.AddEvent("champions",
+                    "Qualified for Continental Cup with a #" + std::to_string(userPos) + " finish!",
+                    3, true);
+    events.ModifyBoardConfidence(8);
+  } else if (userPos >= 18) {
+    events.AddEvent("warning",
+                    "Finished in relegation danger zone (#" + std::to_string(userPos) +
+                        "). Board pressure is mounting!",
+                    -3, true);
+    events.ModifyBoardConfidence(-15);
   }
 
-  for (auto& player : save.staff) {
-    if (player.contractYearsRemaining > 0)
-      player.contractYearsRemaining--;
+  // Contract expirations & renewals
+  std::vector<std::string> departedPlayers;
+  for (auto it = save.roster.begin(); it != save.roster.end();) {
+    it->age++;
+    if (it->contract.yearsRemaining > 0)
+      it->contract.yearsRemaining--;
+    ProcessPlayerGrowth(*it, &save);
+    UpdatePlayerValue(*it);
+    it->matchesPlayed = 0;
+
+    if (it->contract.yearsRemaining <= 0) {
+      if (save.roster.size() > 14) {
+        departedPlayers.push_back(it->name);
+        PlayerCareerState fa = *it;
+        fa.contract.yearsRemaining = 0;
+        save.freeAgents.push_back(fa);
+        it = save.roster.erase(it);
+        continue;
+      } else {
+        // Automatic emergency extension if squad would fall below minimum 14
+        it->contract.yearsRemaining = 1;
+        it->wage = it->wage * 105 / 100;
+      }
+    }
+    ++it;
+  }
+  for (const auto& name : departedPlayers) {
+    events.AddEvent("contract", "Contract expired: " + name + " departed on free transfer.", -1,
+                    false);
+  }
+
+  for (auto& member : save.staff) {
+    if (member.contractYearsRemaining > 0)
+      member.contractYearsRemaining--;
   }
   save.staff.erase(
       std::remove_if(save.staff.begin(), save.staff.end(),

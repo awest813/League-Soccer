@@ -81,6 +81,8 @@ enum e_PageID {
   e_PageID_CareerSquadRoster,
   e_PageID_CareerSeason,
   e_PageID_CareerMatchday,
+  e_PageID_CareerSave,
+  e_PageID_CareerStandings,
 
   e_PageID_OwnerHub,
   e_PageID_OwnerStadium,

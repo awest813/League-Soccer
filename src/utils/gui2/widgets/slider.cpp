@@ -136,7 +136,7 @@ void Gui2Slider::Redraw() {
   // Helper value markers (e.g. factory default ticks)
   for (unsigned int i = 0; i < helperValues.size(); i++) {
     float helperVal = helperValues.at(i).value;
-    int tickX = trackX + int(round(helperVal * trackW)) - 1; // Center tick of width 2
+    int tickX = trackX + int(round(helperVal * trackW)) - 1;  // Center tick of width 2
     Vector3 helperCol = helperValues.at(i).color;
     image->DrawRectangle(tickX, trackY - 2, 2, trackH + 4, helperCol, 255);
   }
@@ -206,26 +206,34 @@ void Gui2Slider::ProcessWindowingEvent(WindowingEvent* event) {
     if (!fullStep) {
       value += xoffset * 0.01f;
     } else {
-      value += xoffset * (1.0f / (quantizationSteps - 1.0f));
+      value += (xoffset > 0 ? 1.0f : -1.0f) * (1.0f / (quantizationSteps - 1.0f));
     }
-    if (value > 1.0f)
-      value = 1.0f;
-    if (value < 0.0f)
-      value = 0.0f;
+    value = clamp(value, 0.0f, 1.0f);
 
-    float oldValue = value;
+    const float prevQuantized = quantizedValue;
 
     if (fullStep) {
       // Quantize to steps
       value = round(value * (quantizationSteps - 1.0f)) / (quantizationSteps - 1.0f);
+      quantizedValue = value;
+    } else {
+      quantizedValue = round(value * (quantizationSteps - 1.0f)) / (quantizationSteps - 1.0f);
     }
-    
-    // Play sound if value actually changed by user input
-    windowManager->PlayClickSound();
 
-    Redraw();
-    sig_OnChange(this);
-    Redraw();
+    // Play sound and trigger callbacks only if value actually changed by user input
+    if (std::fabs(quantizedValue - prevQuantized) > 1e-5f) {
+      windowManager->PlayClickSound();
+      sig_OnChange(this);
+      Redraw();
+    }
+  } else if (event->IsActivate() && !helperValues.empty()) {
+    // Reset to first helper value (factory default) when Activate is pressed
+    const float defaultValue = helperValues[0].value;
+    if (std::fabs(quantizedValue - defaultValue) > 1e-5f) {
+      SetValue(defaultValue);
+      windowManager->PlayClickSound();
+      sig_OnChange(this);
+    }
   } else {
     event->Ignore();
   }
@@ -248,7 +256,7 @@ void Gui2Slider::OnLoseFocus() {
 
 void Gui2Slider::SetValue(float newValue) {
   value = clamp(newValue, 0.0f, 1.0f);
-  quantizedValue = round(value * (quantizationSteps - 1)) / (quantizationSteps - 1.0f);
+  quantizedValue = round(value * (quantizationSteps - 1.0f)) / (quantizationSteps - 1.0f);
   Redraw();
 }
 

@@ -48,7 +48,8 @@ std::string BuildOwnerFinanceLine(const CareerSave* save) {
 
 int GetHubPageID() {
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
-  return (save && save->mode == CareerMode::OWNER) ? (int)e_PageID_OwnerHub : (int)e_PageID_CareerHub;
+  return (save && save->mode == CareerMode::OWNER) ? (int)e_PageID_OwnerHub
+                                                   : (int)e_PageID_CareerHub;
 }
 
 }  // namespace
@@ -210,22 +211,36 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Button* btnYouth =
       new Gui2Button(windowManager, "btn_oh_youth", 0, 0, 23, 3, TR("career_youth_title"));
 
-  Gui2Button* btnSeason =
-      new Gui2Button(windowManager, "btn_oh_season", 0, 0, 23, 4, TR("career_advance_season"));
   Gui2Button* btnMatchday =
-      new Gui2Button(windowManager, "btn_oh_matchday", 0, 0, 23, 4, TR("career_play_matchday"));
+      new Gui2Button(windowManager, "btn_oh_matchday", 0, 0, 23, 3.5f, TR("career_play_matchday"));
+  Gui2Button* btnStandings = new Gui2Button(windowManager, "btn_oh_standings", 0, 0, 23, 3.5f,
+                                            "🏆 " + TR("career_hub_btn_standings"));
+  Gui2Button* btnSeason = new Gui2Button(windowManager, "btn_oh_season", 0, 0, 23, 3.5f,
+                                         "📅 " + TR("career_hub_btn_season_review"));
+
+  Gui2Button* btnSaveLoad = new Gui2Button(windowManager, "btn_oh_save_load", 0, 0, 23, 3.5f,
+                                           "💾 " + TR("career_hub_btn_save_load"));
+  btnSaveLoad->sig_OnClick.connect([this](...) {
+    Properties props;
+    props.Set("fromMenu", "false");
+    CreatePage(e_PageID_CareerSave, props);
+  });
 
   Gui2Button* btnBack =
       new Gui2Button(windowManager, "btn_oh_back_main", 0, 0, 23, 4, TR("career_menu_back_modes"));
-  btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerMenu); });
+  btnBack->sig_OnClick.connect([this](...) {
+    CareerDatabase::GetInstance().AutoSave();
+    CreatePage(e_PageID_CareerMenu);
+  });
 
   btnStadium->sig_OnClick.connect([this](...) { GoStadium(); });
   btnFinances->sig_OnClick.connect([this](...) { GoFinances(); });
   btnStaff->sig_OnClick.connect([this](...) { GoStaffManagement(); });
   btnSponsors->sig_OnClick.connect([this](...) { GoSponsors(); });
   btnBoard->sig_OnClick.connect([this](...) { GoBoardRoom(); });
-  btnSeason->sig_OnClick.connect([this](...) { GoSeason(); });
   btnMatchday->sig_OnClick.connect([this](...) { GoMatchday(); });
+  btnStandings->sig_OnClick.connect([this](...) { GoStandings(); });
+  btnSeason->sig_OnClick.connect([this](...) { GoSeason(); });
   btnTransfers->sig_OnClick.connect([this](...) { GoTransferMarket(); });
   btnSquad->sig_OnClick.connect([this](...) { GoSquad(); });
   btnTraining->sig_OnClick.connect([this](...) { GoTraining(); });
@@ -253,8 +268,10 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
       new Gui2Caption(windowManager, "cap_oh_sep2", 0, 0, 23, 2, TR("career_section_season"));
   navGrid->AddView(navSep2, row++, 0);
 
-  navGrid->AddView(btnSeason, row++, 0);
   navGrid->AddView(btnMatchday, row++, 0);
+  navGrid->AddView(btnStandings, row++, 0);
+  navGrid->AddView(btnSeason, row++, 0);
+  navGrid->AddView(btnSaveLoad, row++, 0);
 
   // Back lives in the same grid so it is reachable by arrows/d-pad too.
   navGrid->AddView(btnBack, row++, 0);
@@ -313,6 +330,9 @@ void OwnerHubPage::GoLeagueExpansion() {
 }
 void OwnerHubPage::GoCustomLeague() {
   CreatePage(e_PageID_CareerCustomLeague);
+}
+void OwnerHubPage::GoStandings() {
+  CreatePage(e_PageID_CareerStandings);
 }
 void OwnerHubPage::GoSeason() {
   CreatePage(e_PageID_CareerSeason);

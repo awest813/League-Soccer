@@ -70,3 +70,98 @@ Weather effects (roadmap 3.8):
   wind does not shove a grounded ball, and a wet pitch lets the ball skid further. Full math/physics suite passes
   (17/17) via a `-DGAMEPLAYFOOTBALL_BUILD_GAME=OFF` tests-only build.
 - Marked ROADMAP item 3.8 as DONE.
+
+Match startup and gameplay recovery:
+
+- Diagnosed match crash (0xC0000005 access violation):
+  When a match began, `Player::Put2D()` attempted to draw an overhead triangle cursor using `GetDebugOverlay()->DrawTriangle()` and `GetDebugOverlay()->DrawLine()`. `debugOverlay` was only initialized when `GetDebugMode() == e_DebugMode_AI`, which is disabled in standard gameplay, leaving the intrusive pointer null. Calling `DrawTriangle()` through the null pointer crashed in `Image2D::subjectMutex.lock()` as soon as a player gained ball possession.
+- Fixed `Player::Put2D()` in `src/onthepitch/player/player.cpp` by adding a null check on `GetDebugOverlay()` before drawing cursor primitives.
+- Added a structured crash handler in `src/main.cpp` using `SetUnhandledExceptionFilter` + `DbgHelp` (`StackWalk64`, `SymFromAddr`, `SymGetLineFromAddr64`, `MiniDumpWriteDump`) to immediately capture call stacks and write minidumps if an unhandled exception occurs.
+- Fixed `run.ps1` and `run.bat` parameter forwarding so `--` and arbitrary game args pass cleanly without PowerShell ambiguous parameter errors.
+- Verified matches running end-to-end:
+  - Quick Match smoke test (`menu_smoke_quick_match.config`): passed all markers and exited cleanly.
+  - Full Match smoke test (`menu_smoke_full_match.config`): ran complete regulation and extra time match (Arsenal 0 - 0 Man Utd) and exited cleanly.
+  - Gamepad match test (`menu_smoke_gamepad_match.config`): drove human player in live match without issues.
+  - Full automated unit tests (`ctest`): 165/165 tests passed (100%).
+  - Both Release and Debug binaries (`build-win/Release/gameplayfootball.exe` and `build-win/Debug/gameplayfootball.exe`) built and verified.
+
+Career Mode Audit and Polish:
+
+- 3D Matchday Integration & Exhibition Isolation:
+  - Added `CareerPendingFixture` struct and tracking APIs (`SetPendingFixture`, `HasPendingFixture`, `ClearPendingFixture`, `ConsumePlayedFixture`) in `CareerDatabase`.
+  - Fixed `GameOverPage` so completed exhibition/quick matches do not overwrite active career saves when returning to menus.
+  - Fixed controller side assignment in `careerpages.cpp` (`PlayMatchFixture`): correctly assigns user controller to home side (`-1`) or away side (`1`) based on fixture orientation.
+  - Fixed away score inversion: `ConsumePlayedFixture` correctly handles user goals whether playing at home or away.
+- Multi-Slot Career Persistence UI:
+  - Added `CareerSavePage` (`src/menu/career/career_save_page.hpp` & `.cpp`) supporting 5 distinct career save slots with save/load/delete buttons and metadata summaries (club name, persona mode, season, week, trust %, transfer budget, and last saved timestamp).
+  - Integrated `CareerSavePage` into `CareerMenuPage` ("Load Saved Career"), `CareerHubPage`, and `OwnerHubPage` ("Save & Load Career").
+  - Added `DeleteCareerSlot()` to `CareerDatabase` and centralized currency formatting (`FormatCareerMoney`) in `CareerCommon`.
+- Localization:
+  - Added full translation strings for Career Save/Load UI and hub navigation across `en.ini`, `de.ini`, `es.ini`, `fr.ini`, and `pt.ini`.
+- Verification & Test Coverage:
+  - Created `tests/career/career_fixture_test.cpp` testing pending fixture lifecycle, home/away score attribution, non-fixture safety, and slot save/load/delete operations.
+  - Ran all 61 career tests in `gameplayfootball_career_tests.exe`: 61/61 passed (100%).
+  - Ran career mode smoke test (`data/menu_smoke_career.config`): reached career menu and cleanly exited.
+  - Re-verified Quick Match smoke test (`data/menu_smoke_quick_match.config`): passed end-to-end.
+
+Career Mode & Seasons Overhaul:
+
+- Dynamic League Standings & Leaderboards:
+  - Created `CareerStandingsPage` (`src/menu/career/career_standings_page.hpp` & `.cpp`) registered as `e_PageID_CareerStandings`.
+  - Implemented 20-team league standings table with rank, club, P, W, D, L, GF, GA, GD, points, and 5-match form guide.
+  - Color-coded rows for User Club, Title Champions, Continental Qualification spots, and Relegation Zone.
+  - Implemented Golden Boot Race / Top Scorers sidebar integrating user player goals and simulated star player stats.
+- Season Simulation & Rollover Engine:
+  - Implemented `CareerSim::GenerateLeagueStandings` and `CareerSim::GetTopScorers` deterministic simulation engine in `career_sim.cpp`.
+  - Added `CareerSim::CalculateSeasonPrizeMoney`: position-based rewards ranging from €35,000,000 (Champions) down to €3,000,000, deposited directly to transfer budget upon advancing the season.
+  - Enhanced `CareerSim::AdvanceSeason`: records championship titles into `legacyStats["titles"]`, adds trophy and Continental events, adjusts board trust, and processes contract expirations.
+  - Enforced player contract expirations: players with 0 remaining years depart to free agency if squad size > 14, or receive an emergency 1-year wage-adjusted extension to prevent squads from dropping below minimum playable limits.
+- Season Fixture Persistence:
+  - Serialized and deserialized `save.season.fixtures` in `career_persistence.cpp` (`fixture.<i>=...`).
+  - Automatically logged simulated and 3D match fixtures into `save.season.fixtures`.
+- Added "🏆 League Table & Standings" button to `CareerHubPage`, `OwnerHubPage`, and `CareerSeasonPage`.
+  - Renamed season button to "📅 Season Review & Rollover" on hubs.
+  - Updated `CareerSeasonPage` to display prize money expectations and warnings for expiring player contracts.
+- Localization:
+  - Added all standings, top scorers, prize money, and contract warning strings across `en.ini`, `de.ini`, `es.ini`, `fr.ini`, and `pt.ini`.
+- Verification:
+  - Added 4 unit tests in `tests/career/career_fixture_test.cpp` covering standings generation, prize money and title awards, contract expiration and safety guards, and fixture persistence across save/load.
+  - All 65 career unit tests passed (65/65, 100%) in `gameplayfootball_career_tests.exe`.
+  - Full game binary `gameplayfootball.exe` compiled cleanly and passed runtime smoke test with zero errors.
+
+Career & League Mode Load/Save Audit and Polish:
+
+- Persistence Robustness & Backup Recovery:
+  - Atomic writing via temporary files (`<path>.tmp`) with automatic `.bak` snapshotting on successful write.
+  - Corrupt-file recovery: automatic fallback to `.bak` if the primary save file is missing or corrupted, followed by self-healing re-save.
+  - Slot deletion cleans up `.save`, `.bak`, and `.tmp` files completely.
+- Auto-Save Coverage:
+  - Automatic background auto-saving at career creation, after matchday simulation, post-3D match consumption, season rollover, and when exiting career hubs.
+  - Dedicated "Restore Auto-Save" feature on `CareerSavePage` with confirmation modal.
+- Confirmation Modals & Safety Guards:
+  - Added modal confirmation dialogs for overwriting occupied save slots, loading another slot over unsaved progress, and deleting slots.
+- League Mode Save/Load Polish:
+  - Disabled load/delete buttons on empty save slots.
+  - Enhanced occupied slot metadata with manager name and creation timestamp.
+- Localization & Testing:
+  - Added full translation keys across all 5 languages (`en`, `de`, `es`, `fr`, `pt`).
+  - Added persistence audit unit tests in `tests/career/career_fixture_test.cpp` (all 68 career tests passing).
+
+Gameplay Sliders and UX Audit & Polish:
+
+- Core Gui2Slider Widget Fixes & QoL:
+  - Fixed critical bug in `ProcessWindowingEvent` where `quantizedValue` was never recomputed on keyboard/gamepad navigation, which had previously caused sliders to return stale values or feel unresponsive.
+  - Improved change detection: click sound, redraws, and `sig_OnChange` are now triggered strictly when `quantizedValue` actually changes, eliminating click spam against min/max boundaries.
+  - Added Activate-to-Default shortcut: pressing Enter, Space, or Gamepad A on any focused slider restores its value to the factory default helper value.
+- Gameplay Settings UX & Readouts:
+  - Formatted all 7 passing and shooting assistance sliders into intuitive readable labels (`Manual (0%)`, `Semi (X%)`, `Assisted (X%)`, `Full (X%)`).
+  - Enhanced Agility and Acceleration sliders to display both percentage and actual physics multiplier (`50% (1.00x)` default).
+  - Localized Quantization slider presets (`Full Analog`, `PES 16-way`, `PES 8-way`).
+- Centralized Difficulty Mapping & Localization:
+  - Created `src/utils/difficulty.hpp` providing shared `DifficultyToStep`, `DifficultyFromStep`, and `GetDifficultyName`.
+  - Replaced hardcoded English difficulty names in Match Options, League Settings, and New League setup with localized strings (`Beginner`, `Amateur`, `Regular`, `Professional`, `Top Player`).
+  - Updated Camera Menu to use localized factory default strings.
+- Localization & Testing:
+  - Added 12 new localization keys across all 5 languages (`en`, `de`, `es`, `fr`, `pt`).
+  - Added 11 unit tests in `tests/menu/slider_ux_test.cpp` covering quantization rounding, boundary clamping, Activate-to-default, difficulty mapping, and physics multipliers (all 79 career tests passing).
+  - Verified with gameplay settings, quick match, and league system smoke tests (all exit code 0).

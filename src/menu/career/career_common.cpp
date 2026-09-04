@@ -123,5 +123,22 @@ PlayerCareerState PlayerFromRecord(const std::string& val) {
   return p;
 }
 
+std::string FormatCareerMoney(long long amount) {
+  const bool negative = amount < 0;
+  unsigned long long value =
+      negative ? static_cast<unsigned long long>(-amount) : static_cast<unsigned long long>(amount);
+  std::string digits = std::to_string(value);
+  std::string grouped;
+  int count = 0;
+  for (int i = static_cast<int>(digits.size()) - 1; i >= 0; --i) {
+    if (count > 0 && count % 3 == 0)
+      grouped.push_back(',');
+    grouped.push_back(digits[static_cast<size_t>(i)]);
+    ++count;
+  }
+  std::reverse(grouped.begin(), grouped.end());
+  return std::string("EUR ") + (negative ? "-" : "") + grouped;
+}
+
 }  // namespace CareerCommon
 }  // namespace blunted

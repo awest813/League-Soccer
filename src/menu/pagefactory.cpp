@@ -2,6 +2,8 @@
 
 #include "../main.hpp"
 #include "cameramenu.hpp"
+#include "career/career_save_page.hpp"
+#include "career/career_standings_page.hpp"
 #include "career/careerpages.hpp"
 #include "career/ownerpages.hpp"
 #include "controllerselect.hpp"
@@ -327,6 +329,14 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
 
     case e_PageID_CareerMatchday:
       page = new CareerMatchdayPage(windowManager, pageData);
+      break;
+
+    case e_PageID_CareerSave:
+      page = new CareerSavePage(windowManager, pageData);
+      break;
+
+    case e_PageID_CareerStandings:
+      page = new CareerStandingsPage(windowManager, pageData);
       break;
 
     case e_PageID_OwnerHub:

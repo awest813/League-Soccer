@@ -10,6 +10,7 @@
 #include "base/utils.hpp"
 #include "menu_smoke.hpp"
 #include "utils/database.hpp"
+#include "utils/difficulty.hpp"
 #include "utils/gui2/widgets/caption.hpp"
 #include "utils/gui2/widgets/frame.hpp"
 #include "utils/gui2/widgets/root.hpp"
@@ -44,9 +45,8 @@ LeaguePage::LeaguePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   this->AddView(bgPanel);
   bgPanel->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league", 2, 2, 66, 3,
-                      Localization::GetInstance().Translate("menu_leaguemode"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league", 2, 2, 66, 3,
+                                       Localization::GetInstance().Translate("menu_leaguemode"));
   bgPanel->AddView(title);
   title->Show();
 
@@ -65,9 +65,9 @@ LeaguePage::LeaguePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   buttonPlayMatch->sig_OnClick.connect([this](...) { GoPreMatch(); });
   buttonPlayMatch->SetFocus();
 
-  Gui2Button* buttonAdvanceMatchday = new Gui2Button(
-      windowManager, "button_league_advancematchday", 0, 0, 36, 5,
-      Localization::GetInstance().Translate("league_advance_matchday"));
+  Gui2Button* buttonAdvanceMatchday =
+      new Gui2Button(windowManager, "button_league_advancematchday", 0, 0, 36, 5,
+                     Localization::GetInstance().Translate("league_advance_matchday"));
   buttonAdvanceMatchday->sig_OnClick.connect([this](...) { AdvanceMatchday(); });
 
   Gui2Button* buttonForward =
@@ -210,18 +210,17 @@ LeagueStartPage::LeagueStartPage(Gui2WindowManager* windowManager, const Gui2Pag
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_start", 5, 4, 30, 3,
-                      Localization::GetInstance().Translate("menu_leaguemode"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_start", 5, 4, 30, 3,
+                                       Localization::GetInstance().Translate("menu_leaguemode"));
   frame->AddView(title);
   title->Show();
 
-  Gui2Button* buttonLoad = new Gui2Button(windowManager, "button_league_start_load", 0, 0, 30, 3,
-                                          Localization::GetInstance().Translate("league_load_saved"));
+  Gui2Button* buttonLoad =
+      new Gui2Button(windowManager, "button_league_start_load", 0, 0, 30, 3,
+                     Localization::GetInstance().Translate("league_load_saved"));
   buttonLoad->sig_OnClick.connect([this](...) { GoLoad(); });
-  Gui2Button* buttonNew =
-      new Gui2Button(windowManager, "button_league_start_new", 0, 0, 30, 3,
-                     Localization::GetInstance().Translate("league_start_new"));
+  Gui2Button* buttonNew = new Gui2Button(windowManager, "button_league_start_new", 0, 0, 30, 3,
+                                         Localization::GetInstance().Translate("league_start_new"));
   buttonNew->sig_OnClick.connect([this](...) { GoNew(); });
   Gui2Button* buttonBack = new Gui2Button(windowManager, "button_league_start_back", 0, 0, 30, 3,
                                           Localization::GetInstance().Translate("action_back"));
@@ -278,9 +277,8 @@ LeagueStartLoadPage::LeagueStartLoadPage(Gui2WindowManager* windowManager,
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_start_load", 2, 2, 76, 3,
-                      Localization::GetInstance().Translate("league_load_saved"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_start_load", 2, 2, 76, 3,
+                                       Localization::GetInstance().Translate("league_load_saved"));
   frame->AddView(title);
   title->Show();
 
@@ -308,8 +306,7 @@ void LeagueStartLoadPage::GoLoadSave() {
 
   Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_league_load_save", 25, 30, 50, 25,
                                    loc.Translate("league_load_confirm"));
-  (dlg->AddPosNegButtons(loc.Translate("league_load"), loc.Translate("league_delete")))
-      ->SetFocus();
+  (dlg->AddPosNegButtons(loc.Translate("league_load"), loc.Translate("league_delete")))->SetFocus();
   dlg->sig_OnPositive.connect([this, dlg, saveName](...) {
     dlg->Exit();
     delete dlg;
@@ -414,30 +411,29 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
 
   Gui2Frame* frame = new Gui2Frame(windowManager, "bg_league_start_new", 5, 5, 90, 90, true);
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_start_new", 5, 5, 20, 3,
-                      Localization::GetInstance().Translate("league_start_new"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_start_new", 5, 5, 20, 3,
+                                       Localization::GetInstance().Translate("league_start_new"));
   frame->AddView(title);
   title->Show();
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_start_new_choices", 5, 15, 90, 80);
 
-  Gui2Caption* databaseSelectCaption = new Gui2Caption(
-      windowManager, "caption_league_start_new_dbselect", 0, 0, 30, 2.5,
-      Localization::GetInstance().Translate("league_newdb_select"));
-  Gui2Caption* currencySelectCaption = new Gui2Caption(
-      windowManager, "caption_league_start_new_currency", 0, 0, 30, 2.5,
-      Localization::GetInstance().Translate("league_currency_select"));
-  Gui2Caption* saveNameCaption = new Gui2Caption(
-      windowManager, "caption_league_start_new_savegamename", 0, 0, 30, 2.5,
-      Localization::GetInstance().Translate("league_savegame_name"));
-  Gui2Caption* managerNameCaption = new Gui2Caption(
-      windowManager, "caption_league_start_new_managername", 0, 0, 30, 2.5,
-      Localization::GetInstance().Translate("league_manager_name"));
+  Gui2Caption* databaseSelectCaption =
+      new Gui2Caption(windowManager, "caption_league_start_new_dbselect", 0, 0, 30, 2.5,
+                      Localization::GetInstance().Translate("league_newdb_select"));
+  Gui2Caption* currencySelectCaption =
+      new Gui2Caption(windowManager, "caption_league_start_new_currency", 0, 0, 30, 2.5,
+                      Localization::GetInstance().Translate("league_currency_select"));
+  Gui2Caption* saveNameCaption =
+      new Gui2Caption(windowManager, "caption_league_start_new_savegamename", 0, 0, 30, 2.5,
+                      Localization::GetInstance().Translate("league_savegame_name"));
+  Gui2Caption* managerNameCaption =
+      new Gui2Caption(windowManager, "caption_league_start_new_managername", 0, 0, 30, 2.5,
+                      Localization::GetInstance().Translate("league_manager_name"));
 
-  Gui2Caption* teamSelectCaption = new Gui2Caption(
-      windowManager, "caption_league_start_new_teamselect", 0, 0, 30, 2.5,
-      Localization::GetInstance().Translate("league_select_team"));
+  Gui2Caption* teamSelectCaption =
+      new Gui2Caption(windowManager, "caption_league_start_new_teamselect", 0, 0, 30, 2.5,
+                      Localization::GetInstance().Translate("league_select_team"));
 
   databaseSelectButton = new Gui2Button(windowManager, "button_league_start_new_dbselect", 0, 0, 30,
                                         3, data_SelectedDatabase);
@@ -461,10 +457,17 @@ LeagueStartNewPage::LeagueStartNewPage(Gui2WindowManager* windowManager,
   currencySelectPulldown->AddEntry("Hong Kong dollar", "hongkongdollar");
   currencySelectPulldown->AddEntry("Norwegian krone", "norkrone");
 
-  difficultySlider = new Gui2Slider(
-      windowManager, "slider_league_start_new_difficulty", 0, 0, 30, 6,
-      Localization::GetInstance().Translate("league_initial_difficulty"));
+  difficultySlider =
+      new Gui2Slider(windowManager, "slider_league_start_new_difficulty", 0, 0, 30, 6,
+                     Localization::GetInstance().Translate("league_initial_difficulty"));
   difficultySlider->SetQuantization(5);
+  difficultySlider->AddHelperValue(
+      Vector3(80, 80, 250), Localization::GetInstance().Translate("settings_factory_default"),
+      _default_Difficulty);
+  difficultySlider->SetValue(_default_Difficulty);
+  difficultySlider->SetValueText(GetDifficultyName(difficultySlider->GetValue()));
+  difficultySlider->sig_OnChange.connect(
+      [](Gui2Slider* s) { s->SetValueText(GetDifficultyName(s->GetValue())); });
   saveNameInput = new Gui2EditLine(windowManager, "editline_league_start_new_savegamename", 0, 0,
                                    30, 3, "NewLeague");
   saveNameInput->SetAllowedChars(
@@ -581,9 +584,9 @@ void LeagueStartNewPage::Process() {
 }
 
 void LeagueStartNewPage::GoDatabaseSelectDialog() {
-  databaseSelectDialog = new Gui2Dialog(
-      windowManager, "dialog_league_start_new_dbselect", 30, 25, 40, 50,
-      Localization::GetInstance().Translate("league_select_source_db"));
+  databaseSelectDialog =
+      new Gui2Dialog(windowManager, "dialog_league_start_new_dbselect", 30, 25, 40, 50,
+                     Localization::GetInstance().Translate("league_select_source_db"));
   previousFocus = windowManager->GetFocus();
 
   databaseSelectBrowser =

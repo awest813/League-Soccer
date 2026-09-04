@@ -1,10 +1,9 @@
 #include "gameover.hpp"
 
-#include <ctime>
-
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <algorithm>
+#include <ctime>
 
 #include "../../data/matchhistory.hpp"
 #include "../../league/leaguecode.hpp"
@@ -46,9 +45,8 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
                          int_to_str(match->GetMatchData()->GetGoalCount(0)) + " - " +
                          int_to_str(match->GetMatchData()->GetGoalCount(1)) + " " +
                          match->GetTeam(1)->GetTeamData()->GetName();
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_gameover_title", 2, 3, 76, 3,
-                      Localization::GetInstance().Translate("ingame_fulltime"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_gameover_title", 2, 3, 76, 3,
+                                       Localization::GetInstance().Translate("ingame_fulltime"));
   title->SetPosition(40 - title->GetTextWidthPercent() * 0.5f, 3);
   frame->AddView(title);
   title->Show();
@@ -149,51 +147,53 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   // Man of the Match (MOM) & Ratings
   float bestRating = 0.0f;
   std::string momName = "";
-  
+
   for (int t = 0; t < 2; t++) {
     std::vector<Player*> players;
     match->GetAllTeamPlayers(t, players);
-    
+
     // Team performance modifier
     float teamMod = 0.0f;
     if (match->GetMatchData()->GetGoalCount(t) > match->GetMatchData()->GetGoalCount(1 - t)) {
-      teamMod = 1.0f; // Winners get boost
-    } else if (match->GetMatchData()->GetGoalCount(t) < match->GetMatchData()->GetGoalCount(1 - t)) {
-      teamMod = -0.5f; // Losers get penalty
+      teamMod = 1.0f;  // Winners get boost
+    } else if (match->GetMatchData()->GetGoalCount(t) <
+               match->GetMatchData()->GetGoalCount(1 - t)) {
+      teamMod = -0.5f;  // Losers get penalty
     }
 
     for (Player* p : players) {
       PlayerData* pd = p->GetPlayerData();
-      if (!pd) continue;
-      
+      if (!pd)
+        continue;
+
       // Base rating 5.5 to 6.5
       float rating = 5.5f + (std::rand() % 10) * 0.1f;
       rating += teamMod;
-      
+
       // Condition modifier
       int cond = pd->GetCondition();
       rating += (cond - 3) * 0.2f;
 
       // Ensure rating is between 4.0 and 9.0 (unless MOM, which we can push to 9.5)
       rating = std::clamp(rating, 4.0f, 9.0f);
-      
+
       if (rating > bestRating) {
         bestRating = rating;
         momName = pd->GetLastName();
       }
     }
   }
-  
+
   // Give MOM an extra boost
   bestRating = std::clamp(bestRating + 0.5f, 6.5f, 9.5f);
-  
+
   // Display MOM
   char ratingBuf[16];
   snprintf(ratingBuf, sizeof(ratingBuf), "%.1f", bestRating);
   std::string momStr = "MOM: " + momName + " (" + std::string(ratingBuf) + ")";
-  
+
   Gui2Caption* momCaption = new Gui2Caption(windowManager, "caption_mom", 2, 70, 76, 4, momStr);
-  momCaption->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2)); // Gold
+  momCaption->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));  // Gold
   momCaption->SetOutlineColor(Vector3(0, 0, 0));
   momCaption->SetPosition(40 - momCaption->GetTextWidthPercent() * 0.5f, 66);
   frame->AddView(momCaption);
@@ -316,13 +316,13 @@ void GameOverPage::GoMainMenu() {
 
   // Preserve the finished 3D match in career bookkeeping before leaving the game flow.
   bool resumeCareer = false;
-  if (!leagueMatchPlayed && match && CareerDatabase::GetInstance().GetActiveSave()) {
-    auto* matchData = match->GetMatchData();
+  if (!leagueMatchPlayed && CareerDatabase::GetInstance().HasPendingFixture()) {
+    auto* matchData = match ? match->GetMatchData() : nullptr;
     if (matchData) {
-      CareerDatabase::GetInstance().Process3DMatchResult(matchData->GetGoalCount(0),
-                                                         matchData->GetGoalCount(1));
-      CareerDatabase::GetInstance().SaveCareerData();
-      resumeCareer = true;
+      resumeCareer = CareerDatabase::GetInstance().ConsumePlayedFixture(matchData->GetGoalCount(0),
+                                                                        matchData->GetGoalCount(1));
+    } else {
+      CareerDatabase::GetInstance().ClearPendingFixture();
     }
   }
   if (resumeCareer) {

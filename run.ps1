@@ -1,4 +1,4 @@
-﻿# run.ps1 – launch the built game, making sure its runtime assets are found.
+# run.ps1 – launch the built game, making sure its runtime assets are found.
 #
 # The game reads media/, databases/, locale/ and football.config relative to
 # its working directory. CMake copies them next to the binary, so we launch
@@ -19,7 +19,6 @@
 # NOTE: PowerShell reserves the -Debug common parameter, so this script uses
 # -DebugBuild to select the debug binary instead.
 
-[CmdletBinding()]
 param(
   [switch]$DebugBuild,
   [switch]$Help
@@ -32,13 +31,17 @@ if ($Help) {
   exit 0
 }
 
-# Parse a "--" separator: args before it are ours, after it are forwarded to
-# the game (matches run.sh's `--` handling).
+# Parse forwarded args: if "--" separator is present, forward everything after it;
+# otherwise forward all extra arguments directly to the game.
 $GameArgs = @()
-$splitSeen = $false
-foreach ($a in $args) {
-  if (-not $splitSeen -and $a -eq '--') { $splitSeen = $true; continue }
-  if ($splitSeen) { $GameArgs += $a }
+if ($args -contains '--') {
+  $splitSeen = $false
+  foreach ($a in $args) {
+    if (-not $splitSeen -and $a -eq '--') { $splitSeen = $true; continue }
+    if ($splitSeen) { $GameArgs += $a }
+  }
+} else {
+  $GameArgs = $args
 }
 
 # Build the candidate list. If -DebugBuild is given, prefer the Debug binary;
@@ -49,8 +52,10 @@ if (-not $scriptDir) { $scriptDir = (Get-Location).Path }
 $candidates = @()
 if ($DebugBuild) {
   $candidates += (Join-Path $scriptDir 'build-win\Debug\gameplayfootball.exe')
+  $candidates += (Join-Path $scriptDir 'build-win\RelWithDebInfo\gameplayfootball.exe')
   $candidates += (Join-Path $scriptDir 'build-win\Release\gameplayfootball.exe')
 } else {
+  $candidates += (Join-Path $scriptDir 'build-win\RelWithDebInfo\gameplayfootball.exe')
   $candidates += (Join-Path $scriptDir 'build-win\Release\gameplayfootball.exe')
   $candidates += (Join-Path $scriptDir 'build-win\Debug\gameplayfootball.exe')
 }

@@ -8,6 +8,7 @@
 #include "../../data/careerdata.hpp"
 #include "career_common.hpp"
 #include "career_persistence.hpp"
+#include "career_sim.hpp"
 
 namespace blunted {
 
@@ -19,6 +20,16 @@ using StaffMember = ::StaffMember;
 using StadiumUpgrade = ::StadiumUpgrade;
 using SponsorDeal = ::SponsorDeal;
 using SimulatedMatch = ::SimulatedMatch;
+using FixtureResult = ::FixtureResult;
+using PlayerCareerState = ::PlayerCareerState;
+
+struct CareerPendingFixture {
+  bool hasFixture = false;
+  bool isHome = true;
+  int userTeamDBID = 0;
+  int opponentTeamDBID = 0;
+  std::string opponentName;
+};
 
 class CareerDatabase : public CareerCommon::CareerEvents {
 public:
@@ -30,6 +41,13 @@ public:
     return instance;
   }
 
+  void SetPendingFixture(bool isHome, int userTeamDBID, int opponentTeamDBID,
+                         const std::string& opponentName);
+  bool HasPendingFixture() const;
+  const CareerPendingFixture& GetPendingFixture() const;
+  void ClearPendingFixture();
+  bool ConsumePlayedFixture(int matchGoals0, int matchGoals1);
+
   bool Initialize(const std::string& saveDir);
   bool HasSaveFile() const;
   bool HasSaveSlot(int slotIndex) const;
@@ -39,6 +57,7 @@ public:
                        const std::string& managerName);
   bool SaveCareerData();
   bool SaveCareerSlot(int slotIndex);
+  bool DeleteCareerSlot(int slotIndex);
   bool AutoSave();
   bool GetSlotSummary(int slotIndex, CareerPersistence::CareerSaveSummary& outSummary) const;
   std::string GetSlotPath(int slotIndex) const;
@@ -109,6 +128,11 @@ public:
                         const std::vector<std::string>& scorers = {});
   void Process3DMatchResult(int homeGoals, int awayGoals);
 
+  // Standings and top scorers
+  std::vector<CareerSim::CareerLeagueTableRow> GetLeagueStandings(
+      const std::vector<std::pair<int, std::string>>& leagueClubs = {}) const;
+  std::vector<CareerSim::CareerTopScorer> GetTopScorers() const;
+
   // Estimate a 20-team league finish from a W/D/L record (deterministic).
   static int EstimateLeaguePosition(int wins, int draws, int losses);
 
@@ -132,6 +156,7 @@ private:
   std::string m_saveDirectory;
   std::vector<TransferTarget> m_transferTargets;
   std::vector<TransferBid> m_activeBids;
+  CareerPendingFixture m_pendingFixture;
 };
 
 }  // namespace blunted

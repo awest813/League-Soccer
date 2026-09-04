@@ -40,6 +40,7 @@ protected:
   void GoPressConference();
   void GoLeagueExpansion();
   void GoCustomLeague();
+  void GoStandings();
   void GoSeason();
   void GoMatchday();
 };

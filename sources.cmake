@@ -292,6 +292,7 @@ set(UTILS_HEADERS
         src/utils/directoryparser.hpp
         src/utils/threadhud.hpp
         src/utils/console.hpp
+        src/utils/difficulty.hpp
         src/utils/localization.hpp
         )
 
@@ -493,6 +494,8 @@ set(MENU_HEADERS
    src/menu/career/career_database.hpp
    src/menu/career/career_finance.hpp
    src/menu/career/career_persistence.hpp
+   src/menu/career/career_save_page.hpp
+   src/menu/career/career_standings_page.hpp
    src/menu/career/career_sim.hpp
    src/menu/career/career_sponsors.hpp
    src/menu/career/career_staff.hpp
@@ -545,6 +548,8 @@ set(MENU_SOURCES
    src/menu/career/career_database.cpp
    src/menu/career/career_finance.cpp
    src/menu/career/career_persistence.cpp
+   src/menu/career/career_save_page.cpp
+   src/menu/career/career_standings_page.cpp
    src/menu/career/career_sim.cpp
    src/menu/career/career_sponsors.cpp
    src/menu/career/career_staff.cpp

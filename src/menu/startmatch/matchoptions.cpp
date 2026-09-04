@@ -5,6 +5,7 @@
 #include "../pagefactory.hpp"
 #include "main.hpp"
 #include "onthepitch/matchduration.hpp"
+#include "utils/difficulty.hpp"
 #include "utils/localization.hpp"
 
 using namespace blunted;
@@ -47,19 +48,18 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
                                     TR("match_difficulty"));
   difficultySlider->SetQuantization(5);
   difficultySlider->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
-                                  _default_Difficulty);
+                                   _default_Difficulty);
 
   matchDurationSlider = new Gui2Slider(windowManager, "matchoptions_slider_matchduration", 0, 0, 46,
                                        6, TR("match_duration"));
   matchDurationSlider->SetQuantization(kMatchDurationSliderSteps);
-  matchDurationSlider->AddHelperValue(
-      Vector3(80, 80, 250), TR("settings_factory_default"),
-      MatchDurationSliderFromMinutes(kDefaultMatchDurationMinutes));
+  matchDurationSlider->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
+                                      MatchDurationSliderFromMinutes(kDefaultMatchDurationMinutes));
 
   buttonStart =
       new Gui2Button(windowManager, "matchoptions_button_start", 0, 0, 46, 3.5, TR("match_start"));
-  Gui2Button* buttonBack = new Gui2Button(windowManager, "matchoptions_button_back", 0, 0, 46, 3.5,
-                                          TR("action_back"));
+  Gui2Button* buttonBack =
+      new Gui2Button(windowManager, "matchoptions_button_back", 0, 0, 46, 3.5, TR("action_back"));
 
   float difficulty = GetConfiguration()->GetReal("match_difficulty", _default_Difficulty);
   float matchDurationMinutes = kDefaultMatchDurationMinutes;
@@ -72,10 +72,10 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
   }
   difficultySlider->SetValue(difficulty);
   matchDurationSlider->SetValue(MatchDurationSliderFromMinutes(matchDurationMinutes));
-  
+
   UpdateDifficultyCaption();
   UpdateMatchDurationCaption();
-  
+
   difficultySlider->sig_OnChange.connect([this](Gui2Slider*) { UpdateDifficultyCaption(); });
   matchDurationSlider->sig_OnChange.connect([this](Gui2Slider*) { UpdateMatchDurationCaption(); });
 
@@ -106,18 +106,8 @@ void MatchOptionsPage::UpdateMatchDurationCaption() {
 }
 
 void MatchOptionsPage::UpdateDifficultyCaption() {
-  int diff = static_cast<int>(std::round(difficultySlider->GetValue() * 4.0f));
-  std::string label;
-  switch (diff) {
-    case 0: label = "Beginner"; break;
-    case 1: label = "Amateur"; break;
-    case 2: label = "Regular"; break;
-    case 3: label = "Professional"; break;
-    case 4: label = "Top Player"; break;
-    default: label = "Top Player"; break;
-  }
   difficultySlider->SetCaption(TR("match_difficulty"));
-  difficultySlider->SetValueText(label);
+  difficultySlider->SetValueText(GetDifficultyName(difficultySlider->GetValue()));
 }
 
 void MatchOptionsPage::Process() {

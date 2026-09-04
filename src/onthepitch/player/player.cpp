@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "player.hpp"
 
 #include <cmath>
@@ -502,11 +501,11 @@ void Player::Put2D() {
     nameCaption->GetSize(w, h);
     nameCaption->SetColor(fetchedbuf_playerColor);
     nameCaption->SetOutlineColor(fetchedbuf_playerColor * 0.4f);
-    
+
     // Draw an overhead triangle cursor pointing down at the player
     int cx, cy;
     GetDebugOverlayCoord(match, GetGeomPosition() + Vector3(0, 0, 2.1f), cx, cy);
-    
+
     Triangle cursorTri;
     // Animate the cursor bobbing up and down slightly using match time
     float bobOffset = std::sin(match->GetActualTime_ms() * 0.01f) * 3.0f;
@@ -515,17 +514,22 @@ void Player::Put2D() {
     cursorTri.SetVertex(0, Vector3(cx - 7, cy - 12, 0));
     cursorTri.SetVertex(1, Vector3(cx + 7, cy - 12, 0));
     cursorTri.SetVertex(2, Vector3(cx, cy, 0));
-    
+
     // Draw filled cursor and a subtle black outline
-    GetDebugOverlay()->DrawTriangle(cursorTri, fetchedbuf_playerColor, 220);
-    
-    Line l1, l2, l3;
-    l1.SetVertex(0, cursorTri.GetVertex(0)); l1.SetVertex(1, cursorTri.GetVertex(1));
-    l2.SetVertex(0, cursorTri.GetVertex(1)); l2.SetVertex(1, cursorTri.GetVertex(2));
-    l3.SetVertex(0, cursorTri.GetVertex(2)); l3.SetVertex(1, cursorTri.GetVertex(0));
-    GetDebugOverlay()->DrawLine(l1, Vector3(0, 0, 0), 220);
-    GetDebugOverlay()->DrawLine(l2, Vector3(0, 0, 0), 220);
-    GetDebugOverlay()->DrawLine(l3, Vector3(0, 0, 0), 220);
+    if (GetDebugOverlay()) {
+      GetDebugOverlay()->DrawTriangle(cursorTri, fetchedbuf_playerColor, 220);
+
+      Line l1, l2, l3;
+      l1.SetVertex(0, cursorTri.GetVertex(0));
+      l1.SetVertex(1, cursorTri.GetVertex(1));
+      l2.SetVertex(0, cursorTri.GetVertex(1));
+      l2.SetVertex(1, cursorTri.GetVertex(2));
+      l3.SetVertex(0, cursorTri.GetVertex(2));
+      l3.SetVertex(1, cursorTri.GetVertex(0));
+      GetDebugOverlay()->DrawLine(l1, Vector3(0, 0, 0), 220);
+      GetDebugOverlay()->DrawLine(l2, Vector3(0, 0, 0), 220);
+      GetDebugOverlay()->DrawLine(l3, Vector3(0, 0, 0), 220);
+    }
 
     // Place the name caption slightly above the bobbing cursor
     nameCaption->SetPosition(cx - w * 0.5f, cy - 16 - h);

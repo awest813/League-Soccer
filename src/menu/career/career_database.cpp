@@ -1,6 +1,7 @@
 #include "career_database.hpp"
 
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -20,32 +21,85 @@ namespace blunted {
 CareerDatabase::CareerDatabase() {}
 CareerDatabase::~CareerDatabase() {}
 
+void CareerDatabase::SetPendingFixture(bool isHome, int userTeamDBID, int opponentTeamDBID,
+                                       const std::string& opponentName) {
+  m_pendingFixture.hasFixture = true;
+  m_pendingFixture.isHome = isHome;
+  m_pendingFixture.userTeamDBID = userTeamDBID;
+  m_pendingFixture.opponentTeamDBID = opponentTeamDBID;
+  m_pendingFixture.opponentName = opponentName;
+}
+
+bool CareerDatabase::HasPendingFixture() const {
+  return m_pendingFixture.hasFixture;
+}
+
+const CareerPendingFixture& CareerDatabase::GetPendingFixture() const {
+  return m_pendingFixture;
+}
+
+void CareerDatabase::ClearPendingFixture() {
+  m_pendingFixture = CareerPendingFixture{};
+}
+
+bool CareerDatabase::ConsumePlayedFixture(int matchGoals0, int matchGoals1) {
+  if (!m_pendingFixture.hasFixture || !m_activeSave) {
+    return false;
+  }
+  int userGoals = m_pendingFixture.isHome ? matchGoals0 : matchGoals1;
+  int oppGoals = m_pendingFixture.isHome ? matchGoals1 : matchGoals0;
+
+  for (auto& f : m_activeSave->season.fixtures) {
+    if (!f.played &&
+        ((m_pendingFixture.isHome && f.homeTeamID == m_pendingFixture.userTeamDBID &&
+          f.awayTeamID == m_pendingFixture.opponentTeamDBID) ||
+         (!m_pendingFixture.isHome && f.homeTeamID == m_pendingFixture.opponentTeamDBID &&
+          f.awayTeamID == m_pendingFixture.userTeamDBID))) {
+      f.homeGoals = m_pendingFixture.isHome ? userGoals : oppGoals;
+      f.awayGoals = m_pendingFixture.isHome ? oppGoals : userGoals;
+      f.played = true;
+      break;
+    }
+  }
+
+  m_pendingFixture = CareerPendingFixture{};
+
+  CareerSim::Process3DMatchResult(*m_activeSave, *this, userGoals, oppGoals);
+  AutoSave();
+  return true;
+}
+
 bool CareerDatabase::Initialize(const std::string& saveDir) {
   m_saveDirectory = saveDir;
   return true;
 }
 
 std::string CareerDatabase::GetSlotPath(int slotIndex) const {
-  if (m_saveDirectory.empty())
-    return "career.save";
+  std::string dir = m_saveDirectory.empty() ? "." : m_saveDirectory;
   if (slotIndex == -1)
-    return m_saveDirectory + "/career_autosave.save";
+    return dir + "/career_autosave.save";
   if (slotIndex == 0)
-    return m_saveDirectory + "/career.save";
-  return m_saveDirectory + "/career_slot_" + std::to_string(slotIndex) + ".save";
+    return dir + "/career.save";
+  return dir + "/career_slot_" + std::to_string(slotIndex) + ".save";
 }
 
 bool CareerDatabase::HasSaveFile() const {
+  if (m_saveDirectory.empty())
+    return false;
   return HasSaveSlot(0) || HasSaveSlot(-1);
 }
 
 bool CareerDatabase::HasSaveSlot(int slotIndex) const {
+  if (m_saveDirectory.empty())
+    return false;
   std::string path = GetSlotPath(slotIndex);
   CareerPersistence::CareerSaveSummary summary;
   return CareerPersistence::ReadSummary(path, summary) && summary.isValid;
 }
 
 bool CareerDatabase::LoadCareerSave(const std::string& saveName) {
+  if (m_saveDirectory.empty())
+    return false;
   if (LoadCareerSlot(0)) {
     printf("[career] Loaded default save: %s\n", saveName.c_str());
     return true;
@@ -58,6 +112,8 @@ bool CareerDatabase::LoadCareerSave(const std::string& saveName) {
 }
 
 bool CareerDatabase::LoadCareerSlot(int slotIndex) {
+  if (m_saveDirectory.empty())
+    return false;
   std::string path = GetSlotPath(slotIndex);
   CareerSave loaded;
   std::vector<TransferBid> loadedBids;
@@ -74,7 +130,7 @@ bool CareerDatabase::SaveCareerData() {
 }
 
 bool CareerDatabase::SaveCareerSlot(int slotIndex) {
-  if (!m_activeSave)
+  if (!m_activeSave || m_saveDirectory.empty())
     return false;
   std::string path = GetSlotPath(slotIndex);
   bool success = CareerPersistence::Save(*m_activeSave, m_activeBids, path);
@@ -83,13 +139,29 @@ bool CareerDatabase::SaveCareerSlot(int slotIndex) {
   return success;
 }
 
+bool CareerDatabase::DeleteCareerSlot(int slotIndex) {
+  if (m_saveDirectory.empty() || !HasSaveSlot(slotIndex))
+    return false;
+  std::string path = GetSlotPath(slotIndex);
+  namespace fs = std::filesystem;
+  std::error_code ec;
+  fs::remove(path, ec);
+  fs::remove(path + ".bak", ec);
+  fs::remove(path + ".tmp", ec);
+  printf("[career] Deleted slot %d (%s)\n", slotIndex, path.c_str());
+  return true;
+}
+
 bool CareerDatabase::AutoSave() {
-  if (!m_activeSave)
+  if (!m_activeSave || m_saveDirectory.empty())
     return false;
   return SaveCareerSlot(-1);
 }
 
-bool CareerDatabase::GetSlotSummary(int slotIndex, CareerPersistence::CareerSaveSummary& outSummary) const {
+bool CareerDatabase::GetSlotSummary(int slotIndex,
+                                    CareerPersistence::CareerSaveSummary& outSummary) const {
+  if (m_saveDirectory.empty())
+    return false;
   std::string path = GetSlotPath(slotIndex);
   return CareerPersistence::ReadSummary(path, outSummary);
 }
@@ -131,7 +203,9 @@ bool CareerDatabase::CreateNewCareer(const std::string& careerName, const std::s
   CareerBoard::GenerateBoardObjectives(*m_activeSave);
   CareerSponsors::GenerateSponsorOffers(*m_activeSave);
   CareerTransfers::SeedFreeAgents(*m_activeSave);
-  return SaveCareerData();
+  bool saved = SaveCareerData();
+  AutoSave();
+  return saved;
 }
 
 void CareerDatabase::AddEvent(const std::string& eventType, const std::string& description,
@@ -240,7 +314,8 @@ std::string CareerDatabase::GetFormString(int form) const {
 
 std::string CareerDatabase::GetConditionArrow(int form) const {
   // Classic PES 5/6 Condition Arrow indicators:
-  // Red Up (Top) > Orange Diagonal (Good) > Green Right (Normal) > Blue Diagonal (Poor) > Purple Down (Terrible)
+  // Red Up (Top) > Orange Diagonal (Good) > Green Right (Normal) > Blue Diagonal (Poor) > Purple
+  // Down (Terrible)
   if (form >= 85)
     return "[^] TOP";
   if (form >= 65)
@@ -289,27 +364,37 @@ std::vector<std::string> CareerDatabase::GetNewsHeadlines(int count) const {
   // 1. Match result / form headline
   int played = m_activeSave->seasonWins + m_activeSave->seasonDraws + m_activeSave->seasonLosses;
   if (played == 0) {
-    headlines.push_back("PRE-SEASON: " + m_activeSave->name + " gears up for ambitious campaign in " + m_activeSave->club.leagueName + ".");
+    headlines.push_back("PRE-SEASON: " + m_activeSave->name +
+                        " gears up for ambitious campaign in " + m_activeSave->club.leagueName +
+                        ".");
   } else if (m_activeSave->seasonWins > m_activeSave->seasonLosses * 2) {
-    headlines.push_back("MEDIA SPOTLIGHT: Pundits praise " + m_activeSave->name + "'s tactical fluidity and dominant run of form.");
+    headlines.push_back("MEDIA SPOTLIGHT: Pundits praise " + m_activeSave->name +
+                        "'s tactical fluidity and dominant run of form.");
   } else if (m_activeSave->seasonLosses > m_activeSave->seasonWins) {
-    headlines.push_back("PRESSURE BUILDS: Manager " + m_activeSave->managerName + " calls for resilience amid testing fixture schedule.");
+    headlines.push_back("PRESSURE BUILDS: Manager " + m_activeSave->managerName +
+                        " calls for resilience amid testing fixture schedule.");
   } else {
-    headlines.push_back("COMPETITIVE RACE: " + m_activeSave->name + " stays in contention as mid-table battle intensifies.");
+    headlines.push_back("COMPETITIVE RACE: " + m_activeSave->name +
+                        " stays in contention as mid-table battle intensifies.");
   }
 
   // 2. Squad / Youth headline
   if (!m_activeSave->youthAcademy.empty()) {
-    headlines.push_back("ACADEMY REPORT: Scouts spotlight " + m_activeSave->youthAcademy[0].name + " as a potential future star.");
+    headlines.push_back("ACADEMY REPORT: Scouts spotlight " + m_activeSave->youthAcademy[0].name +
+                        " as a potential future star.");
   } else if (!m_activeSave->roster.empty()) {
-    headlines.push_back("SQUAD FOCUS: " + m_activeSave->roster[0].name + " maintaining peak match condition ahead of next clash.");
+    headlines.push_back("SQUAD FOCUS: " + m_activeSave->roster[0].name +
+                        " maintaining peak match condition ahead of next clash.");
   }
 
   // 3. Board / Club operations headline
   if (m_activeSave->boardConfidence >= 75) {
-    headlines.push_back("BOARD CONFIDENCE: Club hierarchy 'delighted' with current management and financial health.");
+    headlines.push_back(
+        "BOARD CONFIDENCE: Club hierarchy 'delighted' with current management and financial "
+        "health.");
   } else {
-    headlines.push_back("BOARD NOTICE: Club leadership expects strong performance in upcoming league fixtures.");
+    headlines.push_back(
+        "BOARD NOTICE: Club leadership expects strong performance in upcoming league fixtures.");
   }
 
   while (static_cast<int>(headlines.size()) > count) {
@@ -329,8 +414,11 @@ std::string CareerDatabase::GetNextOpponentPreview(int week) const {
   std::string opp = opponentNames[opponentIdx];
   bool isHome = (week % 2) == 0;
   std::string venue = isHome ? "Home (Your Stadium)" : "Away (" + opp + " Arena)";
-  std::string danger = ((week % 3) == 0) ? "★★★★★ High Danger" : (((week % 2) == 0) ? "★★★☆☆ Moderate Threat" : "★★★★☆ Solid Defense");
-  return opp + " | Venue: " + venue + "\nThreat Rating: " + danger + " | Expected Strategy: Balanced Press";
+  std::string danger = ((week % 3) == 0)
+                           ? "★★★★★ High Danger"
+                           : (((week % 2) == 0) ? "★★★☆☆ Moderate Threat" : "★★★★☆ Solid Defense");
+  return opp + " | Venue: " + venue + "\nThreat Rating: " + danger +
+         " | Expected Strategy: Balanced Press";
 }
 
 int CareerDatabase::GetLegacyStat(const std::string& statName) const {
@@ -363,11 +451,25 @@ int CareerDatabase::EstimateLeaguePosition(int wins, int draws, int losses) {
   return CareerSim::EstimateLeaguePosition(wins, draws, losses);
 }
 
+std::vector<CareerSim::CareerLeagueTableRow> CareerDatabase::GetLeagueStandings(
+    const std::vector<std::pair<int, std::string>>& leagueClubs) const {
+  if (!m_activeSave)
+    return {};
+  return CareerSim::GenerateLeagueStandings(*m_activeSave, leagueClubs);
+}
+
+std::vector<CareerSim::CareerTopScorer> CareerDatabase::GetTopScorers() const {
+  if (!m_activeSave)
+    return {};
+  return CareerSim::GetTopScorers(*m_activeSave);
+}
+
 void CareerDatabase::AdvanceSeason() {
   if (!m_activeSave)
     return;
   CareerSim::AdvanceSeason(*m_activeSave, *this, m_activeBids, m_transferTargets);
   SaveCareerData();
+  AutoSave();
 }
 
 void CareerDatabase::ReleasePlayer(const std::string& playerName) {

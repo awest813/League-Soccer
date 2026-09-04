@@ -5,7 +5,91 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <cstdio>
+
+#include <dbghelp.h>
 #include <windows.h>
+#pragma comment(lib, "dbghelp.lib")
+
+static LONG WINAPI CustomCrashHandler(EXCEPTION_POINTERS* pExceptionInfo) {
+  printf("\n================ CRASH OCCURRED ================\n");
+  printf("Exception Code: 0x%08lX\n",
+         (unsigned long)pExceptionInfo->ExceptionRecord->ExceptionCode);
+  printf("Exception Address: 0x%p\n", pExceptionInfo->ExceptionRecord->ExceptionAddress);
+
+  HANDLE process = GetCurrentProcess();
+  HANDLE thread = GetCurrentThread();
+  SymInitialize(process, NULL, TRUE);
+
+  CONTEXT context = *pExceptionInfo->ContextRecord;
+  STACKFRAME64 stackFrame;
+  memset(&stackFrame, 0, sizeof(stackFrame));
+#if defined(_M_X64) || defined(__x86_64__)
+  DWORD machineType = IMAGE_FILE_MACHINE_AMD64;
+  stackFrame.AddrPC.Offset = context.Rip;
+  stackFrame.AddrPC.Mode = AddrModeFlat;
+  stackFrame.AddrFrame.Offset = context.Rbp;
+  stackFrame.AddrFrame.Mode = AddrModeFlat;
+  stackFrame.AddrStack.Offset = context.Rsp;
+  stackFrame.AddrStack.Mode = AddrModeFlat;
+#elif defined(_M_IX86)
+  DWORD machineType = IMAGE_FILE_MACHINE_I386;
+  stackFrame.AddrPC.Offset = context.Eip;
+  stackFrame.AddrPC.Mode = AddrModeFlat;
+  stackFrame.AddrFrame.Offset = context.Ebp;
+  stackFrame.AddrFrame.Mode = AddrModeFlat;
+  stackFrame.AddrStack.Offset = context.Esp;
+  stackFrame.AddrStack.Mode = AddrModeFlat;
+#endif
+
+  printf("Call Stack:\n");
+  for (int frame = 0; frame < 30; ++frame) {
+    if (!StackWalk64(machineType, process, thread, &stackFrame, &context, NULL,
+                     SymFunctionTableAccess64, SymGetModuleBase64, NULL)) {
+      break;
+    }
+    DWORD64 address = stackFrame.AddrPC.Offset;
+    if (address == 0)
+      break;
+
+    char buffer[sizeof(SYMBOL_INFO) + 256 * sizeof(TCHAR)];
+    PSYMBOL_INFO symbol = (PSYMBOL_INFO)buffer;
+    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+    symbol->MaxNameLen = 256;
+
+    DWORD64 displacement = 0;
+    if (SymFromAddr(process, address, &displacement, symbol)) {
+      IMAGEHLP_LINE64 line;
+      memset(&line, 0, sizeof(line));
+      line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
+      DWORD lineDisplacement = 0;
+      if (SymGetLineFromAddr64(process, address, &lineDisplacement, &line)) {
+        printf("  [%d] %s (%s:%lu)\n", frame, symbol->Name, line.FileName,
+               (unsigned long)line.LineNumber);
+      } else {
+        printf("  [%d] %s + 0x%llX\n", frame, symbol->Name, displacement);
+      }
+    } else {
+      printf("  [%d] 0x%llX\n", frame, address);
+    }
+  }
+  printf("================================================\n");
+  fflush(stdout);
+
+  HANDLE hFile = CreateFileA("crashdump.dmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+                             FILE_ATTRIBUTE_NORMAL, NULL);
+  if (hFile != INVALID_HANDLE_VALUE) {
+    MINIDUMP_EXCEPTION_INFORMATION mei;
+    mei.ThreadId = GetCurrentThreadId();
+    mei.ExceptionPointers = pExceptionInfo;
+    mei.ClientPointers = FALSE;
+    MiniDumpWriteDump(process, GetCurrentProcessId(), hFile, MiniDumpNormal, &mei, NULL, NULL);
+    CloseHandle(hFile);
+    printf("Minidump written to crashdump.dmp\n");
+  }
+  fflush(stdout);
+  return EXCEPTION_EXECUTE_HANDLER;
+}
 #endif
 
 #include <filesystem>
@@ -362,13 +446,18 @@ protected:
 };
 
 int main(int argc, const char** argv) {
+#ifdef WIN32
+  SetUnhandledExceptionFilter(CustomCrashHandler);
+#endif
   if (argc > 0) {
     try {
-      std::filesystem::path exeDir = std::filesystem::absolute(std::filesystem::path(argv[0])).parent_path();
+      std::filesystem::path exeDir =
+          std::filesystem::absolute(std::filesystem::path(argv[0])).parent_path();
       if (!exeDir.empty()) {
         std::filesystem::current_path(exeDir);
       }
-    } catch (...) {}
+    } catch (...) {
+    }
   }
   config = new Properties();
   if (argc > 1)
@@ -409,13 +498,16 @@ int main(int argc, const char** argv) {
   if (!returnvalue)
     Log(e_FatalError, "football", "main", "Could not register AudioSystem");
 
-  printf("[MAIN] graphicsSystem->Initialize\n"); fflush(stdout);
+  printf("[MAIN] graphicsSystem->Initialize\n");
+  fflush(stdout);
   graphicsSystem->Initialize(*config);
-  printf("[MAIN] audioSystem->Initialize\n"); fflush(stdout);
+  printf("[MAIN] audioSystem->Initialize\n");
+  fflush(stdout);
   audioSystem->Initialize(*config);
 
   // init scenes
-  printf("[MAIN] init scenes\n"); fflush(stdout);
+  printf("[MAIN] init scenes\n");
+  fflush(stdout);
 
   scene2D = std::shared_ptr<Scene2D>(new Scene2D("scene2D", *config));
   SceneManager::GetInstance().RegisterScene(scene2D);
@@ -437,7 +529,8 @@ int main(int argc, const char** argv) {
   }
 
   // debug pilons
-  printf("[MAIN] loading pilons\n"); fflush(stdout);
+  printf("[MAIN] loading pilons\n");
+  fflush(stdout);
 
   boost::intrusive_ptr<Resource<GeometryData>> geometry =
       ResourceManagerPool::GetInstance()
@@ -513,7 +606,8 @@ int main(int argc, const char** argv) {
   geometry.reset();
 
   // controllers
-  printf("[MAIN] init controllers\n"); fflush(stdout);
+  printf("[MAIN] init controllers\n");
+  fflush(stdout);
 
   HIDKeyboard* keyboard = new HIDKeyboard();
   controllers.push_back(keyboard);
@@ -533,20 +627,23 @@ int main(int argc, const char** argv) {
                           // that i'm setting positional stuff during something else than gametask
                           // put? (or reading during something else than graphics get)
 
-  printf("[MAIN] creating GameTask\n"); fflush(stdout);
+  printf("[MAIN] creating GameTask\n");
+  fflush(stdout);
   gameTask = std::shared_ptr<GameTask>(new GameTask());
 
   std::string fontfilename =
       config->Get("font_filename", "media/fonts/alegreya/AlegreyaSansSC-ExtraBold.ttf");
-  printf("[MAIN] loading font: %s\n", fontfilename.c_str()); fflush(stdout);
+  printf("[MAIN] loading font: %s\n", fontfilename.c_str());
+  fflush(stdout);
   TTF_Font* defaultFont = TTF_OpenFont(fontfilename.c_str(), 32);
   if (!defaultFont)
     Log(e_FatalError, "football", "main", "Could not load font " + fontfilename);
   TTF_Font* defaultOutlineFont = TTF_OpenFont(fontfilename.c_str(), 32);
   TTF_SetFontOutline(defaultOutlineFont, 2);
-  printf("[MAIN] creating MenuTask\n"); fflush(stdout);
-  menuTask = std::shared_ptr<MenuTask>(
-      new MenuTask(kMenuAspectRatio, 0, defaultFont, defaultOutlineFont));
+  printf("[MAIN] creating MenuTask\n");
+  fflush(stdout);
+  menuTask =
+      std::shared_ptr<MenuTask>(new MenuTask(kMenuAspectRatio, 0, defaultFont, defaultOutlineFont));
   if (controllers.size() > 1) {
     HIDGamepad* menuGamepad = dynamic_cast<HIDGamepad*>(controllers.at(1));
     if (menuGamepad) {
@@ -577,7 +674,8 @@ int main(int argc, const char** argv) {
   GetScheduler()->RegisterTaskSequence(graphicsSequence);
 
   // fire!
-  printf("[MAIN] calling Run()\n"); fflush(stdout);
+  printf("[MAIN] calling Run()\n");
+  fflush(stdout);
 
   Run();
 

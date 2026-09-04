@@ -10,6 +10,38 @@
 namespace blunted {
 namespace CareerSim {
 
+struct CareerLeagueTableRow {
+  int teamID = 0;
+  std::string name;
+  int played = 0;
+  int wins = 0;
+  int draws = 0;
+  int losses = 0;
+  int goalsFor = 0;
+  int goalsAgainst = 0;
+  int goalDiff = 0;
+  int points = 0;
+  std::string form;  // e.g. "WDWWL"
+  bool isUserTeam = false;
+};
+
+struct CareerTopScorer {
+  std::string playerName;
+  std::string teamName;
+  int goals = 0;
+  bool isUserPlayer = false;
+};
+
+// Generates the full sorted league standings table for the active career.
+std::vector<CareerLeagueTableRow> GenerateLeagueStandings(
+    const CareerSave& save, const std::vector<std::pair<int, std::string>>& leagueClubs = {});
+
+// Generates the top goalscorers leaderboard for the league.
+std::vector<CareerTopScorer> GetTopScorers(const CareerSave& save);
+
+// Calculates season prize money based on final league position (1..20).
+long long CalculateSeasonPrizeMoney(int leaguePosition);
+
 // Estimates a 20-team league finish from a W/D/L record (deterministic).
 int EstimateLeaguePosition(int wins, int draws, int losses);
 
@@ -35,9 +67,9 @@ void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int 
 void Process3DMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int homeGoals,
                           int awayGoals);
 
-// Rolls the club over to the next season: records history, grows/decrements
-// players, staff and sponsors, advances the calendar, and clears transient
-// transfer state. Caller is responsible for persisting.
+// Rolls the club over to the next season: records history, awards prize money,
+// grows/decrements players, staff and sponsors, advances the calendar, and clears
+// transient transfer state. Caller is responsible for persisting.
 void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
                    std::vector<TransferBid>& bids, std::vector<TransferTarget>& targets);
 
