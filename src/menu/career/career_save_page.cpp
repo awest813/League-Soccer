@@ -48,10 +48,10 @@ CareerSavePage::CareerSavePage(Gui2WindowManager* windowManager, const Gui2PageD
   info->Show();
 
   CareerSave* activeSave = CareerDatabase::GetInstance().GetActiveSave();
-  Gui2Button* btnSaveActive = new Gui2Button(
-      windowManager, "btn_save_active_career", 2, 8.5f, 44, 3,
-      activeSave ? ("💾 " + TR("career_save_active_now") + " (" + activeSave->name + ")")
-                 : ("💾 " + TR("career_save_no_active")));
+  Gui2Button* btnSaveActive =
+      new Gui2Button(windowManager, "btn_save_active_career", 2, 8.5f, 44, 3,
+                     activeSave ? (TR("career_save_active_now") + " (" + activeSave->name + ")")
+                                : TR("career_save_no_active"));
   btnSaveActive->SetActive(activeSave != nullptr);
   btnSaveActive->sig_OnClick.connect([this](...) {
     if (CareerDatabase::GetInstance().SaveCareerData()) {
@@ -66,7 +66,7 @@ CareerSavePage::CareerSavePage(Gui2WindowManager* windowManager, const Gui2PageD
 
   bool hasAutoSave = CareerDatabase::GetInstance().HasSaveSlot(-1);
   Gui2Button* btnRestoreAutoSave = new Gui2Button(windowManager, "btn_restore_autosave", 48, 8.5f,
-                                                  34, 3, "🔄 " + TR("career_load_autosave_btn"));
+                                                  34, 3, TR("career_load_autosave_btn"));
   btnRestoreAutoSave->SetActive(hasAutoSave);
   btnRestoreAutoSave->sig_OnClick.connect([this](...) {
     Gui2Dialog* dlg = new Gui2Dialog(this->windowManager, "dialog_restore_autosave", 20, 30, 60, 30,
@@ -104,8 +104,8 @@ CareerSavePage::CareerSavePage(Gui2WindowManager* windowManager, const Gui2PageD
 
   RefreshSlots();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_career_save_back", 2, 87, 80, 3,
-                                       "🔙 " + TR("action_back"));
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_career_save_back", 2, 87, 80, 3, TR("action_back"));
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   frame->AddView(btnBack);
   btnBack->Show();
@@ -158,19 +158,19 @@ void CareerSavePage::RefreshSlots() {
     slotsGrid->AddView(slotCap, row, 0);
 
     Gui2Button* btnSave = new Gui2Button(windowManager, "btn_slot_save_" + std::to_string(slot), 0,
-                                         0, 8, 3.5f, "💾 " + TR("career_save_btn"));
+                                         0, 8, 3.5f, TR("career_save_btn"));
     btnSave->SetActive(activeSave != nullptr);
     btnSave->sig_OnClick.connect([this, slot](...) { OnSaveSlot(slot); });
     slotsGrid->AddView(btnSave, row, 1);
 
     Gui2Button* btnLoad = new Gui2Button(windowManager, "btn_slot_load_" + std::to_string(slot), 0,
-                                         0, 8, 3.5f, "📂 " + TR("career_load_btn"));
+                                         0, 8, 3.5f, TR("career_load_btn"));
     btnLoad->SetActive(hasSave);
     btnLoad->sig_OnClick.connect([this, slot](...) { OnLoadSlot(slot); });
     slotsGrid->AddView(btnLoad, row, 2);
 
     Gui2Button* btnDelete = new Gui2Button(windowManager, "btn_slot_del_" + std::to_string(slot), 0,
-                                           0, 8, 3.5f, "🗑️ " + TR("career_delete_btn"));
+                                           0, 8, 3.5f, TR("career_delete_btn"));
     btnDelete->SetActive(hasSave);
     btnDelete->sig_OnClick.connect([this, slot](...) { OnDeleteSlot(slot); });
     slotsGrid->AddView(btnDelete, row, 3);

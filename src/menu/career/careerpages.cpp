@@ -160,12 +160,12 @@ CareerMenuPage::CareerMenuPage(Gui2WindowManager* windowManager, const Gui2PageD
 
   std::string saveInfoStr;
   if (hasSummary && summary.isValid) {
-    saveInfoStr = "🏆 " + summary.clubName + "\n" + "📅 Season " + std::to_string(summary.season) +
-                  " (Week " + std::to_string(summary.week) + ")\n" + "👔 " + summary.managerName +
-                  "\n" + "💰 " + FormatCareerMoney(summary.transferBudget) + "\n" +
-                  "🤝 Trust: " + std::to_string(summary.boardConfidence) + "%";
+    saveInfoStr = summary.clubName + "\n" + "Season " + std::to_string(summary.season) + " (Week " +
+                  std::to_string(summary.week) + ")\n" + "Manager: " + summary.managerName + "\n" +
+                  "Budget: " + FormatCareerMoney(summary.transferBudget) + "\n" +
+                  "Trust: " + std::to_string(summary.boardConfidence) + "%";
     if (!summary.timestamp.empty()) {
-      saveInfoStr += "\n🕒 " + summary.timestamp;
+      saveInfoStr += "\nSaved: " + summary.timestamp;
     }
   } else {
     saveInfoStr = TR(hasSave ? "career_menu_save_ready" : "career_menu_save_empty");
@@ -185,7 +185,7 @@ CareerMenuPage::CareerMenuPage(Gui2WindowManager* windowManager, const Gui2PageD
   btnContinue->Show();
 
   Gui2Button* btnLoadSlots = new Gui2Button(windowManager, "btn_career_load_slots", 2, 25, 28, 5,
-                                            "📂 " + TR("career_menu_load_slots"));
+                                            TR("career_menu_load_slots"));
   btnLoadSlots->sig_OnClick.connect([this](...) {
     Properties props;
     props.Set("fromMenu", "true");
@@ -384,7 +384,7 @@ void CareerNewGamePage::RefreshTeamSelect() {
   if (!foundTeam)
     teamSelectPulldown->AddEntry(TR("career_new_no_teams"), "0");
   teamSelectPulldown->SetSelected(0);
-  // Pulldown OnChange only fires on user input — seed the selected ID from the
+  // Pulldown OnChange only fires on user input -- seed the selected ID from the
   // first entry so Start Career never launches with an unset team.
   m_selectedTeamID = teamSelectPulldown->GetSelected();
   if (m_selectedTeamID.empty())
@@ -587,46 +587,45 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
   navFrame->AddView(navTitle);
   navTitle->Show();
 
-  std::string matchdayBtnLabel = "⚽ NEXT MATCHDAY (Week " + std::to_string(week) + ")";
+  std::string matchdayBtnLabel = "NEXT MATCHDAY (Week " + std::to_string(week) + ")";
   Gui2Button* btnMatchday =
       new Gui2Button(windowManager, "btn_matchday", 0, 0, 40, 3, matchdayBtnLabel);
   Gui2Button* btnStandings = new Gui2Button(windowManager, "btn_standings", 0, 0, 40, 2.6f,
-                                            "🏆 " + TR("career_hub_btn_standings"));
+                                            TR("career_hub_btn_standings"));
   Gui2Button* btnSeason = new Gui2Button(windowManager, "btn_season_end", 0, 0, 40, 2.6f,
-                                         "📅 " + TR("career_hub_btn_season_review"));
+                                         TR("career_hub_btn_season_review"));
   Gui2Button* btnSquad =
-      new Gui2Button(windowManager, "btn_squad", 0, 0, 40, 2.6f, "📋 Squad Roster & Form");
+      new Gui2Button(windowManager, "btn_squad", 0, 0, 40, 2.6f, "Squad Roster & Form");
   Gui2Button* btnStrategy =
-      new Gui2Button(windowManager, "btn_strategy", 0, 0, 40, 2.6f, "📐 Tactics & Strategy");
-  Gui2Button* btnTraining = new Gui2Button(windowManager, "btn_training", 0, 0, 40, 2.6f,
-                                           "⚡ Squad Development & Training");
+      new Gui2Button(windowManager, "btn_strategy", 0, 0, 40, 2.6f, "Tactics & Strategy");
+  Gui2Button* btnTraining =
+      new Gui2Button(windowManager, "btn_training", 0, 0, 40, 2.6f, "Squad Development & Training");
   Gui2Button* btnYouth =
-      new Gui2Button(windowManager, "btn_youth", 0, 0, 40, 2.6f, "⭐ Youth Scouting & Academy");
+      new Gui2Button(windowManager, "btn_youth", 0, 0, 40, 2.6f, "Youth Scouting & Academy");
   Gui2Button* btnTransfers =
-      new Gui2Button(windowManager, "btn_transfers", 0, 0, 40, 2.6f, "💼 Transfer Market & Bids");
+      new Gui2Button(windowManager, "btn_transfers", 0, 0, 40, 2.6f, "Transfer Market & Bids");
   Gui2Button* btnFreeAgency =
-      new Gui2Button(windowManager, "btn_freeagency", 0, 0, 40, 2.6f, "🔍 Free Agent Recruiting");
+      new Gui2Button(windowManager, "btn_freeagency", 0, 0, 40, 2.6f, "Free Agent Recruiting");
   Gui2Button* btnPressConf =
-      new Gui2Button(windowManager, "btn_pressconf", 0, 0, 40, 2.6f, "🎙️ Press Conference & Media");
+      new Gui2Button(windowManager, "btn_pressconf", 0, 0, 40, 2.6f, "Press Conference & Media");
   Gui2Button* btnLeagueExp =
-      new Gui2Button(windowManager, "btn_leagueexp", 0, 0, 40, 2.6f, "🌐 League Expansion & Rules");
+      new Gui2Button(windowManager, "btn_leagueexp", 0, 0, 40, 2.6f, "League Expansion & Rules");
   Gui2Button* btnCustomLeague =
-      new Gui2Button(windowManager, "btn_customleague", 0, 0, 40, 2.6f, "⚙️ Custom League Setup");
+      new Gui2Button(windowManager, "btn_customleague", 0, 0, 40, 2.6f, "Custom League Setup");
   Gui2Button* btnGMStaff = nullptr;
   if (IsGMMode()) {
-    btnGMStaff =
-        new Gui2Button(windowManager, "btn_gm_staff", 0, 0, 40, 2.6f, "👥 Hire & Fire Staff");
+    btnGMStaff = new Gui2Button(windowManager, "btn_gm_staff", 0, 0, 40, 2.6f, "Hire & Fire Staff");
     btnGMStaff->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerStaff); });
   }
   Gui2Button* btnSaveLoad = new Gui2Button(windowManager, "btn_career_save_load", 0, 0, 40, 2.6f,
-                                           "💾 " + TR("career_hub_btn_save_load"));
+                                           TR("career_hub_btn_save_load"));
   btnSaveLoad->sig_OnClick.connect([this](...) {
     Properties props;
     props.Set("fromMenu", "false");
     CreatePage(e_PageID_CareerSave, props);
   });
   Gui2Button* btnExit =
-      new Gui2Button(windowManager, "btn_hub_exit", 0, 0, 40, 2.6f, "🚪 Exit to Career Modes");
+      new Gui2Button(windowManager, "btn_hub_exit", 0, 0, 40, 2.6f, "Exit to Career Modes");
 
   btnMatchday->sig_OnClick.connect([this](...) { GoMatchday(); });
   btnStandings->sig_OnClick.connect([this](...) { GoStandings(); });
@@ -762,7 +761,7 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
     auto headlines = CareerDatabase::GetInstance().GetNewsHeadlines(3);
     std::string newsBody = "";
     for (size_t i = 0; i < headlines.size(); i++) {
-      newsBody += "• " + headlines[i] + (i + 1 < headlines.size() ? "\n\n" : "");
+      newsBody += "* " + headlines[i] + (i + 1 < headlines.size() ? "\n\n" : "");
     }
 
     Gui2Caption* newsInfo =
@@ -1049,7 +1048,7 @@ CareerTransferBidDetailPage::CareerTransferBidDetailPage(Gui2WindowManager* wind
   }
 
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_detail_title", 4, 2, 84, 3,
-                                       "💼 TRANSFER NEGOTIATIONS: " + m_playerName);
+                                       "TRANSFER NEGOTIATIONS: " + m_playerName);
   title->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright1));
   bgPanel->AddView(title);
   title->Show();
@@ -1058,7 +1057,7 @@ CareerTransferBidDetailPage::CareerTransferBidDetailPage(Gui2WindowManager* wind
     // Scouting Report & Agent Card
     Gui2Frame* profileFrame = new Gui2Frame(windowManager, "frame_bid_prof", 4, 6, 84, 15, true);
     Gui2Caption* profTitle = new Gui2Caption(windowManager, "cap_bid_proftitle", 2, 1, 80, 2,
-                                             "📋 SCOUTING PROFILE & AGENT INTELLIGENCE");
+                                             "SCOUTING PROFILE & AGENT INTELLIGENCE");
     profTitle->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
     profileFrame->AddView(profTitle);
     profTitle->Show();
@@ -1084,8 +1083,8 @@ CareerTransferBidDetailPage::CareerTransferBidDetailPage(Gui2WindowManager* wind
 
     long long askPrice = target.askingPrice;
     Gui2Button* bidFull = new Gui2Button(windowManager, "btn_bid_full", 0, 0, 76, 3.2f,
-                                         "🥇 Meet Asking Price (" + FormatCareerMoney(askPrice) +
-                                             ") — Guaranteed Acceptance [Key Player]");
+                                         "Meet Asking Price (" + FormatCareerMoney(askPrice) +
+                                             ") -- Guaranteed Acceptance [Key Player]");
     bidFull->sig_OnClick.connect([this, askPrice](...) { PlaceBidForPlayer(askPrice); });
     preferredBidButton = bidFull;
     grid->AddView(bidFull, 0, 0);
@@ -1093,14 +1092,14 @@ CareerTransferBidDetailPage::CareerTransferBidDetailPage(Gui2WindowManager* wind
     long long bid85 = target.askingPrice * 85 / 100;
     Gui2Button* bid85Button = new Gui2Button(
         windowManager, "btn_bid_85", 0, 0, 76, 3.2f,
-        "🥈 Negotiated Offer (" + FormatCareerMoney(bid85) + ") — 85% Price [First Team Role]");
+        "Negotiated Offer (" + FormatCareerMoney(bid85) + ") -- 85% Price [First Team Role]");
     bid85Button->sig_OnClick.connect([this, bid85](...) { PlaceBidForPlayer(bid85); });
     grid->AddView(bid85Button, 1, 0);
 
     long long bid70 = target.askingPrice * 70 / 100;
-    Gui2Button* bid70Button = new Gui2Button(windowManager, "btn_bid_70", 0, 0, 76, 3.2f,
-                                             "🥉 Lowball Counter (" + FormatCareerMoney(bid70) +
-                                                 ") — 70% Price [High Risk of Rejection]");
+    Gui2Button* bid70Button = new Gui2Button(
+        windowManager, "btn_bid_70", 0, 0, 76, 3.2f,
+        "Lowball Counter (" + FormatCareerMoney(bid70) + ") -- 70% Price [High Risk of Rejection]");
     bid70Button->sig_OnClick.connect([this, bid70](...) { PlaceBidForPlayer(bid70); });
     grid->AddView(bid70Button, 2, 0);
 
@@ -1117,7 +1116,7 @@ CareerTransferBidDetailPage::CareerTransferBidDetailPage(Gui2WindowManager* wind
           FormatCareerMoney(totalWithFee) +
           " | Club Budget Remaining: " + FormatCareerMoney(save->transferBudget);
       if (totalWithFee > save->transferBudget) {
-        budgetStr += "\n⚠️ WARNING: Proposed offer exceeds current club transfer funds!";
+        budgetStr += "\nWARNING: Proposed offer exceeds current club transfer funds!";
       }
       Gui2Caption* fee =
           new Gui2Caption(windowManager, "caption_detail_fee", 4, 62, 84, 5, budgetStr);
@@ -1129,8 +1128,8 @@ CareerTransferBidDetailPage::CareerTransferBidDetailPage(Gui2WindowManager* wind
     }
   }
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_detail_back", 26, 85, 40, 3,
-                                       "🔙 Return to Transfer Market");
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_detail_back", 26, 85, 40, 3, "Return to Transfer Market");
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerTransferMarket); });
   bgPanel->AddView(btnBack);
   btnBack->Show();
@@ -1150,7 +1149,7 @@ void CareerTransferBidDetailPage::PlaceBidForPlayer(long long amount) {
   if (bid.status == BidStatus::REJECTED) {
     Gui2Caption* warn =
         new Gui2Caption(windowManager, "caption_bid_warn", 10, 78, 80, 3,
-                        "❌ The selling club and agent have immediately rejected this valuation!");
+                        "The selling club and agent have immediately rejected this valuation!");
     this->AddView(warn);
     warn->Show();
   } else {
@@ -1169,7 +1168,7 @@ CareerPressConferencePage::CareerPressConferencePage(Gui2WindowManager* windowMa
   this->AddView(bgPanel);
   bgPanel->Show();
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_pressconf", 4, 2, 84, 3,
-                                       "🎙️ OFFICIAL POST-MATCH PRESS CONFERENCE");
+                                       "OFFICIAL POST-MATCH PRESS CONFERENCE");
   title->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright1));
   bgPanel->AddView(title);
   title->Show();
@@ -1190,7 +1189,7 @@ CareerPressConferencePage::CareerPressConferencePage(Gui2WindowManager* windowMa
 
   Gui2Frame* questionFrame = new Gui2Frame(windowManager, "frame_pc_question", 4, 10, 84, 15, true);
   Gui2Caption* questionLabel = new Gui2Caption(windowManager, "caption_pc_q_label", 2, 1, 80, 2,
-                                               "📰 Liam Vance (Sky Sports Football):");
+                                               "Liam Vance (Sky Sports Football):");
   questionLabel->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   questionFrame->AddView(questionLabel);
   questionLabel->Show();
@@ -1209,16 +1208,18 @@ CareerPressConferencePage::CareerPressConferencePage(Gui2WindowManager* windowMa
   bgPanel->AddView(answerHint);
   answerHint->Show();
 
-  Gui2Button* btnPositive =
-      new Gui2Button(windowManager, "btn_pc_positive", 0, 0, 76, 4,
-                     "🟢 \"The squad is working exceptionally hard. We take it one match at a "
-                     "time.\" [+1 Team Spirit, +1 Board Trust]");
-  Gui2Button* btnNeutral = new Gui2Button(windowManager, "btn_pc_neutral", 0, 0, 76, 4,
-                                          "🟡 \"We stick to our training principles and ignore "
-                                          "outside media noise.\" [Neutral Impact, Solid Focus]");
-  Gui2Button* btnNegative = new Gui2Button(windowManager, "btn_pc_negative", 0, 0, 76, 4,
-                                           "🔴 \"Standards must be higher. Anyone not performing "
-                                           "will be dropped.\" [High Pressure, Critical Message]");
+  Gui2Button* btnPositive = new Gui2Button(
+      windowManager, "btn_pc_positive", 0, 0, 76, 4,
+      "[Positive] \"The squad is working exceptionally hard. We take it one match at a "
+      "time.\" [+1 Team Spirit, +1 Board Trust]");
+  Gui2Button* btnNeutral =
+      new Gui2Button(windowManager, "btn_pc_neutral", 0, 0, 76, 4,
+                     "[Balanced] \"We stick to our training principles and ignore "
+                     "outside media noise.\" [Neutral Impact, Solid Focus]");
+  Gui2Button* btnNegative =
+      new Gui2Button(windowManager, "btn_pc_negative", 0, 0, 76, 4,
+                     "[Demanding] \"Standards must be higher. Anyone not performing "
+                     "will be dropped.\" [High Pressure, Critical Message]");
 
   btnPositive->sig_OnClick.connect([this](...) { SelectAnswer(0); });
   btnNeutral->sig_OnClick.connect([this](...) { SelectAnswer(1); });
@@ -1229,7 +1230,7 @@ CareerPressConferencePage::CareerPressConferencePage(Gui2WindowManager* windowMa
   grid->AddView(btnNeutral, 1, 0);
   grid->AddView(btnNegative, 2, 0);
   Gui2Button* btnBack = new Gui2Button(windowManager, "btn_pc_back", 0, 0, 76, 3,
-                                       "🔙 \"No further comment.\" [Conclude Press Conference]");
+                                       "\"No further comment.\" [Conclude Press Conference]");
   btnBack->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
   grid->AddView(btnBack, 3, 0);
   grid->UpdateLayout(0.5f, 0.5f, 0.25f, 0.25f);
@@ -1546,7 +1547,7 @@ CareerTrainingPage::CareerTrainingPage(Gui2WindowManager* windowManager,
 
   std::string pointsText = TRF("career_training_points", {std::to_string(tp)});
   if (IsCoachMode()) {
-    pointsText += "  ★ COACH SPECIALIZATION ACTIVE (+100% Seasonal TP & Enhanced Player Growth)";
+    pointsText += "  * COACH SPECIALIZATION ACTIVE (+100% Seasonal TP & Enhanced Player Growth)";
   }
   Gui2Caption* info = new Gui2Caption(windowManager, "caption_tp", 10, 15, 80, 3, pointsText);
   info->SetColor(IsCoachMode() ? windowManager->GetStyle()->GetColor(e_DecorationType_Bright1)
@@ -1573,7 +1574,7 @@ CareerTrainingPage::CareerTrainingPage(Gui2WindowManager* windowManager,
 
   if (IsPlayerMode()) {
     btnIndiv = new Gui2Button(windowManager, "btn_train_indiv", 0, 0, 66, 3,
-                              "🏋️ Individual Training Session (+1 OVR)");
+                              "Individual Training Session (+1 OVR)");
     btnIndiv->sig_OnClick.connect([this](...) { TrainFocus("Individual"); });
     grid->AddView(btnIndiv, 0, 0);
   } else {
@@ -1687,33 +1688,33 @@ CareerStrategyPage::CareerStrategyPage(Gui2WindowManager* windowManager,
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "strat_grid", 20, 26, 60, 58);
 
-  Gui2Button* btnAttacking = new Gui2Button(windowManager, "btn_strat_atk", 0, 0, 60, 3,
-                                            "⚔️ Attacking (High Line Overload)");
+  Gui2Button* btnAttacking =
+      new Gui2Button(windowManager, "btn_strat_atk", 0, 0, 60, 3, "Attacking (High Line Overload)");
   btnAttacking->sig_OnClick.connect([this](...) { SetStrategy("Attacking"); });
   grid->AddView(btnAttacking, 0, 0);
 
   Gui2Button* btnBalanced = new Gui2Button(windowManager, "btn_strat_bal", 0, 0, 60, 3,
-                                           "⚖️ Balanced (Standard Shape & Press)");
+                                           "Balanced (Standard Shape & Press)");
   btnBalanced->sig_OnClick.connect([this](...) { SetStrategy("Balanced"); });
   grid->AddView(btnBalanced, 1, 0);
 
-  Gui2Button* btnDefensive = new Gui2Button(windowManager, "btn_strat_def", 0, 0, 60, 3,
-                                            "🛡️ Defensive (Compact Low Block)");
+  Gui2Button* btnDefensive =
+      new Gui2Button(windowManager, "btn_strat_def", 0, 0, 60, 3, "Defensive (Compact Low Block)");
   btnDefensive->sig_OnClick.connect([this](...) { SetStrategy("Defensive"); });
   grid->AddView(btnDefensive, 2, 0);
 
   Gui2Button* btnPressing = new Gui2Button(windowManager, "btn_strat_press", 0, 0, 60, 3,
-                                           "⚡ High Pressing (Gegenpress & Intensity)");
+                                           "High Pressing (Gegenpress & Intensity)");
   btnPressing->sig_OnClick.connect([this](...) { SetStrategy("High Pressing"); });
   grid->AddView(btnPressing, 3, 0);
 
   Gui2Button* btnPossession = new Gui2Button(windowManager, "btn_strat_poss", 0, 0, 60, 3,
-                                             "🎯 Possession (Tiki-Taka & Control)");
+                                             "Possession (Tiki-Taka & Control)");
   btnPossession->sig_OnClick.connect([this](...) { SetStrategy("Possession"); });
   grid->AddView(btnPossession, 4, 0);
 
   Gui2Button* btnCounter = new Gui2Button(windowManager, "btn_strat_counter", 0, 0, 60, 3,
-                                          "💨 Counter Attack (Fast Transitions)");
+                                          "Counter Attack (Fast Transitions)");
   btnCounter->sig_OnClick.connect([this](...) { SetStrategy("Counter Attack"); });
   grid->AddView(btnCounter, 5, 0);
 
@@ -1934,7 +1935,7 @@ CareerSquadRosterPage::CareerSquadRosterPage(Gui2WindowManager* windowManager,
   }
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_squad_back", 30, 88, 40, 3, "🔙 Back to Career Hub");
+      new Gui2Button(windowManager, "btn_squad_back", 30, 88, 40, 3, "Back to Career Hub");
   btnBack->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
   this->AddView(btnBack);
   btnBack->Show();
@@ -1980,8 +1981,8 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
            "Market Value: %s  |  Weekly Wage: %s  |  Contract: %d Years Left (%s)\n"
            "Match Form / Condition: %s  |  Morale: %s (%d/100)\n\n"
            "ATTRIBUTE BREAKDOWN:\n"
-           "• Pace: %d   • Shooting: %d   • Passing: %d\n"
-           "• Dribbling: %d   • Defending: %d   • Physical: %d",
+           "* Pace: %d   * Shooting: %d   * Passing: %d\n"
+           "* Dribbling: %d   * Defending: %d   * Physical: %d",
            player.preferredPosition.c_str(), player.ovr, player.pot, player.age,
            FormatCareerMoney(player.value).c_str(), FormatCareerMoney(player.wage).c_str(),
            player.contract.yearsRemaining, statusTag.c_str(), condArrow.c_str(), moraleStr.c_str(),
@@ -1999,7 +2000,7 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
 
   if (IsCoachMode()) {
     Gui2Button* btnMotivate = new Gui2Button(windowManager, "btn_motivate_player", 0, 0, 58, 2.5f,
-                                             "🗣️ 1-on-1 Motivational Talk (+15 Morale, +6 Form)");
+                                             "1-on-1 Motivational Talk (+15 Morale, +6 Form)");
     btnMotivate->sig_OnClick.connect([this, pName, dialog](...) {
       dialog->Exit();
       delete dialog;
@@ -2008,8 +2009,8 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
     actionGrid->AddView(btnMotivate, actRow++, 0);
 
     const int tp = save ? save->trainingPoints : 0;
-    std::string drillLabel = "💪 Individual Tactical Drill (+1 OVR, Costs 1 TP) [" +
-                             std::to_string(tp) + " TP Available]";
+    std::string drillLabel =
+        "Individual Tactical Drill (+1 OVR, Costs 1 TP) [" + std::to_string(tp) + " TP Available]";
     Gui2Button* btnDrill =
         new Gui2Button(windowManager, "btn_drill_player", 0, 0, 58, 2.5f, drillLabel);
     btnDrill->sig_OnClick.connect([this, pName, dialog](...) {
@@ -2021,7 +2022,7 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
     actionGrid->AddView(btnDrill, actRow++, 0);
   } else if (!IsPlayerMode()) {
     Gui2Button* btnExtend = new Gui2Button(windowManager, "btn_extend_contract", 0, 0, 58, 2.5f,
-                                           "📝 Offer Contract Extension (+2 Years, +10% Wage)");
+                                           "Offer Contract Extension (+2 Years, +10% Wage)");
     btnExtend->sig_OnClick.connect([this, pName, dialog](...) {
       dialog->Exit();
       delete dialog;
@@ -2029,8 +2030,8 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
     });
     actionGrid->AddView(btnExtend, actRow++, 0);
 
-    std::string listLabel = player.contract.transferListed ? "💼 Remove from Transfer List"
-                                                           : "💼 Place on Transfer List";
+    std::string listLabel =
+        player.contract.transferListed ? "Remove from Transfer List" : "Place on Transfer List";
     Gui2Button* btnToggleList =
         new Gui2Button(windowManager, "btn_toggle_list", 0, 0, 58, 2.5f, listLabel);
     btnToggleList->sig_OnClick.connect([this, pName, dialog](...) {
@@ -2041,7 +2042,7 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
     actionGrid->AddView(btnToggleList, actRow++, 0);
 
     Gui2Button* btnRelease = new Gui2Button(windowManager, "btn_release_action", 0, 0, 58, 2.5f,
-                                            "❌ Release Player from Club");
+                                            "Release Player from Club");
     btnRelease->sig_OnClick.connect([this, pName, dialog](...) {
       dialog->Exit();
       delete dialog;
@@ -2050,7 +2051,7 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
     actionGrid->AddView(btnRelease, actRow++, 0);
   } else if (IsPlayerMode() && save && player.databaseID == save->controlledEntityID) {
     std::string listLabel =
-        player.contract.transferListed ? "💼 Withdraw Transfer Request" : "💼 Request Transfer";
+        player.contract.transferListed ? "Withdraw Transfer Request" : "Request Transfer";
     Gui2Button* btnToggleList =
         new Gui2Button(windowManager, "btn_toggle_list", 0, 0, 58, 2.5f, listLabel);
     btnToggleList->sig_OnClick.connect([this, pName, dialog](...) {
@@ -2062,7 +2063,7 @@ void CareerSquadRosterPage::InspectPlayer(const PlayerCareerState& player) {
   }
 
   Gui2Button* btnClose =
-      new Gui2Button(windowManager, "btn_close_profile", 0, 0, 58, 2.5f, "🔙 Close Player Profile");
+      new Gui2Button(windowManager, "btn_close_profile", 0, 0, 58, 2.5f, "Close Player Profile");
   btnClose->sig_OnClick.connect([dialog](...) {
     dialog->Exit();
     delete dialog;
@@ -2274,7 +2275,7 @@ CareerSeasonPage::CareerSeasonPage(Gui2WindowManager* windowManager, const Gui2P
   }
 
   Gui2Button* btnStandings = new Gui2Button(windowManager, "btn_season_standings", 8, 80, 26, 4,
-                                            "🏆 " + TR("career_hub_btn_standings"));
+                                            TR("career_hub_btn_standings"));
   btnStandings->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerStandings); });
   bgPanel->AddView(btnStandings);
   btnStandings->Show();
@@ -2423,7 +2424,7 @@ void CareerMatchdayPage::BuildFixtures() {
     }
   }
 
-  // One fixture per matchday visit — this is the next league match, not a
+  // One fixture per matchday visit -- this is the next league match, not a
   // random multi-game block.
   const int numFixtures = 1;
 
@@ -2459,7 +2460,7 @@ void CareerMatchdayPage::PopulateGrid() {
 
   // Top action row: everything reachable by arrow keys / d-pad.
   Gui2Button* btnPlayTop =
-      new Gui2Button(windowManager, "btn_md_playtop", 0, 0, 42, 2.8f, "🎮 PLAY 3D MATCH");
+      new Gui2Button(windowManager, "btn_md_playtop", 0, 0, 42, 2.8f, "PLAY 3D MATCH");
   btnPlayTop->sig_OnClick.connect([this](...) { PlayMatch(); });
   if (IsGMMode()) {
     btnPlayTop->SetActive(false);
@@ -2467,7 +2468,7 @@ void CareerMatchdayPage::PopulateGrid() {
   fixtureGrid->AddView(btnPlayTop, row, 0);
 
   Gui2Button* btnSimAllTop =
-      new Gui2Button(windowManager, "btn_md_simalltop", 0, 0, 42, 2.8f, "⚡ QUICK SIMULATE MATCH");
+      new Gui2Button(windowManager, "btn_md_simalltop", 0, 0, 42, 2.8f, "QUICK SIMULATE MATCH");
   btnSimAllTop->sig_OnClick.connect([this](...) { SimulateAll(); });
   fixtureGrid->AddView(btnSimAllTop, row++, 1);
 
@@ -2480,10 +2481,10 @@ void CareerMatchdayPage::PopulateGrid() {
 
     // Atmosphere & Matchday Header
     std::string atmosphere =
-        "Atmosphere: Weather 19°C (Clear) | Pitch: Pristine | Attendance: 96% Capacity";
+        "Atmosphere: Weather 19 deg C (Clear) | Pitch: Pristine | Attendance: 96% Capacity";
     Gui2Caption* header = new Gui2Caption(
         windowManager, "cap_md_hdr_" + std::to_string(i), 0, 0, 84, 2.2f,
-        "🏆 FIXTURE | " + venue + " | " + save->name + " vs " + m_opponents[i] + "\n" + atmosphere);
+        "FIXTURE | " + venue + " | " + save->name + " vs " + m_opponents[i] + "\n" + atmosphere);
     header->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
     fixtureGrid->AddView(header, row++, 0);
 
@@ -2514,12 +2515,12 @@ void CareerMatchdayPage::PopulateGrid() {
     if (res.played) {
       std::string scorersStr;
       if (!res.scorers.empty()) {
-        scorersStr = "⚽ Goals: " + res.scorers[0];
+        scorersStr = "Goals: " + res.scorers[0];
         for (int s = 1; s < static_cast<int>(res.scorers.size()); s++) {
           scorersStr += ", " + res.scorers[s];
         }
       } else {
-        scorersStr = "⚽ Goals: No goals scored (Scoreless Draw / Defensive Battle)";
+        scorersStr = "Goals: No goals scored (Scoreless Draw / Defensive Battle)";
       }
 
       int userShots = isHome ? res.homeShots : res.awayShots;
@@ -2542,7 +2543,7 @@ void CareerMatchdayPage::PopulateGrid() {
                "%s\n"
                "Shots (On Target): %d (%d) vs %d (%d) | Possession: %d%% vs %d%%\n"
                "Corner Kicks: %d - %d | Fouls Committed: %d - %d | Pass Accuracy: 86%%\n"
-               "★ Man of the Match: %s (Rating: %.1f / 10.0)",
+               "Man of the Match: %s (Rating: %.1f / 10.0)",
                scorersStr.c_str(), userShots, std::max(1, userShots * 6 / 10), oppShots,
                std::max(1, oppShots * 6 / 10), userPoss, oppPoss, corners, 4, fouls, 8,
                motmPlayer.c_str(), motmRating);
@@ -2554,12 +2555,12 @@ void CareerMatchdayPage::PopulateGrid() {
 
     if (!res.played) {
       Gui2Button* btnSim = new Gui2Button(windowManager, "btn_md_sim_" + std::to_string(i), 0, 0,
-                                          42, 2.5f, "⚡ Quick Sim Match");
+                                          42, 2.5f, "Quick Sim Match");
       btnSim->sig_OnClick.connect([this, i](...) { SimulateMatch(i); });
       fixtureGrid->AddView(btnSim, row, 0);
 
       Gui2Button* btnPlay = new Gui2Button(windowManager, "btn_md_play_" + std::to_string(i), 0, 0,
-                                           42, 2.5f, "🎮 Play 3D Match");
+                                           42, 2.5f, "Play 3D Match");
       btnPlay->sig_OnClick.connect([this, i](...) { PlayMatchFixture(i); });
       if (IsGMMode()) {
         btnPlay->SetActive(false);
@@ -2570,7 +2571,7 @@ void CareerMatchdayPage::PopulateGrid() {
 
   // Last row: Back to Hub, reachable by the same navigation as everything else.
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_matchday_back", 0, 0, 42, 2.5f, "🔙 Back to Career Hub");
+      new Gui2Button(windowManager, "btn_matchday_back", 0, 0, 42, 2.5f, "Back to Career Hub");
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   fixtureGrid->AddView(btnBack, row++, 0);
 
@@ -2693,7 +2694,7 @@ void CareerMatchdayPage::GoBack() {
     CareerDatabase::GetInstance().SaveCareerData();
     CareerDatabase::GetInstance().AutoSave();
   }
-  // CreatePage already Exit()s and deletes this page — do not delete again.
+  // CreatePage already Exit()s and deletes this page -- do not delete again.
   CreatePage(GetHubPageID());
 }
 

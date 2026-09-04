@@ -89,23 +89,23 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
       "WHERE team_id = " +
       teamID);
   if (!standingsResult->data.empty()) {
-    standingsLine = loc.TranslateAndFormat("league_season_pulse_body",
-                                           {SafeValue(standingsResult.get(), 0, 1, "0"),
-                                            SafeValue(standingsResult.get(), 0, 0, "0")});
+    standingsLine = loc.TranslateAndFormat(
+        "league_season_pulse_body",
+        {SafeValue(standingsResult.get(), 0, 1, "0"), SafeValue(standingsResult.get(), 0, 0, "0")});
   }
 
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_league_forward", 6, 5, 88, 90, true);
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_forward", 3, 2, 40, 3,
-                      loc.Translate("league_dashboard"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_forward", 3, 2, 40, 3,
+                                       loc.Translate("league_dashboard"));
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_forward_info", 3, 6, 40, 2,
-                                      loc.TranslateAndFormat("league_manager_date", {mgrName, dateStr}));
+  Gui2Caption* info =
+      new Gui2Caption(windowManager, "caption_forward_info", 3, 6, 40, 2,
+                      loc.TranslateAndFormat("league_manager_date", {mgrName, dateStr}));
   frame->AddView(info);
   info->Show();
 
@@ -113,41 +113,31 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   frame->AddView(navPanel);
   navPanel->Show();
 
-  Gui2Caption* navTitle =
-      new Gui2Caption(windowManager, "caption_forward_nav_title", 2, 2, 36, 2,
-                      loc.Translate("league_club_actions"));
+  Gui2Caption* navTitle = new Gui2Caption(windowManager, "caption_forward_nav_title", 2, 2, 36, 2,
+                                          loc.Translate("league_club_actions"));
   navPanel->AddView(navTitle);
   navTitle->Show();
 
-  Gui2Button* btnPlayMatch =
-      new Gui2Button(windowManager, "btn_forward_playmatch", 0, 0, 36, 4,
-                     loc.Translate("league_play_next_match"));
-  Gui2Button* btnAdvance =
-      new Gui2Button(windowManager, "btn_forward_advance", 0, 0, 36, 4,
-                     loc.Translate("league_advance_matchday"));
-  Gui2Button* btnTeam =
-      new Gui2Button(windowManager, "btn_forward_team", 0, 0, 36, 4,
-                     loc.Translate("league_team_management"));
-  Gui2Button* btnCalendar =
-      new Gui2Button(windowManager, "btn_forward_calendar", 0, 0, 36, 4,
-                     loc.Translate("league_calendar"));
-  Gui2Button* btnStandings =
-      new Gui2Button(windowManager, "btn_forward_standings", 0, 0, 36, 4,
-                     loc.Translate("league_standings"));
-  Gui2Button* btnManagement =
-      new Gui2Button(windowManager, "btn_forward_management", 0, 0, 36, 4,
-                     loc.Translate("league_management"));
-  Gui2Button* btnInbox =
-      new Gui2Button(windowManager, "btn_forward_inbox", 0, 0, 36, 4, loc.Translate("league_inbox"));
-  Gui2Button* btnSystem =
-      new Gui2Button(windowManager, "btn_forward_system", 0, 0, 36, 4,
-                     loc.Translate("league_system"));
-  Gui2Button* btnLeagueHub =
-      new Gui2Button(windowManager, "btn_forward_league", 0, 0, 36, 4,
-                     loc.Translate("league_back_hub"));
-  Gui2Button* btnMainMenu =
-      new Gui2Button(windowManager, "btn_forward_mainmenu", 0, 0, 36, 4,
-                     loc.Translate("league_return_main_menu"));
+  Gui2Button* btnPlayMatch = new Gui2Button(windowManager, "btn_forward_playmatch", 0, 0, 36, 4,
+                                            loc.Translate("league_play_next_match"));
+  Gui2Button* btnAdvance = new Gui2Button(windowManager, "btn_forward_advance", 0, 0, 36, 4,
+                                          loc.Translate("league_advance_matchday"));
+  Gui2Button* btnTeam = new Gui2Button(windowManager, "btn_forward_team", 0, 0, 36, 4,
+                                       loc.Translate("league_team_management"));
+  Gui2Button* btnCalendar = new Gui2Button(windowManager, "btn_forward_calendar", 0, 0, 36, 4,
+                                           loc.Translate("league_calendar"));
+  Gui2Button* btnStandings = new Gui2Button(windowManager, "btn_forward_standings", 0, 0, 36, 4,
+                                            loc.Translate("league_standings"));
+  Gui2Button* btnManagement = new Gui2Button(windowManager, "btn_forward_management", 0, 0, 36, 4,
+                                             loc.Translate("league_management"));
+  Gui2Button* btnInbox = new Gui2Button(windowManager, "btn_forward_inbox", 0, 0, 36, 4,
+                                        loc.Translate("league_inbox"));
+  Gui2Button* btnSystem = new Gui2Button(windowManager, "btn_forward_system", 0, 0, 36, 4,
+                                         loc.Translate("league_system"));
+  Gui2Button* btnLeagueHub = new Gui2Button(windowManager, "btn_forward_league", 0, 0, 36, 4,
+                                            loc.Translate("league_back_hub"));
+  Gui2Button* btnMainMenu = new Gui2Button(windowManager, "btn_forward_mainmenu", 0, 0, 36, 4,
+                                           loc.Translate("league_return_main_menu"));
 
   btnPlayMatch->sig_OnClick.connect([this](...) { GoPage(e_PageID_League_PreMatch); });
   btnAdvance->sig_OnClick.connect([this](...) {
@@ -185,16 +175,14 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   frame->AddView(clubPanel);
   clubPanel->Show();
 
-  Gui2Caption* clubTitle =
-      new Gui2Caption(windowManager, "caption_forward_club_title", 2, 2, 32, 2,
-                      loc.Translate("league_club_snapshot"));
+  Gui2Caption* clubTitle = new Gui2Caption(windowManager, "caption_forward_club_title", 2, 2, 32, 2,
+                                           loc.Translate("league_club_snapshot"));
   clubPanel->AddView(clubTitle);
   clubTitle->Show();
 
   // Club crest beside the snapshot text.
-  Gui2Image* clubLogo =
-      new Gui2Image(windowManager, "image_forward_club_logo", 25, 6.5f, 9,
-                    windowManager->GetHeightPercentForWidth(9, 1.0f));
+  Gui2Image* clubLogo = new Gui2Image(windowManager, "image_forward_club_logo", 25, 6.5f, 9,
+                                      windowManager->GetHeightPercentForWidth(9, 1.0f));
   clubPanel->AddView(clubLogo);
   {
     std::string logoPath = LeagueResolveLogoPath(atoi(teamID.c_str()));
@@ -202,10 +190,10 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   }
   clubLogo->Show();
 
-  Gui2Caption* clubBody = new Gui2Caption(
-      windowManager, "caption_forward_club_body", 2, 6, 22, 10,
-      teamName + "\n" + leagueName + "\n" +
-          loc.TranslateAndFormat("league_players_registered", {squadSize}));
+  Gui2Caption* clubBody =
+      new Gui2Caption(windowManager, "caption_forward_club_body", 2, 6, 22, 10,
+                      teamName + "\n" + leagueName + "\n" +
+                          loc.TranslateAndFormat("league_players_registered", {squadSize}));
   clubPanel->AddView(clubBody);
   clubBody->Show();
 
@@ -214,16 +202,14 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   frame->AddView(seasonPanel);
   seasonPanel->Show();
 
-  Gui2Caption* seasonTitle =
-      new Gui2Caption(windowManager, "caption_forward_season_title", 2, 2, 32, 2,
-                      loc.Translate("league_season_pulse"));
+  Gui2Caption* seasonTitle = new Gui2Caption(windowManager, "caption_forward_season_title", 2, 2,
+                                             32, 2, loc.Translate("league_season_pulse"));
   seasonPanel->AddView(seasonTitle);
   seasonTitle->Show();
 
-  Gui2Caption* seasonBody =
-      new Gui2Caption(windowManager, "caption_forward_season_body", 2, 6, 32, 8,
-                      standingsLine + "\n" + loc.TranslateAndFormat("league_unread_inbox",
-                                                                   {unreadMessages}));
+  Gui2Caption* seasonBody = new Gui2Caption(
+      windowManager, "caption_forward_season_body", 2, 6, 32, 8,
+      standingsLine + "\n" + loc.TranslateAndFormat("league_unread_inbox", {unreadMessages}));
   seasonPanel->AddView(seasonBody);
   seasonBody->Show();
 
@@ -232,9 +218,8 @@ LeagueForwardPage::LeagueForwardPage(Gui2WindowManager* windowManager, const Gui
   frame->AddView(fixturePanel);
   fixturePanel->Show();
 
-  Gui2Caption* fixtureTitle =
-      new Gui2Caption(windowManager, "caption_forward_fixture_title", 2, 2, 32, 2,
-                      loc.Translate("league_next_fixture"));
+  Gui2Caption* fixtureTitle = new Gui2Caption(windowManager, "caption_forward_fixture_title", 2, 2,
+                                              32, 2, loc.Translate("league_next_fixture"));
   fixturePanel->AddView(fixtureTitle);
   fixtureTitle->Show();
 
@@ -270,7 +255,7 @@ void LeagueForwardPage::Process() {
     GoPage(e_PageID_League_Calendar);
   } else if (league_menu_smoke::RouteEnabled("standings_table")) {
     printf("[menu-smoke] League dashboard opening Standings\n");
-    GoPage(e_PageID_League_Standings_League_Table);
+    GoPage(e_PageID_League_Standings);
   } else if (league_menu_smoke::RouteEnabled("team_overview")) {
     printf("[menu-smoke] League dashboard opening Team Management\n");
     GoPage(e_PageID_League_Team);

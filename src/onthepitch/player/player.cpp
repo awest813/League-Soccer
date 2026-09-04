@@ -477,7 +477,9 @@ void Player::Put2D() {
       Line line;
       line.SetVertex(0, Vector3(x1, y1, 0));
       line.SetVertex(1, Vector3(x2, y2, 0));
-      GetDebugOverlay()->DrawLine(line, color, 240);
+      if (GetDebugOverlay()) {
+        GetDebugOverlay()->DrawLine(line, color, 240);
+      }
 
       /*
       Triangle triangle;

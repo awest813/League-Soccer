@@ -1400,7 +1400,7 @@ void Match::Put() {
   camera->SetCapping(fetchedbuf_cameraNearCap, fetchedbuf_cameraFarCap);
 
   if (!GetPause()) {
-    if (GetDebugMode() == e_DebugMode_AI) {
+    if (GetDebugMode() == e_DebugMode_AI && GetDebugOverlay()) {
       int contextW, contextH, bpp;  // context
       GetScene2D()->GetContextSize(contextW, contextH, bpp);
       // fade out effect
@@ -1473,7 +1473,7 @@ void Match::Put() {
     // replay
     CaptureReplayFrame(fetchedbuf_actualTime_ms + fetchedbuf_timeDelta);
 
-    if (GetDebugMode() == e_DebugMode_AI)
+    if (GetDebugMode() == e_DebugMode_AI && GetDebugOverlay())
       GetDebugOverlay()->OnChange();
 
   } else {

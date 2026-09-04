@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "AIfunctions.hpp"
 
 #include <cmath>
@@ -502,7 +501,7 @@ void AI_GetBestDribbleMovement(Match* match, int thisPlayerID, const MentalImage
     spot.exp = 1.0f;                      // 0.7f;
     forceField.push_back(spot);
 
-    if (GetDebugMode() == e_DebugMode_AI && team->GetID() == 0) {
+    if (GetDebugMode() == e_DebugMode_AI && team->GetID() == 0 && GetDebugOverlay()) {
       int scrX, scrY;
       GetDebugOverlayCoord(match, spot.origin, scrX, scrY);
       // GetDebugOverlay()->DrawLine(line, color, 240);

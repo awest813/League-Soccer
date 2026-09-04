@@ -27,7 +27,7 @@ void DefaultOffenseStrategy::RequestInput(const MentalImage* mentalImage, Vector
   Vector3 desiredPosition = desiredPosition_static * staticPositionBias +
                             desiredPosition_dynamic * (1.0f - staticPositionBias);
 
-  if (GetDebugMode() == e_DebugMode_AI) {
+  if (GetDebugMode() == e_DebugMode_AI && GetDebugOverlay()) {
     int scrX, scrY;
     GetDebugOverlayCoord(match, desiredPosition, scrX, scrY);
     Vector3 color(55, 55, 155);
@@ -59,7 +59,7 @@ void DefaultOffenseStrategy::RequestInput(const MentalImage* mentalImage, Vector
         pow(clamp(1.3f - mindset - controller->GetFadingTeamPossessionAmount(), 0.0f, 1.0f), 0.7f));
   }
 
-  if (GetDebugMode() == e_DebugMode_AI) {
+  if (GetDebugMode() == e_DebugMode_AI && GetDebugOverlay()) {
     int scrX, scrY;
     GetDebugOverlayCoord(match, desiredPosition, scrX, scrY);
     Vector3 color(155, 155, 255);

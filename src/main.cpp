@@ -7,8 +7,10 @@
 #endif
 #include <cstdio>
 
-#include <dbghelp.h>
 #include <windows.h>
+// clang-format off
+#include <dbghelp.h>
+// clang-format on
 #pragma comment(lib, "dbghelp.lib")
 
 static LONG WINAPI CustomCrashHandler(EXCEPTION_POINTERS* pExceptionInfo) {
