@@ -308,6 +308,15 @@ void MainMenuPage::Process() {
       GetMenuTask()->QuitGame();
       return;
     }
+    if (auditRoute == "career_training") {
+      const std::string directory = GetConfiguration()->Get("menu_smoke_career_save_directory", "");
+      if (directory.empty() || !CareerDatabase::GetInstance().Initialize(directory) ||
+          !CareerDatabase::GetInstance().LoadCareerSave("Training Audit")) {
+        printf("[menu-layout] Training fixture could not be loaded\n");
+        GetMenuTask()->QuitGame();
+        return;
+      }
+    }
     Properties properties;
     properties.Set("controllerID", -1); // Exercise the missing-device fallback safely.
     CreatePage(target, properties);

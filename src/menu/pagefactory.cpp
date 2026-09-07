@@ -382,7 +382,10 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
     }
     const std::string smokeRoute = GetConfiguration()->Get("menu_smoke_test_page", "");
     if (!smokeRoute.empty() && pageData.pageID == StandaloneMenuSmokePage(smokeRoute)) {
-      printf("[menu-smoke] Standalone %s reached successfully\n", smokeRoute.c_str());
+      if (smokeRoute != "career_training" || SmokeCareerTraining(windowManager, page))
+        printf("[menu-smoke] Standalone %s reached successfully\n", smokeRoute.c_str());
+      else
+        printf("[menu-smoke] Career training navigation failed\n");
       GetMenuTask()->QuitGame();
     }
   }

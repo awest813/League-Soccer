@@ -1535,114 +1535,90 @@ void CareerFreeAgencyPage::RecruitPlayer(const std::string& playerName) {
 CareerTrainingPage::CareerTrainingPage(Gui2WindowManager* windowManager,
                                        const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
-  Gui2Frame* bgPanel = new Gui2Frame(windowManager, "bg_career_train", 5, 0, 90, 100, true);
-  this->AddView(bgPanel);
-  bgPanel->Show();
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_training", 10, 5, 80, 3, TR("career_training_title"));
-  this->AddView(title);
-  title->Show();
-
-  CareerSave* activeSave = CareerDatabase::GetInstance().GetActiveSave();
-  int tp = activeSave ? activeSave->trainingPoints : 0;
-
-  std::string pointsText = TRF("career_training_points", {std::to_string(tp)});
-  if (IsCoachMode()) {
-    pointsText += "  * COACH SPECIALIZATION ACTIVE (+100% Seasonal TP & Enhanced Player Growth)";
+  auto* background = new Gui2Frame(windowManager, "bg_career_train", 5, 0, 90, 100, true);
+  AddView(background);
+  background->Show();
+  auto caption = [&](const std::string& id, float x, float y, float width,
+                     const std::string& text) {
+    auto* label = new Gui2Caption(windowManager, id, x, y, width, 3, text);
+    AddView(label);
+    label->Show();
+  };
+  CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+  caption("training_title", 10, 5, 80, TR("career_training_title"));
+  caption("plan_hint", 10, 10, 80, TR("career_plan_hint"));
+  auto* plans = new Gui2Grid(windowManager, "training_plans", 10, 16, 80, 4);
+  const char* planKeys[] = {"career_plan_balanced", "career_plan_development", "career_plan_recovery"};
+  for (int i = 0; i < 3; ++i) {
+    const auto plan = static_cast<CareerTrainingPlan>(i);
+    std::string label = TR(planKeys[i]);
+    if (save && save->trainingPlan == plan) label = "[ " + label + " ]";
+    auto* button = new Gui2Button(windowManager, "training_plan_" + std::to_string(i),
+                                  0, 0, 25, 3, label);
+    button->SetActive(save != nullptr);
+    button->sig_OnClick.connect([this, plan](...) {
+      if (CareerDatabase::GetInstance().SetTrainingPlan(plan))
+        CreatePage(e_PageID_CareerTraining);
+    });
+    plans->AddView(button, 0, i);
   }
-  Gui2Caption* info = new Gui2Caption(windowManager, "caption_tp", 10, 15, 80, 3, pointsText);
-  info->SetColor(IsCoachMode() ? windowManager->GetStyle()->GetColor(e_DecorationType_Bright1)
-                               : windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
-  this->AddView(info);
-  info->Show();
-
-  std::string hintText = IsCoachMode() ? "As Head Coach, your training sessions yield superior "
-                                         "attribute growth and higher match form boosts."
-                                       : TR("career_training_hint");
-  Gui2Caption* hint = new Gui2Caption(windowManager, "caption_train_hint", 10, 19, 80, 3, hintText);
-  this->AddView(hint);
-  hint->Show();
-
-  Gui2Grid* grid = new Gui2Grid(windowManager, "train_grid", 15, 30, 70, 50);
-
-  Gui2Button* btnIndiv = nullptr;
-  Gui2Button* btnGeneral = nullptr;
-  Gui2Button* btnAttacking = nullptr;
-  Gui2Button* btnDefending = nullptr;
-  Gui2Button* btnPhysical = nullptr;
-  Gui2Button* btnTactical = nullptr;
-  Gui2Button* btnShooting = nullptr;
-
-  if (IsPlayerMode()) {
-    btnIndiv = new Gui2Button(windowManager, "btn_train_indiv", 0, 0, 66, 3,
-                              "Individual Training Session (+1 OVR)");
-    btnIndiv->sig_OnClick.connect([this](...) { TrainFocus("Individual"); });
-    grid->AddView(btnIndiv, 0, 0);
-  } else {
-    btnGeneral =
-        new Gui2Button(windowManager, "btn_train_gen", 0, 0, 66, 3, TR("career_train_general"));
-    btnGeneral->sig_OnClick.connect([this](...) { TrainSquad(); });
-    grid->AddView(btnGeneral, 0, 0);
-
-    btnAttacking =
-        new Gui2Button(windowManager, "btn_train_atk", 0, 0, 66, 3, TR("career_train_attacking"));
-    btnAttacking->sig_OnClick.connect([this](...) { TrainFocus("Attacking"); });
-    grid->AddView(btnAttacking, 1, 0);
-
-    btnDefending =
-        new Gui2Button(windowManager, "btn_train_def", 0, 0, 66, 3, TR("career_train_defending"));
-    btnDefending->sig_OnClick.connect([this](...) { TrainFocus("Defending"); });
-    grid->AddView(btnDefending, 2, 0);
-
-    btnPhysical =
-        new Gui2Button(windowManager, "btn_train_phy", 0, 0, 66, 3, TR("career_train_physical"));
-    btnPhysical->sig_OnClick.connect([this](...) { TrainFocus("Physical"); });
-    grid->AddView(btnPhysical, 3, 0);
-
-    btnTactical =
-        new Gui2Button(windowManager, "btn_train_tac", 0, 0, 66, 3, TR("career_train_tactical"));
-    btnTactical->sig_OnClick.connect([this](...) { TrainFocus("Tactical"); });
-    grid->AddView(btnTactical, 4, 0);
-
-    btnShooting =
-        new Gui2Button(windowManager, "btn_train_shoot", 0, 0, 66, 3, TR("career_train_shooting"));
-    btnShooting->sig_OnClick.connect([this](...) { TrainFocus("Shooting"); });
-    grid->AddView(btnShooting, 5, 0);
+  plans->UpdateLayout(1);
+  AddView(plans);
+  plans->Show();
+  const char* detailKeys[] = {"career_plan_balanced_detail", "career_plan_development_detail", "career_plan_recovery_detail"};
+  int selected = save ? static_cast<int>(save->trainingPlan) : 0;
+  if (selected < 0 || selected > 2) selected = 0;
+  caption("plan_detail", 10, 23, 80, TR(detailKeys[selected]));
+  caption("development_hint", 10, 28, 80, TR("career_development_hint"));
+  caption("development_support", 10, 31, 80, TR("career_development_support"));
+  caption("session_hint", 10, 85, 80, TR("career_session_hint"));
+  caption("session_points", 10, 35, 34, TRF("career_training_points", {std::to_string(save ? save->trainingPoints : 0)}));
+  caption("progress_title", 48, 35, 42, TR("career_development_title"));
+  auto* sessions = new Gui2Grid(windowManager, "training_sessions", 10, 41, 34, 40);
+  const char* focuses[] = {"General", "Attacking", "Defending", "Physical", "Tactical", "Shooting"};
+  const char* keys[] = {"career_train_general", "career_train_attacking", "career_train_defending", "career_train_physical", "career_train_tactical", "career_train_shooting"};
+  for (int i = 0; i < (IsPlayerMode() ? 1 : 6); ++i) {
+    std::string focus = IsPlayerMode() ? "Individual" : focuses[i];
+    auto* button = new Gui2Button(windowManager, "training_session_" + std::to_string(i),
+                                  0, 0, 32, 3, TR(IsPlayerMode() ? "career_train_individual" : keys[i]));
+    button->SetActive(save && save->trainingPoints > 0);
+    button->sig_OnClick.connect([this, focus](...) {
+      if (focus == "General") TrainSquad(); else TrainFocus(focus);
+    });
+    sessions->AddView(button, i, 0);
   }
-
-  grid->UpdateLayout(0.5);
-  this->AddView(grid);
-  grid->Show();
-
-  Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_tr_back", 30, 90, 40, 3, TR("career_back_hub"));
-  btnBack->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
-  this->AddView(btnBack);
-  btnBack->Show();
-
-  const bool canTrain = tp > 0;
-  if (IsPlayerMode() && btnIndiv) {
-    btnIndiv->SetActive(canTrain);
-    if (canTrain)
-      btnIndiv->SetFocus();
-    else
-      btnBack->SetFocus();
-  } else if (!IsPlayerMode() && btnGeneral) {
-    btnGeneral->SetActive(canTrain);
-    btnAttacking->SetActive(canTrain);
-    btnDefending->SetActive(canTrain);
-    btnPhysical->SetActive(canTrain);
-    btnTactical->SetActive(canTrain);
-    btnShooting->SetActive(canTrain);
-    if (canTrain)
-      btnGeneral->SetFocus();
-    else
-      btnBack->SetFocus();
-  } else {
-    btnBack->SetFocus();
+  sessions->UpdateLayout(1);
+  AddView(sessions);
+  sessions->Show();
+  auto* progress = new Gui2Grid(windowManager, "development_players", 48, 41, 42, 42);
+  progress->SetMaxVisibleRows(6);
+  progress->SetReadOnlyScrolling(true);
+  int row = 0;
+  auto addPlayer = [&](const PlayerCareerState& player, bool academy) {
+    const std::string id = "development_" + std::to_string(row);
+    auto* card = new Gui2Frame(windowManager, id, 0, 0, 40, 5.5, false);
+    auto* name = new Gui2Caption(windowManager, id + "_name", 0, 0, 40, 2.5,
+                                 (academy ? TR("career_academy_short") + " " : "") + player.name);
+    auto* stats = new Gui2Caption(windowManager, id + "_stats", 0, 3, 40, 2.5,
+        TRF("career_development_stats", {std::to_string(player.ovr), std::to_string(player.pot),
+             std::to_string(player.developmentPoints), std::to_string(player.fitness)}));
+    card->AddView(name); name->Show();
+    card->AddView(stats); stats->Show();
+    progress->AddView(card, row++, 0);
+  };
+  if (save) {
+    for (const auto& player : save->roster) addPlayer(player, false);
+    for (const auto& player : save->youthAcademy) addPlayer(player, true);
   }
-
-  this->Show();
+  progress->UpdateLayout(0.5);
+  AddView(progress);
+  progress->Show();
+  auto* back = new Gui2Button(windowManager, "btn_tr_back", 30, 90, 40, 3, TR("career_back_hub"));
+  back->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
+  AddView(back);
+  back->Show();
+  if (save) plans->SetFocus(); else back->SetFocus();
+  Show();
 }
 
 CareerTrainingPage::~CareerTrainingPage() {}

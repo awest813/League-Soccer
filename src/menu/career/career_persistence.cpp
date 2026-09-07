@@ -45,6 +45,7 @@ std::string Serialize(const CareerSave& save, const std::vector<TransferBid>& bi
   file << "stadiumCondition=" << save.stadium.condition << "\n";
   file << "stadiumFanSatisfaction=" << save.stadium.fanSatisfaction << "\n";
   file << "controlledEntityID=" << save.controlledEntityID << "\n";
+  file << "trainingPlan=" << static_cast<int>(save.trainingPlan) << "\n";
   file << "trainingPoints=" << save.trainingPoints << "\n";
   file << "scoutingNetworkLevel=" << save.scoutingNetworkLevel << "\n";
   file << "objective=" << CareerCommon::Sanitize(save.objective) << "\n";
@@ -181,6 +182,10 @@ bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferB
       fresh.stadium.fanSatisfaction = CareerCommon::SafeStoi(val, fresh.stadium.fanSatisfaction);
     else if (key == "controlledEntityID")
       fresh.controlledEntityID = CareerCommon::SafeStoi(val);
+    else if (key == "trainingPlan") {
+      int plan = CareerCommon::SafeStoi(val, 0);
+      fresh.trainingPlan = plan >= 0 && plan <= 2 ? static_cast<CareerTrainingPlan>(plan) : CareerTrainingPlan::BALANCED;
+    }
     else if (key == "trainingPoints")
       fresh.trainingPoints = CareerCommon::SafeStoi(val, fresh.trainingPoints);
     else if (key == "scoutingNetworkLevel")

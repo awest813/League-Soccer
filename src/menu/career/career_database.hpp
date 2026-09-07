@@ -69,6 +69,7 @@ public:
 
   void RecruitFreeAgent(const std::string& playerName);
   bool TrainSquad();
+  bool SetTrainingPlan(CareerTrainingPlan plan);
   bool TrainFocus(const std::string& focusArea);
   bool MotivatePlayer(const std::string& playerName);
   bool DrillPlayer(const std::string& playerName);

@@ -8,6 +8,8 @@
 enum class ClubRole { STAR, STARTER, ROTATION, PROSPECT, BENCH, RESERVE };
 enum class MoraleState { EXCELLENT, GOOD, NEUTRAL, LOW, UNHAPPY };
 enum class InjuryStatus { HEALTHY, DAY_TO_DAY, OUT_SHORT_TERM, OUT_LONG_TERM };
+enum class CareerTrainingPlan { BALANCED, DEVELOPMENT, RECOVERY };
+
 enum class TrainingFocus { FITNESS, SHARPNESS, ATTACKING, DEFENDING, SET_PIECES, YOUTH };
 enum class TransferStatus { NONE, LISTED, WANTED, REJECTED_MOVE, ON_SHORTLIST };
 
@@ -71,6 +73,7 @@ struct PlayerCareerState {
   int careerGoals = 0;
   int careerAssists = 0;
   int matchesPlayed = 0;
+  int developmentPoints = 0;
   int databaseID = 0;
 };
 
@@ -357,6 +360,7 @@ struct CareerSave {
   std::vector<PlayerCareerState> freeAgents;
   std::vector<PlayerCareerState> youthAcademy;
   int trainingPoints = 10;
+  CareerTrainingPlan trainingPlan = CareerTrainingPlan::BALANCED;
   int scoutingNetworkLevel = 1;
   std::string activeStrategy = "Balanced";
   std::map<std::string, int> legacyStats;

@@ -261,3 +261,138 @@ TEST(CareerBoardModuleTest, NearMissPenaltyIsHalved) {
 }
 
 }  // namespace
+
+namespace {
+PlayerCareerState DevelopmentPlayer() {
+  PlayerCareerState player;
+  player.name = "Young prospect";
+  player.age = 19;
+  player.ovr = 60;
+  player.pot = 80;
+  player.fitness = 80;
+  return player;
+}
+
+TEST(CareerDevelopmentTest, PlansTradeDevelopmentForFitnessWithoutSpendingPoints) {
+  RecordingEvents events;
+  CareerSave balanced, intensive, recovery;
+  balanced.roster = intensive.roster = recovery.roster = {DevelopmentPlayer()};
+  intensive.trainingPlan = CareerTrainingPlan::DEVELOPMENT;
+  recovery.trainingPlan = CareerTrainingPlan::RECOVERY;
+  for (auto* save : {&balanced, &intensive, &recovery})
+    blunted::CareerTraining::DevelopAfterMatch(*save, events);
+  EXPECT_EQ(balanced.roster[0].developmentPoints, 5);
+  EXPECT_EQ(balanced.roster[0].fitness, 82);
+  EXPECT_EQ(intensive.roster[0].developmentPoints, 9);
+  EXPECT_EQ(intensive.roster[0].fitness, 76);
+  EXPECT_EQ(recovery.roster[0].developmentPoints, 0);
+  EXPECT_EQ(recovery.roster[0].fitness, 90);
+  EXPECT_EQ(intensive.trainingPoints, 10);
+}
+
+TEST(CareerDevelopmentTest, ProgressCarriesUntilPotentialAndAcademySurvivesPromotion) {
+  RecordingEvents events;
+  CareerSave save;
+  auto player = DevelopmentPlayer();
+  player.developmentPoints = 98;
+  save.youthAcademy.push_back(player);
+  save.trainingPlan = CareerTrainingPlan::RECOVERY;
+  blunted::CareerTraining::DevelopAfterMatch(save, events);
+  ASSERT_EQ(save.youthAcademy[0].ovr, 61);
+  EXPECT_EQ(save.youthAcademy[0].developmentPoints, 3);
+  blunted::CareerTraining::PromoteYouthPlayer(save, events, player.name);
+  ASSERT_EQ(save.roster.size(), 1u);
+  EXPECT_EQ(save.roster[0].developmentPoints, 3);
+  save.roster[0].pot = 62;
+  save.roster[0].developmentPoints = 99;
+  save.trainingPlan = CareerTrainingPlan::BALANCED;
+  for (int i = 0; i < 40; ++i) blunted::CareerTraining::DevelopAfterMatch(save, events);
+  EXPECT_EQ(save.roster[0].ovr, 62);
+  EXPECT_EQ(save.roster[0].developmentPoints, 0);
+}
+
+TEST(CareerDevelopmentTest, TiredAndInjuredPlayersRestBeforeDeveloping) {
+  RecordingEvents events;
+  CareerSave save;
+  save.trainingPlan = CareerTrainingPlan::DEVELOPMENT;
+  save.roster = {DevelopmentPlayer(), DevelopmentPlayer()};
+  save.roster[0].fitness = 59;
+  save.roster[1].injury = InjuryStatus::OUT_SHORT_TERM;
+  blunted::CareerTraining::DevelopAfterMatch(save, events);
+  EXPECT_EQ(save.roster[0].fitness, 69);
+  EXPECT_EQ(save.roster[1].fitness, 90);
+  EXPECT_EQ(save.roster[0].developmentPoints, 0);
+  EXPECT_EQ(save.roster[1].developmentPoints, 0);
+  blunted::CareerTraining::DevelopAfterMatch(save, events);
+  EXPECT_EQ(save.roster[0].developmentPoints, 9);
+  EXPECT_EQ(save.roster[1].developmentPoints, 0);
+}
+
+TEST(CareerDevelopmentTest, CompletedFacilitiesAndActiveCoachesSupportDevelopment) {
+  RecordingEvents events;
+  CareerSave save;
+  save.roster = {DevelopmentPlayer()};
+  StadiumUpgrade facility;
+  facility.name = "Training Complex";
+  facility.seasonsRemaining = 1;
+  save.stadium.upgrades.push_back(facility);
+  save.staff.emplace_back("Expired", "Assistant Coach", 90, 100, 0);
+  blunted::CareerTraining::DevelopAfterMatch(save, events);
+  EXPECT_EQ(save.roster[0].developmentPoints, 5);
+  save.stadium.upgrades[0].seasonsRemaining = 0;
+  save.staff.emplace_back("Coach", "Assistant Coach", 85, 100, 2);
+  save.staff.emplace_back("Duplicate", "Youth Coach", 90, 100, 2);
+  blunted::CareerTraining::DevelopAfterMatch(save, events);
+  EXPECT_EQ(save.roster[0].developmentPoints, 13);
+}
+
+TEST(CareerDevelopmentTest, VeteransDevelopMoreSlowly) {
+  RecordingEvents events;
+  CareerSave save;
+  save.roster = {DevelopmentPlayer(), DevelopmentPlayer()};
+  save.roster[1].age = 32;
+  blunted::CareerTraining::DevelopAfterMatch(save, events);
+  EXPECT_GT(save.roster[0].developmentPoints, save.roster[1].developmentPoints);
+}
+
+TEST(CareerDevelopmentTest, PlayedAndSimulatedResultsApplyOneDevelopmentStep) {
+  RecordingEvents events;
+  CareerSave simulated, played;
+  simulated.roster = played.roster = {DevelopmentPlayer()};
+  blunted::CareerSim::ApplyMatchResult(simulated, events, 1, 0, "Opponent");
+  blunted::CareerSim::Process3DMatchResult(played, events, 1, 0);
+  EXPECT_EQ(simulated.roster[0].developmentPoints, 5);
+  EXPECT_EQ(played.roster[0].developmentPoints, 5);
+}
+
+TEST(CareerDevelopmentTest, LegacyAndInvalidPlayerProgressLoadSafely) {
+  const std::string legacy = "Prospect|ST|19|60|80|100000|500|50|50|90|0|0|0";
+  EXPECT_EQ(blunted::CareerCommon::PlayerFromRecord(legacy).developmentPoints, 0);
+  EXPECT_EQ(blunted::CareerCommon::PlayerFromRecord(legacy + "|oops").developmentPoints, 0);
+  EXPECT_EQ(blunted::CareerCommon::PlayerFromRecord(legacy + "|-5").developmentPoints, 0);
+  EXPECT_EQ(blunted::CareerCommon::PlayerFromRecord(legacy + "|500").developmentPoints, 99);
+  auto player = DevelopmentPlayer();
+  player.developmentPoints = 57;
+  player.injury = InjuryStatus::OUT_LONG_TERM;
+  auto loaded = blunted::CareerCommon::PlayerFromRecord(blunted::CareerCommon::PlayerToRecord(player));
+  EXPECT_EQ(loaded.developmentPoints, 57);
+  EXPECT_EQ(loaded.injury, InjuryStatus::OUT_LONG_TERM);
+}
+}  // namespace
+
+TEST(CareerDevelopmentTest, FatiguedSquadsPerformWorseAcrossIdenticalSimulationSeeds) {
+  CareerSave fresh, tired;
+  fresh.roster = tired.roster = {DevelopmentPlayer()};
+  fresh.roster[0].fitness = 100;
+  tired.roster[0].fitness = 40;
+  int freshDifference = 0, tiredDifference = 0;
+  for (unsigned int seed = 0; seed < 300; ++seed) {
+    blunted::CareerCommon::SeedRng(seed);
+    auto fitResult = blunted::CareerSim::SimulateMatchResult(fresh, "Opponent", "1", true);
+    blunted::CareerCommon::SeedRng(seed);
+    auto tiredResult = blunted::CareerSim::SimulateMatchResult(tired, "Opponent", "1", true);
+    freshDifference += fitResult.homeGoals - fitResult.awayGoals;
+    tiredDifference += tiredResult.homeGoals - tiredResult.awayGoals;
+  }
+  EXPECT_GT(freshDifference, tiredDifference);
+}

@@ -10,6 +10,48 @@
 namespace blunted {
 namespace CareerTraining {
 
+void DevelopAfterMatch(CareerSave& save, CareerCommon::CareerEvents& events) {
+  int support = save.mode == CareerMode::COACH ? 1 : 0;
+  int coachBonus = 0;
+  for (const auto& coach : save.staff) {
+    if (coach.contractYearsRemaining > 0 &&
+        (coach.role == "Assistant Coach" || coach.role == "Youth Coach"))
+      coachBonus = std::max(coachBonus, coach.skill >= 80 ? 2 : 1);
+  }
+  support += coachBonus;
+  bool trainingFacility = false;
+  bool youthFacility = false;
+  for (const auto& upgrade : save.stadium.upgrades) {
+    if (!upgrade.isComplete()) continue;
+    trainingFacility |= upgrade.name == "Training Complex";
+    youthFacility |= upgrade.name == "Youth Academy";
+  }
+  auto develop = [&](PlayerCareerState& player, bool academy) {
+    const bool recovery = !academy && save.trainingPlan == CareerTrainingPlan::RECOVERY;
+    const bool intensive = !academy && save.trainingPlan == CareerTrainingPlan::DEVELOPMENT;
+    const bool resting = player.fitness < 60 || player.injury != InjuryStatus::HEALTHY;
+    player.fitness = CareerCommon::ClampInt(player.fitness +
+        (recovery || resting ? 10 : intensive ? -4 : 2), 0, 100);
+    const int ceiling = std::min(99, player.pot);
+    if (player.ovr >= ceiling) { player.developmentPoints = 0; return; }
+    if (recovery || resting) return;
+    int points = (intensive ? 7 : 3) + (player.age <= 21 ? 2 : 0) + support;
+    if (player.age >= 30) points = std::max(1, points / 2);
+    points += academy ? (youthFacility ? 2 : 0) : (trainingFacility ? 1 : 0);
+    player.developmentPoints += points;
+    if (player.developmentPoints >= 100) {
+      player.developmentPoints -= 100;
+      ++player.ovr;
+      if (player.ovr >= ceiling) player.developmentPoints = 0;
+      events.AddEvent("development", player.name + " developed to " +
+                      std::to_string(player.ovr) + " OVR.", 0, false);
+    }
+  };
+  for (auto& player : save.roster) develop(player, false);
+  // Academy prospects follow their own balanced schedule.
+  for (auto& player : save.youthAcademy) develop(player, true);
+}
+
 bool TrainSquad(CareerSave& save, CareerCommon::CareerEvents& events) {
   if (save.trainingPoints <= 0)
     return false;

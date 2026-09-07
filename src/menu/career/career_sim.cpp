@@ -1,4 +1,5 @@
 #include "career_sim.hpp"
+#include "career_training.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -47,6 +48,7 @@ void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save) {
   int facilityBonus = 0;
   if (save != nullptr) {
     for (const auto& upgrade : save->stadium.upgrades) {
+      if (!upgrade.isComplete()) continue;
       if (upgrade.name == "Training Complex")
         facilityBonus += 15;
       if (upgrade.name == "Youth Academy")
@@ -95,7 +97,9 @@ void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save) {
     }
   }
 
+  if (growthPoints > 0) growthPoints = std::min(growthPoints, std::max(0, player.pot - player.ovr));
   player.ovr = std::min(99, std::max(1, player.ovr + growthPoints));
+  if (player.ovr >= player.pot) player.developmentPoints = 0;
   player.morale = std::min(100, std::max(0, player.morale + RandomInt(-10, 10)));
   player.fitness = 100;   // Reset fitness for new season
   player.matchForm = 50;  // Reset form
@@ -147,11 +151,13 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
   int ovrSum = 0;
   int moraleSum = 0;
   int formSum = 0;
+  int fitnessSum = 0;
   int count = 0;
   for (const auto& p : save.roster) {
     ovrSum += p.ovr;
     moraleSum += p.morale;
     formSum += p.matchForm;
+    fitnessSum += ClampInt(p.fitness, 0, 100);
     count++;
   }
   if (count > 0) {
@@ -174,6 +180,9 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
 
   int baseAttack = teamOVR + (teamForm - 50) / 8 + (teamMorale - 50) / 12;
   int baseDefense = teamOVR + (teamForm - 50) / 10 + (teamMorale - 50) / 15;
+  const int fatiguePenalty = count > 0 ? std::max(0, 90 - fitnessSum / count) / 8 : 0;
+  baseAttack -= fatiguePenalty;
+  baseDefense -= fatiguePenalty;
   int oppAttack = opponentOVR + RandomInt(-2, 4);
   int oppDefense = opponentOVR + RandomInt(-2, 3);
 
@@ -304,8 +313,10 @@ void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int 
   // inflation from turning average clubs into perpetual title winners.
   for (auto& player : save.roster) {
     player.matchForm = ClampInt(player.matchForm - RandomInt(1, 3), 25, 100);
-    player.fitness = ClampInt(player.fitness - RandomInt(0, 2), 55, 100);
+    player.fitness = ClampInt(player.fitness - RandomInt(0, 2), 0, 100);
   }
+
+  CareerTraining::DevelopAfterMatch(save, events);
 
   for (const auto& scorerName : scorers) {
     RecordMatchStats(save, scorerName, 1, 0);

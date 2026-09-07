@@ -258,6 +258,15 @@ bool CareerDatabase::TrainSquad() {
   return m_activeSave && CareerTraining::TrainSquad(*m_activeSave, *this);
 }
 
+bool CareerDatabase::SetTrainingPlan(CareerTrainingPlan plan) {
+  if (!m_activeSave || static_cast<int>(plan) < 0 || static_cast<int>(plan) > 2) return false;
+  const auto previous = m_activeSave->trainingPlan;
+  m_activeSave->trainingPlan = plan;
+  if (SaveCareerData()) return true;
+  m_activeSave->trainingPlan = previous;
+  return false;
+}
+
 bool CareerDatabase::TrainFocus(const std::string& focusArea) {
   return m_activeSave && CareerTraining::TrainFocus(*m_activeSave, *this, focusArea);
 }

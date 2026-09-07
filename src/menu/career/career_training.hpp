@@ -9,6 +9,9 @@
 namespace blunted {
 namespace CareerTraining {
 
+// Applies the ongoing plan once after a completed match, without spending session points.
+void DevelopAfterMatch(CareerSave& save, CareerCommon::CareerEvents& events);
+
 // Runs a squad training session (spends a point, lifts match form).
 bool TrainSquad(CareerSave& save, CareerCommon::CareerEvents& events);
 

@@ -46,12 +46,41 @@ inline int StandaloneMenuSmokePage(const std::string& route) {
     {"language", e_PageID_Language}, {"credits", e_PageID_Credits},
     {"match_options", e_PageID_MatchOptions}, {"forfeit", e_PageID_PreQuit},
     {"history", e_PageID_MatchHistory}, {"career", e_PageID_CareerMenu},
+    {"career_training", e_PageID_CareerTraining},
     {"career_new", e_PageID_CareerNewGame}, {"career_save", e_PageID_CareerSave}
   };
   for (const auto& entry : routes)
     if (route == entry.name)
       return entry.page;
   return -1;
+}
+
+inline bool SmokeCareerTraining(blunted::Gui2WindowManager* manager, blunted::Gui2View* page) {
+  using namespace blunted;
+  Gui2Grid* players = nullptr;
+  for (auto* child : page->GetChildren())
+    if (child->GetName() == "development_players") players = dynamic_cast<Gui2Grid*>(child);
+  if (!players || players->GetChildren().size() != 32) {
+    printf("[menu-smoke] Training roster size: %d\n", players ? static_cast<int>(players->GetChildren().size()) : -1);
+    return false;
+  }
+  players->SetFocus();
+  for (int row = 0; row < 32; ++row) {
+    auto* focused = manager->GetFocus();
+    auto* card = players->GetChildren().at(row);
+    if (!focused || !card->IsInFocusPath() || !card->IsVisible() || !focused->IsVisible()) {
+      printf("[menu-smoke] Training row %d focus %s visible %d\n", row, focused ? focused->GetName().c_str() : "none", focused ? focused->IsVisible() : false);
+      return false;
+    }
+    AuditMenuLayout(page);
+    for (int tick = 0; tick < 50; ++tick) players->Process();
+    if (row < 31) {
+      WindowingEvent down;
+      down.SetDirection(Vector3(0, 1, 0));
+      focused->ProcessEvent(&down);
+    }
+  }
+  return true;
 }
 
 inline bool SmokeMenuWidgets(blunted::Gui2WindowManager* manager, blunted::Gui2View* parent) {
