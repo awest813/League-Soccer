@@ -257,6 +257,7 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
   });
   grid->AddView(btnBack, row, 0);
 
+  grid->SetMaxVisibleRows(20);
   grid->UpdateLayout(0.5);
   frame->AddView(grid);
   grid->Show();

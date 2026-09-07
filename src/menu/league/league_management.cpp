@@ -200,7 +200,7 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
         }
         Gui2Button* btnClose = dlg->AddPosNegButtons(
             Localization::GetInstance().Translate("league_inbox_close"),
-            Localization::GetInstance().Translate("league_release"));
+            Localization::GetInstance().Translate("league_release"), false);
         btnClose->SetFocus();
         dlg->sig_OnPositive.connect([this, dlg](...) {
           dlg->Exit();
@@ -232,6 +232,7 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
   });
   grid->AddView(btnBack, row, 0);
 
+  grid->SetMaxVisibleRows(18);
   grid->UpdateLayout(0.5);
   frame->AddView(grid);
   grid->Show();
@@ -367,7 +368,7 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
         }
         Gui2Button* btnClose = dlg->AddPosNegButtons(
             Localization::GetInstance().Translate("league_inbox_close"),
-            Localization::GetInstance().Translate("league_sign"));
+            Localization::GetInstance().Translate("league_sign"), false);
         btnClose->SetFocus();
         dlg->sig_OnPositive.connect([this, dlg](...) {
           dlg->Exit();
@@ -399,6 +400,7 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
   });
   grid->AddView(btnBack, row, 0);
 
+  grid->SetMaxVisibleRows(18);
   grid->UpdateLayout(0.5);
   frame->AddView(grid);
   grid->Show();

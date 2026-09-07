@@ -1,5 +1,7 @@
 #include "caption.hpp"
 
+#include <algorithm>
+
 #include <cmath>
 
 #include "../windowmanager.hpp"
@@ -12,6 +14,8 @@ Gui2Caption::Gui2Caption(Gui2WindowManager* windowManager, const std::string& na
                          const std::string& caption)
     : Gui2View(windowManager, name, x_percent, y_percent, width_percent, height_percent) {
   renderedTextHeightPix = 0;
+  renderedTextScale = 1.0f;
+  autoWidth = width_percent <= 1.0f;
   transparency = 0.0f;
 
   int x, y, w, h;
@@ -74,13 +78,27 @@ void Gui2Caption::Redraw() {
       TTF_RenderUTF8_Blended(windowManager->GetStyle()->GetFont(e_TextType_DefaultOutline),
                              caption.c_str(), textOutlineColorSDL);
 
+  if (!textSurfTmp || !textOutlineSurfTmp) {
+    SDL_FreeSurface(textSurfTmp);
+    SDL_FreeSurface(textOutlineSurfTmp);
+    textWidth_percent = 0.0f;
+    image->DrawRectangle(0, 0, w, h, Vector3(0, 0, 0), 0);
+    image->OnChange();
+    return;
+  }
+
   int resW, resH;
   TTF_SizeUTF8(windowManager->GetStyle()->GetFont(e_TextType_DefaultOutline), caption.c_str(),
                &resW, &resH);
 
   float zoomy;
   renderedTextHeightPix = (float)textOutlineSurfTmp->h;
-  zoomy = (float)(h - y_margin * 2) / renderedTextHeightPix;
+  zoomy = (float)std::max(1, h - y_margin * 2) / renderedTextHeightPix;
+  // Keep labels inside their allocated column, including long translations.
+  // Legacy zero/one-width captions request natural-width text (e.g. player overlays).
+  if (!autoWidth)
+    zoomy = std::min(zoomy, (float)std::max(1, w) / textOutlineSurfTmp->w);
+  renderedTextScale = zoomy;
   SDL_Surface* textOutlineSurf = zoomSurface(textOutlineSurfTmp, zoomy, zoomy, 1);
   SDL_Surface* textSurf = zoomSurface(textSurfTmp, zoomy, zoomy, 1);
   SDL_FreeSurface(textOutlineSurfTmp);
@@ -90,12 +108,11 @@ void Gui2Caption::Redraw() {
 
   image->DrawRectangle(0, 0, w, h, Vector3(0, 0, 0), 0);
 
-  if (resW * zoomy > int(image->GetSize().coords[0]) ||
-      resH * zoomy > int(image->GetSize().coords[1])) {  // todo: also when smaller, maybe?
-    image->Resize(resW * zoomy, resH * zoomy);
-    // printf("RESIZING\n");
-    width_percent = windowManager->GetWidthPercent(resW * zoomy);
-    height_percent = windowManager->GetHeightPercent(resH * zoomy);
+  const int targetW = autoWidth ? std::max(1, (int)std::ceil(resW * zoomy)) : std::max(1, w);
+  if (targetW != int(image->GetSize().coords[0]) || h != int(image->GetSize().coords[1])) {
+    image->Resize(targetW, std::max(1, h));
+    if (autoWidth)
+      width_percent = windowManager->GetWidthPercent(targetW);
   }
 
   boost::intrusive_ptr<Resource<Surface>> surfaceRes = image->GetImage();
@@ -109,12 +126,12 @@ void Gui2Caption::Redraw() {
 
   SDL_Rect dstRect;
   dstRect.x = 0;
-  dstRect.y = 0;
+  dstRect.y = std::max(0, (h - textOutlineSurf->h) / 2);
   dstRect.w = 10000;
   dstRect.h = 10000;
   SDL_BlitSurface(textOutlineSurf, nullptr, surface, &dstRect);
   dstRect.x = round(outlineWidth * zoomy);
-  dstRect.y = round(outlineWidth * zoomy);
+  dstRect.y = std::max(0, (h - textOutlineSurf->h) / 2) + round(outlineWidth * zoomy);
   SDL_BlitSurface(textSurf, nullptr, surface, &dstRect);
   if (transparency > 0.0f) {
     sdl_setsurfacealpha(surface, (1.0f - transparency) * 255);
@@ -133,7 +150,7 @@ void Gui2Caption::SetCaption(const std::string& newCaption) {
     adaptedCaption = " ";
   if (caption != adaptedCaption) {
     caption = adaptedCaption;
-    std::transform(caption.begin(), caption.end(), caption.begin(), ::toupper);
+    // Preserve authored capitalization and UTF-8 bytes in localized labels.
     Redraw();
   }
 }
@@ -147,7 +164,7 @@ float Gui2Caption::GetTextWidthPercent(int subStrLength) {
                caption.substr(0, subStrLength).c_str(), &resW, &resH);
 
   float zoomy;
-  zoomy = (float)h / (float)renderedTextHeightPix;
+  zoomy = renderedTextScale;
 
   return windowManager->GetWidthPercent(resW * zoomy);
 }

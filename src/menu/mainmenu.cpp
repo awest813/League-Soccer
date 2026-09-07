@@ -1,4 +1,5 @@
 #include "mainmenu.hpp"
+#include "layout_audit.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -288,6 +289,30 @@ MainMenuPage::~MainMenuPage() {}
 
 void MainMenuPage::Process() {
   Gui2Page::Process();
+
+  const std::string auditRoute = GetConfiguration()->Get("menu_smoke_test_page", "");
+  if (!autoAdvanceTriggered && !auditRoute.empty() &&
+      EnvironmentManager::GetInstance().GetTime_ms() >=
+          pageCreatedTime_ms + kMenuSmokeAdvanceDelay_ms) {
+    autoAdvanceTriggered = true;
+    if (auditRoute == "widgets") {
+      const bool passed = SmokeMenuWidgets(windowManager, this);
+      printf(passed ? "[menu-smoke] Standalone widgets reached successfully\n"
+                    : "[menu-smoke] Widget checks failed\n");
+      GetMenuTask()->QuitGame();
+      return;
+    }
+    const int target = StandaloneMenuSmokePage(auditRoute);
+    if (target < 0) {
+      printf("[menu-layout] Unknown standalone route: %s\n", auditRoute.c_str());
+      GetMenuTask()->QuitGame();
+      return;
+    }
+    Properties properties;
+    properties.Set("controllerID", -1); // Exercise the missing-device fallback safely.
+    CreatePage(target, properties);
+    return;
+  }
 
   if (!autoAdvanceTriggered && MenuSmokeAutoQuickMatchEnabled() &&
       EnvironmentManager::GetInstance().GetTime_ms() >=

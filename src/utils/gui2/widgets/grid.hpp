@@ -21,6 +21,7 @@ public:
 
   virtual void Process();
 
+  // Coordinates are (row, column): increase row to stack controls vertically.
   virtual void AddView(Gui2View* view, int row = -1, int col = 0);
   virtual void RemoveView(Gui2View* view);
   virtual void RemoveView(int row, int col);
@@ -48,7 +49,8 @@ public:
   virtual void OnGainFocus();
   virtual void SetInFocusPath(bool onOff);
 
-  virtual bool IsSelectable() { return hasSelectables; }
+  void SetReadOnlyScrolling(bool enabled) { readOnlyScrolling = enabled; }
+  virtual bool IsSelectable() { return hasSelectables || (readOnlyScrolling && !container.empty()); }
 
   virtual void Show();
   virtual void Hide();
@@ -59,6 +61,7 @@ protected:
   std::vector<GridContainer> container;
 
   bool hasSelectables;
+  bool readOnlyScrolling = false;
 
   int rows;
   int cols;

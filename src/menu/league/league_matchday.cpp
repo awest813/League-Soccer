@@ -152,6 +152,7 @@ void LeagueMatchdayPage::RefreshResults() {
   btnContinue->sig_OnClick.connect([this](...) { GoBackToDashboard(); });
   resultsGrid->AddView(btnContinue, row, 0);
 
+  resultsGrid->SetMaxVisibleRows(14);
   resultsGrid->UpdateLayout(0.5);
   frame->AddView(resultsGrid);
   resultsGrid->Show();

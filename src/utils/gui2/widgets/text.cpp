@@ -1,4 +1,5 @@
 #include "text.hpp"
+#include "../textlayout.hpp"
 
 #include "../windowmanager.hpp"
 #include "SDL2/SDL_ttf.h"
@@ -41,6 +42,7 @@ void Gui2Text::ClearText() {
   text.clear();
 
   resultText.clear();
+  resultCaptions.clear();
 
   std::vector<Gui2View*> childrenCopy =
       children;  // need to make copy: child->Exit will remove itself from *this->children
@@ -52,51 +54,36 @@ void Gui2Text::ClearText() {
 }
 
 void Gui2Text::AddEmptyLine() {
-  text.append("\n");
-
-  resultText.push_back("");
-
-  Gui2Caption* caption = new Gui2Caption(
-      windowManager, GetName() + int_to_str(resultText.size() - 1), 0,
-      (resultText.size() - 1) * fontsize_percent * 1.5f, width_percent, fontsize_percent, "");
-  this->AddView(caption);
+  AddText("");
 }
 
 void Gui2Text::AddText(const std::string& newText) {
-  text.append(newText);
-
-  // concatenate letters until desired maxwidth is reached
-  std::string line;
-  std::string tmpLine;
-  bool ready = false;
-  size_t processPos = 0;
-  while (!ready) {
-    size_t spacePos = newText.find_first_of(" ", processPos);
-
-    if (spacePos == std::string::npos) {
-      spacePos = newText.length() - 1;
-    }
-    if (processPos >= newText.length())
-      ready = true;
-
-    tmpLine.append(newText.substr(processPos, spacePos - processPos + 1));
-
-    // time for newline
-    if (tmpLine.length() > maxHorizChars || ready) {
-      resultText.push_back(line);
-      tmpLine.clear();
-    } else {
-      line = tmpLine;
-      processPos = spacePos + 1;
-    }
-  }
-
-  for (unsigned int i = 0; i < resultText.size(); i++) {
-    Gui2Caption* caption =
-        new Gui2Caption(windowManager, GetName() + int_to_str(i), 0, i * fontsize_percent * 1.5f,
-                        width_percent, fontsize_percent, resultText.at(i));
-    this->AddView(caption);
+  if (!text.empty())
+    text += "\n";
+  text += newText;
+  const auto lines = WrapMenuText(newText, maxHorizChars);
+  for (const auto& line : lines) {
+    const size_t index = resultText.size();
+    resultText.push_back(line);
+    auto* caption = new Gui2Caption(windowManager, GetName() + int_to_str(index), 0,
+                                    index * fontsize_percent * 1.5f, width_percent,
+                                    fontsize_percent, line);
+    caption->SetColor(color);
+    caption->SetOutlineColor(outlineColor);
+    AddView(caption);
+    resultCaptions.push_back(caption);
     caption->Show();
+  }
+}
+
+void Gui2Text::SetSize(float width, float height) {
+  Gui2View::SetSize(width, height);
+  const float lineHeight = resultCaptions.empty() ? fontsize_percent :
+      std::min(fontsize_percent, height / (resultCaptions.size() * 1.5f));
+  for (size_t i = 0; i < resultCaptions.size(); ++i) {
+    resultCaptions[i]->SetPosition(0, i * lineHeight * 1.5f);
+    resultCaptions[i]->SetSize(width, lineHeight);
+    resultCaptions[i]->Redraw();
   }
 }
 

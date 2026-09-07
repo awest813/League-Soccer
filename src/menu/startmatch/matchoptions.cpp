@@ -80,9 +80,9 @@ MatchOptionsPage::MatchOptionsPage(Gui2WindowManager* windowManager, const Gui2P
   matchDurationSlider->sig_OnChange.connect([this](Gui2Slider*) { UpdateMatchDurationCaption(); });
 
   grid->AddView(difficultySlider, 0, 0);
-  grid->AddView(matchDurationSlider, 0, 1);
-  grid->AddView(buttonStart, 0, 2);
-  grid->AddView(buttonBack, 0, 3);
+  grid->AddView(matchDurationSlider, 1, 0);
+  grid->AddView(buttonStart, 2, 0);
+  grid->AddView(buttonBack, 3, 0);
   grid->UpdateLayout(0.5);
 
   frame->AddView(grid);

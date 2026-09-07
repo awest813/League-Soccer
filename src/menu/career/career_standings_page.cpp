@@ -145,6 +145,8 @@ void CareerStandingsPage::PopulateStandingsGrid() {
     standingsGrid->AddView(rowCap, row++, 0);
   }
 
+  standingsGrid->SetReadOnlyScrolling(true);
+  standingsGrid->SetMaxVisibleRows(28);
   standingsGrid->UpdateLayout(0.2f, 0.2f, 0.1f, 0.1f);
   frame->AddView(standingsGrid);
   standingsGrid->Show();
@@ -177,6 +179,8 @@ void CareerStandingsPage::PopulateScorersGrid() {
     scorersGrid->AddView(cap, row++, 0);
   }
 
+  scorersGrid->SetReadOnlyScrolling(true);
+  scorersGrid->SetMaxVisibleRows(16);
   scorersGrid->UpdateLayout(0.2f, 0.2f, 0.2f, 0.2f);
   frame->AddView(scorersGrid);
   scorersGrid->Show();

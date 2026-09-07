@@ -89,7 +89,7 @@ void LeagueInboxPage::RefreshMessages() {
 
         Gui2Button* btnClose = dlg->AddPosNegButtons(
             Localization::GetInstance().Translate("league_inbox_close"),
-            Localization::GetInstance().Translate("league_delete"));
+            Localization::GetInstance().Translate("league_delete"), false);
         btnClose->SetFocus();
         dlg->sig_OnPositive.connect([this, dlg](...) {
           dlg->Exit();
@@ -124,6 +124,7 @@ void LeagueInboxPage::RefreshMessages() {
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   messageGrid->AddView(btnBack, row, 0);
 
+  messageGrid->SetMaxVisibleRows(16);
   messageGrid->UpdateLayout(0.5);
   frame->AddView(messageGrid);
   messageGrid->Show();

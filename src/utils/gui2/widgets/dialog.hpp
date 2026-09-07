@@ -18,7 +18,8 @@ public:
 
   virtual void AddContent(Gui2View* view);
 
-  virtual Gui2Button* AddPosNegButtons(const std::string& posName, const std::string& negName);
+  virtual Gui2Button* AddPosNegButtons(const std::string& posName, const std::string& negName,
+                                         bool negativeIsCancel = true);
   virtual Gui2Button* AddSingleButton(const std::string& caption);
 
   virtual void ProcessWindowingEvent(WindowingEvent* event);
@@ -26,9 +27,12 @@ public:
   // boost::signals2::signal<void(Gui2Dialog*)> sig_OnClose;
   boost::signals2::signal<void(Gui2Dialog*)> sig_OnPositive;
   boost::signals2::signal<void(Gui2Dialog*)> sig_OnNegative;
+  boost::signals2::signal<void(Gui2Dialog*)> sig_OnCancel;
 
 protected:
   Gui2Grid* grid;
+  bool hasNegativeAction = false;
+  bool cancelUsesNegative = true;
 };
 
 }  // namespace blunted

@@ -60,23 +60,23 @@ LeaguePage::LeaguePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_main", 2, 8, 66, 60);
 
   Gui2Button* buttonPlayMatch =
-      new Gui2Button(windowManager, "button_league_playmatch", 0, 0, 36, 5,
+      new Gui2Button(windowManager, "button_league_playmatch", 0, 0, 31, 5,
                      Localization::GetInstance().Translate("league_play_next_match"));
   buttonPlayMatch->sig_OnClick.connect([this](...) { GoPreMatch(); });
   buttonPlayMatch->SetFocus();
 
   Gui2Button* buttonAdvanceMatchday =
-      new Gui2Button(windowManager, "button_league_advancematchday", 0, 0, 36, 5,
+      new Gui2Button(windowManager, "button_league_advancematchday", 0, 0, 31, 5,
                      Localization::GetInstance().Translate("league_advance_matchday"));
   buttonAdvanceMatchday->sig_OnClick.connect([this](...) { AdvanceMatchday(); });
 
   Gui2Button* buttonForward =
-      new Gui2Button(windowManager, "button_league_forward", 0, 0, 36, 5,
+      new Gui2Button(windowManager, "button_league_forward", 0, 0, 31, 5,
                      Localization::GetInstance().Translate("league_open_dashboard"));
   buttonForward->sig_OnClick.connect([this](...) { GoForward(); });
 
   Gui2Button* buttonMainMenu =
-      new Gui2Button(windowManager, "button_league_mainmenu", 0, 0, 36, 5,
+      new Gui2Button(windowManager, "button_league_mainmenu", 0, 0, 31, 5,
                      Localization::GetInstance().Translate("league_return_main_menu"));
   buttonMainMenu->sig_OnClick.connect([this](...) { GoMainMenu(); });
 
@@ -306,7 +306,11 @@ void LeagueStartLoadPage::GoLoadSave() {
 
   Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_league_load_save", 25, 30, 50, 25,
                                    loc.Translate("league_load_confirm"));
-  (dlg->AddPosNegButtons(loc.Translate("league_load"), loc.Translate("league_delete")))->SetFocus();
+  (dlg->AddPosNegButtons(loc.Translate("league_load"), loc.Translate("league_delete"), false))->SetFocus();
+  dlg->sig_OnCancel.connect([dlg](...) {
+    dlg->Exit();
+    delete dlg;
+  });
   dlg->sig_OnPositive.connect([this, dlg, saveName](...) {
     dlg->Exit();
     delete dlg;
@@ -594,6 +598,11 @@ void LeagueStartNewPage::GoDatabaseSelectDialog() {
                           "./databases", e_DirEntryType_Directory);
   databaseSelectBrowser->sig_OnClick.connect([this](...) { CloseDatabaseSelectDialog(); });
   databaseSelectDialog->AddContent(databaseSelectBrowser);
+  databaseSelectDialog->sig_OnCancel.connect([this](...) {
+    previousFocus->SetFocus();
+    databaseSelectDialog->Exit();
+    delete databaseSelectDialog;
+  });
 
   this->AddView(databaseSelectDialog);
   databaseSelectDialog->Show();

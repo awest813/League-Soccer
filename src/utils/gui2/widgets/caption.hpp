@@ -37,6 +37,8 @@ protected:
   float transparency;
   float textWidth_percent;
   int renderedTextHeightPix;
+  float renderedTextScale;
+  bool autoWidth;
 };
 
 }  // namespace blunted

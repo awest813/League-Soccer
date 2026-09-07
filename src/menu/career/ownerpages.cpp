@@ -276,6 +276,7 @@ OwnerHubPage::OwnerHubPage(Gui2WindowManager* windowManager, const Gui2PageData&
   // Back lives in the same grid so it is reachable by arrows/d-pad too.
   navGrid->AddView(btnBack, row++, 0);
 
+  navGrid->SetMaxVisibleRows(12);
   navGrid->UpdateLayout(0.5);
   navFrame->AddView(navGrid);
   navGrid->Show();

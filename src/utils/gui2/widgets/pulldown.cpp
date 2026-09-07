@@ -1,5 +1,7 @@
 #include "pulldown.hpp"
 
+#include <algorithm>
+
 namespace blunted {
 
 Gui2Pulldown::Gui2Pulldown(Gui2WindowManager* windowManager, const std::string& name,
@@ -66,14 +68,21 @@ void Gui2Pulldown::ClearEntries() {
 
 void Gui2Pulldown::PullDownOrUp() {
   if (pulledDown == false) {
+    if (entries.empty())
+      return;
     this->AddView(bg);
     this->AddView(grid);
     grid->SetMaxVisibleRows(5);
     grid->UpdateLayout(0.0, 0.0, 0.0, 0.0);
-    float x, y;
-    grid->GetSize(x, y);
-    bg->SetSize(x, y);
     entries.at(selectedEntry).button->SetFocus();
+    float width, height, screenX, screenY;
+    grid->GetSize(width, height);
+    GetDerivedPosition(screenX, screenY);
+    const float popupX = std::clamp(screenX, 0.0f, std::max(0.0f, 100.0f - width)) - screenX;
+    const float popupY = std::clamp(screenY, 0.0f, std::max(0.0f, 100.0f - height)) - screenY;
+    grid->SetPosition(popupX, popupY);
+    bg->SetPosition(popupX, popupY);
+    bg->SetSize(width, height);
     pulldownButton->Hide();
     bg->Show();
     grid->Show();
@@ -115,6 +124,8 @@ void Gui2Pulldown::ProcessWindowingEvent(WindowingEvent* event) {
       PullDownOrUp();
     else
       event->Ignore();
+  } else if (pulledDown) {
+    event->Accept(); // An open popup owns navigation until selection or Escape.
   } else {
     event->Ignore();
   }

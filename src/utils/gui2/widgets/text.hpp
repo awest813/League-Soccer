@@ -17,6 +17,7 @@ public:
   void SetColor(const Vector3& color);
   void SetOutlineColor(const Vector3& outlineColor);
 
+  void SetSize(float width, float height) override;
   void ClearText();
   void AddEmptyLine();
   void AddText(const std::string& newText);

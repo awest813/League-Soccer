@@ -29,12 +29,12 @@ Gui2Slider::Gui2Slider(Gui2WindowManager* windowManager, const std::string& name
   quantizedValue = value;
 
   titleCaption =
-      new Gui2Caption(windowManager, name + "caption", 1.0, 0.2, width_percent, 2.4, caption);
+      new Gui2Caption(windowManager, name + "caption", 1.0, height_percent * 0.03f, width_percent - 2.0f, height_percent * 0.34f, caption);
   this->AddView(titleCaption);
   titleCaption->Show();
 
   valueCaption =
-      new Gui2Caption(windowManager, name + "valuecaption", 1.0, 0.2, width_percent, 2.4, "");
+      new Gui2Caption(windowManager, name + "valuecaption", 1.0, height_percent * 0.39f, width_percent - 2.0f, height_percent * 0.25f, "");
   this->AddView(valueCaption);
   valueCaption->Show();
 
@@ -119,7 +119,7 @@ void Gui2Slider::Redraw() {
   // Groove / Track geometry
   int trackMarginX = int(round(x_ratio * 0.8f));
   int trackX = trackMarginX;
-  int trackY = int(h * 0.65f);
+  int trackY = int(h * 0.80f);
   int trackW = w - trackMarginX * 2;
   int trackH = std::max(3, int(h * 0.12f));
 
@@ -149,7 +149,7 @@ void Gui2Slider::Redraw() {
 
   // Slider thumb / knob
   int thumbW = std::max(4, int(round(x_ratio * 0.5f)));
-  int thumbH = std::max(8, int(h * 0.42f));
+  int thumbH = std::max(8, int(h * 0.28f));
   int thumbY = trackY - (thumbH - trackH) / 2;
   int thumbX = trackX + int(round(quantizedValue * trackW)) - thumbW / 2;
 
@@ -185,7 +185,7 @@ void Gui2Slider::UpdateValuePosition() {
     return;
   const float textWidth = valueCaption->GetTextWidthPercent();
   const float x = std::max(1.0f, width_percent - textWidth - 1.0f);
-  valueCaption->SetPosition(x, 0.2f);
+  valueCaption->SetPosition(x, height_percent * 0.39f);
 }
 
 void Gui2Slider::ProcessWindowingEvent(WindowingEvent* event) {
@@ -267,7 +267,7 @@ int Gui2Slider::AddHelperValue(const Vector3& color, const std::string& descript
   helper.color = color;
   helper.descriptionCaption = new Gui2Caption(
       windowManager, "gui2sliderhelper_" + int_to_str(helper.index) + "_description_caption", 1.0,
-      0.2, width_percent, 2.4, description);
+      height_percent * 0.03f, width_percent - 2.0f, height_percent * 0.34f, description);
   helper.descriptionCaption->SetColor(helper.color);
   helper.descriptionCaption->SetTransparency(0.3f);
   this->AddView(helper.descriptionCaption);

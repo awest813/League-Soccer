@@ -28,16 +28,16 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_matchhistory", 8, 16, 84, 72);
 
   // Header row
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_date", 0, 0, 22, 3,
+  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_date", 0, 0, 16, 3,
                                 Localization::GetInstance().Translate("matchhistory_date")),
                 0, 0);
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_match", 0, 0, 40, 3,
+  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_match", 0, 0, 36, 3,
                                 Localization::GetInstance().Translate("matchhistory_match")),
                 0, 1);
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_score", 0, 0, 12, 3,
+  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_score", 0, 0, 10, 3,
                                 Localization::GetInstance().Translate("matchhistory_score")),
                 0, 2);
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_poss", 0, 0, 20, 3,
+  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_poss", 0, 0, 18, 3,
                                 Localization::GetInstance().Translate("matchhistory_possession")),
                 0, 3);
 
@@ -47,24 +47,25 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
     std::string rowSfx = std::to_string(i);
 
     grid->AddView(
-        new Gui2Caption(windowManager, "mh_date_" + rowSfx, 0, 0, 22, 3, e.timestamp.substr(0, 10)),
+        new Gui2Caption(windowManager, "mh_date_" + rowSfx, 0, 0, 16, 3, e.timestamp.substr(0, 10)),
         row, 0);
-    grid->AddView(new Gui2Caption(windowManager, "mh_match_" + rowSfx, 0, 0, 40, 3,
+    grid->AddView(new Gui2Caption(windowManager, "mh_match_" + rowSfx, 0, 0, 36, 3,
                                   e.team1_name + " vs " + e.team2_name),
                   row, 1);
-    grid->AddView(new Gui2Caption(windowManager, "mh_score_" + rowSfx, 0, 0, 12, 3,
+    grid->AddView(new Gui2Caption(windowManager, "mh_score_" + rowSfx, 0, 0, 10, 3,
                                   int_to_str(e.score1) + " - " + int_to_str(e.score2)),
                   row, 2);
-    grid->AddView(new Gui2Caption(windowManager, "mh_poss_" + rowSfx, 0, 0, 20, 3,
+    grid->AddView(new Gui2Caption(windowManager, "mh_poss_" + rowSfx, 0, 0, 18, 3,
                                   int_to_str((int)round(e.possession1_pct)) + "% / " +
                                       int_to_str((int)round(e.possession2_pct)) + "%"),
                   row, 3);
   }
 
   if (entries.empty()) {
-    grid->AddView(new Gui2Caption(windowManager, "mh_empty", 0, 0, 84, 3,
-                                  Localization::GetInstance().Translate("matchhistory_empty")),
-                  1, 0);
+    Gui2Caption* emptyCaption = new Gui2Caption(windowManager, "mh_empty", 8, 22, 84, 3,
+                                  Localization::GetInstance().Translate("matchhistory_empty"));
+    this->AddView(emptyCaption);
+    emptyCaption->Show();
   }
 
   grid->UpdateLayout(0.5);

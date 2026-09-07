@@ -1,4 +1,5 @@
 #include "pagefactory.hpp"
+#include "layout_audit.hpp"
 
 #include "../main.hpp"
 #include "cameramenu.hpp"
@@ -375,6 +376,15 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
   if (page != nullptr) {
     windowManager->GetPagePath()->Push(pageData);
     windowManager->GetRoot()->AddView(page);
+    if (GetConfiguration()->GetBool("menu_layout_audit", false)) {
+      printf("[menu-layout] Page %d\n", pageData.pageID);
+      AuditMenuLayout(page);
+    }
+    const std::string smokeRoute = GetConfiguration()->Get("menu_smoke_test_page", "");
+    if (!smokeRoute.empty() && pageData.pageID == StandaloneMenuSmokePage(smokeRoute)) {
+      printf("[menu-smoke] Standalone %s reached successfully\n", smokeRoute.c_str());
+      GetMenuTask()->QuitGame();
+    }
   }
 
   return page;

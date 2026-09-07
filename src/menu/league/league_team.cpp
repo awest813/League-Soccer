@@ -524,6 +524,7 @@ void LeagueTeamPlayerSelectionPage::RefreshSquad() {
   });
   squadGrid->AddView(btnBack, row, 0);
 
+  squadGrid->SetMaxVisibleRows(14);
   squadGrid->UpdateLayout(0.5);
   frame->AddView(squadGrid);
   squadGrid->Show();
@@ -718,6 +719,7 @@ LeagueTeamPlayerOverviewPage::LeagueTeamPlayerOverviewPage(Gui2WindowManager* wi
       });
       grid->AddView(btn, row++, 0);
     }
+    grid->SetMaxVisibleRows(18);
     grid->UpdateLayout(0.5);
     frame->AddView(grid);
     grid->Show();
@@ -864,6 +866,7 @@ void LeagueTeamPlayerDevelopmentPage::RefreshSquad() {
     squadGrid->AddView(btn, row++, 0);
   }
 
+  squadGrid->SetMaxVisibleRows(14);
   squadGrid->UpdateLayout(0.5);
   frame->AddView(squadGrid);
   squadGrid->Show();
@@ -1006,6 +1009,8 @@ LeagueTeamSetupPage::LeagueTeamSetupPage(Gui2WindowManager* windowManager,
                                          0, 65, 2.5, buf);
       grid->AddView(cap, row++, 0);
     }
+    grid->SetReadOnlyScrolling(true);
+    grid->SetMaxVisibleRows(13);
     grid->UpdateLayout(0.5);
     frame->AddView(grid);
     grid->Show();

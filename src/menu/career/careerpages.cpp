@@ -874,6 +874,7 @@ CareerTransferMarketPage::CareerTransferMarketPage(Gui2WindowManager* windowMana
     });
     grid->AddView(btn, row++, 0);
   }
+  grid->SetMaxVisibleRows(15);
   grid->UpdateLayout(0.5);
   bgPanel->AddView(grid);
   grid->Show();
@@ -1895,10 +1896,8 @@ CareerSquadRosterPage::CareerSquadRosterPage(Gui2WindowManager* windowManager,
 
     Gui2Grid* grid = new Gui2Grid(windowManager, "squad_grid", 3, 11, 92, 70);
     int row = 0;
-    const int maxRosterRows = 18;
+    grid->SetMaxVisibleRows(18);
     for (const auto& player : activeSave->roster) {
-      if (row >= maxRosterRows)
-        break;
 
       std::string condArrow = CareerDatabase::GetInstance().GetConditionArrow(player.matchForm);
       std::string moraleStr = CareerDatabase::GetInstance().GetMoraleString(player.morale);

@@ -155,6 +155,7 @@ void LeagueCalendarPage::RefreshFixtures() {
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   fixturesGrid->AddView(btnBack, row, 0);
 
+  fixturesGrid->SetMaxVisibleRows(16);
   fixturesGrid->UpdateLayout(0.5);
   frame->AddView(fixturesGrid);
   fixturesGrid->Show();

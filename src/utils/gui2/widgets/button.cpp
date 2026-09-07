@@ -1,5 +1,7 @@
 #include "button.hpp"
 
+#include <algorithm>
+
 #include <cmath>
 #include "SDL2/SDL2_rotozoom.h"
 
@@ -17,7 +19,7 @@ Gui2Button::Gui2Button(Gui2WindowManager* windowManager, const std::string& name
   windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
   image = windowManager->CreateImage2D(name, w, h, true);
 
-  captionView = new Gui2Caption(windowManager, name + "caption", 1.2, 0.3, width_percent,
+  captionView = new Gui2Caption(windowManager, name + "caption", 1.2, 0.3, std::max(0.1f, width_percent - 2.4f),
                                 height_percent - 0.6, caption);
   this->AddView(captionView);
   captionView->Show();
@@ -68,7 +70,7 @@ void Gui2Button::Redraw() {
     image->DrawRectangle(0, 0, w, h, baseColor, 120); // Disabled transparency
   } else {
     // Dynamic full-button highlight overlay (Modern flat style)
-    float bias = IsFocussed() ? 0.0f : (fadeOut_ms / (float)fadeOutTime_ms);
+    float bias = IsFocussed() ? 0.0f : std::clamp(fadeOut_ms / (float)fadeOutTime_ms, 0.0f, 1.0f);
     Vector3 highlightColor = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);
     
     if (toggleable && toggled) {

@@ -16,6 +16,7 @@ Gui2FileBrowser::Gui2FileBrowser(Gui2WindowManager* windowManager, const std::st
   grid = new Gui2Grid(windowManager, name + "_grid", 0, 0, width_percent, height_percent);
   this->AddView(grid);
 
+  isSelectable = true;
   DisplayDirectory();
 }
 
@@ -66,8 +67,9 @@ void Gui2FileBrowser::DisplayDirectory() {
     dirContents.at(i).button = button;
   }
 
-  grid->SetMaxVisibleRows(16);
+  grid->SetMaxVisibleRows(std::max(1, static_cast<int>(height_percent / 4.0f)));
   grid->UpdateLayout(0.5);
+  grid->Show();
 }
 
 bool DirSortFunc(const DirEntry& a, const DirEntry& b) {
