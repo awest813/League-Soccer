@@ -22,10 +22,12 @@ bool TrainFocus(CareerSave& save, CareerCommon::CareerEvents& events, const std:
 void SetStrategy(CareerSave& save, CareerCommon::CareerEvents& events, const std::string& strategy);
 
 // Conducts a 1-on-1 motivational talk with a specific player (+morale, +form).
-bool MotivatePlayer(CareerSave& save, CareerCommon::CareerEvents& events, const std::string& playerName);
+bool MotivatePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
+                    const std::string& playerName);
 
 // Conducts an intensive individual tactical drill with a specific player (spends 1 TP, +1 OVR).
-bool DrillPlayer(CareerSave& save, CareerCommon::CareerEvents& events, const std::string& playerName);
+bool DrillPlayer(CareerSave& save, CareerCommon::CareerEvents& events,
+                 const std::string& playerName);
 
 // Spends transfer budget to scout a random youth prospect.
 void ScoutYouthPlayer(CareerSave& save, CareerCommon::CareerEvents& events);

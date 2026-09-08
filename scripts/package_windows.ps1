@@ -48,7 +48,7 @@ $needed = @(
   "OpenAL32.dll", "sqlite3.dll", "libpng16.dll", "zlib1.dll",
   "jpeg62.dll", "libjpeg-turbo*.dll", "turbojpeg.dll",
   "brotlicommon.dll", "brotlidec.dll", "bz2.dll", "freetype.dll",
-  "liblzma.dll"
+  "liblzma.dll", "fmt*.dll"
 )
 foreach ($vcpkgBin in $binCandidates) {
   if (-not (Test-Path $vcpkgBin)) { continue }
@@ -67,6 +67,11 @@ Copy-Item (Join-Path $dataSrc "locale") (Join-Path $OutDir "locale") -Recurse -F
 New-Item -ItemType Directory -Path (Join-Path $OutDir "data") -Force | Out-Null
 Copy-Item (Join-Path $dataSrc "football.config") (Join-Path $OutDir "data\football.config") -Force
 Copy-Item (Join-Path $dataSrc "locale") (Join-Path $OutDir "data\locale") -Recurse -Force
+
+$licensePath = Join-Path $RepoRoot "LICENSE"
+if (Test-Path $licensePath) { Copy-Item $licensePath $OutDir -Force }
+$readmePath = Join-Path $RepoRoot "README.md"
+if (Test-Path $readmePath) { Copy-Item $readmePath $OutDir -Force }
 
 $dllCount = (Get-ChildItem $OutDir -Filter *.dll | Measure-Object).Count
 Write-Host "Packaged Windows build into $OutDir ($dllCount DLLs + assets)."

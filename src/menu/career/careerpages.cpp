@@ -1548,13 +1548,15 @@ CareerTrainingPage::CareerTrainingPage(Gui2WindowManager* windowManager,
   caption("training_title", 10, 5, 80, TR("career_training_title"));
   caption("plan_hint", 10, 10, 80, TR("career_plan_hint"));
   auto* plans = new Gui2Grid(windowManager, "training_plans", 10, 16, 80, 4);
-  const char* planKeys[] = {"career_plan_balanced", "career_plan_development", "career_plan_recovery"};
+  const char* planKeys[] = {"career_plan_balanced", "career_plan_development",
+                            "career_plan_recovery"};
   for (int i = 0; i < 3; ++i) {
     const auto plan = static_cast<CareerTrainingPlan>(i);
     std::string label = TR(planKeys[i]);
-    if (save && save->trainingPlan == plan) label = "[ " + label + " ]";
-    auto* button = new Gui2Button(windowManager, "training_plan_" + std::to_string(i),
-                                  0, 0, 25, 3, label);
+    if (save && save->trainingPlan == plan)
+      label = "[ " + label + " ]";
+    auto* button =
+        new Gui2Button(windowManager, "training_plan_" + std::to_string(i), 0, 0, 25, 3, label);
     button->SetActive(save != nullptr);
     button->sig_OnClick.connect([this, plan](...) {
       if (CareerDatabase::GetInstance().SetTrainingPlan(plan))
@@ -1565,25 +1567,32 @@ CareerTrainingPage::CareerTrainingPage(Gui2WindowManager* windowManager,
   plans->UpdateLayout(1);
   AddView(plans);
   plans->Show();
-  const char* detailKeys[] = {"career_plan_balanced_detail", "career_plan_development_detail", "career_plan_recovery_detail"};
+  const char* detailKeys[] = {"career_plan_balanced_detail", "career_plan_development_detail",
+                              "career_plan_recovery_detail"};
   int selected = save ? static_cast<int>(save->trainingPlan) : 0;
-  if (selected < 0 || selected > 2) selected = 0;
+  if (selected < 0 || selected > 2)
+    selected = 0;
   caption("plan_detail", 10, 23, 80, TR(detailKeys[selected]));
   caption("development_hint", 10, 28, 80, TR("career_development_hint"));
   caption("development_support", 10, 31, 80, TR("career_development_support"));
   caption("session_hint", 10, 85, 80, TR("career_session_hint"));
-  caption("session_points", 10, 35, 34, TRF("career_training_points", {std::to_string(save ? save->trainingPoints : 0)}));
+  caption("session_points", 10, 35, 34,
+          TRF("career_training_points", {std::to_string(save ? save->trainingPoints : 0)}));
   caption("progress_title", 48, 35, 42, TR("career_development_title"));
   auto* sessions = new Gui2Grid(windowManager, "training_sessions", 10, 41, 34, 40);
   const char* focuses[] = {"General", "Attacking", "Defending", "Physical", "Tactical", "Shooting"};
-  const char* keys[] = {"career_train_general", "career_train_attacking", "career_train_defending", "career_train_physical", "career_train_tactical", "career_train_shooting"};
+  const char* keys[] = {"career_train_general",  "career_train_attacking", "career_train_defending",
+                        "career_train_physical", "career_train_tactical",  "career_train_shooting"};
   for (int i = 0; i < (IsPlayerMode() ? 1 : 6); ++i) {
     std::string focus = IsPlayerMode() ? "Individual" : focuses[i];
-    auto* button = new Gui2Button(windowManager, "training_session_" + std::to_string(i),
-                                  0, 0, 32, 3, TR(IsPlayerMode() ? "career_train_individual" : keys[i]));
+    auto* button = new Gui2Button(windowManager, "training_session_" + std::to_string(i), 0, 0, 32,
+                                  3, TR(IsPlayerMode() ? "career_train_individual" : keys[i]));
     button->SetActive(save && save->trainingPoints > 0);
     button->sig_OnClick.connect([this, focus](...) {
-      if (focus == "General") TrainSquad(); else TrainFocus(focus);
+      if (focus == "General")
+        TrainSquad();
+      else
+        TrainFocus(focus);
     });
     sessions->AddView(button, i, 0);
   }
@@ -1599,16 +1608,22 @@ CareerTrainingPage::CareerTrainingPage(Gui2WindowManager* windowManager,
     auto* card = new Gui2Frame(windowManager, id, 0, 0, 40, 5.5, false);
     auto* name = new Gui2Caption(windowManager, id + "_name", 0, 0, 40, 2.5,
                                  (academy ? TR("career_academy_short") + " " : "") + player.name);
-    auto* stats = new Gui2Caption(windowManager, id + "_stats", 0, 3, 40, 2.5,
-        TRF("career_development_stats", {std::to_string(player.ovr), std::to_string(player.pot),
+    auto* stats = new Gui2Caption(
+        windowManager, id + "_stats", 0, 3, 40, 2.5,
+        TRF("career_development_stats",
+            {std::to_string(player.ovr), std::to_string(player.pot),
              std::to_string(player.developmentPoints), std::to_string(player.fitness)}));
-    card->AddView(name); name->Show();
-    card->AddView(stats); stats->Show();
+    card->AddView(name);
+    name->Show();
+    card->AddView(stats);
+    stats->Show();
     progress->AddView(card, row++, 0);
   };
   if (save) {
-    for (const auto& player : save->roster) addPlayer(player, false);
-    for (const auto& player : save->youthAcademy) addPlayer(player, true);
+    for (const auto& player : save->roster)
+      addPlayer(player, false);
+    for (const auto& player : save->youthAcademy)
+      addPlayer(player, true);
   }
   progress->UpdateLayout(0.5);
   AddView(progress);
@@ -1617,7 +1632,10 @@ CareerTrainingPage::CareerTrainingPage(Gui2WindowManager* windowManager,
   back->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
   AddView(back);
   back->Show();
-  if (save) plans->SetFocus(); else back->SetFocus();
+  if (save)
+    plans->SetFocus();
+  else
+    back->SetFocus();
   Show();
 }
 
@@ -1874,7 +1892,6 @@ CareerSquadRosterPage::CareerSquadRosterPage(Gui2WindowManager* windowManager,
     int row = 0;
     grid->SetMaxVisibleRows(18);
     for (const auto& player : activeSave->roster) {
-
       std::string condArrow = CareerDatabase::GetInstance().GetConditionArrow(player.matchForm);
       std::string moraleStr = CareerDatabase::GetInstance().GetMoraleString(player.morale);
       std::string listedTag = player.contract.transferListed ? " [LISTED]" : "";

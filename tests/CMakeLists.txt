@@ -36,7 +36,9 @@ target_link_libraries(gameplayfootball_math_tests PRIVATE
   GTest::gtest_main
 )
 
-gtest_discover_tests(gameplayfootball_math_tests)
+gtest_discover_tests(gameplayfootball_math_tests
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
 
 # Velocity state machine unit tests (task 2.5)
 add_executable(gameplayfootball_velocity_tests
@@ -51,7 +53,9 @@ target_link_libraries(gameplayfootball_velocity_tests PRIVATE
   GTest::gtest_main
 )
 
-gtest_discover_tests(gameplayfootball_velocity_tests)
+gtest_discover_tests(gameplayfootball_velocity_tests
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
 
 # Match simulation integration tests (task 2.6)
 add_executable(gameplayfootball_integration_tests
@@ -66,7 +70,9 @@ target_link_libraries(gameplayfootball_integration_tests PRIVATE
   GTest::gtest_main
 )
 
-gtest_discover_tests(gameplayfootball_integration_tests)
+gtest_discover_tests(gameplayfootball_integration_tests
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
 
 add_executable(gameplayfootball_league_integration_tests
   integration/league_bootstrap_test.cpp
@@ -88,7 +94,9 @@ target_link_libraries(gameplayfootball_league_integration_tests PRIVATE
   SQLite::SQLite3
 )
 
-gtest_discover_tests(gameplayfootball_league_integration_tests)
+gtest_discover_tests(gameplayfootball_league_integration_tests
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
 
 # Career data unit tests (Phase 6: tasks 6.13, 6.16, 6.17)
 # Also covers the stat-based match simulation (career_database.cpp).

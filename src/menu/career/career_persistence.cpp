@@ -184,9 +184,9 @@ bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferB
       fresh.controlledEntityID = CareerCommon::SafeStoi(val);
     else if (key == "trainingPlan") {
       int plan = CareerCommon::SafeStoi(val, 0);
-      fresh.trainingPlan = plan >= 0 && plan <= 2 ? static_cast<CareerTrainingPlan>(plan) : CareerTrainingPlan::BALANCED;
-    }
-    else if (key == "trainingPoints")
+      fresh.trainingPlan = plan >= 0 && plan <= 2 ? static_cast<CareerTrainingPlan>(plan)
+                                                  : CareerTrainingPlan::BALANCED;
+    } else if (key == "trainingPoints")
       fresh.trainingPoints = CareerCommon::SafeStoi(val, fresh.trainingPoints);
     else if (key == "scoutingNetworkLevel")
       fresh.scoutingNetworkLevel = CareerCommon::SafeStoi(val, fresh.scoutingNetworkLevel);

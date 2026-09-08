@@ -43,13 +43,19 @@ if [[ "${DEBUG}" == true ]]; then
   candidates=(
     "${SCRIPT_DIR}/build/Debug/gameplayfootball"
     "${SCRIPT_DIR}/build/gameplayfootball"
+    "${SCRIPT_DIR}/build-debug/gameplayfootball"
     "${SCRIPT_DIR}/build/Release/gameplayfootball"
+    "${SCRIPT_DIR}/build-release/gameplayfootball"
+    "${SCRIPT_DIR}/dist/linux-x64/gameplayfootball"
   )
 else
   candidates=(
     "${SCRIPT_DIR}/build/gameplayfootball"
-    "${SCRIPT_DIR}/build/Debug/gameplayfootball"
     "${SCRIPT_DIR}/build/Release/gameplayfootball"
+    "${SCRIPT_DIR}/build-release/gameplayfootball"
+    "${SCRIPT_DIR}/dist/linux-x64/gameplayfootball"
+    "${SCRIPT_DIR}/build/Debug/gameplayfootball"
+    "${SCRIPT_DIR}/build-debug/gameplayfootball"
   )
 fi
 for candidate in "${candidates[@]}"; do

@@ -54,9 +54,11 @@ if ($DebugBuild) {
   $candidates += (Join-Path $scriptDir 'build-win\Debug\gameplayfootball.exe')
   $candidates += (Join-Path $scriptDir 'build-win\RelWithDebInfo\gameplayfootball.exe')
   $candidates += (Join-Path $scriptDir 'build-win\Release\gameplayfootball.exe')
+  $candidates += (Join-Path $scriptDir 'dist\windows-x64\gameplayfootball.exe')
 } else {
-  $candidates += (Join-Path $scriptDir 'build-win\RelWithDebInfo\gameplayfootball.exe')
   $candidates += (Join-Path $scriptDir 'build-win\Release\gameplayfootball.exe')
+  $candidates += (Join-Path $scriptDir 'build-win\RelWithDebInfo\gameplayfootball.exe')
+  $candidates += (Join-Path $scriptDir 'dist\windows-x64\gameplayfootball.exe')
   $candidates += (Join-Path $scriptDir 'build-win\Debug\gameplayfootball.exe')
 }
 

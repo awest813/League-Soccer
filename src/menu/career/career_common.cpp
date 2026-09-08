@@ -86,7 +86,8 @@ std::string PlayerToRecord(const PlayerCareerState& p) {
   std::ostringstream os;
   os << Sanitize(p.name) << "|" << Sanitize(p.position) << "|" << p.age << "|" << p.ovr << "|"
      << p.pot << "|" << p.value << "|" << p.wage << "|" << p.morale << "|" << p.matchForm << "|"
-     << p.fitness << "|" << p.careerGoals << "|" << p.careerAssists << "|" << p.matchesPlayed << "|" << p.developmentPoints << "|" << static_cast<int>(p.injury);
+     << p.fitness << "|" << p.careerGoals << "|" << p.careerAssists << "|" << p.matchesPlayed << "|"
+     << p.developmentPoints << "|" << static_cast<int>(p.injury);
   return os.str();
 }
 
@@ -123,7 +124,8 @@ PlayerCareerState PlayerFromRecord(const std::string& val) {
     p.developmentPoints = ClampInt(SafeStoi(t[13]), 0, 99);
   if (t.size() > 14) {
     int injury = SafeStoi(t[14]);
-    if (injury >= 0 && injury <= 3) p.injury = static_cast<InjuryStatus>(injury);
+    if (injury >= 0 && injury <= 3)
+      p.injury = static_cast<InjuryStatus>(injury);
   }
   p.preferredPosition = p.position;
   return p;

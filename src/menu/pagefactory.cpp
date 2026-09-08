@@ -1,5 +1,4 @@
 #include "pagefactory.hpp"
-#include "layout_audit.hpp"
 
 #include "../main.hpp"
 #include "cameramenu.hpp"
@@ -17,6 +16,7 @@
 #include "ingame/phasemenu.hpp"
 #include "ingame/replaymenu.hpp"
 #include "ingame/setpieceeditor.hpp"
+#include "layout_audit.hpp"
 #include "league/league.hpp"
 #include "league/league_calendar.hpp"
 #include "league/league_forward.hpp"

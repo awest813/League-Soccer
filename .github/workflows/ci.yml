@@ -257,15 +257,13 @@ jobs:
       - name: Build (Release)
         run: cmake --build build-release --parallel 3
 
+      - name: Test (Release)
+        run: ctest --test-dir build-release --output-on-failure
+
       - name: Stage Linux release package
         run: |
-          mkdir -p dist/linux-x64
-          cp build-release/gameplayfootball dist/linux-x64/
-          cp build-release/football.config dist/linux-x64/
-          cp -R build-release/media build-release/databases build-release/locale dist/linux-x64/
-          mkdir -p dist/linux-x64/data
-          cp build-release/data/football.config dist/linux-x64/data/
-          cp -R build-release/data/locale dist/linux-x64/data/
+          chmod +x scripts/package_linux.sh
+          ./scripts/package_linux.sh --build-dir build-release --out-dir dist/linux-x64 --strip
 
       - name: Upload Linux release artifact
         uses: actions/upload-artifact@v7
@@ -358,6 +356,10 @@ jobs:
         shell: pwsh
         run: cmake --build build-win --config Release --parallel 4
 
+      - name: Test (Release)
+        shell: pwsh
+        run: ctest --test-dir build-win -C Release --output-on-failure
+
       - name: Package runnable Windows build
         shell: pwsh
         run: |
@@ -384,8 +386,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Install Doxygen
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends doxygen graphviz cmake build-essential libboost-dev
+      - name: Install dependencies (Doxygen + tools)
+        run: bash scripts/setup_linux_deps.sh --minimal --with-tools
 
       - name: Generate Doxyfile from template
         run: |

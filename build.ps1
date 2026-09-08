@@ -1,4 +1,4 @@
-﻿# build.ps1 – one-shot build for League-Soccer / Gameplay Football on Windows.
+# build.ps1 – one-shot build for League-Soccer / Gameplay Football on Windows.
 #
 # Bootstraps vcpkg, installs dependencies (if needed), configures CMake, and
 # builds the game. Runtime assets (media/, databases/, locale/,
@@ -16,6 +16,8 @@
 #   -Clean       Remove build-win\ before building
 #   -NoDeps      Skip the dependency-install step (use an existing vcpkg tree)
 #   -Jobs N      Parallel compile jobs (default: memory-aware, see below)
+#   -Test        Run the test suite after building
+#   -Package     Assemble release package into dist\windows-x64 after building
 #   -VcpkgRoot   Path to vcpkg (default: $env:VCPKG_ROOT or .\vcpkg)
 #   -Triplet     vcpkg triplet (default: $env:VCPKG_DEFAULT_TRIPLET or x64-windows)
 #   -Help        Show this message
@@ -24,12 +26,8 @@
 #   .\build.ps1                       # release build, bootstraps vcpkg + deps first
 #   .\build.ps1 -DebugBuild -Clean    # clean debug build
 #   .\build.ps1 -NoDeps               # rebuild using already-installed deps
-#
-# First run only, if PowerShell refuses to run the script:
-#   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-#
-# NOTE: PowerShell reserves the -Debug common parameter, so this script uses
-# -DebugBuild for the debug configuration instead.
+#   .\build.ps1 -Test                 # build and run ctest
+#   .\build.ps1 -Release -Package     # build release and package dist\windows-x64
 
 [CmdletBinding()]
 param(
@@ -38,6 +36,8 @@ param(
   [switch]$Clean,
   [switch]$NoDeps,
   [int]$Jobs = 0,
+  [switch]$Test,
+  [switch]$Package,
   [string]$VcpkgRoot = $(if ($env:VCPKG_ROOT) { $env:VCPKG_ROOT } else { Join-Path (Get-Location) 'vcpkg' }),
   [string]$Triplet    = $(if ($env:VCPKG_DEFAULT_TRIPLET) { $env:VCPKG_DEFAULT_TRIPLET } else { 'x64-windows' }),
   [switch]$Help
@@ -172,6 +172,31 @@ cmake --build build-win --config $Config --parallel $Jobs
 if ($LASTEXITCODE -ne 0) {
   Write-Host "ERROR: build failed (exit $LASTEXITCODE)." -ForegroundColor Red
   exit $LASTEXITCODE
+}
+
+# ── 5. Tests (Optional) ─────────────────────────────────────────────────────
+if ($Test) {
+  Write-Host "==> Running test suite ($Config)…"
+  ctest --test-dir build-win -C $Config --output-on-failure
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: tests failed (exit $LASTEXITCODE)." -ForegroundColor Red
+    exit $LASTEXITCODE
+  }
+}
+
+# ── 6. Package (Optional) ───────────────────────────────────────────────────
+if ($Package) {
+  Write-Host "==> Packaging release into dist\windows-x64…"
+  $pkgScript = Join-Path $PSScriptRoot 'scripts\package_windows.ps1'
+  & $pkgScript -BuildDir (Join-Path 'build-win' $Config) `
+               -OutDir 'dist\windows-x64' `
+               -VcpkgRoot $VcpkgRoot `
+               -Triplet $Triplet `
+               -RepoRoot (Get-Location)
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: packaging failed (exit $LASTEXITCODE)." -ForegroundColor Red
+    exit $LASTEXITCODE
+  }
 }
 
 Write-Host ''

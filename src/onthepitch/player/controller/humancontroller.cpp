@@ -59,7 +59,8 @@ void HumanController::RequestCommand(PlayerCommandQueue& commandQueue) {
   // cancels
 
   // shot cancel / fake shot
-  if (actionMode == 2 && (actionButton == e_ButtonFunction_Shot || actionButton == e_ButtonFunction_HighPass) &&
+  if (actionMode == 2 &&
+      (actionButton == e_ButtonFunction_Shot || actionButton == e_ButtonFunction_HighPass) &&
       hid->GetButton(e_ButtonFunction_ShortPass) && !match->IsInSetPiece()) {
     actionMode = 0;
     gauge_ms = 0;
@@ -526,7 +527,8 @@ void HumanController::Process() {
     }
   }
 
-  if (hid->GetButton(e_ButtonFunction_Sprint) && !hid->GetPreviousButtonState(e_ButtonFunction_Sprint)) {
+  if (hid->GetButton(e_ButtonFunction_Sprint) &&
+      !hid->GetPreviousButtonState(e_ButtonFunction_Sprint)) {
     int now_ms = static_cast<int>(match->GetActualTime_ms());
     if (now_ms - lastSprintPressTime_ms < 280) {
       isKnockOnSprint = true;
@@ -609,9 +611,9 @@ void HumanController::_GetHidInput(Vector3& rawInputDirection, float& rawInputVe
     } else {
       // Analog stick modulation: gentle stick displacement enables fine close control
       const float analogRange = 0.75f - analogStickDeadzone;
-      if (analogRange > 0.0f && stickLen < 0.75f) {
-        float analogRatio =
-            clamp((stickLen - analogStickDeadzone) / analogRange, 0.0f, 1.0f);
+      if (analogRange > 0.001f && stickLen < 0.75f) {
+        float safeDivisor = analogRange > 0.001f ? analogRange : 1.0f;
+        float analogRatio = clamp((stickLen - analogStickDeadzone) / safeDivisor, 0.0f, 1.0f);
         rawInputVelocityFloat = slowDribbleSpeed + analogRatio * (runSpeed - slowDribbleSpeed);
       } else {
         rawInputVelocityFloat = runSpeed;

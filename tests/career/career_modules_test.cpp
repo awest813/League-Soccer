@@ -306,7 +306,8 @@ TEST(CareerDevelopmentTest, ProgressCarriesUntilPotentialAndAcademySurvivesPromo
   save.roster[0].pot = 62;
   save.roster[0].developmentPoints = 99;
   save.trainingPlan = CareerTrainingPlan::BALANCED;
-  for (int i = 0; i < 40; ++i) blunted::CareerTraining::DevelopAfterMatch(save, events);
+  for (int i = 0; i < 40; ++i)
+    blunted::CareerTraining::DevelopAfterMatch(save, events);
   EXPECT_EQ(save.roster[0].ovr, 62);
   EXPECT_EQ(save.roster[0].developmentPoints, 0);
 }
@@ -374,7 +375,8 @@ TEST(CareerDevelopmentTest, LegacyAndInvalidPlayerProgressLoadSafely) {
   auto player = DevelopmentPlayer();
   player.developmentPoints = 57;
   player.injury = InjuryStatus::OUT_LONG_TERM;
-  auto loaded = blunted::CareerCommon::PlayerFromRecord(blunted::CareerCommon::PlayerToRecord(player));
+  auto loaded =
+      blunted::CareerCommon::PlayerFromRecord(blunted::CareerCommon::PlayerToRecord(player));
   EXPECT_EQ(loaded.developmentPoints, 57);
   EXPECT_EQ(loaded.injury, InjuryStatus::OUT_LONG_TERM);
 }

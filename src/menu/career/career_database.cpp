@@ -259,10 +259,12 @@ bool CareerDatabase::TrainSquad() {
 }
 
 bool CareerDatabase::SetTrainingPlan(CareerTrainingPlan plan) {
-  if (!m_activeSave || static_cast<int>(plan) < 0 || static_cast<int>(plan) > 2) return false;
+  if (!m_activeSave || static_cast<int>(plan) < 0 || static_cast<int>(plan) > 2)
+    return false;
   const auto previous = m_activeSave->trainingPlan;
   m_activeSave->trainingPlan = plan;
-  if (SaveCareerData()) return true;
+  if (SaveCareerData())
+    return true;
   m_activeSave->trainingPlan = previous;
   return false;
 }

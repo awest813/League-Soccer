@@ -14,12 +14,15 @@
 #   --clean      Remove build/ before building
 #   --no-deps    Skip the dependency-install step (use the system libraries)
 #   --jobs N     Parallel compile jobs (default: memory-aware, ~3 GiB/job)
+#   --test       Run the test suite after building
+#   --package    Assemble release package into dist/ after building
 #   --help, -h   Show this message
 #
 # Examples:
 #   ./build.sh                  # release build, installs deps first
 #   ./build.sh --debug --clean  # clean debug build
 #   ./build.sh --no-deps        # rebuild using already-installed deps
+#   ./build.sh --test           # build and run ctest
 
 set -euo pipefail
 
@@ -27,6 +30,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_TYPE=Release
 CLEAN=false
 INSTALL_DEPS=true
+RUN_TESTS=false
+PACKAGE=false
 JOBS=""
 
 usage() {
@@ -41,6 +46,8 @@ while [[ $# -gt 0 ]]; do
     --clean)    CLEAN=true; shift ;;
     --no-deps)  INSTALL_DEPS=false; shift ;;
     --jobs)     JOBS="$2"; shift 2 ;;
+    --test)     RUN_TESTS=true; shift ;;
+    --package)  PACKAGE=true; shift ;;
     --help|-h)  usage ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
@@ -126,6 +133,18 @@ fi
 # ── 4. Build ─────────────────────────────────────────────────────────────────
 echo "==> Building with ${JOBS} parallel job(s)…"
 cmake --build build --parallel "${JOBS}"
+
+# ── 5. Tests (Optional) ──────────────────────────────────────────────────────
+if [[ "${RUN_TESTS}" == true ]]; then
+  echo "==> Running test suite…"
+  ctest --test-dir build --output-on-failure
+fi
+
+# ── 6. Package (Optional) ────────────────────────────────────────────────────
+if [[ "${PACKAGE}" == true ]]; then
+  echo "==> Packaging release into dist/linux-x64…"
+  bash scripts/package_linux.sh --build-dir build --out-dir dist/linux-x64 --strip
+fi
 
 echo
 echo "Build complete. Run the game with:  ./run.sh"

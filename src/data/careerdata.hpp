@@ -427,5 +427,6 @@ private:
   int m_nextSaveID = 1;
 };
 
-// Generates the classic PES 5/6 Master League default cult hero squad (Castolo, Minanda, Espimas, Ivarov, etc.)
+// Generates the classic PES 5/6 Master League default cult hero squad (Castolo, Minanda, Espimas,
+// Ivarov, etc.)
 SquadState CreatePESDefaultMasterLeagueSquad(int teamID = 0);

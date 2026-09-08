@@ -1,5 +1,4 @@
 #include "mainmenu.hpp"
-#include "layout_audit.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -7,11 +6,12 @@
 
 #include "../main.hpp"
 #include "blunted.hpp"
+#include "career/career_database.hpp"
 #include "controllerselect.hpp"
 #include "credits.hpp"
+#include "layout_audit.hpp"
 #include "pagefactory.hpp"
 #include "settings.hpp"
-#include "career/career_database.hpp"
 #include "utils/localization.hpp"
 
 using namespace blunted;
@@ -74,8 +74,9 @@ IntroPage::IntroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
   logo->LoadImage("media/menu/main/title01.png");
   splashBg->AddView(logo);
   logo->Show();
-  
-  Gui2Caption* subtitle = new Gui2Caption(windowManager, "caption_intro_sub", 0, 45, 100, 3, TR("intro_title"));
+
+  Gui2Caption* subtitle =
+      new Gui2Caption(windowManager, "caption_intro_sub", 0, 45, 100, 3, TR("intro_title"));
   subtitle->SetPosition(50.0f - subtitle->GetTextWidthPercent() * 0.5f, 45);
   subtitle->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   splashBg->AddView(subtitle);
@@ -84,8 +85,8 @@ IntroPage::IntroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
   Gui2Frame* promptPanel = new Gui2Frame(windowManager, "frame_intro_prompt", 30, 80, 40, 10, true);
   splashBg->AddView(promptPanel);
   promptPanel->Show();
-  Gui2Caption* prompt = new Gui2Caption(windowManager, "caption_intro_prompt", 0, 3.5f, 40, 3,
-                                        TR("intro_continue"));
+  Gui2Caption* prompt =
+      new Gui2Caption(windowManager, "caption_intro_prompt", 0, 3.5f, 40, 3, TR("intro_continue"));
   prompt->SetPosition(20.0f - prompt->GetTextWidthPercent() * 0.5f, 3.5f);
   prompt->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright1));
   promptPanel->AddView(prompt);
@@ -128,13 +129,13 @@ OutroPage::OutroPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
       new Gui2Frame(windowManager, "frame_outro_message", 32, 70, 36, 16, true);
   this->AddView(messagePanel);
   messagePanel->Show();
-  Gui2Caption* message = new Gui2Caption(windowManager, "caption_outro_message", 0, 3, 32, 3,
-                                         TR("outro_thanks"));
+  Gui2Caption* message =
+      new Gui2Caption(windowManager, "caption_outro_message", 0, 3, 32, 3, TR("outro_thanks"));
   message->SetPosition(18.0f - message->GetTextWidthPercent() * 0.5f, 3);
   messagePanel->AddView(message);
   message->Show();
-  Gui2Caption* prompt = new Gui2Caption(windowManager, "caption_outro_prompt", 0, 9, 32, 3,
-                                        TR("outro_prompt"));
+  Gui2Caption* prompt =
+      new Gui2Caption(windowManager, "caption_outro_prompt", 0, 9, 32, 3, TR("outro_prompt"));
   prompt->SetPosition(18.0f - prompt->GetTextWidthPercent() * 0.5f, 9);
   messagePanel->AddView(prompt);
   prompt->Show();
@@ -225,10 +226,10 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Frame* infoPanel = new Gui2Frame(windowManager, "frame_mm_info", 46, 4, 50, 42, true);
   CareerDatabase::GetInstance().Initialize("user/career");
   CareerSave* activeSave = CareerDatabase::GetInstance().GetActiveSave();
-  
+
   if (activeSave) {
-    Gui2Caption* activeTitle =
-        new Gui2Caption(windowManager, "caption_mm_active", 2, 2, 46, 3, TR("mainmenu_resume_title"));
+    Gui2Caption* activeTitle = new Gui2Caption(windowManager, "caption_mm_active", 2, 2, 46, 3,
+                                               TR("mainmenu_resume_title"));
     activeTitle->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
     infoPanel->AddView(activeTitle);
     activeTitle->Show();
@@ -239,9 +240,8 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
                        TRF("mainmenu_save_manager", {activeSave->managerName}));
     AddMainMenuCaption(
         windowManager, infoPanel, "caption_mm_saveseason", 2, 16,
-        TRF("mainmenu_save_season",
-            {std::to_string(activeSave->season.currentSeason),
-             std::to_string(activeSave->season.currentWeek)}));
+        TRF("mainmenu_save_season", {std::to_string(activeSave->season.currentSeason),
+                                     std::to_string(activeSave->season.currentWeek)}));
     AddMainMenuCaption(windowManager, infoPanel, "caption_mm_savedesc", 2, 22,
                        TR("mainmenu_resume_hint"));
   } else {
@@ -318,7 +318,7 @@ void MainMenuPage::Process() {
       }
     }
     Properties properties;
-    properties.Set("controllerID", -1); // Exercise the missing-device fallback safely.
+    properties.Set("controllerID", -1);  // Exercise the missing-device fallback safely.
     CreatePage(target, properties);
     return;
   }
@@ -643,7 +643,6 @@ bool MainMenuPage::GoImportDB() {
       "year INTEGER, "
       "xmldata TEXT);");
 
-
   // 4-2-3-1
   std::string defaultFormation =
       "<p1><position>-1.0,  0.0</position><role>GK</role></p1>"
@@ -661,7 +660,6 @@ bool MainMenuPage::GoImportDB() {
       "<p10><position>0.7, -0.9</position><role>RM</role></p10>"
 
       "<p11><position>1.0,  0.0</position><role>CF</role></p11>";
-
 
   std::string defaultTactics =
       "<position_offense_depth_factor>0.5</position_offense_depth_factor>"
@@ -719,7 +717,6 @@ bool MainMenuPage::GoImportDB() {
     club.status = tokens.at(9);
 
     bool addClub = false;
-
 
     // public beta 2
     if (club.name == "PSV")
@@ -1096,7 +1093,6 @@ bool MainMenuPage::GoImportDB() {
 
     // printf("KEEPER?: %s\n", clubs.at(c).players.begin()->lastName.c_str());
 
-
     // only keep the best
     unsigned int keepPlayers = 18;
     if (clubs.at(c).players.size() < keepPlayers)
@@ -1147,7 +1143,6 @@ bool MainMenuPage::GoImportDB() {
 
   return true;
 }
-
 
 // inhibit 'back' button from closing the game
 void MainMenuPage::ProcessWindowingEvent(WindowingEvent* event) {

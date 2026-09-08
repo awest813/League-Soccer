@@ -349,7 +349,8 @@ TEST(CareerSaveLoadTest, LegacyPlainTextSaveStillLoads) {
 
 TEST(CareerProgressionSaveTest, SelectedPlanAndProgressSurviveReloadWithoutAwardingGrowth) {
   CareerDatabase& db = CareerDatabase::GetInstance();
-  db.Initialize(WriteSaveFile("name=Progress Club\nplayer.0=Prospect|ST|19|60|80|100000|500|50|50|90|0|0|0|57\n"));
+  db.Initialize(WriteSaveFile(
+      "name=Progress Club\nplayer.0=Prospect|ST|19|60|80|100000|500|50|50|90|0|0|0|57\n"));
   ASSERT_TRUE(db.LoadCareerSave("Progress Club"));
   EXPECT_EQ(db.GetActiveSave()->trainingPlan, CareerTrainingPlan::BALANCED);
   ASSERT_TRUE(db.SetTrainingPlan(CareerTrainingPlan::DEVELOPMENT));

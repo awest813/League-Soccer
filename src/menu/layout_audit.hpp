@@ -2,12 +2,13 @@
 #define GF_MENU_LAYOUT_AUDIT_HPP
 
 #include <cstdio>
+
 #include "pagefactory.hpp"
 #include "utils/gui2/widgets/caption.hpp"
 #include "utils/gui2/widgets/dialog.hpp"
+#include "utils/gui2/widgets/editline.hpp"
 #include "utils/gui2/widgets/pulldown.hpp"
 #include "utils/gui2/widgets/slider.hpp"
-#include "utils/gui2/widgets/editline.hpp"
 #include "utils/gui2/widgets/text.hpp"
 
 // Opt-in diagnostics for smoke tests; normal menu behavior is unchanged.
@@ -21,34 +22,42 @@ inline void AuditMenuLayout(blunted::Gui2View* view) {
   if (caption)
     w = caption->GetTextWidthPercent();
   const auto children = view->GetChildren();
-  const bool control = dynamic_cast<blunted::Gui2Button*>(view) ||
-                       dynamic_cast<blunted::Gui2Slider*>(view) ||
-                       dynamic_cast<blunted::Gui2EditLine*>(view) ||
-                       dynamic_cast<blunted::Gui2Pulldown*>(view);
-  if ((caption || control) &&
-      (x < -0.1f || y < -0.1f || x + w > 100.1f || y + h > 100.1f)) {
-    std::printf("[menu-layout] OUTSIDE %s x=%.2f y=%.2f w=%.2f h=%.2f\n",
-                view->GetName().c_str(), x, y, w, h);
+  const bool control =
+      dynamic_cast<blunted::Gui2Button*>(view) || dynamic_cast<blunted::Gui2Slider*>(view) ||
+      dynamic_cast<blunted::Gui2EditLine*>(view) || dynamic_cast<blunted::Gui2Pulldown*>(view);
+  if ((caption || control) && (x < -0.1f || y < -0.1f || x + w > 100.1f || y + h > 100.1f)) {
+    std::printf("[menu-layout] OUTSIDE %s x=%.2f y=%.2f w=%.2f h=%.2f\n", view->GetName().c_str(),
+                x, y, w, h);
   }
   for (auto* child : children)
     AuditMenuLayout(child);
 }
 
 inline int StandaloneMenuSmokePage(const std::string& route) {
-  struct Route { const char* name; int page; };
-  static const Route routes[] = {
-    {"settings", e_PageID_Settings}, {"gameplay", e_PageID_Gameplay},
-    {"controller", e_PageID_Controller}, {"keyboard", e_PageID_Keyboard},
-    {"gamepads", e_PageID_Gamepads}, {"gamepad_setup", e_PageID_GamepadSetup},
-    {"gamepad_calibration", e_PageID_GamepadCalibration},
-    {"gamepad_mapping", e_PageID_GamepadMapping}, {"gamepad_function", e_PageID_GamepadFunction},
-    {"graphics", e_PageID_Graphics}, {"audio", e_PageID_Audio},
-    {"language", e_PageID_Language}, {"credits", e_PageID_Credits},
-    {"match_options", e_PageID_MatchOptions}, {"forfeit", e_PageID_PreQuit},
-    {"history", e_PageID_MatchHistory}, {"career", e_PageID_CareerMenu},
-    {"career_training", e_PageID_CareerTraining},
-    {"career_new", e_PageID_CareerNewGame}, {"career_save", e_PageID_CareerSave}
+  struct Route {
+    const char* name;
+    int page;
   };
+  static const Route routes[] = {{"settings", e_PageID_Settings},
+                                 {"gameplay", e_PageID_Gameplay},
+                                 {"controller", e_PageID_Controller},
+                                 {"keyboard", e_PageID_Keyboard},
+                                 {"gamepads", e_PageID_Gamepads},
+                                 {"gamepad_setup", e_PageID_GamepadSetup},
+                                 {"gamepad_calibration", e_PageID_GamepadCalibration},
+                                 {"gamepad_mapping", e_PageID_GamepadMapping},
+                                 {"gamepad_function", e_PageID_GamepadFunction},
+                                 {"graphics", e_PageID_Graphics},
+                                 {"audio", e_PageID_Audio},
+                                 {"language", e_PageID_Language},
+                                 {"credits", e_PageID_Credits},
+                                 {"match_options", e_PageID_MatchOptions},
+                                 {"forfeit", e_PageID_PreQuit},
+                                 {"history", e_PageID_MatchHistory},
+                                 {"career", e_PageID_CareerMenu},
+                                 {"career_training", e_PageID_CareerTraining},
+                                 {"career_new", e_PageID_CareerNewGame},
+                                 {"career_save", e_PageID_CareerSave}};
   for (const auto& entry : routes)
     if (route == entry.name)
       return entry.page;
@@ -59,9 +68,11 @@ inline bool SmokeCareerTraining(blunted::Gui2WindowManager* manager, blunted::Gu
   using namespace blunted;
   Gui2Grid* players = nullptr;
   for (auto* child : page->GetChildren())
-    if (child->GetName() == "development_players") players = dynamic_cast<Gui2Grid*>(child);
+    if (child->GetName() == "development_players")
+      players = dynamic_cast<Gui2Grid*>(child);
   if (!players || players->GetChildren().size() != 32) {
-    printf("[menu-smoke] Training roster size: %d\n", players ? static_cast<int>(players->GetChildren().size()) : -1);
+    printf("[menu-smoke] Training roster size: %d\n",
+           players ? static_cast<int>(players->GetChildren().size()) : -1);
     return false;
   }
   players->SetFocus();
@@ -69,11 +80,13 @@ inline bool SmokeCareerTraining(blunted::Gui2WindowManager* manager, blunted::Gu
     auto* focused = manager->GetFocus();
     auto* card = players->GetChildren().at(row);
     if (!focused || !card->IsInFocusPath() || !card->IsVisible() || !focused->IsVisible()) {
-      printf("[menu-smoke] Training row %d focus %s visible %d\n", row, focused ? focused->GetName().c_str() : "none", focused ? focused->IsVisible() : false);
+      printf("[menu-smoke] Training row %d focus %s visible %d\n", row,
+             focused ? focused->GetName().c_str() : "none", focused ? focused->IsVisible() : false);
       return false;
     }
     AuditMenuLayout(page);
-    for (int tick = 0; tick < 50; ++tick) players->Process();
+    for (int tick = 0; tick < 50; ++tick)
+      players->Process();
     if (row < 31) {
       WindowingEvent down;
       down.SetDirection(Vector3(0, 1, 0));
@@ -137,8 +150,9 @@ inline bool SmokeMenuWidgets(blunted::Gui2WindowManager* manager, blunted::Gui2V
   readOnly->SetReadOnlyScrolling(true);
   readOnly->SetMaxVisibleRows(2);
   for (int i = 0; i < 4; ++i)
-    readOnly->AddView(new Gui2Caption(manager, "audit_row" + std::to_string(i),
-                                      0, 0, 28, 3, "Row " + std::to_string(i)), i, 0);
+    readOnly->AddView(new Gui2Caption(manager, "audit_row" + std::to_string(i), 0, 0, 28, 3,
+                                      "Row " + std::to_string(i)),
+                      i, 0);
   readOnly->UpdateLayout();
   readOnly->Show();
   readOnly->FindView(3, 0)->SetFocus();
@@ -152,8 +166,9 @@ inline bool SmokeMenuWidgets(blunted::Gui2WindowManager* manager, blunted::Gui2V
   readOnly->Exit();
   delete readOnly;
 
-  auto* caption = new Gui2Caption(manager, "audit_long_label", 5, 5, 20, 3,
-                                  "Long localized label: caf\xc3\xa9, passing and shooting assistance");
+  auto* caption =
+      new Gui2Caption(manager, "audit_long_label", 5, 5, 20, 3,
+                      "Long localized label: caf\xc3\xa9, passing and shooting assistance");
   parent->AddView(caption);
   caption->Show();
   float width, height;
@@ -168,7 +183,7 @@ inline bool SmokeMenuWidgets(blunted::Gui2WindowManager* manager, blunted::Gui2V
   auto* popup = new Gui2Pulldown(manager, "audit_popup", 78, 94, 20, 3);
   parent->AddView(popup);
   popup->Show();
-  popup->PullDownOrUp(); // Empty lists must not throw.
+  popup->PullDownOrUp();  // Empty lists must not throw.
   for (int i = 0; i < 8; ++i)
     popup->AddEntry("Choice " + std::to_string(i), std::to_string(i));
   popup->SetSelected(7);

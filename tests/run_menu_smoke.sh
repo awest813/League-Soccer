@@ -19,9 +19,9 @@ trap cleanup EXIT
 
 runner=()
 if command -v stdbuf >/dev/null 2>&1 && command -v timeout >/dev/null 2>&1; then
-  runner=(stdbuf -oL -eL timeout "${timeout_seconds}s")
+  runner=(stdbuf -oL -eL timeout --kill-after=10s "${timeout_seconds}s")
 elif command -v gstdbuf >/dev/null 2>&1 && command -v gtimeout >/dev/null 2>&1; then
-  runner=(gstdbuf -oL -eL gtimeout "${timeout_seconds}s")
+  runner=(gstdbuf -oL -eL gtimeout -k 10s "${timeout_seconds}s")
 fi
 
 if command -v xvfb-run >/dev/null 2>&1; then

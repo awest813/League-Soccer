@@ -52,9 +52,9 @@ Vector3 ScriptedGamepad::GetDirection() {
     idleTimer = kIdleGapReads;
   }
 
-  // Keep moving upfield (never idle) so the human-selected player is actively
-  // controlled for the duration of the simulated match.
-  return Vector3(0.5, 1.0, 0.0);
+  // Keep moving along the pitch length (X axis, never toward touchline Y) so
+  // the human-selected player stays in play for the duration of the simulated match.
+  return Vector3(1.0, 0.0, 0.0);
 }
 
 bool ScriptedGamepad::GetButton(e_ButtonFunction buttonFunction) {

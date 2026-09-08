@@ -1,11 +1,11 @@
 #include "career_sim.hpp"
-#include "career_training.hpp"
 
 #include <algorithm>
 #include <functional>
 #include <random>
 
 #include "career_common.hpp"
+#include "career_training.hpp"
 
 namespace blunted {
 namespace CareerSim {
@@ -48,7 +48,8 @@ void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save) {
   int facilityBonus = 0;
   if (save != nullptr) {
     for (const auto& upgrade : save->stadium.upgrades) {
-      if (!upgrade.isComplete()) continue;
+      if (!upgrade.isComplete())
+        continue;
       if (upgrade.name == "Training Complex")
         facilityBonus += 15;
       if (upgrade.name == "Youth Academy")
@@ -97,9 +98,11 @@ void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save) {
     }
   }
 
-  if (growthPoints > 0) growthPoints = std::min(growthPoints, std::max(0, player.pot - player.ovr));
+  if (growthPoints > 0)
+    growthPoints = std::min(growthPoints, std::max(0, player.pot - player.ovr));
   player.ovr = std::min(99, std::max(1, player.ovr + growthPoints));
-  if (player.ovr >= player.pot) player.developmentPoints = 0;
+  if (player.ovr >= player.pot)
+    player.developmentPoints = 0;
   player.morale = std::min(100, std::max(0, player.morale + RandomInt(-10, 10)));
   player.fitness = 100;   // Reset fitness for new season
   player.matchForm = 50;  // Reset form

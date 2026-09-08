@@ -383,6 +383,11 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
       BUILD_WITH_INSTALL_RPATH TRUE
       INSTALL_RPATH "@executable_path;@loader_path"
     )
+  elseif(UNIX)
+    set_target_properties(gameplayfootball PROPERTIES
+      BUILD_WITH_INSTALL_RPATH TRUE
+      INSTALL_RPATH "$ORIGIN;$ORIGIN/lib"
+    )
   endif()
   add_custom_command(TARGET gameplayfootball POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:gameplayfootball>/data
@@ -419,6 +424,25 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
       COMMENT "Copying runtime DLLs beside gameplayfootball"
     )
   endif()
+
+  # Standard install targets for packaging and distribution
+  install(TARGETS gameplayfootball
+    RUNTIME DESTINATION bin
+  )
+  install(FILES ${PROJECT_SOURCE_DIR}/data/football.config
+    DESTINATION bin
+  )
+  install(DIRECTORY ${PROJECT_SOURCE_DIR}/data/databases
+    ${PROJECT_SOURCE_DIR}/data/locale
+    ${PROJECT_SOURCE_DIR}/data/media
+    DESTINATION bin
+  )
+  install(DIRECTORY ${PROJECT_SOURCE_DIR}/data/locale
+    DESTINATION bin/data
+  )
+  install(FILES ${PROJECT_SOURCE_DIR}/data/football.config
+    DESTINATION bin/data
+  )
 endif()
 
 if(BUILD_TESTING)
@@ -443,3 +467,13 @@ if(GAMEPLAYFOOTBALL_BUILD_DOCS)
     VERBATIM
   )
 endif()
+
+# ── CPack Packaging ──────────────────────────────────────────────────────────
+set(CPACK_PACKAGE_NAME "GameplayFootball")
+set(CPACK_PACKAGE_VENDOR "League-Soccer Contributors")
+set(CPACK_PACKAGE_VERSION ${VERSION})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Gameplay Football / League-Soccer")
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/README.md")
+include(CPack)
+
