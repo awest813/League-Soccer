@@ -13,7 +13,7 @@ extern unsigned long time_ms;
 // PES6 digital control mode, quantizes some input to x degree angles
 const bool quantizeDirection = true;
 
-const float analogStickDeadzone = 0.75f;
+const float analogStickDeadzone = 0.15f;
 
 const float _default_CameraZoom = 0.5f;
 const float _default_CameraHeight = 0.3f;

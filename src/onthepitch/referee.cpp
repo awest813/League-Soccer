@@ -7,6 +7,7 @@
 #include "officials.hpp"
 #include "player/playerofficial.hpp"
 #include "scene/objectfactory.hpp"
+#include "utils/localization.hpp"
 
 Referee::Referee(Match* match) : match(match) {
    buffer.desiredSetPiece = e_SetPiece_KickOff;
@@ -320,7 +321,7 @@ void Referee::BallTouched() {
           buffer.restartPos = playerIter->second;
           buffer.teamID = abs(lastTouchTeamID - 1);
           buffer.active = true;
-          match->SpamMessage("offside!");
+          match->SpamMessage(Localization::GetInstance().Translate("ingame_offside") + "!");
           break;
         } else
           break;
@@ -370,7 +371,7 @@ void Referee::TripNotice(Player* tripee, Player* tripper, int tackleType) {
       foul.foulPosition = tripee->GetPosition();
       foul.hasBeenProcessed = false;
       if (!IsReleaseVersion())
-        match->SpamMessage("advantage", 2000);
+        match->SpamMessage(Localization::GetInstance().Translate("ingame_advantage"), 2000);
     }
 
   } else if (tackleType == 3 &&
@@ -419,7 +420,7 @@ void Referee::TripNotice(Player* tripee, Player* tripper, int tackleType) {
           foul.advantage = false;
         } else {
           if (!IsReleaseVersion())
-            match->SpamMessage("advantage", 3000);
+            match->SpamMessage(Localization::GetInstance().Translate("ingame_advantage"), 3000);
         }
       }
     }
@@ -481,14 +482,14 @@ bool Referee::CheckFoul() {
     }
     buffer.teamID = foul.foulVictim->GetTeam()->GetID();
     buffer.active = true;
-    std::string spamMessage = "foul!";
+    std::string spamMessage = Localization::GetInstance().Translate("ingame_foul") + "!";
     if (foul.foulType == 2) {
-      spamMessage.append(" yellow card");
+      spamMessage.append(" (" + Localization::GetInstance().Translate("ingame_yellow_card") + ")");
       foul.foulPlayer->GiveYellowCard(match->GetActualTime_ms() +
                                       6000);  // need to find out proper moment
     }
     if (foul.foulType == 3) {
-      spamMessage.append(" red card!!!");
+      spamMessage.append(" (" + Localization::GetInstance().Translate("ingame_red_card") + ")");
       foul.foulPlayer->GiveRedCard(match->GetActualTime_ms() +
                                    6000);  // need to find out proper moment
     }

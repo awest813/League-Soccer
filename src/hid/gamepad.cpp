@@ -236,6 +236,10 @@ Vector3 HIDGamepad::GetDirection() {
   return inputDirection;
 }
 
+void HIDGamepad::SetRumble(float low_frequency, float high_frequency, unsigned int duration_ms) {
+  UserEventManager::GetInstance().SetJoystickRumble(gamepadID, low_frequency, high_frequency, duration_ms);
+}
+
 e_ControllerType HIDGamepad::DetectControllerType(const std::string& name) {
   std::string lower = name;
   std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);

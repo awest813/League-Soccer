@@ -14,6 +14,7 @@
 #include "scene/objects/light.hpp"
 #include "scene/resources/soundbuffer.hpp"
 #include "utils/directoryparser.hpp"
+#include "utils/localization.hpp"
 #include "utils/splitgeometry.hpp"
 
 const unsigned int replaySize_ms = 10000;
@@ -358,10 +359,13 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   statsOverlay->Hide();
 
   messageCaption =
-      std::make_unique<Gui2Caption>(menuTask->GetWindowManager(), "game_messages", 0, 0, 80, 8, "");
-  messageCaption->SetTransparency(0.3f);
+      std::make_unique<Gui2Caption>(menuTask->GetWindowManager(), "game_messages", 0, 0, 80, 4, "");
+  messageCaption->SetColor(Vector3(255, 255, 255));
+  messageCaption->SetOutlineColor(Vector3(0, 0, 0));
+  messageCaption->SetTransparency(0.0f);
   root->AddView(messageCaption.get());
-  messageCaptionRemoveTime_ms = actualTime_ms + 5000;
+  messageCaption->Hide();
+  messageCaptionRemoveTime_ms = 0;
 
   // for usage in destructor
   scene3D = GetScene3D();
@@ -672,7 +676,7 @@ void Match::UpdateControllerSetup() {
 void Match::SpamMessage(const std::string& msg, int time_ms) {
   messageCaption->SetCaption(msg);
   float w = messageCaption->GetTextWidthPercent();
-  messageCaption->SetPosition(50 - w * 0.5f, 5);
+  messageCaption->SetPosition(50.0f - w * 0.5f, 7.2f);
   messageCaption->Show();
   messageCaptionRemoveTime_ms = actualTime_ms + time_ms;
 }
@@ -1133,6 +1137,13 @@ void Match::Process() {
       if (t1goal || t2goal) {
         AddExcitementBoost(1.0f, 5000);
 
+        const std::vector<IHIDevice*>& controllers = GetControllers();
+        for (auto* controller : controllers) {
+          if (controller->GetDeviceType() == e_HIDeviceType_Gamepad) {
+            controller->SetRumble(0.8f, 0.8f, 1000);
+          }
+        }
+
         // find out who scored
         bool ownGoal = true;
         if (GetLastTouchTeamID(e_TouchType_Intentional_Kicked) == GetLastGoalTeamID() ||
@@ -1141,23 +1152,21 @@ void Match::Process() {
 
         if (!ownGoal) {
           lastGoalScorer = teams[GetLastGoalTeamID()]->GetLastTouchPlayer();
+          std::string goalWord = Localization::GetInstance().Translate("ingame_goal");
           if (lastGoalScorer) {
-            SpamMessage("GOAL for " + matchData->GetTeamData(GetLastGoalTeamID())->GetName() +
-                            "! " + lastGoalScorer->GetPlayerData()->GetLastName() + " scores!",
+            SpamMessage(goalWord + "! " + matchData->GetTeamData(GetLastGoalTeamID())->GetName() +
+                            " (" + lastGoalScorer->GetPlayerData()->GetLastName() + ")",
                         4000);
           } else {
-            SpamMessage("GOAL!!!", 4000);
+            SpamMessage(goalWord + "!", 4000);
           }
-        }
-
-        else {  // own goal
+        } else {  // own goal
           lastGoalScorer = teams[abs(GetLastGoalTeamID() - 1)]->GetLastTouchPlayer();
+          std::string ownGoalWord = Localization::GetInstance().Translate("ingame_owngoal");
           if (lastGoalScorer) {
-            SpamMessage(
-                "OWN GOAL! " + lastGoalScorer->GetPlayerData()->GetLastName() + " is so unlucky!",
-                4000);
+            SpamMessage(ownGoalWord + "! " + lastGoalScorer->GetPlayerData()->GetLastName(), 4000);
           } else {
-            SpamMessage("It's an OWN GOAL! oh noes!", 4000);
+            SpamMessage(ownGoalWord + "!", 4000);
           }
         }
       }

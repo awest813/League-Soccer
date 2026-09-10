@@ -7,7 +7,8 @@
 
 using namespace blunted;
 
-static const char* kPieceNames[3] = {"Free Kick", "Corner", "Goal Kick"};
+static const char* kPieceKey[3] = {"setpiece_free_kick", "setpiece_corner",
+                                   "setpiece_goal_kick"};
 
 SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
                                        const Gui2PageData& pageData)
@@ -28,7 +29,8 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
   bg->Show();
 
   Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_spe_title", 0, 8, 100, 4, "Set-Piece Editor");
+      new Gui2Caption(windowManager, "caption_spe_title", 0, 8, 100, 4,
+                      Localization::GetInstance().Translate("setpiece_title"));
   title->SetPosition(50 - title->GetTextWidthPercent() / 2, 8);
   this->AddView(title);
   title->Show();
@@ -36,19 +38,34 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_spe", 8, 18, 84, 60);
 
   // Header
-  grid->AddView(new Gui2Caption(windowManager, "spe_h0", 0, 0, 20, 3, "Set Piece"), 0, 0);
-  grid->AddView(new Gui2Caption(windowManager, "spe_h1", 0, 0, 6, 3, "Depth -"), 0, 1);
-  grid->AddView(new Gui2Caption(windowManager, "spe_h2", 0, 0, 10, 3, "Depth"), 0, 2);
-  grid->AddView(new Gui2Caption(windowManager, "spe_h3", 0, 0, 6, 3, "Depth +"), 0, 3);
-  grid->AddView(new Gui2Caption(windowManager, "spe_h4", 0, 0, 6, 3, "Width -"), 0, 4);
-  grid->AddView(new Gui2Caption(windowManager, "spe_h5", 0, 0, 10, 3, "Width"), 0, 5);
-  grid->AddView(new Gui2Caption(windowManager, "spe_h6", 0, 0, 6, 3, "Width +"), 0, 6);
+  grid->AddView(new Gui2Caption(windowManager, "spe_h0", 0, 0, 20, 3,
+                                Localization::GetInstance().Translate("setpiece_header")),
+                0, 0);
+  grid->AddView(new Gui2Caption(windowManager, "spe_h1", 0, 0, 6, 3,
+                                Localization::GetInstance().Translate("setpiece_depth") + " -"),
+                0, 1);
+  grid->AddView(new Gui2Caption(windowManager, "spe_h2", 0, 0, 10, 3,
+                                Localization::GetInstance().Translate("setpiece_depth")),
+                0, 2);
+  grid->AddView(new Gui2Caption(windowManager, "spe_h3", 0, 0, 6, 3,
+                                Localization::GetInstance().Translate("setpiece_depth") + " +"),
+                0, 3);
+  grid->AddView(new Gui2Caption(windowManager, "spe_h4", 0, 0, 6, 3,
+                                Localization::GetInstance().Translate("setpiece_width") + " -"),
+                0, 4);
+  grid->AddView(new Gui2Caption(windowManager, "spe_h5", 0, 0, 10, 3,
+                                Localization::GetInstance().Translate("setpiece_width")),
+                0, 5);
+  grid->AddView(new Gui2Caption(windowManager, "spe_h6", 0, 0, 6, 3,
+                                Localization::GetInstance().Translate("setpiece_width") + " +"),
+                0, 6);
 
   for (int i = 0; i < kNumPieces; i++) {
     int row = i + 1;
     std::string sfx = std::to_string(i);
 
-    grid->AddView(new Gui2Caption(windowManager, "spe_name_" + sfx, 0, 0, 20, 3, kPieceNames[i]),
+    grid->AddView(new Gui2Caption(windowManager, "spe_name_" + sfx, 0, 0, 20, 3,
+                                  Localization::GetInstance().Translate(kPieceKey[i])),
                   row, 0);
 
     // Depth - button
@@ -94,7 +111,8 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
   // reach them (before, a standalone button beside the grid held focus and arrow
   // keys never crossed into the +/- steppers).
   const int footerRow = kNumPieces + 1;
-  Gui2Button* btnSave = new Gui2Button(windowManager, "spe_save", 0, 0, 18, 3, "Save");
+  Gui2Button* btnSave = new Gui2Button(
+      windowManager, "spe_save", 0, 0, 18, 3, Localization::GetInstance().Translate("action_save"));
   btnSave->sig_OnClick.connect([this](...) { Save(); });
   grid->AddView(btnSave, footerRow, 0);
 

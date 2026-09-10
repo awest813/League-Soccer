@@ -14,9 +14,18 @@ namespace {
 const char* kLoadingFallbackLogo = "media/menu/league.png";
 
 std::string ResolveTeamLogo(const TeamData* teamData) {
+  if (!teamData) {
+    return kLoadingFallbackLogo;
+  }
   const std::string& logoPath = teamData->GetLogoUrl();
-  if (!logoPath.empty() && std::filesystem::exists(logoPath)) {
-    return logoPath;
+  if (!logoPath.empty()) {
+    if (std::filesystem::exists(logoPath)) {
+      return logoPath;
+    }
+    std::filesystem::path dataPath = std::filesystem::path("data") / logoPath;
+    if (std::filesystem::exists(dataPath)) {
+      return dataPath.generic_string();
+    }
   }
   return kLoadingFallbackLogo;
 }

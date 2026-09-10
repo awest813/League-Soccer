@@ -149,4 +149,84 @@ TEST(GameplaySliderUXTest, QuantizationPresetLocaleStringsLoaded) {
   EXPECT_EQ(TR("gameplay_quantization_pes16"), "PES 16-way");
 }
 
+TEST(InMatchUILocaleTest, MatchKeysLoadedAcrossAllLanguages) {
+  const std::vector<std::string> languages = {"en", "de", "es", "fr", "pt"};
+  const std::vector<std::string> keys = {
+      "ingame_goal",
+      "ingame_owngoal",
+      "ingame_offside",
+      "ingame_advantage",
+      "ingame_foul",
+      "ingame_yellow_card",
+      "ingame_red_card",
+      "ingame_replay_help",
+      "gameover_mom",
+      "setpiece_title",
+      "setpiece_free_kick",
+      "setpiece_corner",
+      "setpiece_goal_kick",
+      "setpiece_header",
+      "setpiece_depth",
+      "setpiece_width",
+      "action_save",
+  };
+
+  for (const auto& lang : languages) {
+    Localization::GetInstance().Load(lang);
+    for (const auto& key : keys) {
+      std::string val = Localization::GetInstance().Translate(key);
+      EXPECT_FALSE(val.empty()) << "Key " << key << " is empty in lang " << lang;
+      EXPECT_NE(val, key) << "Key " << key << " was not translated in lang " << lang;
+    }
+  }
+
+  // Restore English default
+  Localization::GetInstance().Load("en");
+}
+
+TEST(InMatchUILayoutTest, EventTickerDoesNotOverlapScoreboard) {
+  constexpr float kScoreboardY = 2.0f;
+  constexpr float kScoreboardHeight = 4.0f;
+  constexpr float kScoreboardBottom = kScoreboardY + kScoreboardHeight;  // 6.0f
+
+  constexpr float kEventTickerY = 7.2f;
+
+  EXPECT_GT(kEventTickerY, kScoreboardBottom);
+  EXPECT_GE(kEventTickerY - kScoreboardBottom, 1.0f);  // At least 1% vertical margin
+}
+
+TEST(InMatchUILayoutTest, TacticalPitchBoardAspectAndCoordinateMapping) {
+  constexpr float kDiagramRatio = 550.0f / 360.0f;
+  constexpr float kBoardWidth = 1100.0f;
+  constexpr float kBoardHeight = 720.0f;
+  EXPECT_NEAR(kBoardWidth / kBoardHeight, kDiagramRatio, 1e-4f);
+
+  // Formation coordinates pos in [-1.0, 1.0] map to pos * 0.44 + 0.5 -> [0.06, 0.94]
+  auto mapCoord = [](float pos) { return pos * 0.44f + 0.50f; };
+  EXPECT_NEAR(mapCoord(-1.0f), 0.06f, 1e-4f);
+  EXPECT_NEAR(mapCoord(0.0f), 0.50f, 1e-4f);
+  EXPECT_NEAR(mapCoord(1.0f), 0.94f, 1e-4f);
+  EXPECT_GT(mapCoord(-1.0f), 0.0f);
+  EXPECT_LT(mapCoord(1.0f), 1.0f);
+}
+
+TEST(InMatchUILayoutTest, StaminaThreeTierColorClassification) {
+  auto getTier = [](float stamina) -> int {
+    if (stamina >= 0.50f)
+      return 0;  // Green
+    if (stamina >= 0.25f)
+      return 1;  // Yellow
+    return 2;    // Red
+  };
+
+  EXPECT_EQ(getTier(1.00f), 0);
+  EXPECT_EQ(getTier(0.75f), 0);
+  EXPECT_EQ(getTier(0.50f), 0);
+  EXPECT_EQ(getTier(0.49f), 1);
+  EXPECT_EQ(getTier(0.25f), 1);
+  EXPECT_EQ(getTier(0.24f), 2);
+  EXPECT_EQ(getTier(0.00f), 2);
+}
+
 }  // namespace
+

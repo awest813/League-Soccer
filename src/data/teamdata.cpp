@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
 
 #include "../main.hpp"
 #include "base/utils.hpp"
@@ -113,13 +114,37 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
     std::transform(shortName.begin(), shortName.end(), shortName.begin(), ::toupper);
   }
 
+  std::string rawLogo = logo_url;
+  std::string rawKit = kit_url;
   std::string saveDir = GetActiveSaveDirectory();
   if (!saveDir.empty()) {
-    logo_url = "saves/" + saveDir + "/" + logo_url;
-    kit_url = "saves/" + saveDir + "/" + kit_url;
+    std::filesystem::path saveLogo = std::filesystem::path("saves") / saveDir / rawLogo;
+    std::filesystem::path saveKit = std::filesystem::path("saves") / saveDir / rawKit;
+    if (!rawLogo.empty() && std::filesystem::exists(saveLogo)) {
+      logo_url = saveLogo.generic_string();
+    } else if (!rawLogo.empty()) {
+      logo_url = (std::filesystem::path("databases") / "default" / rawLogo).generic_string();
+    } else {
+      logo_url.clear();
+    }
+    if (!rawKit.empty() && std::filesystem::exists(saveKit)) {
+      kit_url = saveKit.generic_string();
+    } else if (!rawKit.empty()) {
+      kit_url = (std::filesystem::path("databases") / "default" / rawKit).generic_string();
+    } else {
+      kit_url.clear();
+    }
   } else {
-    logo_url = "databases/default/" + logo_url;
-    kit_url = "databases/default/" + kit_url;
+    if (!rawLogo.empty()) {
+      logo_url = (std::filesystem::path("databases") / "default" / rawLogo).generic_string();
+    } else {
+      logo_url.clear();
+    }
+    if (!rawKit.empty()) {
+      kit_url = (std::filesystem::path("databases") / "default" / rawKit).generic_string();
+    } else {
+      kit_url.clear();
+    }
   }
 
   // team formation

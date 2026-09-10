@@ -34,6 +34,7 @@ public:
   virtual void SetButton(e_ButtonFunction buttonFunction, bool state);
   virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction);
   virtual Vector3 GetDirection();
+  virtual void SetRumble(float low_frequency, float high_frequency, unsigned int duration_ms);
 
   e_ControllerType GetControllerType() const { return controllerType; }
   std::string GetControllerTypeName() const;

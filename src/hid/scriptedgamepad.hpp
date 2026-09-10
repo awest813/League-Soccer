@@ -27,10 +27,11 @@ public:
   virtual bool GetButton(e_ButtonFunction buttonFunction);
   virtual float GetButtonValue(e_ButtonFunction buttonFunction);  // for analog support
   virtual void SetButton(e_ButtonFunction buttonFunction, bool state);
-  virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction);
-  virtual Vector3 GetDirection();
+  virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction) override;
+  virtual Vector3 GetDirection() override;
+  virtual void SetRumble(float low_frequency, float high_frequency, unsigned int duration_ms) override {}
 
-  bool IsScriptedInput() const { return true; }
+  virtual bool IsScriptedInput() const override { return true; }
 
 protected:
   unsigned long queryCount = 0;

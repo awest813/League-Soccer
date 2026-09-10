@@ -2,6 +2,7 @@
 
 #include "../../onthepitch/match.hpp"
 #include "utils/gui2/windowmanager.hpp"
+#include "utils/localization.hpp"
 
 using namespace blunted;
 
@@ -14,14 +15,10 @@ Gui2StatsOverlay::Gui2StatsOverlay(Gui2WindowManager* windowManager, Match* matc
   this->AddView(bg);
   bg->Show();
 
-  possessionCaption =
-      new Gui2Caption(windowManager, "stats_possession", 1, 0, 94, 3, "");
-  shotsCaption =
-      new Gui2Caption(windowManager, "stats_shots", 1, 3, 94, 3, "");
-  passCaption =
-      new Gui2Caption(windowManager, "stats_passes", 1, 6, 94, 3, "");
-  foulsCaption =
-      new Gui2Caption(windowManager, "stats_fouls", 1, 9, 94, 3, "");
+  possessionCaption = new Gui2Caption(windowManager, "stats_possession", 1, 0, 94, 3, "");
+  shotsCaption = new Gui2Caption(windowManager, "stats_shots", 1, 3, 94, 3, "");
+  passCaption = new Gui2Caption(windowManager, "stats_passes", 1, 6, 94, 3, "");
+  foulsCaption = new Gui2Caption(windowManager, "stats_fouls", 1, 9, 94, 3, "");
 
   for (Gui2Caption* cap : {possessionCaption, shotsCaption, passCaption, foulsCaption}) {
     cap->SetColor(textColor);
@@ -40,15 +37,17 @@ void Gui2StatsOverlay::UpdateStats() {
   int pct1 = (total > 0) ? int(round(poss1 / total * 100)) : 50;
   int pct2 = 100 - pct1;
 
-  possessionCaption->SetCaption(int_to_str(pct1) + "% | possession | " + int_to_str(pct2) + "%");
+  possessionCaption->SetCaption(int_to_str(pct1) + "% | " +
+                                Localization::GetInstance().Translate("ingame_possession") +
+                                " | " + int_to_str(pct2) + "%");
 
   int shots1 = md->GetShots(0);
   int shots2 = md->GetShots(1);
   int sot1 = md->GetShotsOnTarget(0);
   int sot2 = md->GetShotsOnTarget(1);
-  shotsCaption->SetCaption(int_to_str(sot1) + "/" + int_to_str(shots1) +
-                           " | shots on target | " +
-                           int_to_str(sot2) + "/" + int_to_str(shots2));
+  shotsCaption->SetCaption(int_to_str(sot1) + "/" + int_to_str(shots1) + " | " +
+                           Localization::GetInstance().Translate("ingame_shots_on_target") +
+                           " | " + int_to_str(sot2) + "/" + int_to_str(shots2));
 
   int pass1 = md->GetPassAttempts(0);
   int pass2 = md->GetPassAttempts(1);
@@ -56,9 +55,13 @@ void Gui2StatsOverlay::UpdateStats() {
   int comp2 = md->GetPassesCompleted(1);
   int pacc1 = (pass1 > 0) ? int(round(comp1 * 100.0f / pass1)) : 0;
   int pacc2 = (pass2 > 0) ? int(round(comp2 * 100.0f / pass2)) : 0;
-  passCaption->SetCaption(int_to_str(pacc1) + "% | pass accuracy | " + int_to_str(pacc2) + "%");
+  passCaption->SetCaption(int_to_str(pacc1) + "% | " +
+                          Localization::GetInstance().Translate("gameover_pass_accuracy") +
+                          " | " + int_to_str(pacc2) + "%");
 
   int fouls1 = md->GetFouls(0);
   int fouls2 = md->GetFouls(1);
-  foulsCaption->SetCaption(int_to_str(fouls1) + " | fouls | " + int_to_str(fouls2));
+  foulsCaption->SetCaption(int_to_str(fouls1) + " | " +
+                           Localization::GetInstance().Translate("ingame_fouls") + " | " +
+                           int_to_str(fouls2));
 }

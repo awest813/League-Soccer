@@ -19,56 +19,83 @@ Gui2PlayerHUD::Gui2PlayerHUD(Gui2WindowManager* windowManager, Match* match)
   Vector3 textColor = 255;
   Vector3 textOutlineColor = 0;
 
+  // Translucent backing plates
+  for (int t = 0; t < 2; t++) {
+    const float bgX = (t == 0) ? 1.5f : 73.5f;
+    hudBackingImage[t] = new Gui2Image(windowManager, "hud_player" + int_to_str(t) + "_bg", bgX,
+                                       91.5f, 25.0f, 6.2f);
+    this->AddView(hudBackingImage[t]);
+    hudBackingImage[t]->Show();
+
+    boost::intrusive_ptr<Image2D> bgImg = hudBackingImage[t]->GetImage2D();
+    if (bgImg) {
+      Vector3 bgSize = bgImg->GetSize();
+      int w = static_cast<int>(bgSize.coords[0]);
+      int h = static_cast<int>(bgSize.coords[1]);
+      if (w > 2 && h > 2) {
+        bgImg->DrawRectangle(0, 0, w, h, Vector3(10, 16, 24), 160);
+        bgImg->DrawRectangle(0, 0, w, 1, Vector3(60, 110, 160), 180);
+        bgImg->DrawRectangle(0, h - 1, w, 1, Vector3(20, 30, 45), 220);
+        bgImg->DrawRectangle(0, 0, 1, h, Vector3(40, 75, 110), 180);
+        bgImg->DrawRectangle(w - 1, 0, 1, h, Vector3(40, 75, 110), 180);
+        bgImg->OnChange();
+      }
+    }
+  }
+
   // Left Player Panel (Team 0)
-  roleCaption[0] = new Gui2Caption(windowManager, "hud_player0_role", 2, 92.5f, 5, 2.8f, "");
+  roleCaption[0] = new Gui2Caption(windowManager, "hud_player0_role", 2.2f, 92.2f, 4.5f, 2.8f, "");
   roleCaption[0]->SetColor(Vector3(200, 200, 200));
   roleCaption[0]->SetOutlineColor(textOutlineColor);
   this->AddView(roleCaption[0]);
   roleCaption[0]->Show();
 
-  playerNameCaption[0] = new Gui2Caption(windowManager, "hud_player0_name", 7, 92.5f, 15, 2.8f, "");
+  playerNameCaption[0] =
+      new Gui2Caption(windowManager, "hud_player0_name", 6.8f, 92.2f, 15.2f, 2.8f, "");
   playerNameCaption[0]->SetColor(textColor);
   playerNameCaption[0]->SetOutlineColor(textOutlineColor);
   this->AddView(playerNameCaption[0]);
   playerNameCaption[0]->Show();
 
-  conditionCaption[0] = new Gui2Caption(windowManager, "hud_player0_cond", 22, 92.5f, 4, 2.8f, "");
+  conditionCaption[0] =
+      new Gui2Caption(windowManager, "hud_player0_cond", 22.0f, 92.2f, 3.8f, 2.8f, "");
   conditionCaption[0]->SetOutlineColor(textOutlineColor);
   this->AddView(conditionCaption[0]);
   conditionCaption[0]->Show();
 
-  staminaImage[0] = new Gui2Image(windowManager, "hud_player0_stm", 2, 95.5f, 15, 1.5f);
+  staminaImage[0] = new Gui2Image(windowManager, "hud_player0_stm", 2.2f, 95.3f, 23.6f, 1.6f);
   this->AddView(staminaImage[0]);
   staminaImage[0]->Show();
 
-  powerGaugeImage[0] = new Gui2Image(windowManager, "hud_player0_power", 2, 89.5f, 15, 1.2f);
+  powerGaugeImage[0] = new Gui2Image(windowManager, "hud_player0_power", 2.2f, 89.2f, 23.6f, 1.5f);
   this->AddView(powerGaugeImage[0]);
   powerGaugeImage[0]->Hide();
 
   // Right Player Panel (Team 1)
-  roleCaption[1] = new Gui2Caption(windowManager, "hud_player1_role", 73, 92.5f, 5, 2.8f, "");
+  roleCaption[1] = new Gui2Caption(windowManager, "hud_player1_role", 74.2f, 92.2f, 4.5f, 2.8f, "");
   roleCaption[1]->SetColor(Vector3(200, 200, 200));
   roleCaption[1]->SetOutlineColor(textOutlineColor);
   this->AddView(roleCaption[1]);
   roleCaption[1]->Show();
 
   playerNameCaption[1] =
-      new Gui2Caption(windowManager, "hud_player1_name", 78, 92.5f, 15, 2.8f, "");
+      new Gui2Caption(windowManager, "hud_player1_name", 78.8f, 92.2f, 15.2f, 2.8f, "");
   playerNameCaption[1]->SetColor(textColor);
   playerNameCaption[1]->SetOutlineColor(textOutlineColor);
   this->AddView(playerNameCaption[1]);
   playerNameCaption[1]->Show();
 
-  conditionCaption[1] = new Gui2Caption(windowManager, "hud_player1_cond", 93, 92.5f, 4, 2.8f, "");
+  conditionCaption[1] =
+      new Gui2Caption(windowManager, "hud_player1_cond", 94.0f, 92.2f, 3.8f, 2.8f, "");
   conditionCaption[1]->SetOutlineColor(textOutlineColor);
   this->AddView(conditionCaption[1]);
   conditionCaption[1]->Show();
 
-  staminaImage[1] = new Gui2Image(windowManager, "hud_player1_stm", 83, 95.5f, 15, 1.5f);
+  staminaImage[1] = new Gui2Image(windowManager, "hud_player1_stm", 74.2f, 95.3f, 23.6f, 1.6f);
   this->AddView(staminaImage[1]);
   staminaImage[1]->Show();
 
-  powerGaugeImage[1] = new Gui2Image(windowManager, "hud_player1_power", 83, 89.5f, 15, 1.2f);
+  powerGaugeImage[1] = new Gui2Image(windowManager, "hud_player1_power", 74.2f, 89.2f, 23.6f, 1.5f);
   this->AddView(powerGaugeImage[1]);
   powerGaugeImage[1]->Hide();
 
@@ -159,7 +186,14 @@ void Gui2PlayerHUD::Put() {
       float stamina = activePlayer->GetFatigueFactorInv();
       if (std::fabs(stamina - lastStamina[t]) > 0.02f) {
         boost::intrusive_ptr<Image2D> stmImg = staminaImage[t]->GetImage2D();
-        Vector3 color = (stamina < 0.25f) ? Vector3(220, 50, 50) : Vector3(100, 220, 100);
+        Vector3 color;
+        if (stamina >= 0.50f) {
+          color = Vector3(70, 220, 70);   // Green
+        } else if (stamina >= 0.25f) {
+          color = Vector3(240, 195, 40);  // Yellow
+        } else {
+          color = Vector3(225, 45, 45);   // Red
+        }
         drawBar(stmImg, stamina, color);
         lastStamina[t] = stamina;
       }

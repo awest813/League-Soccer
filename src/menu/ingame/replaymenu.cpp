@@ -39,19 +39,21 @@ ReplayPage::ReplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_replay_title", 2, 2, 24, 3,
                       Localization::GetInstance().Translate("ingame_replay_title"));
+  title->SetPosition(14.0f - title->GetTextWidthPercent() * 0.5f, 2.0f);
   header->AddView(title);
   title->Show();
 
-  Gui2Frame* footer = new Gui2Frame(windowManager, "frame_replay_footer", 20, 89, 60, 9, true);
+  Gui2Frame* footer = new Gui2Frame(windowManager, "frame_replay_footer", 15, 89, 70, 9, true);
   this->AddView(footer);
   footer->Show();
-  Gui2Caption* help = new Gui2Caption(
-      windowManager, "caption_replay_help", 2, 1, 56, 2,
-      "Left/Right: scrub | Up/Down: camera | Pass: change camera | Shoot: play/pause");
+  Gui2Caption* help =
+      new Gui2Caption(windowManager, "caption_replay_help", 2, 1.2f, 66, 2.5f,
+                      Localization::GetInstance().Translate("ingame_replay_help"));
+  help->SetPosition(35.0f - help->GetTextWidthPercent() * 0.5f, 1.2f);
   footer->AddView(help);
   help->Show();
 
-  timeLabel = new Gui2Caption(windowManager, "caption_replay_time", 2, 4, 56, 3, "");
+  timeLabel = new Gui2Caption(windowManager, "caption_replay_time", 2, 4.5f, 66, 3, "");
   footer->AddView(timeLabel);
   timeLabel->Show();
   UpdateTimeLabel();
@@ -106,6 +108,7 @@ void ReplayPage::UpdateTimeLabel() {
                       int_to_str(static_cast<int>(round(positionPct))) + "%)  -" +
                       int_to_str(secsAgo) + "s";
   timeLabel->SetCaption(label);
+  timeLabel->SetPosition(35.0f - timeLabel->GetTextWidthPercent() * 0.5f, 4.5f);
 }
 
 void ReplayPage::Process() {

@@ -190,7 +190,8 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   // Display MOM
   char ratingBuf[16];
   snprintf(ratingBuf, sizeof(ratingBuf), "%.1f", bestRating);
-  std::string momStr = "MOM: " + momName + " (" + std::string(ratingBuf) + ")";
+  std::string momStr = Localization::GetInstance().Translate("gameover_mom") +
+                       ": " + momName + " (" + std::string(ratingBuf) + ")";
 
   Gui2Caption* momCaption = new Gui2Caption(windowManager, "caption_mom", 2, 70, 76, 4, momStr);
   momCaption->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));  // Gold

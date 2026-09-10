@@ -21,6 +21,7 @@
 #include "base/geometry/triangle.hpp"
 #include "controller/elizacontroller.hpp"
 #include "controller/strategies/strategy.hpp"
+#include "utils/localization.hpp"
 
 Player::Player(Team* team, PlayerData* playerData)
     : PlayerBase(team->GetMatch(), playerData), team(team) {
@@ -569,15 +570,8 @@ void Player::Hide2D() {
 }
 
 void Player::SendOff() {
-  float x = random(0, 3);
-  std::string message;
-  if (x < 1.0) {
-    message = "an early shower for " + playerData->GetLastName() + "!";
-  } else if (x < 2.0) {
-    message = playerData->GetLastName() + " is sent off!";
-  } else {
-    message = "it's all over for " + playerData->GetLastName() + "!";
-  }
+  std::string message = playerData->GetLastName() + " - " +
+                        Localization::GetInstance().Translate("ingame_red_card") + "!";
   match->SpamMessage(message);
 
   Deactivate();

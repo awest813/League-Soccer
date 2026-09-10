@@ -62,6 +62,8 @@ public:
   float GetJoystickAxisCalibrationRest(int joyID, int axisID);
   void SetJoystickAxisCalibration(int joyID, int axisID, float min, float max, float rest);
 
+  bool SetJoystickRumble(int joyID, float low_frequency, float high_frequency, unsigned int duration_ms);
+
 protected:
   // may need to switch to the vectors below in the future. why? SDL_keysym also takes into account
   // unicode and modifier stuff, and contains the SDL_Keycodes. so basically, it's the parent

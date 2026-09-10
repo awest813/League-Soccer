@@ -62,6 +62,8 @@ public:
   virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction) = 0;
   virtual Vector3 GetDirection() = 0;
 
+  virtual void SetRumble(float low_frequency, float high_frequency, unsigned int duration_ms) = 0;
+
   e_HIDeviceType GetDeviceType() const { return deviceType; }
   std::string GetIdentifier() const { return identifier; }
 

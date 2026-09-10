@@ -60,6 +60,9 @@ MatchPhasePage::MatchPhasePage(Gui2WindowManager* windowManager, const Gui2PageD
   Gui2Caption* phaseTitle = new Gui2Caption(
       windowManager, "caption_phase", 2, 2, 46, 3,
       phaseName.empty() ? Localization::GetInstance().Translate("phase_match_phase") : phaseName);
+  phaseTitle->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+  phaseTitle->SetOutlineColor(Vector3(0, 0, 0));
+  phaseTitle->SetPosition(25.0f - phaseTitle->GetTextWidthPercent() * 0.5f, 2.0f);
   bgPanel->AddView(phaseTitle);
   phaseTitle->Show();
 

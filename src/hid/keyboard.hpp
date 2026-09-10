@@ -23,6 +23,7 @@ public:
   virtual void SetButton(e_ButtonFunction buttonFunction, bool state);
   virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction);
   virtual Vector3 GetDirection();
+  virtual void SetRumble(float low_frequency, float high_frequency, unsigned int duration_ms) {}
 
   void SetFunctionMapping(int index, SDL_Keycode key) {
     std::unique_lock<std::mutex> blah(mutex);

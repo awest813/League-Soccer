@@ -28,10 +28,10 @@ GamePage::GamePage(Gui2WindowManager* windowManager, const Gui2PageData& pageDat
   Gui2Caption* betaSign =
       new Gui2Caption(windowManager, "caption_betasign", 0, 0, 0, 2, "League-Soccer v0.4.0");
   betaSign->SetColor(Vector3(180, 180, 180));
-  betaSign->SetTransparency(0.3f);
+  betaSign->SetTransparency(0.65f);
   this->AddView(betaSign);
   float w = betaSign->GetTextWidthPercent();
-  betaSign->SetPosition(50 - w * 0.5f, 97.0f);
+  betaSign->SetPosition(98.5f - w, 97.2f);
   betaSign->Show();
 
   this->Show();

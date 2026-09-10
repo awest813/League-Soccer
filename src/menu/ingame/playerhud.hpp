@@ -19,6 +19,7 @@ public:
 protected:
   Match* match;
 
+  Gui2Image* hudBackingImage[2];
   Gui2Caption* playerNameCaption[2];
   Gui2Caption* roleCaption[2];
   Gui2Caption* conditionCaption[2];

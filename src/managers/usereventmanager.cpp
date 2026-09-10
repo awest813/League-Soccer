@@ -239,6 +239,20 @@ void UserEventManager::CompactJoystickSlots(int removedSlot) {
   }
 }
 
+bool UserEventManager::SetJoystickRumble(int joyID, float low_frequency, float high_frequency, unsigned int duration_ms) {
+  if (joyID >= 0 && joyID < _JOYSTICK_MAX && joystick[joyID]) {
+    #if SDL_VERSION_ATLEAST(2, 0, 9)
+    return SDL_JoystickRumble(joystick[joyID], 
+                              static_cast<Uint16>(low_frequency * 65535), 
+                              static_cast<Uint16>(high_frequency * 65535), 
+                              duration_ms) == 0;
+    #else
+    return false;
+    #endif
+  }
+  return false;
+}
+
 bool UserEventManager::GetKeyboardState(SDL_Keycode code) const {
   std::unique_lock<std::mutex> lock(keyPressedMutex);
   return keyPressed.count(code) > 0;
