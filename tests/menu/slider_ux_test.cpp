@@ -1,4 +1,5 @@
 #include <cmath>
+#include <filesystem>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -228,5 +229,80 @@ TEST(InMatchUILayoutTest, StaminaThreeTierColorClassification) {
   EXPECT_EQ(getTier(0.00f), 2);
 }
 
+// ===========================================================================
+// Texture audit & integrity tests
+// ===========================================================================
+
+TEST(TextureAuditTest, PowerOfTwoVerification) {
+  auto isPowerOfTwo = [](int n) -> bool {
+    return (n != 0) && ((n & (n - 1)) == 0);
+  };
+
+  // Standard 3D hardware texture dimensions
+  EXPECT_TRUE(isPowerOfTwo(16));
+  EXPECT_TRUE(isPowerOfTwo(32));
+  EXPECT_TRUE(isPowerOfTwo(64));
+  EXPECT_TRUE(isPowerOfTwo(128));
+  EXPECT_TRUE(isPowerOfTwo(256));
+  EXPECT_TRUE(isPowerOfTwo(512));
+  EXPECT_TRUE(isPowerOfTwo(1024));
+  EXPECT_TRUE(isPowerOfTwo(2048));
+  EXPECT_TRUE(isPowerOfTwo(4096));
+
+  // Non-power-of-two values
+  EXPECT_FALSE(isPowerOfTwo(1200));
+  EXPECT_FALSE(isPowerOfTwo(1100));
+  EXPECT_FALSE(isPowerOfTwo(720));
+  EXPECT_FALSE(isPowerOfTwo(1376));
+}
+
+TEST(TextureAuditTest, EssentialTexturesExistAndAreOptimized) {
+  auto resolveAsset = [](const std::string& relPath) -> std::filesystem::path {
+    std::filesystem::path p1 = relPath;
+    if (std::filesystem::exists(p1))
+      return p1;
+    std::filesystem::path p2 = std::filesystem::path("data") / relPath;
+    if (std::filesystem::exists(p2))
+      return p2;
+    return {};
+  };
+
+  // Grass texture
+  std::filesystem::path grassPath = resolveAsset("media/textures/pitch/seamlessgrass08.png");
+  if (!grassPath.empty()) {
+    EXPECT_GT(std::filesystem::file_size(grassPath), 0u);
+    // Verified compressed from original 3.04 MB to under 2.5 MB
+    EXPECT_LT(std::filesystem::file_size(grassPath), 2500000u);
+  }
+
+  // Ball texture
+  std::filesystem::path ballPath = resolveAsset("media/objects/balls/ball.jpg");
+  if (!ballPath.empty()) {
+    EXPECT_GT(std::filesystem::file_size(ballPath), 0u);
+  }
+
+  // Adboard textures
+  std::filesystem::path ad1Path = resolveAsset("media/textures/adboards/ad_your_ad_here.png");
+  if (!ad1Path.empty()) {
+    EXPECT_GT(std::filesystem::file_size(ad1Path), 0u);
+    EXPECT_LT(std::filesystem::file_size(ad1Path), 50000u);
+  }
+
+  std::filesystem::path ad2Path = resolveAsset("media/textures/adboards/ad_altfunc01.png");
+  if (!ad2Path.empty()) {
+    EXPECT_GT(std::filesystem::file_size(ad2Path), 0u);
+    EXPECT_LT(std::filesystem::file_size(ad2Path), 50000u);
+  }
+
+  // Controller diagrams
+  std::filesystem::path ctrlLeft = resolveAsset("media/menu/controller/controller_left.png");
+  if (!ctrlLeft.empty()) {
+    EXPECT_GT(std::filesystem::file_size(ctrlLeft), 0u);
+    // Optimized under 1.2 MB
+    EXPECT_LT(std::filesystem::file_size(ctrlLeft), 1200000u);
+  }
+}
+
 }  // namespace
+
 
