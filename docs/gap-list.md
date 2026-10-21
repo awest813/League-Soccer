@@ -295,15 +295,17 @@ Audited by capturing frames of each menu route and of live matches under Xvfb
 | Gamepad calibration | The panel ran off the right edge of the screen and had no title. | Fixed-size centred panel with a title. |
 | Gamepad functions | Long labels were squeezed into a 10% column and shrank to a few pixels; modifier buttons did not line up with the rest. | 22% label column for every row, and a short dribble label for this page. |
 | Localization | The keyboard, gamepad list, gamepad setup, calibration, button mapping, function, graphics and language pages, and the icon selector's "None selected", were hard-coded English. | 55 new keys in all five locale files; prompts with a device or control name use `TRF`. |
+| Empty panels | The Settings, Controller, Audio, Language, Gamepads, Keyboard and Graphics pages drew a fixed 70–90% tall panel around a few rows. | Panels end just below their content (`Gui2Frame::SetSize` now resizes the background). Graphics' Back button moved into its panel. |
+| Frame resizing | `Gui2Frame::SetSize` changed the frame's size but not its background, so the press-key, press-button and resolution-restart prompts drew a strip running off the right edge of the screen, and the restart prompt was sized to its first line only. | The background is redrawn at the new size; the restart prompt covers its widest line. |
+| Gamepads page | With a pad connected, the Back button was added after the list was shown and never appeared. | Shown explicitly. |
+| Version watermark | The version text sat under the second player's HUD panel, bottom right. | Moved to the top-right corner. |
+| Key names | The keyboard page showed SDL's English key names ("Left Shift", "Up") in every language. | Arrows, Space, Enter, modifiers, navigation keys and keypad keys are translated (23 keys); letters and digits keep SDL's layout-aware name. |
 | Smoke tooling | Layout-audit routes quit before slower pages had drawn, so captures showed the previous page. | `menu_smoke_quit_delay_ms` keeps the route open for a set time. |
 
 ### Known gaps
 
 | Pri | Gap |
 | --- | --- |
-| P2 | **Empty panels.** The Settings, Audio and Language pages draw a full-height panel around a few rows, leaving most of it empty. |
-| P2 | **Version watermark.** The build/version text sits close to the right-hand in-match HUD panel. |
-| P2 | **Key names.** The keyboard page shows SDL's English key names ("Up", "Left") in every language. |
 | P2 | **First match frame.** With software GL the first live frame after loading can be white before the pitch draws. Not seen with hardware GL; needs checking on a real GPU. |
 | P2 | **Layout audit scope.** The audit flags controls outside the screen, not text that a caption shrinks to fit its box. Shrunken text still has to be found by looking at captures. |
 

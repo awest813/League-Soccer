@@ -36,7 +36,8 @@ GamePage::GamePage(Gui2WindowManager* windowManager, const Gui2PageData& pageDat
   betaSign->SetTransparency(0.65f);
   this->AddView(betaSign);
   float w = betaSign->GetTextWidthPercent();
-  betaSign->SetPosition(98.5f - w, 97.2f);
+  // Top-right corner: the bottom-right sat under the second player's HUD panel.
+  betaSign->SetPosition(98.5f - w, 0.8f);
   betaSign->Show();
 
   this->Show();
