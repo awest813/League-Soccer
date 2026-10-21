@@ -21,6 +21,11 @@ bool MenuSmokeFullMatchEnabled() {
   return GetConfiguration()->GetBool("menu_smoke_test_full_match", false);
 }
 
+// Unplugs the virtual smoke gamepad mid-match and expects the disconnect prompt.
+bool MenuSmokeControllerDisconnectEnabled() {
+  return GetConfiguration()->GetBool("menu_smoke_test_controller_disconnect", false);
+}
+
 }  // namespace
 
 GamePage::GamePage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
@@ -79,6 +84,28 @@ void GamePage::Process() {
       }
     }
     GetGameTask()->matchLifetimeMutex.unlock();
+  }
+
+  // A playing gamepad was unplugged: pause and ask the player to reconnect or
+  // reassign controllers, instead of leaving that team silently uncontrolled.
+  if (match) {
+    const int disconnectedSide = GetMenuTask()->ConsumeControllerDisconnect();
+    if (disconnectedSide != 0) {
+      Properties properties;
+      properties.Set("teamID", disconnectedSide > 0 ? 1 : 0);
+      properties.SetBool("controllerDisconnected", true);
+      CreatePage((int)e_PageID_Ingame, properties);
+      return;  // CreatePage deletes this page
+    }
+  }
+
+  if (match && !autoQuitTriggered && MenuSmokeControllerDisconnectEnabled() &&
+      matchReadyTime_ms != 0 &&
+      EnvironmentManager::GetInstance().GetTime_ms() >=
+          matchReadyTime_ms + kMenuSmokeQuitDelay_ms) {
+    autoQuitTriggered = true;
+    printf(DetachSmokeVirtualGamepad() ? "[menu-smoke] Virtual gamepad unplugged during the match\n"
+                                       : "[menu-smoke] No virtual gamepad to unplug\n");
   }
 
   if (match && !autoQuitTriggered && MenuSmokeQuickMatchEnabled() && !MenuSmokeFullMatchEnabled() &&

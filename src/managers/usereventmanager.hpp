@@ -14,6 +14,7 @@
 #define _HPP_MANAGERS_USEREVENT
 
 #include <algorithm>
+#include <atomic>
 #include <map>
 
 #include <SDL2/SDL.h>
@@ -57,6 +58,8 @@ public:
   // Clears held keys/buttons, e.g. when the window loses focus and the
   // matching release events will never arrive.
   void ReleaseAllInputs();
+  // Incremented whenever SDL reports a keyboard layout change.
+  int GetKeymapGeneration() const { return keymapGeneration.load(); }
   // The axis value SDL observed when the device was opened (a trigger rests
   // near -32768, a stick near 0). Returns false when unavailable.
   bool GetJoystickAxisInitialState(int joyID, int axisID, float* state) const;
@@ -79,6 +82,7 @@ protected:
   // the max size (probably) since i guess it has a dynamic size.
   std::map<SDL_Keycode, TimedKeyPress> keyPressed;
   unsigned long lastKeyTime_ms = 0;
+  std::atomic<int> keymapGeneration{0};
 
   bool mousePressed[32];
 

@@ -2639,7 +2639,7 @@ void OpenGLRenderer3D::operator()() {
       const bool alwaysForward =
           event.type == SDL_KEYUP || event.type == SDL_JOYBUTTONUP ||
           event.type == SDL_MOUSEBUTTONUP || event.type == SDL_JOYDEVICEADDED ||
-          event.type == SDL_JOYDEVICEREMOVED;
+          event.type == SDL_JOYDEVICEREMOVED || event.type == SDL_KEYMAPCHANGED;
       if (contextIsActive || alwaysForward) {
         UserEventManager::GetInstance().InputSDLEvent(event);
       }

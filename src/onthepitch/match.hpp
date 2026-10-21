@@ -101,6 +101,10 @@ public:
   void SetRandomSunParams();
   void RandomizeAdboards(boost::intrusive_ptr<Node> stadiumNode);
   void UpdateControllerSetup();
+  // Rumbles only the gamepads controlling a team in this match (each pad's
+  // own rumble-strength option still applies).
+  void RumblePlayingPads(float lowFrequency, float highFrequency, unsigned int duration_ms);
+
   void SpamMessage(const std::string& msg, int time_ms = 3000);
   int GetScore(int teamID) { return matchData->GetGoalCount(teamID); }
   Ball* GetBall() { return ball.get(); }

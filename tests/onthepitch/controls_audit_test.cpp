@@ -1,9 +1,15 @@
 // Regressions for the October 2026 controls audit (docs/gap-list.md).
 
 #include <cmath>
+#include <map>
+#include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
+#include "hid/controllersetup.hpp"
+#include "hid/controlpresets.hpp"
+#include "hid/deviceidentity.hpp"
 #include "hid/stickinput.hpp"
 #include "onthepitch/playercontrolsettings.hpp"
 #include "onthepitch/shotaim.hpp"
@@ -111,6 +117,129 @@ TEST(ControlsAudit, MenuRepeatHasInitialDelayThenSteadyRate) {
   EXPECT_FALSE(repeat.Update(false, 1010));
   EXPECT_TRUE(repeat.Update(true, 1020));   // fresh press fires immediately
   EXPECT_FALSE(repeat.Update(true, 1030));  // then waits for the initial delay
+}
+
+// The PES preset must stay identical to the long-standing defaults so
+// existing players' layouts do not change.
+TEST(ControlsAudit, PesPresetMatchesHistoricDefaults) {
+  using controlpresets::GamepadPreset;
+  using controlpresets::PresetButtonFor;
+  const e_ControllerButton expected[e_ButtonFunction_Size] = {
+      e_ControllerButton_Up,   e_ControllerButton_Right,  e_ControllerButton_Down,
+      e_ControllerButton_Left, e_ControllerButton_Y,      e_ControllerButton_B,
+      e_ControllerButton_A,    e_ControllerButton_X,      e_ControllerButton_Y,
+      e_ControllerButton_B,    e_ControllerButton_A,      e_ControllerButton_X,
+      e_ControllerButton_L1,   e_ControllerButton_L2,     e_ControllerButton_R1,
+      e_ControllerButton_R2,   e_ControllerButton_Select, e_ControllerButton_Start};
+  for (int i = 0; i < e_ButtonFunction_Size; i++)
+    EXPECT_EQ(PresetButtonFor(GamepadPreset::Pes, static_cast<e_ButtonFunction>(i)), expected[i])
+        << "function " << i;
+}
+
+TEST(ControlsAudit, FifaPresetSwapsShootLobAndSprint) {
+  using controlpresets::GamepadPreset;
+  using controlpresets::PresetButtonFor;
+  EXPECT_EQ(PresetButtonFor(GamepadPreset::Fifa, e_ButtonFunction_ShortPass), e_ControllerButton_A);
+  EXPECT_EQ(PresetButtonFor(GamepadPreset::Fifa, e_ButtonFunction_Shot), e_ControllerButton_B);
+  EXPECT_EQ(PresetButtonFor(GamepadPreset::Fifa, e_ButtonFunction_HighPass), e_ControllerButton_X);
+  EXPECT_EQ(PresetButtonFor(GamepadPreset::Fifa, e_ButtonFunction_LongPass), e_ControllerButton_Y);
+  EXPECT_EQ(PresetButtonFor(GamepadPreset::Fifa, e_ButtonFunction_Sprint), e_ControllerButton_R2);
+  EXPECT_EQ(PresetButtonFor(GamepadPreset::Fifa, e_ButtonFunction_Dribble), e_ControllerButton_R1);
+  // Defending is the same in both layouts.
+  for (e_ButtonFunction f : {e_ButtonFunction_Pressure, e_ButtonFunction_Sliding,
+                             e_ButtonFunction_TeamPressure, e_ButtonFunction_KeeperRush}) {
+    EXPECT_EQ(PresetButtonFor(GamepadPreset::Fifa, f), PresetButtonFor(GamepadPreset::Pes, f));
+  }
+  // Unknown saved values fall back to PES.
+  EXPECT_EQ(controlpresets::GamepadPresetFromInt(7), GamepadPreset::Pes);
+  EXPECT_EQ(controlpresets::GamepadPresetFromInt(1), GamepadPreset::Fifa);
+}
+
+TEST(ControlsAudit, DeadzoneAndRumbleOptionsCycleAndClamp) {
+  using namespace controlpresets;
+  EXPECT_FLOAT_EQ(NextStickDeadzone(0.15f), 0.20f);
+  EXPECT_FLOAT_EQ(NextStickDeadzone(0.30f), 0.15f);
+  EXPECT_FLOAT_EQ(ClampStickDeadzone(0.01f), 0.15f);  // below the controller's own threshold
+  EXPECT_FLOAT_EQ(ClampStickDeadzone(0.9f), 0.30f);
+  EXPECT_FLOAT_EQ(ClampStickDeadzone(std::nanf("")), kDefaultStickDeadzone);
+  EXPECT_FLOAT_EQ(NextRumbleStrength(1.0f), 0.0f);
+  EXPECT_FLOAT_EQ(NextRumbleStrength(0.0f), 0.5f);
+  EXPECT_FLOAT_EQ(NextRumbleStrength(0.5f), 1.0f);
+  EXPECT_FLOAT_EQ(ClampRumbleStrength(3.0f), 1.0f);
+}
+
+// Settings were keyed by "<name> #<connection index>", so a pad lost its
+// mapping when pads were plugged in a different order.
+TEST(ControlsAudit, GamepadIdentityUsesGuidAndMigratesLegacyKeys) {
+  using namespace deviceidentity;
+  EXPECT_EQ(GamepadIdentifier("030000005e040000", 0), "030000005e040000");
+  EXPECT_EQ(GamepadIdentifier("030000005e040000", 1), "030000005e040000-2");
+  EXPECT_EQ(GamepadIdentifier("", 0), "gamepad");
+  EXPECT_EQ(LegacyGamepadIdentifier("Xbox Controller", 1), "Xbox Controller #1");
+
+  std::map<std::string, std::string> config = {
+      {"input_gamepad_Xbox Controller #1_11", "-12"},
+      {"input_gamepad_Xbox Controller #1_calibration_2_rest", "-32768"},
+      {"input_gamepad_Xbox Controller #10_11", "7"},  // a different pad
+      {"input_keyboard_0", "1073741906"}};
+  EXPECT_EQ(MigratePrefixedKeys(config, "input_gamepad_Xbox Controller #1_", "input_gamepad_guid_"),
+            2);
+  EXPECT_EQ(config["input_gamepad_guid_11"], "-12");
+  EXPECT_EQ(config["input_gamepad_guid_calibration_2_rest"], "-32768");
+  EXPECT_EQ(config.count("input_gamepad_Xbox Controller #1_11"), 1u);  // kept for old builds
+
+  // Never overwrite settings already saved under the new identity.
+  config["input_gamepad_Xbox Controller #1_11"] = "3";
+  EXPECT_EQ(MigratePrefixedKeys(config, "input_gamepad_Xbox Controller #1_", "input_gamepad_guid_"),
+            0);
+  EXPECT_EQ(config["input_gamepad_guid_11"], "-12");
+}
+
+struct TestSide {
+  int controllerID;
+  int side;
+};
+
+// Unplugging a pad shifts later devices down one index; the controller setup
+// must follow, and report whether the lost pad was playing.
+TEST(ControlsAudit, RemovingControllerRenumbersSetup) {
+  std::vector<TestSide> sides = {{0, 0}, {1, -1}, {2, 1}, {3, 0}};
+  EXPECT_EQ(controllersetup::RemoveControllerFromSetup(sides, 1), -1);
+  ASSERT_EQ(sides.size(), 3u);
+  EXPECT_EQ(sides[0].controllerID, 0);
+  EXPECT_EQ(sides[1].controllerID, 1);
+  EXPECT_EQ(sides[1].side, 1);
+  EXPECT_EQ(sides[2].controllerID, 2);
+
+  EXPECT_EQ(controllersetup::RemoveControllerFromSetup(sides, 2), 0);  // was not playing
+  EXPECT_EQ(controllersetup::RemoveControllerFromSetup(sides, 9), 0);  // not in the setup
+  EXPECT_EQ(sides.size(), 2u);
+}
+
+// LB before or after the action button must behave the same: no teammate run
+// and no braking when LB is used as a modifier.
+TEST(ControlsAudit, SwitchModifierIsOrderIndependent) {
+  // LB first, then shot.
+  SwitchModifierTracker lbFirst;
+  EXPECT_FALSE(lbFirst.Update(true, false, false, 1000));
+  EXPECT_FALSE(lbFirst.ShouldBrake(true, false, 1050));  // not yet held long enough
+  EXPECT_FALSE(lbFirst.Update(true, true, true, 1060));  // shot armed while LB held
+  EXPECT_FALSE(lbFirst.ShouldBrake(true, true, 1400));
+  EXPECT_FALSE(lbFirst.Update(false, true, true, 1500));  // release: no run
+
+  // Shot first, then LB.
+  SwitchModifierTracker shotFirst;
+  EXPECT_FALSE(shotFirst.Update(true, false, true, 1000));
+  EXPECT_FALSE(shotFirst.ShouldBrake(true, true, 1400));
+  EXPECT_FALSE(shotFirst.Update(false, true, false, 1500));
+
+  // LB on its own: brakes after a moment, and asks for a run on release.
+  SwitchModifierTracker alone;
+  EXPECT_FALSE(alone.Update(true, false, false, 1000));
+  EXPECT_FALSE(alone.ShouldBrake(true, false, 1100));
+  EXPECT_TRUE(alone.ShouldBrake(true, false, 1200));
+  EXPECT_TRUE(alone.Update(false, true, false, 1300));
+  EXPECT_FALSE(alone.ShouldBrake(false, false, 1400));
 }
 
 }  // namespace

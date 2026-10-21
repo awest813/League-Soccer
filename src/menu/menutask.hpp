@@ -54,6 +54,21 @@ public:
 
   void ReleaseAllButtons();
 
+  // A gamepad that was playing in the current match was unplugged. Returns the
+  // side it played for (-1/1) once, or 0 when there is nothing to report.
+  int ConsumeControllerDisconnect() {
+    const int side = disconnectedSide;
+    disconnectedSide = 0;
+    return side;
+  }
+  // The controller setup changed outside the controller pages (a pad was
+  // unplugged); the match should rebuild its human players before resuming.
+  bool ConsumeControllerSetupChanged() {
+    const bool changed = controllerSetupChanged;
+    controllerSetupChanged = false;
+    return changed;
+  }
+
   void SetControllerSetup(const std::vector<SideSelection>& sides) {
     queuedFixture.Lock();
     queuedFixture->sides = sides;
@@ -90,6 +105,11 @@ public:
   void SetMenuAction(e_MenuAction menuAction) { this->menuAction = menuAction; }
 
 protected:
+  void HandleRemovedControllers();
+
+  int disconnectedSide = 0;
+  bool controllerSetupChanged = false;
+
   e_MenuAction menuAction;
 
   Gui2Image* menuBackground;

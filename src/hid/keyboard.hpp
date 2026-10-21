@@ -35,7 +35,14 @@ public:
     return functionMapping[buttonFunction];
   }
 
+  // Default key for a function on the current keyboard layout.
+  static SDL_Keycode DefaultKey(int buttonFunction);
+
 protected:
+  // Bindings are stored as physical scancodes and resolved to the current
+  // layout's keycodes; this tracks layout changes reported by SDL.
+  int keymapGeneration = -1;
+
   bool functionButtonState[e_ButtonFunction_Size];
   bool previousFunctionButtonState[e_ButtonFunction_Size];
 

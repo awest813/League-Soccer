@@ -43,6 +43,7 @@ public:
   void AddProperties(const Properties* userprops);
   void AddProperties(const Properties& userprops);
   const map_Properties* GetProperties() const;
+  map_Properties& GetMutableProperties() { return properties; }
 
   void LoadFile(const std::string& filename);
   void SaveFile(const std::string& filename) const;

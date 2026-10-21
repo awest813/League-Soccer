@@ -681,6 +681,16 @@ void Match::UpdateControllerSetup() {
   }
 }
 
+void Match::RumblePlayingPads(float lowFrequency, float highFrequency, unsigned int duration_ms) {
+  for (int t = 0; t < 2; t++) {
+    for (HumanGamer* gamer : teams[t]->GetHumanGamers()) {
+      IHIDevice* device = gamer ? gamer->GetHIDevice() : nullptr;
+      if (device && device->GetDeviceType() == e_HIDeviceType_Gamepad)
+        device->SetRumble(lowFrequency, highFrequency, duration_ms);
+    }
+  }
+}
+
 void Match::SpamMessage(const std::string& msg, int time_ms) {
   messageCaption->SetCaption(msg);
   float w = messageCaption->GetTextWidthPercent();
@@ -1147,12 +1157,7 @@ void Match::Process() {
       if (t1goal || t2goal) {
         AddExcitementBoost(1.0f, 5000);
 
-        const std::vector<IHIDevice*>& controllers = GetControllers();
-        for (auto* controller : controllers) {
-          if (controller->GetDeviceType() == e_HIDeviceType_Gamepad) {
-            controller->SetRumble(0.8f, 0.8f, 1000);
-          }
-        }
+        RumblePlayingPads(0.8f, 0.8f, 1000);
 
         // find out who scored
         bool ownGoal = true;

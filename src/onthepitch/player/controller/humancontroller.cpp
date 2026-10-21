@@ -15,6 +15,7 @@ HumanController::~HumanController() {}
 
 void HumanController::SetPlayer(PlayerBase* player) {
   sprintTap.Reset();
+  switchModifier.Reset();
   lastSwitchTime_ms = match->GetActualTime_ms();
 
   PlayerController::SetPlayer(player);
@@ -542,9 +543,10 @@ void HumanController::Process() {
                    hid->GetButton(e_ButtonFunction_Sprint) &&
                        !hid->GetPreviousButtonState(e_ButtonFunction_Sprint),
                    match->IsInPlay() && !match->IsInSetPiece() && !IsSuperCancelling());
-  if (!fullyManualSwitching && !IsSuperCancelling() &&
-      hid->GetButton(e_ButtonFunction_Switch) &&
-      !hid->GetPreviousButtonState(e_ButtonFunction_Switch) && actionMode == 0 && hasPossession)
+  const bool requestRun = switchModifier.Update(
+      hid->GetButton(e_ButtonFunction_Switch), hid->GetPreviousButtonState(e_ButtonFunction_Switch),
+      actionMode != 0, match->GetActualTime_ms());
+  if (requestRun && !fullyManualSwitching && !IsSuperCancelling() && hasPossession)
     team->GetController()->ApplyAttackingRun();
 }
 
@@ -586,6 +588,7 @@ void HumanController::Reset() {
   actionBufferTime_ms = 0;
 
   sprintTap.Reset();
+  switchModifier.Reset();
 
   lastSwitchTime_ms = -10000;
   lastSwitchTimeDuration_ms = 300;
@@ -615,7 +618,8 @@ void HumanController::_GetHidInput(Vector3& rawInputDirection, float& rawInputVe
     } else if (hid->GetButton(e_ButtonFunction_Dribble)) {
       rawInputVelocityFloat = slowDribbleSpeed;
     } else if (!UsesFullyManualPlayerSwitching(*GetConfiguration()) &&
-               hid->GetButton(e_ButtonFunction_Switch) &&
+               switchModifier.ShouldBrake(hid->GetButton(e_ButtonFunction_Switch),
+                                          actionMode != 0, match->GetActualTime_ms()) &&
                match->GetDesignatedPossessionPlayer() == CastPlayer()) {
       rawInputVelocityFloat = idleVelocity;
     } else {

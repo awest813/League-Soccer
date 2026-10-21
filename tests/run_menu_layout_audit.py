@@ -11,7 +11,7 @@ import subprocess
 import sqlite3
 import tempfile
 
-ROUTES = "widgets settings gameplay controller keyboard gamepads gamepad_setup gamepad_calibration gamepad_mapping gamepad_function graphics audio language credits match_options forfeit history career career_new career_save career_training career_owner_gm career_owner_legacy career_owner_delegated career_coach career_player career_player_missing career_player_training career_season career_season_pending career_matchday career_tactics career_tactics_delegated career_press career_roster career_roster_player".split()
+ROUTES = "widgets settings gameplay controller keyboard gamepads gamepad_setup gamepad_setup_virtual gamepad_calibration gamepad_mapping gamepad_function graphics audio language credits match_options forfeit history career career_new career_save career_training career_owner_gm career_owner_legacy career_owner_delegated career_coach career_player career_player_missing career_player_training career_season career_season_pending career_matchday career_tactics career_tactics_delegated career_press career_roster career_roster_player".split()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -30,6 +30,9 @@ def main():
             config.write_text(f'"debug" "true"\n"quick_start" "false"\n"menu_layout_audit" "true"\n"menu_smoke_test_page" "{route}"\n"locale_language" "{args.language}"\n"context_x" "{args.width}"\n"context_y" "{args.height}"\n"context_fullscreen" "false"\n', encoding="utf-8")
             with config.open("a", encoding="utf-8") as stream:
                 stream.write(f'"menu_smoke_career_section" "{args.hub_section}"\n')
+                if route.endswith("_virtual"):
+                    # SDL virtual joystick: a real HIDGamepad without hardware.
+                    stream.write('"menu_smoke_virtual_gamepad" "true"\n')
             if route == "career_training":
                 fixture = Path(temp) / "career"
                 fixture.mkdir()

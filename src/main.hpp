@@ -56,6 +56,12 @@ void GetDebugOverlayCoord(Match* match, const Vector3& worldPos, int& x, int& y)
 int PredictFrameTimeToGo_ms(int frameCount);
 
 const std::vector<IHIDevice*>& GetControllers();
+// Controller-list indices of gamepads unplugged since the last call, in
+// removal order (each index is relative to the list at that moment).
+std::vector<int> TakeRemovedControllerIndices();
+// Smoke tests only: unplugs the virtual gamepad attached when the config sets
+// "menu_smoke_virtual_gamepad". Returns false if there is none.
+bool DetachSmokeVirtualGamepad();
 
 int main(int argc, const char** argv);
 

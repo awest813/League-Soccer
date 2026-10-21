@@ -1,6 +1,9 @@
 #ifndef _HPP_HIDEVICE
 #define _HPP_HIDEVICE
 
+#include <mutex>
+#include <string>
+
 #include "base/math/vector3.hpp"
 
 using namespace blunted;
@@ -65,7 +68,10 @@ public:
   virtual void SetRumble(float low_frequency, float high_frequency, unsigned int duration_ms) = 0;
 
   e_HIDeviceType GetDeviceType() const { return deviceType; }
+  // Stable key for saved settings; not meant for display.
   std::string GetIdentifier() const { return identifier; }
+  // Human-readable device name for menus.
+  std::string GetDisplayName() const { return displayName.empty() ? identifier : displayName; }
 
   // True for the autonomous test controller (ScriptedGamepad) used by the
   // headless "gamepad controls" smoke match. Real keyboards/gamepads are false.
@@ -74,6 +80,7 @@ public:
 protected:
   e_HIDeviceType deviceType;
   std::string identifier;
+  std::string displayName;
 
   std::mutex mutex;
 };

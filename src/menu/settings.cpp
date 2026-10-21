@@ -634,10 +634,17 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   frame->AddView(title);
   title->Show();
 
+  // Show the bindings the keyboard device resolved (saved physical keys on the
+  // current layout), not raw config values.
+  HIDKeyboard* keyboardDevice = nullptr;
+  if (IHIDevice* device = GetControllerIfAvailable(0)) {
+    if (device->GetDeviceType() == e_HIDeviceType_Keyboard)
+      keyboardDevice = static_cast<HIDKeyboard*>(device);
+  }
   for (int i = 0; i < 18; i++) {
     keyButtons[i] = 0;
-    keyIDs[i] = (SDL_Keycode)GetConfiguration()->GetInt(("input_keyboard_" + int_to_str(i)).c_str(),
-                                                        (SDL_Keycode)defaultKeyIDs[i]);  // 48);
+    keyIDs[i] = keyboardDevice ? keyboardDevice->GetFunctionMapping((e_ButtonFunction)i)
+                               : HIDKeyboard::DefaultKey(i);
   }
 
   Gui2Button* buttonDefaults =
@@ -841,8 +848,8 @@ void KeyboardPage::OnClose() {
 
 void KeyboardPage::SetDefaults() {
   for (int i = 0; i < 18; i++) {
-    keyButtons[i]->GetCaptionWidget()->SetCaption(SDL_GetKeyName((SDL_Keycode)defaultKeyIDs[i]));
-    keyIDs[i] = (SDL_Keycode)defaultKeyIDs[i];
+    keyIDs[i] = HIDKeyboard::DefaultKey(i);
+    keyButtons[i]->GetCaptionWidget()->SetCaption(SDL_GetKeyName(keyIDs[i]));
   }
 }
 
@@ -911,7 +918,7 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
     if (controllers.at(i)->GetDeviceType() == e_HIDeviceType_Gamepad) {
       Gui2Button* buttonGamepad =
           new Gui2Button(windowManager, "button_gamepadsmenu_gamepad" + int_to_str(i), 0, 0, 60, 3,
-                         controllers.at(i)->GetIdentifier());
+                         controllers.at(i)->GetDisplayName());
       buttonGamepad->sig_OnClick.connect(std::bind(&GamepadsPage::GoGamepadSetup, this, i));
       grid->AddView(buttonGamepad, x, 0);
       if (x == 0)
@@ -956,6 +963,32 @@ void GamepadsPage::GoGamepadSetup(int controllerID) {
 
 // (SPECIFIC) GAMEPAD SETUP
 
+namespace {
+
+std::string GamepadLayoutCaption(controlpresets::GamepadPreset preset) {
+  return TRF("gamepad_layout", {TR(preset == controlpresets::GamepadPreset::Fifa
+                                       ? "gamepad_layout_fifa"
+                                       : "gamepad_layout_pes")});
+}
+
+std::string GamepadInvertCaption(bool invert) {
+  return TRF("gamepad_invert_vertical", {TR(invert ? "gamepad_option_on" : "gamepad_option_off")});
+}
+
+std::string GamepadDeadzoneCaption(float deadzone) {
+  return TRF("gamepad_stick_deadzone",
+             {std::to_string(static_cast<int>(std::lround(deadzone * 100.0f))) + "%"});
+}
+
+std::string GamepadRumbleCaption(float strength) {
+  const char* key = strength <= 0.0f   ? "gamepad_rumble_off"
+                    : strength < 1.0f ? "gamepad_rumble_half"
+                                      : "gamepad_rumble_full";
+  return TRF("gamepad_rumble", {TR(key)});
+}
+
+}  // namespace
+
 GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData) {
   int controllerID = pageData.properties->GetInt("controllerID");
@@ -982,12 +1015,11 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
   frame->Show();
 
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_gamepadsetup", 2,
-                                       2, 66, 3, "'" + controller->GetIdentifier() + "' Setup");
+                                       2, 66, 3, "'" + controller->GetDisplayName() + "' Setup");
   frame->AddView(title);
   title->Show();
 
-  std::string profileText =
-      "🎮 Hardware Profile: " + controller->GetControllerTypeName() + " (Auto-Detected)";
+  std::string profileText = TRF("gamepad_hardware_profile", {controller->GetControllerTypeName()});
   Gui2Caption* profileCap =
       new Gui2Caption(windowManager, "caption_gamepad_profile", 2, 6, 66, 2.5f, profileText);
   profileCap->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
@@ -1013,20 +1045,71 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
   buttonReset->sig_OnClick.connect(
       std::bind(&GamepadSetupPage::ResetToAutoDetectProfile, this, controllerID));
 
+  // Layout preset and per-pad options. Each click cycles the value, saves it,
+  // and updates the button's own caption.
+  Gui2Button* buttonLayout =
+      new Gui2Button(windowManager, "button_gamepadsetupmenu_layout", 0, 0, 36, 3,
+                     GamepadLayoutCaption(controller->GetPreset()));
+  buttonLayout->sig_OnClick.connect([controllerID, buttonLayout](...) {
+    if (HIDGamepad* pad = GetGamepadIfAvailable(controllerID)) {
+      const auto next = pad->GetPreset() == controlpresets::GamepadPreset::Pes
+                            ? controlpresets::GamepadPreset::Fifa
+                            : controlpresets::GamepadPreset::Pes;
+      pad->ApplyPreset(next);
+      buttonLayout->GetCaptionWidget()->SetCaption(GamepadLayoutCaption(next));
+    }
+  });
+  Gui2Button* buttonInvert =
+      new Gui2Button(windowManager, "button_gamepadsetupmenu_invert", 0, 0, 36, 3,
+                     GamepadInvertCaption(controller->GetInvertVertical()));
+  buttonInvert->sig_OnClick.connect([controllerID, buttonInvert](...) {
+    if (HIDGamepad* pad = GetGamepadIfAvailable(controllerID)) {
+      pad->SetInvertVertical(!pad->GetInvertVertical());
+      buttonInvert->GetCaptionWidget()->SetCaption(
+          GamepadInvertCaption(pad->GetInvertVertical()));
+    }
+  });
+  Gui2Button* buttonDeadzone =
+      new Gui2Button(windowManager, "button_gamepadsetupmenu_deadzone", 0, 0, 36, 3,
+                     GamepadDeadzoneCaption(controller->GetStickDeadzone()));
+  buttonDeadzone->sig_OnClick.connect([controllerID, buttonDeadzone](...) {
+    if (HIDGamepad* pad = GetGamepadIfAvailable(controllerID)) {
+      pad->SetStickDeadzone(controlpresets::NextStickDeadzone(pad->GetStickDeadzone()));
+      buttonDeadzone->GetCaptionWidget()->SetCaption(
+          GamepadDeadzoneCaption(pad->GetStickDeadzone()));
+    }
+  });
+  Gui2Button* buttonRumble =
+      new Gui2Button(windowManager, "button_gamepadsetupmenu_rumble", 0, 0, 36, 3,
+                     GamepadRumbleCaption(controller->GetRumbleStrength()));
+  buttonRumble->sig_OnClick.connect([controllerID, buttonRumble](...) {
+    if (HIDGamepad* pad = GetGamepadIfAvailable(controllerID)) {
+      pad->SetRumbleStrength(controlpresets::NextRumbleStrength(pad->GetRumbleStrength()));
+      buttonRumble->GetCaptionWidget()->SetCaption(
+          GamepadRumbleCaption(pad->GetRumbleStrength()));
+      if (pad->GetRumbleStrength() > 0.0f)
+        pad->SetRumble(0.6f, 0.6f, 250);  // let the player feel the new strength
+    }
+  });
+
   Gui2Grid* grid =
       new Gui2Grid(windowManager, "grid_settings_controller_gamepadsetup", 2, 10, 66, 56);
 
-  grid->AddView(buttonCalibration, 0, 0);
-  grid->AddView(buttonMapping, 1, 0);
-  grid->AddView(buttonFunction, 2, 0);
-  grid->AddView(buttonReset, 3, 0);
+  grid->AddView(buttonLayout, 0, 0);
+  grid->AddView(buttonInvert, 1, 0);
+  grid->AddView(buttonDeadzone, 2, 0);
+  grid->AddView(buttonRumble, 3, 0);
+  grid->AddView(buttonCalibration, 4, 0);
+  grid->AddView(buttonMapping, 5, 0);
+  grid->AddView(buttonFunction, 6, 0);
+  grid->AddView(buttonReset, 7, 0);
 
   grid->UpdateLayout(0.5);
   frame->AddView(grid);
   grid->Show();
 
   AddSettingsBackButton(this, windowManager, "button_gamepadsetup_back");
-  buttonCalibration->SetFocus();
+  buttonLayout->SetFocus();
 
   this->Show();
 }
@@ -1241,7 +1324,7 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
 
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_settings_controller_gamepadmapping", 10, 20, 80, 3,
-                      "'" + controller->GetIdentifier() + "' mapping");
+                      "'" + controller->GetDisplayName() + "' mapping");
   this->AddView(title);
   title->Show();
 
@@ -1588,7 +1671,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
 
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_settings_controller_gamepadfunction", 10, 10, 80, 3,
-                      "'" + controller->GetIdentifier() + "' function");
+                      "'" + controller->GetDisplayName() + "' function");
   this->AddView(title);
   title->Show();
 

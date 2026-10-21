@@ -2,6 +2,7 @@
 #define _HPP_HIDGAMEPAD
 
 #include "base/math/vector3.hpp"
+#include "controlpresets.hpp"
 #include "ihidevice.hpp"
 
 using namespace blunted;
@@ -26,9 +27,21 @@ public:
 
   virtual void LoadConfig();
   virtual void SaveConfig();
-  // Forgets saved mapping and calibration for this pad and reloads the
-  // auto-detected profile defaults.
+  // Forgets saved mapping, calibration and options for this pad and reloads
+  // the auto-detected profile defaults.
   void ResetToDefaults();
+
+  // Remaps every game function to a layout preset and saves it.
+  void ApplyPreset(controlpresets::GamepadPreset preset);
+  controlpresets::GamepadPreset GetPreset() const { return preset; }
+
+  // Per-pad analog and rumble options; setters save immediately.
+  bool GetInvertVertical() const { return invertVertical; }
+  void SetInvertVertical(bool invert);
+  float GetStickDeadzone() const { return stickDeadzone; }
+  void SetStickDeadzone(float deadzone);
+  float GetRumbleStrength() const { return rumbleStrength; }
+  void SetRumbleStrength(float strength);
 
   virtual void Process();
 
@@ -65,8 +78,17 @@ public:
   void SetGamepadID(int id) { gamepadID = id; }
 
 protected:
+  // Prefix of all saved settings for this pad ("input_gamepad_<id>_").
+  std::string ConfigPrefix() const { return "input_gamepad_" + GetIdentifier() + "_"; }
+  void SaveOptions();
+
   int deviceIndex;
   int gamepadID;
+  std::string legacyIdentifier;
+  controlpresets::GamepadPreset preset = controlpresets::GamepadPreset::Pes;
+  bool invertVertical = false;
+  float stickDeadzone = controlpresets::kDefaultStickDeadzone;
+  float rumbleStrength = 1.0f;
   e_ControllerType controllerType;
   float controllerButtonState[e_ControllerButton_Size];
   float previousControllerButtonState[e_ControllerButton_Size];

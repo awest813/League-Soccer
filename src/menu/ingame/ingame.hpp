@@ -30,6 +30,9 @@ public:
   virtual void ProcessWindowingEvent(WindowingEvent* event);
 
 protected:
+  // Unpauses, first rebuilding human players if a gamepad was unplugged.
+  void ResumeMatch();
+
   int teamID;  // team that activated the ingame menu
 };
 

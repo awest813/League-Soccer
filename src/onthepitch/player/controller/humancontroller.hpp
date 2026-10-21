@@ -3,6 +3,7 @@
 
 #include "../../../hid/ihidevice.hpp"
 #include "playercontroller.hpp"
+#include "../../playercontrolsettings.hpp"
 #include "../../sprinttap.hpp"
 
 class Player;
@@ -49,6 +50,7 @@ protected:
   int dispatchedGauge_ms = -1;
 
   SprintTap sprintTap;
+  SwitchModifierTracker switchModifier;
 
   // stuff to keep track of analog stick (or keys even) so that we can use a direction once it's
   // been pointed in for a while, instead of directly

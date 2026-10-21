@@ -147,6 +147,9 @@ void UserEventManager::InputSDLEvent(const SDL_Event& event) {
       lastKeyTime_ms = keyPressed[event.key.keysym.sym].pressTime_ms;
       keyPressedMutex.unlock();
       break;
+    case SDL_KEYMAPCHANGED:
+      keymapGeneration++;
+      break;
     case SDL_KEYUP:
       keyPressedMutex.lock();
       keyPressed.erase(event.key.keysym.sym);

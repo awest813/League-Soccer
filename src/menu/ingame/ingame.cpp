@@ -172,8 +172,7 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
       new Gui2Button(windowManager, "button_quit", 0, 0, 36, 3,
                      Localization::GetInstance().Translate("ingame_forfeit_match"));
   buttonResume->sig_OnClick.connect([this](...) {
-    GetMenuTask()->ReleaseAllButtons();
-    GetGameTask()->GetMatch()->Pause(false);
+    ResumeMatch();
     GoBack();  // reconstructs the GamePage, which restores GUI focus
   });
   buttonPreQuit->sig_OnClick.connect([this](...) { GoPreQuit(); });
@@ -189,7 +188,25 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   frame->AddView(hintCaption);
   hintCaption->Show();
 
-  buttonResume->SetFocus();
+  // Opened because a playing gamepad was unplugged: explain, and start on
+  // Controllers so the player can reassign straight away.
+  if (pageData.properties->GetBool("controllerDisconnected", false)) {
+    Gui2Caption* disconnectCaption =
+        new Gui2Caption(windowManager, "caption_ingame_controller_disconnected", 2, 9, 76, 3,
+                        Localization::GetInstance().Translate("ingame_controller_disconnected"));
+    disconnectCaption->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+    frame->AddView(disconnectCaption);
+    disconnectCaption->Show();
+    buttonControllerSelect->SetFocus();
+    if (GetConfiguration()->GetBool("menu_smoke_test_controller_disconnect", false)) {
+      printf("[menu-smoke] Controller disconnect prompt shown, focus on %s, text width %.1f%%\n",
+             windowManager->GetFocus() ? windowManager->GetFocus()->GetName().c_str() : "none",
+             disconnectCaption->GetTextWidthPercent());
+      EnvironmentManager::GetInstance().SignalQuit();
+    }
+  } else {
+    buttonResume->SetFocus();
+  }
 
   this->Show();
 }
@@ -239,11 +256,19 @@ void IngamePage::GoSetPieceEditor() {
   CreatePage((int)e_PageID_SetPieceEditor, properties);
 }
 
+void IngamePage::ResumeMatch() {
+  GetMenuTask()->ReleaseAllButtons();
+  Match* match = GetGameTask()->GetMatch();
+  // Done while still paused: the unplugged pad's team becomes CPU-controlled
+  // unless the player reassigned a controller.
+  if (GetMenuTask()->ConsumeControllerSetupChanged())
+    match->UpdateControllerSetup();
+  match->Pause(false);
+}
+
 void IngamePage::ProcessWindowingEvent(WindowingEvent* event) {
-  if (event->IsEscape()) {
-    GetMenuTask()->ReleaseAllButtons();
-    GetGameTask()->GetMatch()->Pause(false);
-  }
+  if (event->IsEscape())
+    ResumeMatch();
   Gui2Page::ProcessWindowingEvent(event);
 }
 

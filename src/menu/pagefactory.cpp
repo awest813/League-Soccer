@@ -399,6 +399,13 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
         passed = windowManager->GetFocus() && windowManager->GetFocus()->GetName() ==
             (smokeRoute == "career_tactics" ? "career_tactic_1" : "btn_st_back");
       if (smokeRoute == "career_training") passed = SmokeCareerTraining(windowManager, page);
+      if (smokeRoute == "gamepad_setup_virtual")
+        passed = FindCareerHubView(page, "button_gamepadsetupmenu_layout") &&
+                 FindCareerHubView(page, "button_gamepadsetupmenu_invert") &&
+                 FindCareerHubView(page, "button_gamepadsetupmenu_deadzone") &&
+                 FindCareerHubView(page, "button_gamepadsetupmenu_rumble") &&
+                 windowManager->GetFocus() &&
+                 windowManager->GetFocus()->GetName() == "button_gamepadsetupmenu_layout";
       if (pageData.pageID == e_PageID_CareerHub || pageData.pageID == e_PageID_OwnerHub)
         passed = SmokeCareerHub(windowManager, page,
             atoi(GetConfiguration()->Get("menu_smoke_career_section", "0").c_str()));

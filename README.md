@@ -301,6 +301,25 @@ Menus use the arrow keys / left stick or D-pad, **Enter** / **A** to confirm
 and **Escape** / **B** to go back. **F12** quits the game. Escape, Tab and F12
 cannot be assigned to match actions.
 
+**Gamepad options** (Settings > Controllers > Gamepads > your pad):
+
+- **Layout**: PES (the table above) or FIFA, where **B** shoots, **X** is
+  the high pass / cross, **RT** sprints and **RB** is slow dribble / finesse
+  (RB + B is a finesse shot). Defending buttons are the same in both.
+- **Invert vertical**, **Stick deadzone** (15–30%, raise it for a drifting
+  stick) and **Rumble** (off / half / full). Only pads controlling a team
+  rumble.
+- Settings are saved per gamepad model, so a pad keeps them whichever USB port
+  or connection order it uses.
+
+**Keyboard bindings follow physical key positions**, so other layouts get the
+same hand position: on AZERTY the default pass/shoot keys are **Z Q S D**,
+switch is **A** and sprint is **E**.
+
+**If a gamepad that is playing disconnects during a match**, the game pauses
+with **Controller Select** highlighted. Reconnect the pad and assign it to
+your team there; resuming without doing so hands that team to the CPU.
+
 ### Gameplay Options
 
 - Match duration is selectable in five-minute steps from 5 to 90 minutes. It

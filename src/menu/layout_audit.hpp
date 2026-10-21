@@ -46,6 +46,7 @@ inline int StandaloneMenuSmokePage(const std::string& route) {
                                  {"keyboard", e_PageID_Keyboard},
                                  {"gamepads", e_PageID_Gamepads},
                                  {"gamepad_setup", e_PageID_GamepadSetup},
+                                 {"gamepad_setup_virtual", e_PageID_GamepadSetup},
                                  {"gamepad_calibration", e_PageID_GamepadCalibration},
                                  {"gamepad_mapping", e_PageID_GamepadMapping},
                                  {"gamepad_function", e_PageID_GamepadFunction},

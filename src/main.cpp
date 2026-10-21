@@ -95,6 +95,7 @@ static LONG WINAPI CustomCrashHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 #endif
 
 #include <filesystem>
+#include <mutex>
 
 #ifndef SDL_MAIN_HANDLED
 #define SDL_MAIN_HANDLED
@@ -418,12 +419,42 @@ void AddGamepad(int deviceIndex, int gamepadID) {
 // slot -1, which reads as no input.
 static std::vector<HIDGamepad*> retiredGamepads;
 
+// Filled on the render thread (hot-plug events), drained by the menu thread.
+static std::mutex removedControllersMutex;
+static std::vector<int> removedControllerIndices;
+
+// Device index of an SDL virtual joystick used by smoke tests, or -1.
+static int smokeVirtualGamepadIndex = -1;
+
+bool DetachSmokeVirtualGamepad() {
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+  if (smokeVirtualGamepadIndex < 0)
+    return false;
+  const bool detached = SDL_JoystickDetachVirtual(smokeVirtualGamepadIndex) == 0;
+  smokeVirtualGamepadIndex = -1;
+  return detached;
+#else
+  return false;
+#endif
+}
+
+std::vector<int> TakeRemovedControllerIndices() {
+  std::lock_guard<std::mutex> lock(removedControllersMutex);
+  std::vector<int> removed;
+  removed.swap(removedControllerIndices);
+  return removed;
+}
+
 void RemoveGamepad(int gamepadID) {
   for (auto it = controllers.begin(); it != controllers.end(); ++it) {
     HIDGamepad* gp = dynamic_cast<HIDGamepad*>(*it);
     if (gp && gp->GetGamepadID() == gamepadID) {
       gp->SetGamepadID(-1);
       retiredGamepads.push_back(gp);
+      {
+        std::lock_guard<std::mutex> lock(removedControllersMutex);
+        removedControllerIndices.push_back(static_cast<int>(it - controllers.begin()));
+      }
       controllers.erase(it);
       printf("[main] Gamepad removed: slot %d, total controllers: %zu\n", gamepadID,
              controllers.size());
@@ -677,6 +708,20 @@ int main(int argc, const char** argv) {
       std::shared_ptr<MenuTask>(new MenuTask(kMenuAspectRatio, 0, defaultFont, defaultOutlineFont));
   if (controllers.size() > 1)
     ApplyMenuJoyButtons(dynamic_cast<HIDGamepad*>(controllers.at(1)));
+
+  // Smoke tests: plug in an SDL virtual gamepad so gamepad menus and hot-plug
+  // handling run against a real HIDGamepad without hardware. It arrives
+  // through the normal device-added event, like a pad connected at runtime.
+  if (config->GetBool("menu_smoke_virtual_gamepad", false)) {
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    smokeVirtualGamepadIndex =
+        SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER, 6, 15, 1);
+    printf("[menu-smoke] Virtual gamepad attached: %s\n",
+           smokeVirtualGamepadIndex >= 0 ? "yes" : SDL_GetError());
+#else
+    printf("[menu-smoke] Virtual gamepad attached: unsupported SDL version\n");
+#endif
+  }
 
   gameSequence = std::shared_ptr<TaskSequence>(new TaskSequence("game", timeStep_ms, false));
 

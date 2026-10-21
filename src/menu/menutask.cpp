@@ -4,7 +4,9 @@
 #include "../onthepitch/match.hpp"
 #include "career/career_database.hpp"
 #include "data/careerdata.hpp"
+#include "../main.hpp"
 #include "framework/scheduler.hpp"
+#include "hid/controllersetup.hpp"
 #include "gametask.hpp"
 #include "ingame/gameover.hpp"
 #include "ingame/ingame.hpp"
@@ -138,7 +140,22 @@ MenuTask::~MenuTask() {
     printf("done\n");
 }
 
+void MenuTask::HandleRemovedControllers() {
+  const std::vector<int> removed = TakeRemovedControllerIndices();
+  if (removed.empty())
+    return;
+  std::vector<SideSelection> sides = GetControllerSetup();
+  for (int index : removed) {
+    const int side = controllersetup::RemoveControllerFromSetup(sides, index);
+    if (side != 0 && GetGameTask()->GetMatch())
+      disconnectedSide = side;
+  }
+  SetControllerSetup(sides);
+  controllerSetupChanged = true;
+}
+
 void MenuTask::ProcessPhase() {
+  HandleRemovedControllers();
   Gui2Task::ProcessPhase();
 
   if (menuAction == e_MenuAction_Menu) {

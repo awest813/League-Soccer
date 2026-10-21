@@ -302,13 +302,8 @@ BallSpatialInfo Ball::CalculatePrediction() {
         goalpostsound->Poke(e_SystemType_Audio);
         match->AddExcitementBoost(0.85f, 3000);
 
-        const std::vector<IHIDevice*>& controllers = GetControllers();
-        for (auto* controller : controllers) {
-          if (controller->GetDeviceType() == e_HIDeviceType_Gamepad) {
-            float rumbleIntensity = clamp(momentumPredict.GetLength() * 0.05f, 0.2f, 1.0f);
-            controller->SetRumble(rumbleIntensity, rumbleIntensity, 250);
-          }
-        }
+        const float rumbleIntensity = clamp(momentumPredict.GetLength() * 0.05f, 0.2f, 1.0f);
+        match->RumblePlayingPads(rumbleIntensity, rumbleIntensity, 250);
       }
     }
 

@@ -327,7 +327,10 @@ void MainMenuPage::Process() {
     Properties properties;
     properties.Set("careerSection", GetConfiguration()->Get("menu_smoke_career_section", "0"));
     properties.Set("focusCareerTab", "true");
-    properties.Set("controllerID", -1);  // Exercise the missing-device fallback safely.
+    // Exercise the missing-device fallback safely, or the virtual smoke gamepad
+    // (controller 1, after the keyboard) when one was attached.
+    properties.Set("controllerID",
+                   GetConfiguration()->GetBool("menu_smoke_virtual_gamepad", false) ? 1 : -1);
     CreatePage(target, properties);
     return;
   }

@@ -124,6 +124,14 @@ jobs:
             "[menu-smoke] Gameplay page reached and live match is active" \
             "[menu-smoke] Quick Match verification succeeded, quitting test run"
 
+      - name: Smoke test Controller Disconnect (SDL virtual gamepad)
+        run: |
+          cd build
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_controller_disconnect.config" 60 \
+            "[menu-smoke] Virtual gamepad attached: yes" \
+            "[menu-smoke] Virtual gamepad unplugged during the match" \
+            "[menu-smoke] Controller disconnect prompt shown, focus on button_controllerselect"
+
       - name: Smoke test Full Match
         run: |
           cd build

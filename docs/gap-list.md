@@ -231,15 +231,33 @@ drives a human player through `HumanController` for a full match. Not done:
 physical controllers (stick feel, trigger defaults on Windows/macOS, menu
 repeat timing) and hands-on match play.
 
+### Follow-up: identity, disconnects and options
+
+| Area | Before | Now |
+| --- | --- | --- |
+| Gamepad identity | Settings were keyed by `<name> #<connection index>`, so a pad lost or swapped its mapping when pads were connected in another order. | Keyed by SDL GUID (identical pads get `-2`, `-3` in connection order). Settings saved under the old key are copied over once. Menus show the pad's name. |
+| Keyboard layouts | Bindings were saved as keycodes, so AZERTY/QWERTZ players got the QWERTY letters scattered across the board. | Saved as physical scancodes (keycodes kept for older builds) and resolved on the current layout, including when the OS layout changes. Defaults are physical positions. |
+| Disconnect | An unplugged pad's team silently stopped responding, and later pads' entries in the controller setup pointed at the wrong devices. | The setup drops the pad and renumbers the rest. If it was playing, the match pauses with a notice and focus on Controller Select; resuming without reassigning hands that team to the CPU. |
+| Presets | One fixed layout. | PES (unchanged default) and FIFA layouts on the gamepad setup page. |
+| Options | No invert, deadzone or rumble settings. | Per-pad invert vertical, stick deadzone (15–30%) and rumble (off/half/full). |
+| Rumble | Goal and woodwork rumble went to every connected pad. | Only pads controlling a team rumble (`Match::RumblePlayingPads`). |
+| LB modifier | LB before an action braked the dribbler and fired a teammate run; after it did neither. | A run is requested on LB release only if no action was armed while it was held; braking needs LB held alone for 200 ms (`SwitchModifierTracker`). |
+| Hardware profile caption | Started with an emoji the menu font cannot draw; not localized. | Localized, no emoji. |
+
+Tests: `controls_audit_test.cpp` also covers the presets, option cycling,
+GUID identity and legacy-key migration, controller-setup renumbering and the
+LB modifier. A new smoke test (`data/menu_smoke_controller_disconnect.config`,
+also in CI) attaches an SDL virtual gamepad, plays with it, unplugs it
+mid-match and checks the prompt. The layout audit's `gamepad_setup_virtual`
+route checks the new option buttons with a real `HIDGamepad`.
+
 ### Known defects not yet fixed
 
 | Pri | Location | Defect | Why it was deferred |
 | --- | --- | --- | --- |
 | P1 | `humancontroller.cpp` dispatch, `humanoid.cpp` touch | Power is locked at the 500 ms dispatch, about 47% gauge, so a held pass/shot can never be stronger. The original comment assumed power could still grow before the touch. | Reading the gauge live at touch time makes held passes and shots noticeably stronger: a balance change that needs a playtest. The HUD is now honest about the locked value. |
-| P1 | `humancontroller.cpp` Switch handling (Assisted) | Pressing LB before the action brakes the dribbler and fires an attacking run, so LB-then-X and X-then-LB differ. | Needs a design call on modifier timing. |
 | P1 | `humancontroller.cpp` possession context | HighPass has no +0.15 weight while Sliding has −0.15, so B on a contested ball leans to a sliding tackle. The code's own TODO says the weights assume one layout. | Feel change; needs a playtest. |
 | P2 | `usereventmanager.cpp` / HID `Process` | Button state is level-sampled every 10 ms; a tap that starts and ends between two samples is lost (e.g. at 30 fps rendering). | Needs per-button "pressed since last sample" latching. |
-| P2 | `match.cpp`, `ball.cpp` rumble | Goal and woodwork rumble goes to every connected pad, including the opponent's and unassigned ones. | Needs the team-to-device mapping. |
 | P2 | Fully-manual switching | Switching ignores the stick direction (`AI_GetBestSwitchTargetPlayer` never reads it). | Feature work. |
 | P2 | Fully-manual switching | Actions can be armed during stoppages before a set piece. | Needs set-piece timing verified in-engine. |
 | P2 | `HumanController::Reset` | Does not chain to `PlayerController::Reset`; harmless today. | Cleanup. |
@@ -249,10 +267,8 @@ repeat timing) and hands-on match play.
 | Pri | Gap |
 | --- | --- |
 | P1 | **SDL GameController API.** Devices are opened as raw joysticks, so layouts differ per platform and driver: PlayStation/Switch pads under SDL's HIDAPI driver get wrong defaults and no D-pad. `data/gamecontrollerdb.txt` is loaded but absent. Moving to `SDL_GameController` would replace the per-platform guesses fixed above. |
-| P1 | **Stable device identity.** Bindings are keyed by `name #deviceIndex`, so a pad that enumerates in a different order loses or swaps its mapping. Key by GUID instead. |
-| P1 | **Keyboard layouts.** Bindings are keycodes, not scancodes, so AZERTY/QWERTZ players get a scattered default cluster. |
-| P1 | **Disconnect flow.** No pause or "reconnect controller" prompt when a pad drops mid-match, and Controller Select does not pick up pads plugged in after it opens. |
-| P2 | **Remapping.** No conflict warning for duplicate bindings, no presets (PES/FIFA layouts), no secondary keys, no invert-axis, deadzone, trigger-threshold or rumble settings. The keyboard, gamepad mapping and function pages have hard-coded English text. |
+| P2 | **Controller Select while open.** It builds its device list when it opens, so a pad plugged in while it is showing appears only after reopening it. |
+| P2 | **Remapping.** No conflict warning for duplicate bindings, no secondary keys, no keyboard presets, no trigger-threshold setting. The layout label still says PES/FIFA after individual functions are remapped. The keyboard, gamepad mapping and function pages have hard-coded English text. |
 | P2 | **On-screen control legend.** Button glyphs for Xbox/PlayStation/Switch exist (`HIDGamepad::GetButtonGlyphPath`) but nothing displays them. |
 | P2 | **Special button.** Mapped (Z / LT) but not read anywhere in a match. |
 | P2 | **Fake shot.** It is a ball-control cut at dribbling pace; the `FakeShot` modifier it sets is never read, so there is no dedicated feint animation. (`docs/gameplay.md` now describes it as it is.) |

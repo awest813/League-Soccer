@@ -3,6 +3,7 @@
 #include "../main.hpp"
 #include "base/utils.hpp"
 #include "managers/usereventmanager.hpp"
+#include "deviceidentity.hpp"
 #include "stickinput.hpp"
 
 namespace {
@@ -23,7 +24,28 @@ HIDGamepad::HIDGamepad(int deviceIndex, int gamepadID)
     : deviceIndex(deviceIndex), gamepadID(gamepadID) {
   deviceType = e_HIDeviceType_Gamepad;
   const char* joyName = SDL_JoystickNameForIndex(deviceIndex);
-  identifier = std::string(joyName ? joyName : "Gamepad") + " #" + int_to_str(deviceIndex);
+  displayName = joyName ? joyName : "Gamepad";
+
+  // Key saved settings by the device's GUID, not its connection order. Two
+  // identical pads get "-2", "-3"... in the order they are connected.
+  char guidText[33] = {0};
+  SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(deviceIndex), guidText, sizeof(guidText));
+  for (int duplicate = 0;; duplicate++) {
+    identifier = deviceidentity::GamepadIdentifier(guidText, duplicate);
+    bool taken = false;
+    for (IHIDevice* device : GetControllers()) {
+      if (device->GetDeviceType() == e_HIDeviceType_Gamepad &&
+          device->GetIdentifier() == identifier)
+        taken = true;
+    }
+    if (!taken)
+      break;
+  }
+
+  // Carry settings saved by older builds under "<name> #<index>" over once.
+  legacyIdentifier = deviceidentity::LegacyGamepadIdentifier(displayName, deviceIndex);
+  deviceidentity::MigratePrefixedKeys(GetConfiguration()->GetMutableProperties(),
+                                      "input_gamepad_" + legacyIdentifier + "_", ConfigPrefix());
 
   LoadConfig();
 }
@@ -59,8 +81,8 @@ void HIDGamepad::LoadConfig() {
     UserEventManager::GetInstance().SetJoystickAxisCalibration(GetGamepadID(), i, min, max, rest);
   }
 
-  // Smart controller profile auto-detection
-  controllerType = DetectControllerType(GetIdentifier());
+  // Smart controller profile auto-detection (by name; the identifier is a GUID)
+  controllerType = DetectControllerType(GetDisplayName());
 
   for (int i = 0; i < e_ControllerButton_Size; i++) {
     int defaultButton = 0;
@@ -148,45 +170,17 @@ void HIDGamepad::LoadConfig() {
       controllerMapping[i] = defaultButton;
   }
 
-  for (int i = 0; i < e_ButtonFunction_Size; i++) {
-    int defaultMapping = 0;
-    if (i == e_ButtonFunction_Up)
-      defaultMapping = e_ControllerButton_Up;
-    else if (i == e_ButtonFunction_Right)
-      defaultMapping = e_ControllerButton_Right;
-    else if (i == e_ButtonFunction_Down)
-      defaultMapping = e_ControllerButton_Down;
-    else if (i == e_ButtonFunction_Left)
-      defaultMapping = e_ControllerButton_Left;
-    else if (i == e_ButtonFunction_LongPass)
-      defaultMapping = e_ControllerButton_Y;
-    else if (i == e_ButtonFunction_HighPass)
-      defaultMapping = e_ControllerButton_B;
-    else if (i == e_ButtonFunction_ShortPass)
-      defaultMapping = e_ControllerButton_A;
-    else if (i == e_ButtonFunction_Shot)
-      defaultMapping = e_ControllerButton_X;
-    else if (i == e_ButtonFunction_KeeperRush)
-      defaultMapping = e_ControllerButton_Y;
-    else if (i == e_ButtonFunction_Sliding)
-      defaultMapping = e_ControllerButton_B;
-    else if (i == e_ButtonFunction_Pressure)
-      defaultMapping = e_ControllerButton_A;
-    else if (i == e_ButtonFunction_TeamPressure)
-      defaultMapping = e_ControllerButton_X;
-    else if (i == e_ButtonFunction_Switch)
-      defaultMapping = e_ControllerButton_L1;
-    else if (i == e_ButtonFunction_Special)
-      defaultMapping = e_ControllerButton_L2;
-    else if (i == e_ButtonFunction_Sprint)
-      defaultMapping = e_ControllerButton_R1;
-    else if (i == e_ButtonFunction_Dribble)
-      defaultMapping = e_ControllerButton_R2;
-    else if (i == e_ButtonFunction_Start)
-      defaultMapping = e_ControllerButton_Start;
-    else if (i == e_ButtonFunction_Select)
-      defaultMapping = e_ControllerButton_Select;
+  preset = controlpresets::GamepadPresetFromInt(
+      GetConfiguration()->GetInt((ConfigPrefix() + "preset").c_str(), 0));
+  invertVertical = GetConfiguration()->GetBool((ConfigPrefix() + "invert_vertical").c_str(), false);
+  stickDeadzone = controlpresets::ClampStickDeadzone(GetConfiguration()->GetReal(
+      (ConfigPrefix() + "stick_deadzone").c_str(), controlpresets::kDefaultStickDeadzone));
+  rumbleStrength = controlpresets::ClampRumbleStrength(
+      GetConfiguration()->GetReal((ConfigPrefix() + "rumble").c_str(), 1.0f));
 
+  for (int i = 0; i < e_ButtonFunction_Size; i++) {
+    const int defaultMapping =
+        controlpresets::PresetButtonFor(preset, static_cast<e_ButtonFunction>(i));
     int mapping = GetConfiguration()->GetInt(
         ("input_gamepad_" + GetIdentifier() + "_mapping_" + int_to_str(i)).c_str(), defaultMapping);
     if (mapping < 0 || mapping >= e_ControllerButton_Size)
@@ -206,14 +200,49 @@ void HIDGamepad::SaveConfig() {
         ("input_gamepad_" + GetIdentifier() + "_mapping_" + int_to_str(i)).c_str(),
         functionMapping[i]);
   }
+  SaveOptions();
   GetConfiguration()->SaveFile(GetConfigFilename());
 }
 
 void HIDGamepad::ResetToDefaults() {
   // LoadConfig() prefers saved keys over defaults, so they must go first.
-  GetConfiguration()->EraseWithPrefix("input_gamepad_" + GetIdentifier() + "_");
+  // Legacy keys go too, or they would be migrated back on the next launch.
+  GetConfiguration()->EraseWithPrefix(ConfigPrefix());
+  GetConfiguration()->EraseWithPrefix("input_gamepad_" + legacyIdentifier + "_");
   LoadConfig();
   SaveConfig();
+}
+
+void HIDGamepad::ApplyPreset(controlpresets::GamepadPreset newPreset) {
+  {
+    std::unique_lock<std::mutex> blah(mutex);
+    preset = newPreset;
+    for (int i = 0; i < e_ButtonFunction_Size; i++)
+      functionMapping[i] = controlpresets::PresetButtonFor(preset, static_cast<e_ButtonFunction>(i));
+  }
+  SaveConfig();
+}
+
+void HIDGamepad::SetInvertVertical(bool invert) {
+  invertVertical = invert;
+  SaveConfig();
+}
+
+void HIDGamepad::SetStickDeadzone(float deadzone) {
+  stickDeadzone = controlpresets::ClampStickDeadzone(deadzone);
+  SaveConfig();
+}
+
+void HIDGamepad::SetRumbleStrength(float strength) {
+  rumbleStrength = controlpresets::ClampRumbleStrength(strength);
+  SaveConfig();
+}
+
+void HIDGamepad::SaveOptions() {
+  GetConfiguration()->SetInt((ConfigPrefix() + "preset").c_str(), static_cast<int>(preset));
+  GetConfiguration()->SetBool((ConfigPrefix() + "invert_vertical").c_str(), invertVertical);
+  GetConfiguration()->Set((ConfigPrefix() + "stick_deadzone").c_str(), stickDeadzone);
+  GetConfiguration()->Set((ConfigPrefix() + "rumble").c_str(), rumbleStrength);
 }
 
 void HIDGamepad::Process() {
@@ -268,11 +297,16 @@ Vector3 HIDGamepad::GetDirection() {
   inputDirection.coords[0] += GetButtonValue(e_ButtonFunction_Right);
   inputDirection.coords[1] += GetButtonValue(e_ButtonFunction_Up);
   inputDirection.coords[1] -= GetButtonValue(e_ButtonFunction_Down);
-  return stickinput::ApplyRadialDeadzone(inputDirection, analogStickDeadzone);
+  if (invertVertical)
+    inputDirection.coords[1] = -inputDirection.coords[1];
+  return stickinput::ApplyRadialDeadzone(inputDirection, stickDeadzone);
 }
 
 void HIDGamepad::SetRumble(float low_frequency, float high_frequency, unsigned int duration_ms) {
-  UserEventManager::GetInstance().SetJoystickRumble(gamepadID, low_frequency, high_frequency, duration_ms);
+  if (rumbleStrength <= 0.0f)
+    return;
+  UserEventManager::GetInstance().SetJoystickRumble(gamepadID, low_frequency * rumbleStrength,
+                                                    high_frequency * rumbleStrength, duration_ms);
 }
 
 e_ControllerType HIDGamepad::DetectControllerType(const std::string& name) {

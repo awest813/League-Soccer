@@ -315,6 +315,7 @@ void ControllerSelectPage::Process() {
         // Same as Escape: in a match, keep the sides the player just chose.
         if (inGame) {
           GetMenuTask()->SetControllerSetup(sides);
+          GetMenuTask()->ConsumeControllerSetupChanged();  // applied right here
           GetGameTask()->GetMatch()->UpdateControllerSetup();
         }
         GoBack();
@@ -360,6 +361,7 @@ void ControllerSelectPage::ProcessWindowingEvent(WindowingEvent* event) {
   if (event->IsEscape()) {
     if (inGame) {
       GetMenuTask()->SetControllerSetup(sides);
+      GetMenuTask()->ConsumeControllerSetupChanged();  // applied right here
       GetGameTask()->GetMatch()->UpdateControllerSetup();
     }
     Gui2Page::ProcessWindowingEvent(event);
