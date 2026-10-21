@@ -539,13 +539,11 @@ void LeagueRecordResult(const LeagueFixtureInfo& fixture, int homeGoals, int awa
 
   std::string resultStr = fixture.homeTeamName + " " + int_to_str(homeGoals) + " - " +
                           int_to_str(awayGoals) + " " + fixture.awayTeamName;
-  GetDB()->Query(
-      "INSERT INTO inbox_messages (sender, subject, body) VALUES "
-      "('Match Reporter', 'Match Result: " +
-      resultStr +
-      "', "
-      "'Full-time: " +
-      resultStr + ". Check the Standings page for updated league tables.')");
+  GetDB()->Query("INSERT INTO inbox_messages (sender, subject, body) VALUES ('Match Reporter', " +
+                 SqlString("Match Result: " + resultStr) + ", " +
+                 SqlString("Full-time: " + resultStr +
+                           ". Check the Standings page for updated league tables.") +
+                 ")");
 }
 
 void LeagueSimulateFixture(const LeagueFixtureInfo& fixture, int& homeGoals, int& awayGoals) {

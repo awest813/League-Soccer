@@ -4,6 +4,7 @@
 
 #include "../main.hpp"
 #include "base/utils.hpp"
+#include "dbroles.hpp"
 #include "utils/database.hpp"
 
 PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
@@ -48,12 +49,14 @@ PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
       height = atof(result->data.at(0).at(c).c_str());
   }
 
-  std::vector<std::string> roleStrings;
-  tokenize(roleString, roleStrings);
+  // Football Manager notation ("D C, DM"); splitting it on spaces made almost
+  // every outfielder a CM.
+  for (const std::string& code : dbroles::PositionsFromDbRole(roleString))
+    roles.push_back(GetRoleFromString(code));
 
-  for (int i = 0; i < (signed int)roleStrings.size(); i++) {
-    roles.push_back(GetRoleFromString(roleStrings.at(i)));
-  }
+  // One-name players ("Isco") belong in the surname, which the HUD shows.
+  if (lastName.empty())
+    std::swap(firstName, lastName);
 
   // get average stat for current age
 

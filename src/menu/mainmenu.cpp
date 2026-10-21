@@ -481,7 +481,7 @@ bool SortClubPlayersByRole(const PlayerImport& a, const PlayerImport& b) {
 
 std::string RenameLeague(Database* namedb, const std::string& name, const std::string& srcfield) {
   std::string query =
-      "select " + srcfield + " from leaguenames where name = \"" + name + "\" limit 1;";
+      "select " + srcfield + " from leaguenames where name = " + SqlString(name) + " limit 1;";
   auto result = namedb->Query(query);
   std::string targetName;
   if (result->data.size() > 0) {
@@ -493,7 +493,7 @@ std::string RenameLeague(Database* namedb, const std::string& name, const std::s
 
 std::string RenameClub(Database* namedb, const std::string& name, const std::string& srcfield) {
   std::string query =
-      "select " + srcfield + " from clubnames where name = \"" + name + "\" limit 1;";
+      "select " + srcfield + " from clubnames where name = " + SqlString(name) + " limit 1;";
   auto result = namedb->Query(query);
   std::string targetName;
   if (result->data.size() > 0) {
@@ -505,9 +505,8 @@ std::string RenameClub(Database* namedb, const std::string& name, const std::str
 
 ClubData GetClubData(Database* namedb, const std::string& name) {
   std::string query =
-      "select formation_xml, tactics_xml, shortname, color1, color2 from clubnames where name = "
-      "\"" +
-      name + "\" limit 1;";
+      "select formation_xml, tactics_xml, shortname, color1, color2 from clubnames where name = " +
+      SqlString(name) + " limit 1;";
   auto result = namedb->Query(query);
   ClubData data;
   if (result->data.size() > 0) {
@@ -543,8 +542,8 @@ void GetPlayerData(Database* namedb, const std::string& firstname, const std::st
 
   std::string query =
       "select fakefirstname, fakelastname, skincolor, hairstyle, haircolor, height, weight, "
-      "formationorder, base_stat_offset, profile_xml from playernames where firstname = \"" +
-      firstname + "\" and lastname = \"" + lastname + "\" limit 1;";
+      "formationorder, base_stat_offset, profile_xml from playernames where firstname = " +
+      SqlString(firstname) + " and lastname = " + SqlString(lastname) + " limit 1;";
   auto result = namedb->Query(query);
   if (result->data.size() > 0 && atoi(result->data.at(0).at(2).c_str()) != 0) {
     fakefirstname_ret = result->data.at(0).at(0);
@@ -793,8 +792,8 @@ bool MainMenuPage::GoImportDB() {
       "name=\"countries\";";
   std::set<std::string>::iterator iter = countries.begin();
   for (unsigned int i = 0; i < countries.size(); i++) {
-    query += "insert into countries (id, region_id, name) values (" + int_to_str(i + 1) +
-             ", 1, \"" + *iter + "\");";
+    query += "insert into countries (id, region_id, name) values (" + int_to_str(i + 1) + ", 1, " +
+             SqlString(*iter) + ");";
     countryIDs.insert(std::pair<std::string, int>(*iter, i + 1));
     iter++;
   }
@@ -828,8 +827,9 @@ bool MainMenuPage::GoImportDB() {
              strippedCompetitionName.c_str());
 
       query += "insert into leagues (id, name, logo_url, country_id) values (" + int_to_str(id) +
-               ", \"" + competitionName + "\", \"images_competitions/" +
-               strippedCompetitionFilename + ".png\", " + int_to_str(countryID) + ");";
+               ", " + SqlString(competitionName) + ", " +
+               SqlString("images_competitions/" + strippedCompetitionFilename + ".png") + ", " +
+               int_to_str(countryID) + ");";
       competitionIDs.insert(
           std::pair<std::string, int>(compIter->second.country + compIter->second.competition, id));
       id++;
@@ -876,12 +876,16 @@ bool MainMenuPage::GoImportDB() {
         "insert into teams (id, league_id, name, logo_url, kit_url, formation_xml, "
         "formation_factory_xml, tactics_xml, tactics_factory_xml, shortname, color1, color2) "
         "values (" +
-        int_to_str(clubs.at(i).id) + ", " + int_to_str(competitionID) + ", \"" + clubName +
-        "\", \"images_teams/" + strippedCompetitionFilename + "/" + strippedClubFilename +
-        "_logo.png\", \"images_teams/" + strippedCompetitionFilename + "/" + strippedClubFilename +
-        "\", \"" + clubData.formation_xml + "\", \"" + clubData.formation_xml + "\", \"" +
-        clubData.tactics_xml + "\", \"" + clubData.tactics_xml + "\", \"" + clubData.shortName +
-        "\", \"" + clubData.color1 + "\", \"" + clubData.color2 + "\");";
+        int_to_str(clubs.at(i).id) + ", " + int_to_str(competitionID) + ", " + SqlString(clubName) +
+        ", " +
+        SqlString("images_teams/" + strippedCompetitionFilename + "/" + strippedClubFilename +
+                  "_logo.png") +
+        ", " +
+        SqlString("images_teams/" + strippedCompetitionFilename + "/" + strippedClubFilename) +
+        ", " + SqlString(clubData.formation_xml) + ", " + SqlString(clubData.formation_xml) + ", " +
+        SqlString(clubData.tactics_xml) + ", " + SqlString(clubData.tactics_xml) + ", " +
+        SqlString(clubData.shortName) + ", " + SqlString(clubData.color1) + ", " +
+        SqlString(clubData.color2) + ");";
     clubIDs.insert(std::pair<std::string, int>(clubs.at(i).name, clubs.at(i).id));
   }
   query += "commit;";
@@ -1029,11 +1033,12 @@ bool MainMenuPage::GoImportDB() {
             "insert into players (id, firstname, lastname, team_id, role, formationorder, age, "
             "base_stat, profile_xml, skincolor, hairstyle, haircolor, height, weight, "
             "nationalteam_id, nationalteamformationorder) values ") +
-        (std::string)("(" + int_to_str(player.id) + ", \"" + firstName + "\", \"" + lastName +
-                      "\", " + int_to_str(player.clubID) + ", \"" + player.position + "\", " +
-                      int_to_str(formationOrder) + ", " + int_to_str(player.age) + ", " +
-                      real_to_str(player.averageStartStat) + ", \"" + statsString + "\", " +
-                      int_to_str(skinColor) + ", \"" + hairStyle + "\", \"" + hairColor + "\", " +
+        (std::string)("(" + int_to_str(player.id) + ", " + SqlString(firstName) + ", " +
+                      SqlString(lastName) + ", " + int_to_str(player.clubID) + ", " +
+                      SqlString(player.position) + ", " + int_to_str(formationOrder) + ", " +
+                      int_to_str(player.age) + ", " + real_to_str(player.averageStartStat) + ", " +
+                      SqlString(statsString) + ", " + int_to_str(skinColor) + ", " +
+                      SqlString(hairStyle) + ", " + SqlString(hairColor) + ", " +
                       real_to_str(height) + ", " + real_to_str(weight) + ", -1, -1);");
   }
   query += "commit;";
@@ -1142,11 +1147,13 @@ bool MainMenuPage::GoImportDB() {
       // firstname + "\", \"" + lastname + "\", " + int_to_str(p) + ");";
       std::string namequery =
           "insert into playernames (firstname, lastname, fakefirstname, fakelastname, "
-          "formationorder) select \"" +
-          firstname + "\", \"" + lastname + "\", \"" + firstname + "\", \"" + lastname + "\", " +
-          int_to_str(p) + " WHERE NOT EXISTS(SELECT 1 FROM playernames WHERE (firstname = \"" +
-          firstname + "\" AND lastname = \"" + lastname + "\") OR (fakefirstname = \"" + firstname +
-          "\" AND fakelastname = \"" + lastname + "\"));";
+          "formationorder) select " +
+          SqlString(firstname) + ", " + SqlString(lastname) + ", " + SqlString(firstname) + ", " +
+          SqlString(lastname) + ", " + int_to_str(p) +
+          " WHERE NOT EXISTS(SELECT 1 FROM playernames WHERE (firstname = " + SqlString(firstname) +
+          " AND lastname = " + SqlString(lastname) +
+          ") OR (fakefirstname = " + SqlString(firstname) +
+          " AND fakelastname = " + SqlString(lastname) + "));";
       printf("%s\n", namequery.c_str());
       auto nameresult = namedb->Query(namequery);
     }

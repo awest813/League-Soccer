@@ -458,7 +458,8 @@ void CareerNewGamePage::StartCareer() {
       long long wage = (value / 1000) + static_cast<int>(random(500, 2000));
 
       PlayerCareerState cp;
-      cp.name = pd->GetFirstName() + " " + pd->GetLastName();
+      cp.name = pd->GetFirstName().empty() ? pd->GetLastName()
+                                           : pd->GetFirstName() + " " + pd->GetLastName();
       cp.position = pos;
       cp.preferredPosition = pos;
       cp.ovr = ovr;

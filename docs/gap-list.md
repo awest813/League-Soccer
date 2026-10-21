@@ -6,7 +6,8 @@ Scope: the in-match game (`src/onthepitch`, `src/menu/ingame`) and Career mode
 audited. A second pass covering controls (input devices, remapping, menus and
 in-match handling) is in [section 4](#4-controls), and a third pass covering
 menu and in-match UI is in [section 5](#5-ui-and-in-match-ui). [Section 6](#6-career-second-pass)
-records a second career pass that fixed the career P0 defects.
+records a second career pass that fixed the career P0 defects, and [section 7](#7-database)
+covers the database.
 
 This document has three parts:
 
@@ -328,6 +329,41 @@ the result and appearances are recorded.
 
 The long-run audit test now checks that each season's finish equals the club's
 place in the final table, instead of the old estimate.
+
+---
+
+## 7. Database
+
+Scope: the bundled `data/databases/default/database.sqlite` (4 leagues, 8 clubs,
+144 players), `utils/database.*`, and the code that reads and writes it: match
+loading, League mode, Career mode and the Football Manager importer.
+
+### Fixed
+
+| Area | Defect | Fix |
+| --- | --- | --- |
+| Text in SQL | Every SQLite error is fatal (`Log(e_FatalError)` exits). Text pasted into SQL quit the game whenever it held a quote. That covered a manager name like "O'Neill" when starting a league or saving League settings, player names in the release/signing inbox messages and the player detail lookup, and club names in match-report messages. | `SqlString` (`utils/sqltext.hpp`) quotes and escapes text values; every site that pasted user or database text now uses it. |
+| Season year | League settings saved `seasonyear = <text>`. The field allows only digits but can be empty, which gave a syntax error, so the game quit. | An empty year leaves the stored year unchanged. |
+| Importer | The Football Manager importer wrapped text in double quotes. A `"` in a name broke the query, and SQLite reads a double-quoted word that matches a column name as that column, so a lookup for a club or league named like a column matched every row. | All text values use `SqlString`. |
+| `Database` | `Query` used uninitialised row/column counts and a null table if the call failed or no database was open. `Load` kept SQLite's half-open handle after a failed open. | Both are initialised and checked; a failed open leaves no handle and `Query` refuses to run. |
+| Player roles | `PlayerData` split Football Manager notation ("D C, DM") on spaces, so nearly every outfielder was labelled CM in the match HUD and line-up screens (e.g. "[CM] Ramos"). | The career parser moved to `data/dbroles.hpp` and both use it; a player gets each listed position, natural one first. |
+| One-name players | Isco, Jesé, Marcelo, Pedro, Pepe and Rafinha had an empty surname. The HUD and goal messages show surnames, so they appeared blank. Four other one-name players already stored the name as the surname. | The data now stores all ten the same way, and `PlayerData` moves a lone first name into the surname for other databases. |
+| League generator | `SetupFourLeagues` (currently unused) gave players hairstyle "short" and skin colour 0, neither of which has an asset. | `short01` and skin 1-4. |
+
+`tests/career/database_integrity_test.cpp` now checks the bundled file:
+SQLite's integrity check, references between regions, countries, leagues, clubs
+and players, an eleven with a goalkeeper first for every club, names, stat
+ranges, profile stats, and that every logo and kit image exists.
+
+### Known gaps
+
+| Pri | Gap |
+| --- | --- |
+| P1 | **Fatal errors.** Any failed query still quits the game. With text quoted this needs a corrupt or foreign database, but a damaged League save takes the game down instead of showing an error. |
+| P1 | **Unchecked rows.** `TeamData` and `PlayerData` read `data.at(0)` without checking, so a club or player ID missing from the database throws and ends the game. |
+| P2 | **Size.** Two clubs per league; Career mode pads its tables with a default league. `tournaments` and `tournamentdata` are empty and unused. |
+| P2 | **No schema version.** Saves and imports create tables with ad-hoc `CREATE TABLE` strings in several places; there is no version number or migration step. |
+| P2 | **No indexes.** Lookups by `players.team_id` scan the table. That is fine at 144 players but not for an imported database with tens of thousands. |
 
 ---
 

@@ -273,8 +273,8 @@ void LeagueManagementContractsPage::ReleasePlayer(int playerID, const std::strin
                    int_to_str(playerID));
     GetDB()->Query(
         "INSERT INTO inbox_messages (sender, subject, body) VALUES "
-        "('Board Office', 'Player released', '" +
-        fullName + " has left the club.')");
+        "('Board Office', 'Player released', " +
+        SqlString(fullName + " has left the club.") + ")");
     // Recreate the page so the squad list reflects the departure.
     this->Exit();
     Properties properties;
@@ -438,8 +438,8 @@ void LeagueManagementTransfersPage::SignPlayer(int playerID, const std::string& 
       int_to_str(playerID));
   GetDB()->Query(
       "INSERT INTO inbox_messages (sender, subject, body) VALUES "
-      "('Board Office', 'New signing', '" +
-      fullName + " has joined the first team squad!')");
+      "('Board Office', 'New signing', " +
+      SqlString(fullName + " has joined the first team squad!") + ")");
 
   // Recreate the page so the market list reflects the transfer.
   this->Exit();

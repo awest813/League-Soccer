@@ -70,7 +70,9 @@ void GeneratePlayersForTeam(Database* db, int teamID) {
         "VALUES (" +
         int_to_str(teamID) + ", NULL, '" + fname + "', '" + lname + "', '" + role + "', " +
         int_to_str(age) + ", " + real_to_str(baseStat) + ", '" + defaultStats + "', " +
-        int_to_str(rand() % 4) + ", 'short', 'brown', 1.80, 75.0, " + int_to_str(i) + ")");
+        // Skin textures are skin01-04 and hairstyles short01, medium01, ...;
+        // "short" and skin 0 have no assets and fail to load in a match.
+        int_to_str(1 + rand() % 4) + ", 'short01', 'brown', 1.80, 75.0, " + int_to_str(i) + ")");
   }
 }
 

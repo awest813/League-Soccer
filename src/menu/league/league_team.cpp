@@ -690,8 +690,8 @@ LeagueTeamPlayerOverviewPage::LeagueTeamPlayerOverviewPage(Gui2WindowManager* wi
         auto detail = GetDB()->Query(
             "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
             "FROM players p JOIN teams t ON p.team_id = t.id "
-            "WHERE p.firstname || ' ' || p.lastname = '" +
-            fullName + "' LIMIT 1");
+            "WHERE p.firstname || ' ' || p.lastname = " +
+            SqlString(fullName) + " LIMIT 1");
         Gui2Dialog* dlg =
             new Gui2Dialog(windowManager, "dialog_povr_detail", 25, 20, 50, 60, fullName);
         if (!detail->data.empty()) {

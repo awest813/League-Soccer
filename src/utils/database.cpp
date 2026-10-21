@@ -16,29 +16,39 @@ bool Database::Load(const std::string& filename) {
   // close previously opened db
   if (db)
     sqlite3_close(db);
+  db = nullptr;
 
-  int value = sqlite3_open_v2(filename.c_str(), &db, SQLITE_OPEN_READWRITE, 0);
-  if (value) {
-    // Log(e_FatalError, "Database", "Database", "Could not open database '" + filename + "'");
+  if (sqlite3_open_v2(filename.c_str(), &db, SQLITE_OPEN_READWRITE, 0) != SQLITE_OK) {
+    // SQLite allocates a handle even when opening fails; queries must not use it.
+    sqlite3_close(db);
+    db = nullptr;
     return false;
-  } else
-    return true;
+  }
+  return true;
 }
 
 std::unique_ptr<DatabaseResult> Database::Query(const std::string& query) {
-  int rows, columns;
-  char** result;
-  char* errorMsg = nullptr;
-
-  int returnValue = sqlite3_get_table(db, query.c_str(), &result, &rows, &columns, &errorMsg);
-  if (errorMsg) {
-    std::string errorMsgStr = errorMsg;
-    Log(e_FatalError, "Database", "Query",
-        "SQLite error message: '" + errorMsgStr + "' for query: '" + query + "'");
-    sqlite3_free(errorMsg);
+  auto dbresult = std::make_unique<DatabaseResult>();
+  if (!db) {
+    Log(e_Error, "Database", "Query", "No database is open for query: '" + query + "'");
+    return dbresult;
   }
 
-  auto dbresult = std::make_unique<DatabaseResult>();
+  int rows = 0;
+  int columns = 0;
+  char** result = nullptr;
+  char* errorMsg = nullptr;
+
+  const int returnValue = sqlite3_get_table(db, query.c_str(), &result, &rows, &columns, &errorMsg);
+  if (returnValue != SQLITE_OK || errorMsg) {
+    const std::string errorMsgStr = errorMsg ? errorMsg : sqlite3_errstr(returnValue);
+    if (errorMsg)
+      sqlite3_free(errorMsg);
+    sqlite3_free_table(result);
+    Log(e_FatalError, "Database", "Query",
+        "SQLite error message: '" + errorMsgStr + "' for query: '" + query + "'");
+    return dbresult;
+  }
 
   // header
   for (int i = 0; i < columns; i++) {

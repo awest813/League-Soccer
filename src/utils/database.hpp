@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "defines.hpp"
+#include "sqltext.hpp"
 
 struct sqlite3;
 

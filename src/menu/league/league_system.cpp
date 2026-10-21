@@ -431,10 +431,12 @@ LeagueSystemSettingsPage::LeagueSystemSettingsPage(Gui2WindowManager* windowMana
 LeagueSystemSettingsPage::~LeagueSystemSettingsPage() {}
 
 void LeagueSystemSettingsPage::SaveSettings() {
-  GetDB()->Query("UPDATE settings SET managername = '" + editManagerName->GetText() +
-                 "', currency = '" + pulldownCurrency->GetSelected() +
-                 "', difficulty = " + real_to_str(sliderDifficulty->GetValue()) +
-                 ", seasonyear = " + editSeasonYear->GetText());
+  // The year field allows only digits but can be left empty.
+  const std::string seasonYear = editSeasonYear->GetText();
+  GetDB()->Query("UPDATE settings SET managername = " + SqlString(editManagerName->GetText()) +
+                 ", currency = " + SqlString(pulldownCurrency->GetSelected()) +
+                 ", difficulty = " + real_to_str(sliderDifficulty->GetValue()) +
+                 (seasonYear.empty() ? std::string() : ", seasonyear = " + seasonYear));
 
   Gui2Caption* feedback =
       new Gui2Caption(windowManager, "caption_settings_saved", 2, 80, 66, 3,

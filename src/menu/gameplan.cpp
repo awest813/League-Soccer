@@ -174,9 +174,9 @@ void GamePlanPage::SaveLineup() {
       unsigned int formationorder = i;
 
       // find player
-      auto result = namedb->Query("select id from playernames where fakefirstname = \"" +
-                                  playerData->GetFirstName() + "\" and fakelastname = \"" +
-                                  playerData->GetLastName() + "\" limit 1;");
+      auto result = namedb->Query("select id from playernames where fakefirstname = " +
+                                  SqlString(playerData->GetFirstName()) + " and fakelastname = " +
+                                  SqlString(playerData->GetLastName()) + " limit 1;");
       int playerDatabaseID = -1;
       if (result->data.size() > 0) {
         playerDatabaseID = atoi(result->data.at(0).at(0).c_str());
@@ -252,8 +252,8 @@ void GamePlanPage::SaveTactics() {
     printf("tactics:\n%s\n", tactics_xml.c_str());
 
     // find club
-    auto result = namedb->Query("select id from clubnames where faketargetname = \"" +
-                                teamData->GetName() + "\" limit 1;");
+    auto result = namedb->Query("select id from clubnames where faketargetname = " +
+                                SqlString(teamData->GetName()) + " limit 1;");
     int teamDatabaseID = -1;
     if (result->data.size() > 0) {
       teamDatabaseID = atoi(result->data.at(0).at(0).c_str());

@@ -774,10 +774,11 @@ void LeagueStartNewPage::CloseCreateSaveDialog() {
 
   auto result = GetDB()->Query(
       "INSERT INTO settings (managername, team_id, currency, difficulty, seasonyear, timestamp) "
-      "VALUES ('" +
-      managerNameInput->GetText() + "', " + data_SelectedTeamID + ", '" +
-      currencySelectPulldown->GetSelected() + "', " + real_to_str(difficultySlider->GetValue()) +
-      ", " + std::to_string(currentYear) + ", '" + startDate + "')");
+      "VALUES (" +
+      SqlString(managerNameInput->GetText()) + ", " + data_SelectedTeamID + ", " +
+      SqlString(currencySelectPulldown->GetSelected()) + ", " +
+      real_to_str(difficultySlider->GetValue()) + ", " + std::to_string(currentYear) + ", '" +
+      startDate + "')");
 
   GenerateSeasonCalendars();
 

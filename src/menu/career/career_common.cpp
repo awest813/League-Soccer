@@ -5,6 +5,8 @@
 #include <random>
 #include <sstream>
 
+#include "../../data/dbroles.hpp"
+
 namespace blunted {
 namespace CareerCommon {
 
@@ -178,45 +180,7 @@ std::string FormatCareerMoney(long long amount) {
 }
 
 std::string PositionFromDbRole(const std::string& dbRole) {
-  // "AM RLC, F C" -> "AM RLC"; positions and sides are separated by a space.
-  const std::string primary = dbRole.substr(0, dbRole.find(','));
-  std::istringstream tokens(primary);
-  std::string positions;
-  std::string sides;
-  tokens >> positions >> sides;
-  if (positions.empty())
-    return "CM";
-
-  // "D/WB/AM" -> "D": the first listed position is the natural one.
-  const std::string position = positions.substr(0, positions.find('/'));
-  const bool central = sides.empty() || sides.find('C') != std::string::npos;
-  const char flank = sides.empty() ? 'C' : sides[0];
-  const std::string flankSuffix = (flank == 'L') ? "L" : "R";
-
-  if (position == "GK")
-    return "GK";
-  if (position == "SW")
-    return "CB";
-  if (position == "D")
-    return central ? "CB" : flankSuffix + "B";
-  if (position == "WB")
-    return flankSuffix + "B";
-  if (position == "DM")
-    return "DM";
-  if (position == "M")
-    return central ? "CM" : flankSuffix + "M";
-  if (position == "AM")
-    return central ? "AM" : flankSuffix + "M";
-  if (position == "F" || position == "ST")
-    return "CF";
-  // Already a short code (e.g. "CB", "CF") or unknown notation.
-  static const char* const kShortCodes[] = {"GK", "CB", "LB", "RB", "DM",
-                                            "CM", "LM", "RM", "AM", "CF"};
-  for (const char* code : kShortCodes) {
-    if (position == code)
-      return position;
-  }
-  return "CM";
+  return dbroles::PositionFromDbRole(dbRole);
 }
 
 }  // namespace CareerCommon
