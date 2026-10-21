@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #ifndef _HPP_MANAGERS_USEREVENT
 #define _HPP_MANAGERS_USEREVENT
 
@@ -73,7 +72,8 @@ public:
   float GetJoystickAxisCalibrationRest(int joyID, int axisID);
   void SetJoystickAxisCalibration(int joyID, int axisID, float min, float max, float rest);
 
-  bool SetJoystickRumble(int joyID, float low_frequency, float high_frequency, unsigned int duration_ms);
+  bool SetJoystickRumble(int joyID, float low_frequency, float high_frequency,
+                         unsigned int duration_ms);
 
 protected:
   // may need to switch to the vectors below in the future. why? SDL_keysym also takes into account

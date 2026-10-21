@@ -64,7 +64,7 @@ protected:
 
 class Message_Shutdown : public Command {
 public:
-  Message_Shutdown() : Command("shutdown") {};
+  Message_Shutdown() : Command("shutdown"){};
 
 protected:
   virtual bool Execute(void* = nullptr) { return false; }

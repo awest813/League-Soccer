@@ -16,7 +16,7 @@ enum e_AudioRenderer_SourceParameter {
 
 class AudioRenderer : public Thread {
 public:
-  virtual ~AudioRenderer() {};
+  virtual ~AudioRenderer(){};
 
   // init & exit
   virtual bool CreateContext() = 0;

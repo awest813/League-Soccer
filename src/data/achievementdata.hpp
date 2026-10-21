@@ -13,7 +13,7 @@ struct Achievement {
 };
 
 class AchievementManager {
- public:
+public:
   AchievementManager();
 
   // Call after in-game events; returns true if a new achievement was unlocked
@@ -22,7 +22,7 @@ class AchievementManager {
   const std::vector<Achievement>& GetAll() const { return m_achievements; }
   std::vector<Achievement> GetUnlocked() const;
 
- private:
+private:
   std::vector<Achievement> m_achievements;
 
   Achievement* FindByName(const std::string& name);

@@ -76,8 +76,7 @@ struct MatchClock {
 
   // Begin penalty shootout.
   void startPenalties() {
-    if (phase == e_MatchPhaseSimple_FullTime && allowPenalties && !allowExtraTime &&
-        isTied()) {
+    if (phase == e_MatchPhaseSimple_FullTime && allowPenalties && !allowExtraTime && isTied()) {
       phase = e_MatchPhaseSimple_Penalties;
     }
   }
@@ -108,9 +107,7 @@ struct MatchClock {
   bool isPenaltyTied() const { return penaltyGoals[0] == penaltyGoals[1]; }
 
   // Set stoppage time for the active half/period
-  void setStoppageTime(unsigned long stoppage_ms) {
-    stoppageTime_ms = stoppage_ms;
-  }
+  void setStoppageTime(unsigned long stoppage_ms) { stoppageTime_ms = stoppage_ms; }
 
   // Advance the clock by delta_ms. Phase transitions happen automatically.
   // Returns true only on a transition that completes the match, with no shootout pending.
@@ -157,11 +154,9 @@ struct MatchClock {
   }
 
   // Convenience: total elapsed match time (all played periods combined, ms)
-  unsigned long totalElapsed_ms() const {
-    return saturatedAdd(completedTime_ms, halfTime_ms);
-  }
+  unsigned long totalElapsed_ms() const { return saturatedAdd(completedTime_ms, halfTime_ms); }
 
- private:
+private:
   unsigned long completedTime_ms = 0;
 
   bool isLivePeriod() const {

@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "graphics_overlay2d.hpp"
 
 #include "../graphics_scene.hpp"

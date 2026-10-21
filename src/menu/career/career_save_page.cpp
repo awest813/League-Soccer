@@ -1,8 +1,8 @@
-#include "career_navigation.hpp"
 #include "career_save_page.hpp"
 
 #include "../pagefactory.hpp"
 #include "career_common.hpp"
+#include "career_navigation.hpp"
 #include "utils/gui2/widgets/dialog.hpp"
 #include "utils/localization.hpp"
 

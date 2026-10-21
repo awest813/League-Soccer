@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "opengl_renderer3d.hpp"
 
 #ifdef __APPLE__
@@ -77,7 +76,8 @@ SDL_Surface* CreateFallbackNoiseSurface() {
 OpenGLRenderer3D::OpenGLRenderer3D()
     : context(nullptr), window(nullptr), contextIsActive(true), noiseTexID(-1) {
   const char* capturePath = SDL_getenv("GF_CAPTURE_DIRECTORY");
-  if (capturePath) captureDirectory = capturePath;
+  if (capturePath)
+    captureDirectory = capturePath;
   FOV = 45;
   overallBrightness = 128;
 
@@ -97,14 +97,17 @@ void OpenGLRenderer3D::SwapBuffers() {
 
 void OpenGLRenderer3D::CaptureFrame() {
   // Bound disk use and avoid per-frame GPU stalls. Captures include the HUD.
-  if (captureDirectory.empty() || captureCount >= 60) return;
+  if (captureDirectory.empty() || captureCount >= 60)
+    return;
   const Uint32 now = SDL_GetTicks();
-  if (captureCount != 0 && now - lastCaptureTime < 2000) return;
+  if (captureCount != 0 && now - lastCaptureTime < 2000)
+    return;
   lastCaptureTime = now;
 
   int width = 0, height = 0;
   SDL_GL_GetDrawableSize(window, &width, &height);
-  if (width <= 0 || height <= 0) return;
+  if (width <= 0 || height <= 0)
+    return;
   std::error_code error;
   std::filesystem::create_directories(captureDirectory, error);
   if (error) {
@@ -112,8 +115,8 @@ void OpenGLRenderer3D::CaptureFrame() {
     captureDirectory.clear();
     return;
   }
-  SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 24,
-                                                       SDL_PIXELFORMAT_RGB24);
+  SDL_Surface* surface =
+      SDL_CreateRGBSurfaceWithFormat(0, width, height, 24, SDL_PIXELFORMAT_RGB24);
   if (!surface) {
     Log(e_Warning, "OpenGLRenderer3D", "CaptureFrame", SDL_GetError());
     captureDirectory.clear();
@@ -137,10 +140,12 @@ void OpenGLRenderer3D::CaptureFrame() {
   for (int y = 0; y < height / 2; ++y) {
     Uint8* top = pixels + y * surface->pitch;
     Uint8* bottom = pixels + (height - 1 - y) * surface->pitch;
-    for (int x = 0; x < surface->pitch; ++x) std::swap(top[x], bottom[x]);
+    for (int x = 0; x < surface->pitch; ++x)
+      std::swap(top[x], bottom[x]);
   }
-  const std::string filename = (std::filesystem::path(captureDirectory) /
-      ("frame-" + int_to_str(captureCount++) + ".png")).string();
+  const std::string filename =
+      (std::filesystem::path(captureDirectory) / ("frame-" + int_to_str(captureCount++) + ".png"))
+          .string();
   if (IMG_SavePNG(surface, filename.c_str()) != 0) {
     Log(e_Warning, "OpenGLRenderer3D", "CaptureFrame", IMG_GetError());
     captureDirectory.clear();
@@ -464,10 +469,10 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp, bool fullsc
 
   // #endif
 
-  window = SDL_CreateWindow(
-      "League Soccer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
-      SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_SHOWN |
-          (fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
+  window = SDL_CreateWindow("League Soccer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width,
+                            height,
+                            SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_SHOWN |
+                                (fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
   if (!window) {
     Log(e_FatalError, "OpenGLRenderer3D", "CreateContext",
         "Failed to create SDL window: " + std::string(SDL_GetError()));

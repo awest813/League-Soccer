@@ -117,8 +117,8 @@ bool Animation::GetKeyFrame(const std::string& nodeName, int frame, Quaternion& 
   return false;
 }
 
-void Animation::SetKeyFrame(const std::string& nodeName, int frame,
-                            const Quaternion& orientation, const Vector3& position) {
+void Animation::SetKeyFrame(const std::string& nodeName, int frame, const Quaternion& orientation,
+                            const Vector3& position) {
   if (frame >= frameCount)
     frameCount = frame + 1;
 
@@ -1123,7 +1123,7 @@ radian Animation::GetOutgoingBodyAngle() const {
 
     } else {                        // new
       cache_outgoingBodyAngle = 0;  // new
-    }  // new
+    }                               // new
 
     cache_outgoingBodyAngle_dirty = false;
   }
@@ -1165,7 +1165,7 @@ void Animation::Reset() {
 
   std::map<const char*, std::string>::const_iterator iter = variableCache.begin();
   while (iter != variableCache.end()) {
-    delete[] (*iter).first;
+    delete[](*iter).first;
     iter++;
   }
   variableCache.clear();

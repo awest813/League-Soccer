@@ -12,8 +12,8 @@ struct DraftProspect {
   int age = 18;
   std::string position;
   ScoutGrade scoutGrade = ScoutGrade::C;
-  int projectedPick = 0;      // estimated draft position
-  int actualRating = 0;       // hidden until picked
+  int projectedPick = 0;  // estimated draft position
+  int actualRating = 0;   // hidden until picked
 };
 
 struct DraftPick {
@@ -25,7 +25,7 @@ struct DraftPick {
 };
 
 class DraftSystem {
- public:
+public:
   DraftSystem() = default;
 
   // Generate a fresh pool of prospects for the given year
@@ -42,7 +42,7 @@ class DraftSystem {
 
   void SetDraftOrder(const std::vector<DraftPick>& picks) { m_picks = picks; }
 
- private:
+private:
   std::vector<DraftProspect> m_prospects;
   std::vector<DraftPick> m_picks;
   int m_nextProspectID = 1;

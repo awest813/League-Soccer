@@ -3,9 +3,9 @@
 
 #include <cstdio>
 
-#include "pagefactory.hpp"
 #include "career/career_database.hpp"
 #include "career/career_hub_model.hpp"
+#include "pagefactory.hpp"
 #include "utils/gui2/widgets/caption.hpp"
 #include "utils/gui2/widgets/dialog.hpp"
 #include "utils/gui2/widgets/editline.hpp"
@@ -83,25 +83,32 @@ inline int StandaloneMenuSmokePage(const std::string& route) {
 }
 
 inline blunted::Gui2View* FindCareerHubView(blunted::Gui2View* view, const std::string& name) {
-  if (view->GetName() == name) return view;
+  if (view->GetName() == name)
+    return view;
   for (auto* child : view->GetChildren())
-    if (auto* found = FindCareerHubView(child, name)) return found;
+    if (auto* found = FindCareerHubView(child, name))
+      return found;
   return nullptr;
 }
 
-inline bool SmokeCareerHub(blunted::Gui2WindowManager* manager, blunted::Gui2View* page, int section) {
+inline bool SmokeCareerHub(blunted::Gui2WindowManager* manager, blunted::Gui2View* page,
+                           int section) {
   using namespace blunted;
   const auto* save = CareerDatabase::GetInstance().GetActiveSave();
   auto* nav = dynamic_cast<Gui2Grid*>(FindCareerHubView(page, "hub_navigation"));
-  if (!save || !FindCareerHubView(page, "career_shared_hub") || !nav) return false;
-  const char* ids[] = {"hub_continue", "hub_nav_overview", "hub_nav_team", "hub_nav_role",
-                       "hub_nav_competitions", "hub_nav_inbox", "hub_save", "hub_exit"};
-  if (!manager->GetFocus() || manager->GetFocus()->GetName() != ids[section + 1]) return false;
+  if (!save || !FindCareerHubView(page, "career_shared_hub") || !nav)
+    return false;
+  const char* ids[] = {"hub_continue",         "hub_nav_overview", "hub_nav_team", "hub_nav_role",
+                       "hub_nav_competitions", "hub_nav_inbox",    "hub_save",     "hub_exit"};
+  if (!manager->GetFocus() || manager->GetFocus()->GetName() != ids[section + 1])
+    return false;
   nav->SetFocus();
   for (int i = 0; i < 8; ++i) {
     auto* focus = manager->GetFocus();
-    if (!focus || focus->GetName() != ids[i] || !focus->IsVisible()) return false;
-    for (int tick = 0; tick < 50; ++tick) nav->Process();
+    if (!focus || focus->GetName() != ids[i] || !focus->IsVisible())
+      return false;
+    for (int tick = 0; tick < 50; ++tick)
+      nav->Process();
     if (i < 7) {
       WindowingEvent down;
       down.SetDirection(Vector3(0, 1, 0));
@@ -109,21 +116,27 @@ inline bool SmokeCareerHub(blunted::Gui2WindowManager* manager, blunted::Gui2Vie
     }
   }
   const auto tools = CareerHubTools(*save, static_cast<CareerHubSection>(section));
-  auto* actions = dynamic_cast<Gui2Grid*>(FindCareerHubView(page, section == 4 ? "hub_messages" : "hub_actions"));
-  if (section > 0 && section < 4 && (!actions || actions->GetChildren().size() != tools.size())) return false;
+  auto* actions = dynamic_cast<Gui2Grid*>(
+      FindCareerHubView(page, section == 4 ? "hub_messages" : "hub_actions"));
+  if (section > 0 && section < 4 && (!actions || actions->GetChildren().size() != tools.size()))
+    return false;
   for (const auto& tool : tools)
-    if (!FindCareerHubView(page, std::string("hub_action_") + tool.id)) return false;
+    if (!FindCareerHubView(page, std::string("hub_action_") + tool.id))
+      return false;
   if (actions && actions->IsSelectable()) {
     WindowingEvent right;
     right.SetDirection(Vector3(1, 0, 0));
     manager->GetFocus()->ProcessEvent(&right);
-    if (!actions->IsInFocusPath()) return false;
+    if (!actions->IsInFocusPath())
+      return false;
     actions->SetFocus();
     for (size_t i = 0; i < actions->GetChildren().size(); ++i) {
       auto* child = actions->GetChildren()[i];
-      if (!child->IsInFocusPath() || !child->IsVisible()) return false;
+      if (!child->IsInFocusPath() || !child->IsVisible())
+        return false;
       AuditMenuLayout(page);
-      for (int tick = 0; tick < 50; ++tick) actions->Process();
+      for (int tick = 0; tick < 50; ++tick)
+        actions->Process();
       if (i + 1 < actions->GetChildren().size()) {
         WindowingEvent down;
         down.SetDirection(Vector3(0, 1, 0));
@@ -133,24 +146,29 @@ inline bool SmokeCareerHub(blunted::Gui2WindowManager* manager, blunted::Gui2Vie
     WindowingEvent left;
     left.SetDirection(Vector3(-1, 0, 0));
     manager->GetFocus()->ProcessEvent(&left);
-    if (!nav->IsInFocusPath()) return false;
+    if (!nav->IsInFocusPath())
+      return false;
   }
   if (section == 4 && !save->inbox.empty()) {
     for (size_t index : {size_t(0), save->inbox.size() - 1}) {
-      auto* message = dynamic_cast<Gui2Button*>(FindCareerHubView(page, "hub_message_" + std::to_string(index)));
-      if (!message) return false;
+      auto* message = dynamic_cast<Gui2Button*>(
+          FindCareerHubView(page, "hub_message_" + std::to_string(index)));
+      if (!message)
+        return false;
       message->SetFocus();
       WindowingEvent activate;
       activate.SetActivate();
       message->ProcessEvent(&activate);
       auto* dialog = FindCareerHubView(page, "hub_inbox_dialog_frame");
-      if (!dialog || !dialog->IsInFocusPath() || !save->inbox[index].read) return false;
+      if (!dialog || !dialog->IsInFocusPath() || !save->inbox[index].read)
+        return false;
       AuditMenuLayout(page);
       WindowingEvent escape;
       escape.SetEscape();
       manager->GetFocus()->ProcessEvent(&escape);
       if (FindCareerHubView(page, "hub_inbox_dialog_frame") || manager->GetFocus() != message ||
-          !message->IsVisible() || message->GetCaption() != save->inbox[index].subject) return false;
+          !message->IsVisible() || message->GetCaption() != save->inbox[index].subject)
+        return false;
       AuditMenuLayout(page);
     }
   }
@@ -160,13 +178,16 @@ inline bool SmokeCareerHub(blunted::Gui2WindowManager* manager, blunted::Gui2Vie
 inline bool SmokeCareerRoster(blunted::Gui2WindowManager* manager, blunted::Gui2View* page) {
   using namespace blunted;
   auto* roster = dynamic_cast<Gui2Grid*>(FindCareerHubView(page, "squad_grid"));
-  if (!roster || roster->GetChildren().size() != 24) return false;
+  if (!roster || roster->GetChildren().size() != 24)
+    return false;
   roster->SetFocus();
   for (int i = 0; i < 24; ++i) {
     auto* row = roster->FindView(i, 0);
-    if (!row || manager->GetFocus() != row || !row->IsVisible()) return false;
+    if (!row || manager->GetFocus() != row || !row->IsVisible())
+      return false;
     AuditMenuLayout(page);
-    for (int tick = 0; tick < 50; ++tick) roster->Process();
+    for (int tick = 0; tick < 50; ++tick)
+      roster->Process();
     if (i < 23) {
       WindowingEvent down;
       down.SetDirection(Vector3(0, 1, 0));
@@ -178,29 +199,35 @@ inline bool SmokeCareerRoster(blunted::Gui2WindowManager* manager, blunted::Gui2
   activate.SetActivate();
   previous->ProcessEvent(&activate);
   auto* profile = FindCareerHubView(page, "cap_player_detail");
-  if (!profile || !profile->IsVisible()) return false;
+  if (!profile || !profile->IsVisible())
+    return false;
   AuditMenuLayout(page);
   WindowingEvent escape;
   escape.SetEscape();
   manager->GetFocus()->ProcessEvent(&escape);
-  if (FindCareerHubView(page, "cap_player_detail") || manager->GetFocus() != previous || !previous->IsVisible()) return false;
+  if (FindCareerHubView(page, "cap_player_detail") || manager->GetFocus() != previous ||
+      !previous->IsVisible())
+    return false;
   const auto* save = CareerDatabase::GetInstance().GetActiveSave();
   if (save && CanManageClub(*save)) {
     WindowingEvent reopen;
     reopen.SetActivate();
     previous->ProcessEvent(&reopen);
     auto* release = FindCareerHubView(page, "btn_release_action");
-    if (!release) return false;
+    if (!release)
+      return false;
     release->SetFocus();
     WindowingEvent request;
     request.SetActivate();
     release->ProcessEvent(&request);
-    if (!FindCareerHubView(page, "dialog_release_player_frame")) return false;
+    if (!FindCareerHubView(page, "dialog_release_player_frame"))
+      return false;
     WindowingEvent cancel;
     cancel.SetEscape();
     manager->GetFocus()->ProcessEvent(&cancel);
     if (FindCareerHubView(page, "dialog_release_player_frame") || manager->GetFocus() != previous ||
-        !previous->IsVisible() || save->roster.size() != 24) return false;
+        !previous->IsVisible() || save->roster.size() != 24)
+      return false;
   }
   return true;
 }

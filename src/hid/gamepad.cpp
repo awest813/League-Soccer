@@ -2,8 +2,8 @@
 
 #include "../main.hpp"
 #include "base/utils.hpp"
-#include "managers/usereventmanager.hpp"
 #include "deviceidentity.hpp"
+#include "managers/usereventmanager.hpp"
 #include "stickinput.hpp"
 
 namespace {
@@ -87,76 +87,71 @@ void HIDGamepad::LoadConfig() {
   for (int i = 0; i < e_ControllerButton_Size; i++) {
     int defaultButton = 0;
     if (i == 0)
-      defaultButton = -3; // Up
+      defaultButton = -3;  // Up
     else if (i == 1)
-      defaultButton = -2; // Right
+      defaultButton = -2;  // Right
     else if (i == 2)
-      defaultButton = -4; // Down
+      defaultButton = -4;  // Down
     else if (i == 3)
-      defaultButton = -1; // Left
-    else if (i == 4) { // Top Face (Y / Triangle / X on Switch)
+      defaultButton = -1;  // Left
+    else if (i == 4) {     // Top Face (Y / Triangle / X on Switch)
       if (controllerType == e_ControllerType_NintendoSwitch)
         defaultButton = 3;  // X on Switch
       else
         defaultButton = 3;  // Y / Triangle
-    }
-    else if (i == 5) { // Right Face (B / Circle / A on Switch)
+    } else if (i == 5) {    // Right Face (B / Circle / A on Switch)
       if (controllerType == e_ControllerType_NintendoSwitch)
         defaultButton = 1;  // A on Switch (physically right)
       else
         defaultButton = 1;  // B / Circle
-    }
-    else if (i == 6) { // Bottom Face (A / Cross / B on Switch)
+    } else if (i == 6) {    // Bottom Face (A / Cross / B on Switch)
       if (controllerType == e_ControllerType_NintendoSwitch)
         defaultButton = 0;  // B on Switch (physically bottom)
       else
         defaultButton = 0;  // A / Cross
-    }
-    else if (i == 7) { // Left Face (X / Square / Y on Switch)
+    } else if (i == 7) {    // Left Face (X / Square / Y on Switch)
       if (controllerType == e_ControllerType_NintendoSwitch)
         defaultButton = 2;  // Y on Switch (physically left)
       else
         defaultButton = 2;  // X / Square
-    }
-    else if (i == 8)
+    } else if (i == 8)
       defaultButton = 4;  // L1 / LB
     else if (i == 9) {    // L2 / LT
       if (controllerType == e_ControllerType_PlayStation)
         defaultButton = 6;
-      else if (controllerType == e_ControllerType_NintendoSwitch || controllerType == e_ControllerType_LogitechDirectInput)
+      else if (controllerType == e_ControllerType_NintendoSwitch ||
+               controllerType == e_ControllerType_LogitechDirectInput)
         defaultButton = 6;
       else
         defaultButton = kXboxLeftTriggerBinding;
-    }
-    else if (i == 10)
+    } else if (i == 10)
       defaultButton = 5;  // R1 / RB
     else if (i == 11) {   // R2 / RT
       if (controllerType == e_ControllerType_PlayStation)
         defaultButton = 7;
-      else if (controllerType == e_ControllerType_NintendoSwitch || controllerType == e_ControllerType_LogitechDirectInput)
+      else if (controllerType == e_ControllerType_NintendoSwitch ||
+               controllerType == e_ControllerType_LogitechDirectInput)
         defaultButton = 7;
       else
         defaultButton = stickinput::EncodeAxisBinding(5, 1);  // Xbox RT: axis 5, positive
-    }
-    else if (i == 12) {   // Select / Share / Back / Minus
+    } else if (i == 12) {                                     // Select / Share / Back / Minus
       if (controllerType == e_ControllerType_PlayStation)
         defaultButton = 8;
       else if (controllerType == e_ControllerType_NintendoSwitch)
-        defaultButton = 8; // Minus
+        defaultButton = 8;  // Minus
       else if (controllerType == e_ControllerType_LogitechDirectInput)
         defaultButton = 8;
       else
-        defaultButton = 6; // Xbox Back
-    }
-    else if (i == 13) {   // Start / Options / Plus
+        defaultButton = 6;  // Xbox Back
+    } else if (i == 13) {   // Start / Options / Plus
       if (controllerType == e_ControllerType_PlayStation)
         defaultButton = 9;
       else if (controllerType == e_ControllerType_NintendoSwitch)
-        defaultButton = 9; // Plus
+        defaultButton = 9;  // Plus
       else if (controllerType == e_ControllerType_LogitechDirectInput)
         defaultButton = 9;
       else
-        defaultButton = 7; // Xbox Start
+        defaultButton = 7;  // Xbox Start
     }
 
     controllerMapping[i] = GetConfiguration()->GetInt(
@@ -218,7 +213,8 @@ void HIDGamepad::ApplyPreset(controlpresets::GamepadPreset newPreset) {
     std::unique_lock<std::mutex> blah(mutex);
     preset = newPreset;
     for (int i = 0; i < e_ButtonFunction_Size; i++)
-      functionMapping[i] = controlpresets::PresetButtonFor(preset, static_cast<e_ButtonFunction>(i));
+      functionMapping[i] =
+          controlpresets::PresetButtonFor(preset, static_cast<e_ButtonFunction>(i));
   }
   SaveConfig();
 }
@@ -314,21 +310,16 @@ e_ControllerType HIDGamepad::DetectControllerType(const std::string& name) {
   std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
   // PlayStation check
-  if (lower.find("sony") != std::string::npos ||
-      lower.find("dualshock") != std::string::npos ||
-      lower.find("dualsense") != std::string::npos ||
-      lower.find("ps4") != std::string::npos ||
-      lower.find("ps5") != std::string::npos ||
-      lower.find("ps3") != std::string::npos ||
+  if (lower.find("sony") != std::string::npos || lower.find("dualshock") != std::string::npos ||
+      lower.find("dualsense") != std::string::npos || lower.find("ps4") != std::string::npos ||
+      lower.find("ps5") != std::string::npos || lower.find("ps3") != std::string::npos ||
       lower.find("playstation") != std::string::npos ||
-      lower.find("sixaxis") != std::string::npos ||
-      lower.find("054c") != std::string::npos) {
+      lower.find("sixaxis") != std::string::npos || lower.find("054c") != std::string::npos) {
     return e_ControllerType_PlayStation;
   }
 
   // Nintendo Switch check
-  if (lower.find("nintendo") != std::string::npos ||
-      lower.find("switch") != std::string::npos ||
+  if (lower.find("nintendo") != std::string::npos || lower.find("switch") != std::string::npos ||
       lower.find("joy-con") != std::string::npos ||
       lower.find("pro controller") != std::string::npos ||
       lower.find("057e") != std::string::npos) {
@@ -336,24 +327,18 @@ e_ControllerType HIDGamepad::DetectControllerType(const std::string& name) {
   }
 
   // Logitech DirectInput check
-  if (lower.find("logitech") != std::string::npos ||
-      lower.find("f310") != std::string::npos ||
-      lower.find("f710") != std::string::npos ||
-      lower.find("f510") != std::string::npos ||
+  if (lower.find("logitech") != std::string::npos || lower.find("f310") != std::string::npos ||
+      lower.find("f710") != std::string::npos || lower.find("f510") != std::string::npos ||
       lower.find("dual action") != std::string::npos ||
       lower.find("wingman") != std::string::npos) {
     return e_ControllerType_LogitechDirectInput;
   }
 
   // Xbox check
-  if (lower.find("xbox") != std::string::npos ||
-      lower.find("x-box") != std::string::npos ||
-      lower.find("xinput") != std::string::npos ||
-      lower.find("microsoft") != std::string::npos ||
-      lower.find("045e") != std::string::npos ||
-      lower.find("8bitdo") != std::string::npos ||
-      lower.find("pdp") != std::string::npos ||
-      lower.find("razer") != std::string::npos ||
+  if (lower.find("xbox") != std::string::npos || lower.find("x-box") != std::string::npos ||
+      lower.find("xinput") != std::string::npos || lower.find("microsoft") != std::string::npos ||
+      lower.find("045e") != std::string::npos || lower.find("8bitdo") != std::string::npos ||
+      lower.find("pdp") != std::string::npos || lower.find("razer") != std::string::npos ||
       lower.find("powera") != std::string::npos) {
     return e_ControllerType_Xbox;
   }

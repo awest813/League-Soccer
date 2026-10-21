@@ -27,7 +27,7 @@ public:
         width(width),
         height(height),
         bpp(bpp),
-        fullscreen(fullscreen) {};
+        fullscreen(fullscreen){};
 
   // return values
   bool success;
@@ -45,7 +45,7 @@ protected:
 
 class Renderer3DMessage_SwapBuffers : public Command {
 public:
-  Renderer3DMessage_SwapBuffers() : Command("r3dmsg_SwapBuffers"), readyTime_ms(0) {};
+  Renderer3DMessage_SwapBuffers() : Command("r3dmsg_SwapBuffers"), readyTime_ms(0){};
 
   unsigned long GetReadyTime_ms() { return readyTime_ms; }
 
@@ -74,7 +74,7 @@ public:
         repeat(repeat),
         mipmaps(mipmaps),
         filter(filter),
-        compareDepth(compareDepth) {};
+        compareDepth(compareDepth){};
 
   int textureID;
 
@@ -101,7 +101,7 @@ protected:
 class Renderer3DMessage_DeleteTexture : public Command {
 public:
   Renderer3DMessage_DeleteTexture(int textureID)
-      : Command("r3dmsg_DeleteTexture"), textureID(textureID) {};
+      : Command("r3dmsg_DeleteTexture"), textureID(textureID){};
 
 protected:
   virtual bool Execute(void* caller = nullptr) {
@@ -184,12 +184,13 @@ protected:
 class Renderer3DMessage_CreateVertexBuffer : public Command {
 public:
   Renderer3DMessage_CreateVertexBuffer(float* vertices, unsigned int verticesDataSize,
-                                       const std::vector<unsigned int>& indices, e_VertexBufferUsage usage)
+                                       const std::vector<unsigned int>& indices,
+                                       e_VertexBufferUsage usage)
       : Command("r3dmsg_CreateVertexBuffer"),
         vertices(vertices),
         verticesDataSize(verticesDataSize),
         indices(indices),
-        usage(usage) {};
+        usage(usage){};
 
   VertexBufferID vertexBufferID;
 
@@ -238,7 +239,7 @@ protected:
 class Renderer3DMessage_DeleteVertexBuffer : public Command {
 public:
   Renderer3DMessage_DeleteVertexBuffer(VertexBufferID vertexBufferID)
-      : Command("r3dmsg_DeleteVertexBuffer"), vertexBufferID(vertexBufferID) {};
+      : Command("r3dmsg_DeleteVertexBuffer"), vertexBufferID(vertexBufferID){};
 
 protected:
   virtual bool Execute(void* caller = nullptr) {
@@ -276,7 +277,7 @@ protected:
 // we could cache this
 class Renderer3DMessage_GetContextSize : public Command {
 public:
-  Renderer3DMessage_GetContextSize() : Command("r3dmsg_GetContextSize") {};
+  Renderer3DMessage_GetContextSize() : Command("r3dmsg_GetContextSize"){};
 
 protected:
   virtual bool Execute(void* caller = nullptr) {
@@ -292,7 +293,7 @@ protected:
 
 class Renderer3DMessage_SetFOV : public Command {
 public:
-  Renderer3DMessage_SetFOV(float angle) : Command("r3dmsg_SetFOV"), angle(angle) {};
+  Renderer3DMessage_SetFOV(float angle) : Command("r3dmsg_SetFOV"), angle(angle){};
 
 protected:
   virtual bool Execute(void* caller = nullptr) {
@@ -312,7 +313,7 @@ public:
         x_percent(x_percent),
         y_percent(y_percent),
         width_percent(width_percent),
-        height_percent(height_percent) {};
+        height_percent(height_percent){};
 
   int viewID;
 
@@ -337,7 +338,7 @@ public:
   // destroy acquisition == ownership note 6/29/2011: too slow to copy, using a reference again.
   // breaks acq = ownership though :|
   Renderer3DMessage_RenderView(int viewID, ViewBuffer& buffer)
-      : Command("r3dmsg_RenderView"), viewID(viewID), buffer(buffer) {};
+      : Command("r3dmsg_RenderView"), viewID(viewID), buffer(buffer){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -348,7 +349,7 @@ protected:
 
 class Renderer3DMessage_DeleteView : public Command {
 public:
-  Renderer3DMessage_DeleteView(int viewID) : Command("r3dmsg_DeleteView"), viewID(viewID) {};
+  Renderer3DMessage_DeleteView(int viewID) : Command("r3dmsg_DeleteView"), viewID(viewID){};
 
 protected:
   virtual bool Execute(void* caller = nullptr) {
@@ -363,7 +364,7 @@ protected:
 class Renderer3DMessage_RenderShadowMap : public Command {
 public:
   Renderer3DMessage_RenderShadowMap(const ShadowMap& map)
-      : Command("r3dmsg_RenderShadowMap"), map(map) {};
+      : Command("r3dmsg_RenderShadowMap"), map(map){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -389,7 +390,7 @@ public:
         target4(target4),
         texID4(texID4),
         target5(target5),
-        texID5(texID5) {};
+        texID5(texID5){};
 
   int frameBufferID;
 
@@ -422,7 +423,7 @@ public:
         target2(target2),
         target3(target3),
         target4(target4),
-        target5(target5) {};
+        target5(target5){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);

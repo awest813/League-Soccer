@@ -131,11 +131,12 @@ void GoalieDefaultStrategy::RequestInput(const MentalImage* mentalImage, Vector3
             awayFromGoalBias = 1.0f;
 
             // the amount of 'come out bias' is related to how dangerous the opponent's closest mate
-            // is if they are to receive the ball. basically, the same as the above code, but with the
-            // secondary opponent and mate
+            // is if they are to receive the ball. basically, the same as the above code, but with
+            // the secondary opponent and mate
             Player* oppHelper = AI_GetClosestPlayer(controller->GetOppTeam(), goalPos, false, opp);
             if (oppHelper) {
-              Vector3 oppHelperPosition = oppHelper->GetPosition() + oppHelper->GetMovement() * 0.32f;
+              Vector3 oppHelperPosition =
+                  oppHelper->GetPosition() + oppHelper->GetMovement() * 0.32f;
 
               // first, calculate how close the opponent helper is to the goal/shooting treshold
               float helperShootThreshold = 24.0f;  // average/base value; this distance is dynamic
@@ -167,8 +168,8 @@ void GoalieDefaultStrategy::RequestInput(const MentalImage* mentalImage, Vector3
                     mateHelperToThresholdDistance - oppHelperToThresholdDistance, 0.0f, 2.0f);
 
               // also take into account the ratio between the primary opp to goal and the helper opp
-              // to goal distance if this var is bigger, LESS likely to come out because of secondary
-              // danger
+              // to goal distance if this var is bigger, LESS likely to come out because of
+              // secondary danger
               float helperVSPrimaryDistanceRatio =
                   1.0f -
                   NormalizedClamp(oppHelperToThresholdDistance / (oppToThresholdDistance + 0.0001f),

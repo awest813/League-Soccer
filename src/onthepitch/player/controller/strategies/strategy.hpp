@@ -17,8 +17,8 @@ public:
       : controller(controller),
         player(controller->GetPlayer()),
         team(controller->GetTeam()),
-        match(controller->GetMatch()) {};
-  virtual ~Strategy() {};
+        match(controller->GetMatch()){};
+  virtual ~Strategy(){};
 
   Player* CastPlayer() { return static_cast<Player*>(player); }
 

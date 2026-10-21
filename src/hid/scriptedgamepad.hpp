@@ -29,7 +29,8 @@ public:
   virtual void SetButton(e_ButtonFunction buttonFunction, bool state);
   virtual bool GetPreviousButtonState(e_ButtonFunction buttonFunction) override;
   virtual Vector3 GetDirection() override;
-  virtual void SetRumble(float low_frequency, float high_frequency, unsigned int duration_ms) override {}
+  virtual void SetRumble(float low_frequency, float high_frequency,
+                         unsigned int duration_ms) override {}
 
   virtual bool IsScriptedInput() const override { return true; }
 

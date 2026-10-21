@@ -27,7 +27,6 @@ enum class InboxItemType {
   DERBY_HYPE
 };
 
-
 enum class BidStatus { PENDING, ACCEPTED, REJECTED, WITHDRAWN };
 
 struct SeasonRecord {
@@ -439,8 +438,7 @@ inline bool CanManageClub(const CareerSave& save) {
   return save.mode == CareerMode::OWNER_GM;
 }
 inline bool CanManageTeam(const CareerSave& save) {
-  return save.mode == CareerMode::COACH ||
-         (CanManageClub(save) && save.handsOnManagement);
+  return save.mode == CareerMode::COACH || (CanManageClub(save) && save.handsOnManagement);
 }
 inline bool CanPlayCareerMatch(const CareerSave& save) {
   return save.mode == CareerMode::PLAYER || CanManageTeam(save);

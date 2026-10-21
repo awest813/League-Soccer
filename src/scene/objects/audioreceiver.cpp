@@ -4,8 +4,7 @@
 
 namespace blunted {
 
-AudioReceiver::AudioReceiver(const std::string& name)
-    : Object(name, e_ObjectType_AudioReceiver) {}
+AudioReceiver::AudioReceiver(const std::string& name) : Object(name, e_ObjectType_AudioReceiver) {}
 
 AudioReceiver::~AudioReceiver() {}
 

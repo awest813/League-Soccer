@@ -1,5 +1,4 @@
 #include "pagefactory.hpp"
-#include "utils/localization.hpp"
 
 #include "../main.hpp"
 #include "cameramenu.hpp"
@@ -33,6 +32,7 @@
 #include "startmatch/loadingmatch.hpp"
 #include "startmatch/matchoptions.hpp"
 #include "startmatch/teamselect.hpp"
+#include "utils/localization.hpp"
 #include "visualoptions.hpp"
 
 Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
@@ -389,16 +389,19 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
         auto* warning = dynamic_cast<Gui2Caption*>(FindCareerHubView(page, "caption_season_warn"));
         auto* advance = FindCareerHubView(page, "btn_season_advance");
         passed = save && warning && advance && !CareerDatabase::GetInstance().CanAdvanceSeason() &&
-            save->season.currentWeek == save->season.maxWeeks &&
-            warning->GetCaption() == TRF("career_season_wait", {
-                std::to_string(save->season.currentWeek), std::to_string(save->season.maxWeeks)});
+                 save->season.currentWeek == save->season.maxWeeks &&
+                 warning->GetCaption() ==
+                     TRF("career_season_wait", {std::to_string(save->season.currentWeek),
+                                                std::to_string(save->season.maxWeeks)});
       }
       if (smokeRoute == "career_roster" || smokeRoute == "career_roster_player")
         passed = SmokeCareerRoster(windowManager, page);
       if (smokeRoute == "career_tactics" || smokeRoute == "career_tactics_delegated")
-        passed = windowManager->GetFocus() && windowManager->GetFocus()->GetName() ==
-            (smokeRoute == "career_tactics" ? "career_tactic_1" : "btn_st_back");
-      if (smokeRoute == "career_training") passed = SmokeCareerTraining(windowManager, page);
+        passed = windowManager->GetFocus() &&
+                 windowManager->GetFocus()->GetName() ==
+                     (smokeRoute == "career_tactics" ? "career_tactic_1" : "btn_st_back");
+      if (smokeRoute == "career_training")
+        passed = SmokeCareerTraining(windowManager, page);
       if (smokeRoute == "gamepad_setup_virtual")
         passed = FindCareerHubView(page, "button_gamepadsetupmenu_layout") &&
                  FindCareerHubView(page, "button_gamepadsetupmenu_invert") &&
@@ -407,15 +410,18 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
                  windowManager->GetFocus() &&
                  windowManager->GetFocus()->GetName() == "button_gamepadsetupmenu_layout";
       if (pageData.pageID == e_PageID_CareerHub || pageData.pageID == e_PageID_OwnerHub)
-        passed = SmokeCareerHub(windowManager, page,
-            atoi(GetConfiguration()->Get("menu_smoke_career_section", "0").c_str()));
+        passed =
+            SmokeCareerHub(windowManager, page,
+                           atoi(GetConfiguration()->Get("menu_smoke_career_section", "0").c_str()));
       if (smokeRoute == "career_player_training")
         passed = FindCareerHubView(page, "personal_training_summary") &&
                  FindCareerHubView(page, "training_session_0") &&
-                 !FindCareerHubView(page, "training_plans") && !FindCareerHubView(page, "development_players") &&
-                 windowManager->GetFocus() && windowManager->GetFocus()->GetName() ==
-                     (CareerDatabase::GetInstance().GetActiveSave()->trainingPoints > 0 ?
-                          "training_session_0" : "btn_tr_back");
+                 !FindCareerHubView(page, "training_plans") &&
+                 !FindCareerHubView(page, "development_players") && windowManager->GetFocus() &&
+                 windowManager->GetFocus()->GetName() ==
+                     (CareerDatabase::GetInstance().GetActiveSave()->trainingPoints > 0
+                          ? "training_session_0"
+                          : "btn_tr_back");
       if (passed)
         printf("[menu-smoke] Standalone %s reached successfully\n", smokeRoute.c_str());
       else

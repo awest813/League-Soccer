@@ -153,22 +153,10 @@ TEST(GameplaySliderUXTest, QuantizationPresetLocaleStringsLoaded) {
 TEST(InMatchUILocaleTest, MatchKeysLoadedAcrossAllLanguages) {
   const std::vector<std::string> languages = {"en", "de", "es", "fr", "pt"};
   const std::vector<std::string> keys = {
-      "ingame_goal",
-      "ingame_owngoal",
-      "ingame_offside",
-      "ingame_advantage",
-      "ingame_foul",
-      "ingame_yellow_card",
-      "ingame_red_card",
-      "ingame_replay_help",
-      "gameover_mom",
-      "setpiece_title",
-      "setpiece_free_kick",
-      "setpiece_corner",
-      "setpiece_goal_kick",
-      "setpiece_header",
-      "setpiece_depth",
-      "setpiece_width",
+      "ingame_goal",        "ingame_owngoal",     "ingame_offside",     "ingame_advantage",
+      "ingame_foul",        "ingame_yellow_card", "ingame_red_card",    "ingame_replay_help",
+      "gameover_mom",       "setpiece_title",     "setpiece_free_kick", "setpiece_corner",
+      "setpiece_goal_kick", "setpiece_header",    "setpiece_depth",     "setpiece_width",
       "action_save",
   };
 
@@ -234,9 +222,7 @@ TEST(InMatchUILayoutTest, StaminaThreeTierColorClassification) {
 // ===========================================================================
 
 TEST(TextureAuditTest, PowerOfTwoVerification) {
-  auto isPowerOfTwo = [](int n) -> bool {
-    return (n != 0) && ((n & (n - 1)) == 0);
-  };
+  auto isPowerOfTwo = [](int n) -> bool { return (n != 0) && ((n & (n - 1)) == 0); };
 
   // Standard 3D hardware texture dimensions
   EXPECT_TRUE(isPowerOfTwo(16));
@@ -304,5 +290,3 @@ TEST(TextureAuditTest, EssentialTexturesExistAndAreOptimized) {
 }
 
 }  // namespace
-
-

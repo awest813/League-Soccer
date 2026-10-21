@@ -12,12 +12,12 @@ struct SetPieceParams {
 };
 
 class SetPieceConfig {
- public:
+public:
   static void EnsureTable(int teamDatabaseID);
   static SetPieceParams Load(int teamDatabaseID, e_SetPiece setPiece);
   static void Save(int teamDatabaseID, e_SetPiece setPiece, const SetPieceParams& params);
 
- private:
+private:
   static std::string GetDbPath();
 };
 

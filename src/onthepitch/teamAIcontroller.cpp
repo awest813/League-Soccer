@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "teamAIcontroller.hpp"
 
 #include <cmath>
@@ -98,8 +97,8 @@ Player* SelectAttackingRunPlayer(Team* team) {
     return nullptr;
 
   Vector3 offenseFocusPos = possessionPlayer->GetPosition();
-  offenseFocusPos.coords[0] = AITactics::GetAttackingProbeX(
-      offenseFocusPos.coords[0], team->GetSide(), 26.0f);
+  offenseFocusPos.coords[0] =
+      AITactics::GetAttackingProbeX(offenseFocusPos.coords[0], team->GetSide(), 26.0f);
   Player* runner = nullptr;
   float closestDistance = 10000.0f;
   for (const auto& candidate : team->GetAllPlayers()) {
@@ -284,9 +283,7 @@ void TeamAIController::Process() {
         Player* runner = SelectAttackingRunPlayer(team);
         Player* possPlayer = team->GetDesignatedTeamPossessionPlayer();
         if (runner && possPlayer) {
-          float distance =
-              (runner->GetPosition() - possPlayer->GetPosition())
-                  .GetLength();
+          float distance = (runner->GetPosition() - possPlayer->GetPosition()).GetLength();
           float distanceRating = std::pow(1.0f - NormalizedClamp(distance, 0, 40), 0.5f);
 
           // more likely to run when there's less defenders in front
@@ -321,11 +318,11 @@ void TeamAIController::Process() {
     const float supportLead = 0.5f + AITactics::ClampSetting(counterAttack) * 2.0f;
     Player* possPlayer = team->GetDesignatedTeamPossessionPlayer();
     if (possPlayer) {
-      forwardSupportPlayer = AI_GetClosestPlayer(
-          team,
-          possPlayer->GetPosition() * Vector3(1.0f, 1.0f, 0.0f) +
-              Vector3(-team->GetSide() * supportLead, 0, 0),
-          false, possPlayer);
+      forwardSupportPlayer =
+          AI_GetClosestPlayer(team,
+                              possPlayer->GetPosition() * Vector3(1.0f, 1.0f, 0.0f) +
+                                  Vector3(-team->GetSide() * supportLead, 0, 0),
+                              false, possPlayer);
     }
   }
 }
@@ -1159,8 +1156,8 @@ void TeamAIController::ApplyAttackingRun(Player* manualPlayer) {
 }
 
 void TeamAIController::ApplyTeamPressure() {
-  Player* previousPresser = endApplyTeamPressure_ms > match->GetActualTime_ms()
-                                ? teamPressurePlayer : nullptr;
+  Player* previousPresser =
+      endApplyTeamPressure_ms > match->GetActualTime_ms() ? teamPressurePlayer : nullptr;
   endApplyTeamPressure_ms = match->GetActualTime_ms() + 500;
 
   Player* opp = match->GetTeam(abs(team->GetID() - 1))->GetBestPossessionPlayer();
@@ -1194,7 +1191,8 @@ void TeamAIController::ApplyTeamPressure() {
     }
   }
 
-  if (previousPresser && AITactics::ShouldKeepPressurePlayer(previousPressureRating, bestPressureRating))
+  if (previousPresser &&
+      AITactics::ShouldKeepPressurePlayer(previousPressureRating, bestPressureRating))
     teamPressurePlayer = previousPresser;
 
   // Do not alter the player's persistent man-marking assignment here. The

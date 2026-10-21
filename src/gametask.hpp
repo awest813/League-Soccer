@@ -14,8 +14,8 @@ using namespace blunted;
 class UpdateFullbodyModel : public Command {
 public:
   UpdateFullbodyModel(const std::vector<PlayerBase*>& playersToProcess)
-      : Command("UpdateFullBodyModel"), playersToProcess(playersToProcess) {};
-  virtual ~UpdateFullbodyModel() {};
+      : Command("UpdateFullBodyModel"), playersToProcess(playersToProcess){};
+  virtual ~UpdateFullbodyModel(){};
 
 protected:
   void Update() {
@@ -35,8 +35,8 @@ protected:
 class UploadFullbodyModel : public Command {
 public:
   UploadFullbodyModel(std::vector<boost::intrusive_ptr<Geometry>> geometryToUpload)
-      : Command("UploadFullBodyModel"), geometryToUpload(geometryToUpload) {};
-  virtual ~UploadFullbodyModel() {};
+      : Command("UploadFullBodyModel"), geometryToUpload(geometryToUpload){};
+  virtual ~UploadFullbodyModel(){};
 
 protected:
   void Update();

@@ -12,10 +12,11 @@ void MatchHistory::EnsureTable() {
   std::filesystem::create_directories("data/saves");
 
   sqlite3* db = nullptr;
-  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db,
-                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                           nullptr);
   if (rc != SQLITE_OK) {
-    if (db) sqlite3_close(db);
+    if (db)
+      sqlite3_close(db);
     return;
   }
 
@@ -36,17 +37,19 @@ void MatchHistory::EnsureTable() {
 
   char* errMsg = nullptr;
   sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
-  if (errMsg) sqlite3_free(errMsg);
+  if (errMsg)
+    sqlite3_free(errMsg);
 
   sqlite3_close(db);
 }
 
 void MatchHistory::SaveMatch(const MatchHistoryEntry& e) {
   sqlite3* db = nullptr;
-  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db,
-                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                           nullptr);
   if (rc != SQLITE_OK) {
-    if (db) sqlite3_close(db);
+    if (db)
+      sqlite3_close(db);
     return;
   }
 
@@ -89,10 +92,11 @@ std::vector<MatchHistoryEntry> MatchHistory::LoadRecent(int limit) {
   std::vector<MatchHistoryEntry> results;
 
   sqlite3* db = nullptr;
-  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db,
-                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                           nullptr);
   if (rc != SQLITE_OK) {
-    if (db) sqlite3_close(db);
+    if (db)
+      sqlite3_close(db);
     return results;
   }
 
@@ -108,28 +112,28 @@ std::vector<MatchHistoryEntry> MatchHistory::LoadRecent(int limit) {
     sqlite3_bind_int(stmt, 1, limit);
     while (sqlite3_step(stmt) == SQLITE_ROW) {
       MatchHistoryEntry e;
-      e.id               = sqlite3_column_int(stmt, 0);
-      const char* ts     = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-      e.timestamp        = ts ? ts : "";
-      const char* t1     = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-      e.team1_name       = t1 ? t1 : "";
-      const char* t2     = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
-      e.team2_name       = t2 ? t2 : "";
-      e.score1           = sqlite3_column_int(stmt, 4);
-      e.score2           = sqlite3_column_int(stmt, 5);
-      e.match_time_ms    = sqlite3_column_int(stmt, 6);
-      e.possession1_pct  = static_cast<float>(sqlite3_column_double(stmt, 7));
-      e.possession2_pct  = static_cast<float>(sqlite3_column_double(stmt, 8));
-      e.shots1           = sqlite3_column_int(stmt, 9);
-      e.shots2           = sqlite3_column_int(stmt, 10);
+      e.id = sqlite3_column_int(stmt, 0);
+      const char* ts = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+      e.timestamp = ts ? ts : "";
+      const char* t1 = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+      e.team1_name = t1 ? t1 : "";
+      const char* t2 = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+      e.team2_name = t2 ? t2 : "";
+      e.score1 = sqlite3_column_int(stmt, 4);
+      e.score2 = sqlite3_column_int(stmt, 5);
+      e.match_time_ms = sqlite3_column_int(stmt, 6);
+      e.possession1_pct = static_cast<float>(sqlite3_column_double(stmt, 7));
+      e.possession2_pct = static_cast<float>(sqlite3_column_double(stmt, 8));
+      e.shots1 = sqlite3_column_int(stmt, 9);
+      e.shots2 = sqlite3_column_int(stmt, 10);
       e.shots_on_target1 = sqlite3_column_int(stmt, 11);
       e.shots_on_target2 = sqlite3_column_int(stmt, 12);
-      e.passes1          = sqlite3_column_int(stmt, 13);
-      e.passes2          = sqlite3_column_int(stmt, 14);
-      e.passes_completed1= sqlite3_column_int(stmt, 15);
-      e.passes_completed2= sqlite3_column_int(stmt, 16);
-      e.fouls1           = sqlite3_column_int(stmt, 17);
-      e.fouls2           = sqlite3_column_int(stmt, 18);
+      e.passes1 = sqlite3_column_int(stmt, 13);
+      e.passes2 = sqlite3_column_int(stmt, 14);
+      e.passes_completed1 = sqlite3_column_int(stmt, 15);
+      e.passes_completed2 = sqlite3_column_int(stmt, 16);
+      e.fouls1 = sqlite3_column_int(stmt, 17);
+      e.fouls2 = sqlite3_column_int(stmt, 18);
       results.push_back(e);
     }
     sqlite3_finalize(stmt);

@@ -39,7 +39,7 @@ public:
       : Command("StepTime"),
         physics(physics),
         timediff_ms(timediff_ms),
-        resolution_ms(resolution_ms) {};
+        resolution_ms(resolution_ms){};
 
   int remainder_ms;
 

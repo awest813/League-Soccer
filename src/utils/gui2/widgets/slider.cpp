@@ -28,13 +28,13 @@ Gui2Slider::Gui2Slider(Gui2WindowManager* windowManager, const std::string& name
   value = 0.5f;
   quantizedValue = value;
 
-  titleCaption =
-      new Gui2Caption(windowManager, name + "caption", 1.0, height_percent * 0.03f, width_percent - 2.0f, height_percent * 0.34f, caption);
+  titleCaption = new Gui2Caption(windowManager, name + "caption", 1.0, height_percent * 0.03f,
+                                 width_percent - 2.0f, height_percent * 0.34f, caption);
   this->AddView(titleCaption);
   titleCaption->Show();
 
-  valueCaption =
-      new Gui2Caption(windowManager, name + "valuecaption", 1.0, height_percent * 0.39f, width_percent - 2.0f, height_percent * 0.25f, "");
+  valueCaption = new Gui2Caption(windowManager, name + "valuecaption", 1.0, height_percent * 0.39f,
+                                 width_percent - 2.0f, height_percent * 0.25f, "");
   this->AddView(valueCaption);
   valueCaption->Show();
 

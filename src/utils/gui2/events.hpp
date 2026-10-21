@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #ifndef _HPP_GUI2_EVENTS
 #define _HPP_GUI2_EVENTS
 
@@ -101,9 +100,7 @@ public:
 
   // Out-of-range IDs (e.g. a function remapped to an axis, which is encoded
   // as a negative ID) read as released rather than indexing out of bounds.
-  bool GetButton(int joyID, int id) const {
-    return ValidButton(joyID, id) && button[joyID][id];
-  }
+  bool GetButton(int joyID, int id) const { return ValidButton(joyID, id) && button[joyID][id]; }
   void SetButton(int joyID, int id) {
     if (ValidButton(joyID, id))
       button[joyID][id] = true;

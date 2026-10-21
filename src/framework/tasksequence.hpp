@@ -11,10 +11,10 @@ namespace blunted {
 
 class ITaskSequenceEntry {
 public:
-  virtual ~ITaskSequenceEntry() {};
+  virtual ~ITaskSequenceEntry(){};
   virtual bool Execute() = 0;
   virtual bool IsReady() = 0;
-  virtual void Wait() {};
+  virtual void Wait(){};
   virtual bool Reset() { return true; };
 
 protected:

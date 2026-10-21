@@ -11,8 +11,8 @@ VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_visualoptions", 2, 2, 56, 3, TR("visualoptions_title"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_visualoptions", 2, 2, 56, 3,
+                                       TR("visualoptions_title"));
   frame->AddView(title);
   title->Show();
 

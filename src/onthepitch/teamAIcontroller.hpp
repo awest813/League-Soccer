@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #ifndef _HPP_TEAM_AICONTROLLER
 #define _HPP_TEAM_AICONTROLLER
 

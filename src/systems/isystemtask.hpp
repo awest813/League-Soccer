@@ -28,7 +28,7 @@ protected:
 
 class ISystemTaskMessage : public Command {
 public:
-  ISystemTaskMessage(const std::string& name, ISystemTask* task) : Command(name), task(task) {};
+  ISystemTaskMessage(const std::string& name, ISystemTask* task) : Command(name), task(task){};
   ISystemTask* GetTask() { return task; }
 
 protected:
@@ -38,7 +38,7 @@ protected:
 class SystemTaskMessage_GetPhase : public ISystemTaskMessage {
 public:
   SystemTaskMessage_GetPhase(const std::string& name, ISystemTask* task)
-      : ISystemTaskMessage(name, task) {};
+      : ISystemTaskMessage(name, task){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -47,7 +47,7 @@ protected:
 class SystemTaskMessage_ProcessPhase : public ISystemTaskMessage {
 public:
   SystemTaskMessage_ProcessPhase(const std::string& name, ISystemTask* task)
-      : ISystemTaskMessage(name, task) {};
+      : ISystemTaskMessage(name, task){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -56,7 +56,7 @@ protected:
 class SystemTaskMessage_PutPhase : public ISystemTaskMessage {
 public:
   SystemTaskMessage_PutPhase(const std::string& name, ISystemTask* task)
-      : ISystemTaskMessage(name, task) {};
+      : ISystemTaskMessage(name, task){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);

@@ -5,8 +5,8 @@
 
 #include "base/math/vector3.hpp"
 #include "defines.hpp"
-#include "onthepitch/velocitystate.hpp"
 #include "onthepitch/setpiecerules.hpp"
+#include "onthepitch/velocitystate.hpp"
 
 using namespace blunted;
 
@@ -70,9 +70,9 @@ const SDL_Keycode defaultKeyIDs[18] = {
 // The same defaults as physical key positions, so non-QWERTY layouts get the
 // same hand position (on AZERTY the action cluster is Z/Q/S/D, not W/A/S/D).
 const SDL_Scancode defaultKeyScancodes[18] = {
-    SDL_SCANCODE_UP, SDL_SCANCODE_RIGHT, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_W,
-    SDL_SCANCODE_A,  SDL_SCANCODE_S,     SDL_SCANCODE_D,    SDL_SCANCODE_W,    SDL_SCANCODE_A,
-    SDL_SCANCODE_S,  SDL_SCANCODE_D,     SDL_SCANCODE_Q,    SDL_SCANCODE_Z,    SDL_SCANCODE_E,
+    SDL_SCANCODE_UP, SDL_SCANCODE_RIGHT, SDL_SCANCODE_DOWN,  SDL_SCANCODE_LEFT, SDL_SCANCODE_W,
+    SDL_SCANCODE_A,  SDL_SCANCODE_S,     SDL_SCANCODE_D,     SDL_SCANCODE_W,    SDL_SCANCODE_A,
+    SDL_SCANCODE_S,  SDL_SCANCODE_D,     SDL_SCANCODE_Q,     SDL_SCANCODE_Z,    SDL_SCANCODE_E,
     SDL_SCANCODE_C,  SDL_SCANCODE_F1,    SDL_SCANCODE_RETURN};
 
 class Player;
@@ -104,8 +104,6 @@ enum e_TouchType {
   e_TouchType_None,
   e_TouchType_SIZE
 };
-
-
 
 enum e_MatchPhase {
   e_MatchPhase_PreMatch,

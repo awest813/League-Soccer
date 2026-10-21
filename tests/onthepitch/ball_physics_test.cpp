@@ -52,8 +52,8 @@ TEST(BallPhysicsTest, GroundFrictionSlowsRollingBall) {
   config.gravity = 0.0f;
   config.drag = 0.0f;
 
-  BallPhysicsState state{
-      blunted::Vector3(0.0f, 0.0f, config.ballRadius), blunted::Vector3(5.0f, 0.0f, 0.0f)};
+  BallPhysicsState state{blunted::Vector3(0.0f, 0.0f, config.ballRadius),
+                         blunted::Vector3(5.0f, 0.0f, 0.0f)};
   const BallGroundInteraction interaction = ApplyBallMotionForces(state, config, 0.1f);
 
   EXPECT_NEAR(state.momentum.coords[0], 4.695f, kEpsilon);
@@ -66,8 +66,9 @@ TEST(BallPhysicsTest, AirborneBallAvoidsGrassFriction) {
   config.gravity = 0.0f;
   config.drag = 0.0f;
 
-  BallPhysicsState state{blunted::Vector3(0.0f, 0.0f, config.ballRadius + config.grassHeight + 0.05f),
-                         blunted::Vector3(5.0f, 1.0f, 0.0f)};
+  BallPhysicsState state{
+      blunted::Vector3(0.0f, 0.0f, config.ballRadius + config.grassHeight + 0.05f),
+      blunted::Vector3(5.0f, 1.0f, 0.0f)};
   const BallGroundInteraction interaction = ApplyBallMotionForces(state, config, 0.1f);
 
   EXPECT_NEAR(state.momentum.coords[0], 5.0f, kEpsilon);

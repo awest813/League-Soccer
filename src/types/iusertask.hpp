@@ -7,7 +7,7 @@ namespace blunted {
 
 class IUserTask {
 public:
-  virtual ~IUserTask() {};
+  virtual ~IUserTask(){};
 
   virtual void GetPhase() = 0;
   virtual void ProcessPhase() = 0;
@@ -23,7 +23,7 @@ protected:
 class IUserTaskMessage : public Command {
 public:
   IUserTaskMessage(const std::string& name, std::shared_ptr<IUserTask> task)
-      : Command(name), task(task) {};
+      : Command(name), task(task){};
 
 protected:
   std::shared_ptr<IUserTask> task;
@@ -32,7 +32,7 @@ protected:
 class UserTaskMessage_GetPhase : public IUserTaskMessage {
 public:
   UserTaskMessage_GetPhase(const std::string& name, std::shared_ptr<IUserTask> task)
-      : IUserTaskMessage(name, task) {};
+      : IUserTaskMessage(name, task){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -41,7 +41,7 @@ protected:
 class UserTaskMessage_ProcessPhase : public IUserTaskMessage {
 public:
   UserTaskMessage_ProcessPhase(const std::string& name, std::shared_ptr<IUserTask> task)
-      : IUserTaskMessage(name, task) {};
+      : IUserTaskMessage(name, task){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -50,7 +50,7 @@ protected:
 class UserTaskMessage_PutPhase : public IUserTaskMessage {
 public:
   UserTaskMessage_PutPhase(const std::string& name, std::shared_ptr<IUserTask> task)
-      : IUserTaskMessage(name, task) {};
+      : IUserTaskMessage(name, task){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);

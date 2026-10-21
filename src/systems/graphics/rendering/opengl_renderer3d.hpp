@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #ifndef _HPP_GRAPHICS3D_OPENGL
 #define _HPP_GRAPHICS3D_OPENGL
 

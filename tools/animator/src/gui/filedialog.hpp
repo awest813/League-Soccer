@@ -3,38 +3,37 @@
 #ifndef _HPP_GUI_DIALOG_FILE
 #define _HPP_GUI_DIALOG_FILE
 
-#include "scene/objects/image2d.hpp"
-
-#include "view.hpp"
 #include "filebrowser.hpp"
+#include "scene/objects/image2d.hpp"
 #include "textinput.hpp"
+#include "view.hpp"
 
 namespace blunted {
 
-  class GuiFileDialog : public GuiView {
+class GuiFileDialog : public GuiView {
+public:
+  GuiFileDialog(boost::shared_ptr<Scene2D> scene2D, const std::string &name, float x1_percent,
+                float y1_percent, float x2_percent, float y2_percent, const std::string &directory,
+                const std::string &initialFile);
+  virtual ~GuiFileDialog();
 
-    public:
-      GuiFileDialog(boost::shared_ptr<Scene2D> scene2D, const std::string &name, float x1_percent, float y1_percent, float x2_percent, float y2_percent, const std::string &directory, const std::string &initialFile);
-      virtual ~GuiFileDialog();
+  virtual void Init();
 
-      virtual void Init();
+  std::string GetFilename();
+  std::string GetDirectory();
 
-      std::string GetFilename();
-      std::string GetDirectory();
+  virtual void OnKey(int sdlkID);
+  virtual void EmitString(GuiView *sender, const std::string &someString);
 
-      virtual void OnKey(int sdlkID);
-      virtual void EmitString(GuiView *sender, const std::string &someString);
+protected:
+  boost::intrusive_ptr<Image2D> background;
+  std::string directory;
+  std::string initialFile;
 
-    protected:
-      boost::intrusive_ptr<Image2D> background;
-      std::string directory;
-      std::string initialFile;
+  GuiTextInput *filenameInput;
+  GuiFileBrowser *fileBrowser;
+};
 
-      GuiTextInput *filenameInput;
-      GuiFileBrowser *fileBrowser;
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

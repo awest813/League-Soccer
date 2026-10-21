@@ -62,8 +62,9 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
   }
 
   if (entries.empty()) {
-    Gui2Caption* emptyCaption = new Gui2Caption(windowManager, "mh_empty", 8, 22, 84, 3,
-                                  Localization::GetInstance().Translate("matchhistory_empty"));
+    Gui2Caption* emptyCaption =
+        new Gui2Caption(windowManager, "mh_empty", 8, 22, 84, 3,
+                        Localization::GetInstance().Translate("matchhistory_empty"));
     this->AddView(emptyCaption);
     emptyCaption->Show();
   }

@@ -24,7 +24,8 @@ boost::signals2::connection BindLog(const signal_LogCallback::slot_type& slot) {
   return callback.connect(slot);
 }
 
-void Log(e_LogType logType, const std::string& className, const std::string& methodName, const std::string& message) {
+void Log(e_LogType logType, const std::string& className, const std::string& methodName,
+         const std::string& message) {
   std::string logTypeString;
 
   switch (logType) {

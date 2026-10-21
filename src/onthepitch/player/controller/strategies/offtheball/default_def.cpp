@@ -23,9 +23,9 @@ void DefaultDefenseStrategy::RequestInput(const MentalImage* mentalImage, Vector
   float actionDistance = NormalizedClamp(
       player->GetPosition().GetDistance(match->GetDesignatedPossessionPlayer()->GetPosition()),
       12.0f, 18.0f);
-  float staticPositionBias = curve(
-      1.1f * actionDistance,
-      1.0f);  // higher bias: swap positions less, maintain defensive shape more
+  float staticPositionBias =
+      curve(1.1f * actionDistance,
+            1.0f);  // higher bias: swap positions less, maintain defensive shape more
   Vector3 desiredPosition = desiredPosition_static * staticPositionBias +
                             desiredPosition_dynamic * (1.0f - staticPositionBias);
 
@@ -36,7 +36,8 @@ void DefaultDefenseStrategy::RequestInput(const MentalImage* mentalImage, Vector
     attackBias *= AITactics::GetDefenderSupportScale(
         AI_GetMindSet(CastPlayer()->GetDynamicFormationEntry().role));
     // Explicit one-twos and selected overlap runs apply to defenders too.
-    const bool makeRun = attackBias > 0.7f &&
+    const bool makeRun =
+        attackBias > 0.7f &&
         team->GetController()->GetEndApplyAttackingRun_ms() > match->GetActualTime_ms() &&
         team->GetController()->GetAttackingRunPlayer() == player;
     Vector3 supportPosition =

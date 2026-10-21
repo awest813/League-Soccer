@@ -3,38 +3,34 @@
 #ifndef _HPP_GUI
 #define _HPP_GUI
 
-#include "types/iusertask.hpp"
-
-#include "scene/scene2d/scene2d.hpp"
-
 #include "guiinterface.hpp"
+#include "scene/scene2d/scene2d.hpp"
+#include "types/iusertask.hpp"
 
 namespace blunted {
 
-  class GuiTask : public IUserTask {
+class GuiTask : public IUserTask {
+public:
+  GuiTask(boost::shared_ptr<Scene2D> scene2D, float ratio, int margin);
+  virtual ~GuiTask();
 
-    public:
-      GuiTask(boost::shared_ptr<Scene2D> scene2D, float ratio, int margin);
-      virtual ~GuiTask();
+  virtual std::string GetName() const { return "guitask"; }
 
-      virtual std::string GetName() const { return "guitask"; }
+  virtual void GetPhase();
+  virtual void ProcessPhase();
+  virtual void PutPhase();
 
-      virtual void GetPhase();
-      virtual void ProcessPhase();
-      virtual void PutPhase();
+  GuiInterface *GetInterface();
 
-      GuiInterface *GetInterface();
+protected:
+  boost::shared_ptr<Scene2D> scene2D;
 
-    protected:
-      boost::shared_ptr<Scene2D> scene2D;
+  GuiInterface *guiInterface;
 
-      GuiInterface *guiInterface;
+  float ratio;
+  int margin;
+};
 
-      float ratio;
-      int margin;
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

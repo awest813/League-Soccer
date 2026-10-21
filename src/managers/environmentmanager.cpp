@@ -15,7 +15,7 @@ EnvironmentManager::EnvironmentManager() {
   startTime = std::chrono::steady_clock::now();
 };
 
-EnvironmentManager::~EnvironmentManager() {};
+EnvironmentManager::~EnvironmentManager(){};
 
 unsigned long EnvironmentManager::GetTime_ms() {
   auto now = std::chrono::steady_clock::now();

@@ -355,8 +355,7 @@ void CreditsPage::Process() {
       ballMov[i].coords[0] = -ballMov[i].coords[0] * 0.7f;
     if (ballPos[i].coords[0] < 0 && ballMov[i].coords[0] < 0)
       ballMov[i].coords[0] = -ballMov[i].coords[0] * 0.7f;
-    if (ballPos[i].coords[1] > 100.0f - kCreditsBallHeightPercent &&
-        ballMov[i].coords[1] > 20)
+    if (ballPos[i].coords[1] > 100.0f - kCreditsBallHeightPercent && ballMov[i].coords[1] > 20)
       ballMov[i].coords[1] = -ballMov[i].coords[1] * 0.6f;
     if (ballPos[i].coords[1] > 100.0f) {
       ballPos[i] = Vector3(random(60, 90), random(-60, -5), 0);

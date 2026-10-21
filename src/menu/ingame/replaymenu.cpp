@@ -46,9 +46,8 @@ ReplayPage::ReplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   Gui2Frame* footer = new Gui2Frame(windowManager, "frame_replay_footer", 15, 89, 70, 9, true);
   this->AddView(footer);
   footer->Show();
-  Gui2Caption* help =
-      new Gui2Caption(windowManager, "caption_replay_help", 2, 1.2f, 66, 2.5f,
-                      Localization::GetInstance().Translate("ingame_replay_help"));
+  Gui2Caption* help = new Gui2Caption(windowManager, "caption_replay_help", 2, 1.2f, 66, 2.5f,
+                                      Localization::GetInstance().Translate("ingame_replay_help"));
   help->SetPosition(35.0f - help->GetTextWidthPercent() * 0.5f, 1.2f);
   footer->AddView(help);
   help->Show();

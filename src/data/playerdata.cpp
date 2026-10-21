@@ -48,7 +48,6 @@ PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
       height = atof(result->data.at(0).at(c).c_str());
   }
 
-
   std::vector<std::string> roleStrings;
   tokenize(roleString, roleStrings);
 
@@ -173,15 +172,15 @@ std::string PlayerData::GetConditionSymbol() const {
 Vector3 PlayerData::GetConditionColor() const {
   switch (condition) {
     case e_PlayerCondition_Top:
-      return Vector3(230, 40, 40);     // Red
+      return Vector3(230, 40, 40);  // Red
     case e_PlayerCondition_Good:
-      return Vector3(240, 150, 20);    // Orange
+      return Vector3(240, 150, 20);  // Orange
     case e_PlayerCondition_Normal:
-      return Vector3(240, 220, 30);    // Yellow
+      return Vector3(240, 220, 30);  // Yellow
     case e_PlayerCondition_Poor:
-      return Vector3(50, 130, 240);    // Blue
+      return Vector3(50, 130, 240);  // Blue
     case e_PlayerCondition_Terrible:
-      return Vector3(160, 60, 200);    // Purple
+      return Vector3(160, 60, 200);  // Purple
     default:
       return Vector3(240, 220, 30);
   }

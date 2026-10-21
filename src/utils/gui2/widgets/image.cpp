@@ -9,16 +9,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "image.hpp"
 
 #include <cmath>
 
 #include "../windowmanager.hpp"
+#include "SDL2/SDL2_rotozoom.h"
 #include "base/log.hpp"
 #include "managers/resourcemanagerpool.hpp"
 #include "scene/objectfactory.hpp"
-#include "SDL2/SDL2_rotozoom.h"
 
 namespace blunted {
 
@@ -57,7 +56,8 @@ void Gui2Image::LoadImage(const std::string& filename) {
           ->Fetch(filename, true, true);
 
   if (!surfaceRes || !surfaceRes->GetResource() || !surfaceRes->GetResource()->GetData()) {
-    Log(e_Warning, "Gui2Image", "LoadImage", "Failed to load \"" + filename + "\" via resource manager");
+    Log(e_Warning, "Gui2Image", "LoadImage",
+        "Failed to load \"" + filename + "\" via resource manager");
     return;
   }
 

@@ -8,7 +8,7 @@
 using namespace blunted;
 
 class MatchHistoryPage : public Gui2Page {
- public:
+public:
   MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~MatchHistoryPage();
 };

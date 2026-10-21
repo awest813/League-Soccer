@@ -12,7 +12,7 @@ namespace GameplayTuning {
 enum class AdvantageDecision { Continue, RecallFoul, PlayedOut };
 
 inline AdvantageDecision EvaluateAdvantage(unsigned long now_ms, unsigned long foulAt_ms,
-                                            bool possessionLost) {
+                                           bool possessionLost) {
   // Subtract timestamps first: subtracting the allowance from an early match
   // clock would underflow and prematurely discard the foul.
   const unsigned long elapsed_ms = now_ms - foulAt_ms;
@@ -40,13 +40,13 @@ inline float GetFirstTouchContextPenalty(float opponentDistance, float calmness,
   // under a hard incoming ball is genuinely dangerous.
   const float pressurePenalty = pressure * (1.0f - composure * 0.65f) * 0.10f;
   const float orientationPenalty = ballPace * blindSide * (1.0f - composure * 0.4f) * 0.10f;
-  
+
   // PES condition penalty (3 is neutral, 1 is terrible, 5 is excellent)
   // PES condition penalty: 3 is neutral, 1 is poor, 5 is excellent.
   // Weight 0.03 makes a 2-star condition gap produce ~0.06 extra error —
   // enough to be perceptible but not overwhelming.
   float conditionMod = (3 - playerCondition) * 0.03f;
-  
+
   return std::min(std::max(0.0f, pressurePenalty + orientationPenalty + conditionMod), 0.25f);
 }
 

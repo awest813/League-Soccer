@@ -363,8 +363,10 @@ TEST(MatchIntegrationTest, ExtraTimeTieTransitionsToPenaltyShootout) {
   EXPECT_TRUE(clock.isTied());
 
   // Simulate shootout: 5-4
-  for (int i = 0; i < 5; ++i) clock.addPenaltyGoal(0);
-  for (int i = 0; i < 4; ++i) clock.addPenaltyGoal(1);
+  for (int i = 0; i < 5; ++i)
+    clock.addPenaltyGoal(0);
+  for (int i = 0; i < 4; ++i)
+    clock.addPenaltyGoal(1);
 
   EXPECT_EQ(clock.penaltyGoals[0], 5);
   EXPECT_EQ(clock.penaltyGoals[1], 4);

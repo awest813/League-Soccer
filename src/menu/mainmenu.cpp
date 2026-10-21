@@ -4,10 +4,10 @@
 #include <cctype>
 #include <set>
 
+#include "../league/leaguecode.hpp"
 #include "../main.hpp"
 #include "blunted.hpp"
 #include "career/career_database.hpp"
-#include "../league/leaguecode.hpp"
 #include "controllerselect.hpp"
 #include "credits.hpp"
 #include "layout_audit.hpp"
@@ -309,8 +309,9 @@ void MainMenuPage::Process() {
       GetMenuTask()->QuitGame();
       return;
     }
-    if (auditRoute == "career_season_pending" || auditRoute == "career_tactics" || auditRoute == "career_tactics_delegated" ||
-        auditRoute == "career_press" || auditRoute == "career_roster" || auditRoute == "career_roster_player" ||
+    if (auditRoute == "career_season_pending" || auditRoute == "career_tactics" ||
+        auditRoute == "career_tactics_delegated" || auditRoute == "career_press" ||
+        auditRoute == "career_roster" || auditRoute == "career_roster_player" ||
         auditRoute == "career_player_training" || auditRoute == "career_player_missing" ||
         auditRoute == "career_owner_legacy" || auditRoute == "career_owner_delegated" ||
         auditRoute == "career_training" || auditRoute == "career_owner_gm" ||

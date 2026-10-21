@@ -1,7 +1,7 @@
 #include "career_persistence.hpp"
 
-#include <filesystem>
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -58,11 +58,11 @@ std::string Serialize(const CareerSave& save, const std::vector<TransferBid>& bi
   file << "inPreseason=" << save.season.inPreseason << "\n";
   file << "transferWindowOpen=" << save.season.transferWindowOpen << "\n";
   file << "financeSnapshot=" << save.finances.totalRevenue << "|" << save.finances.totalExpenses
-       << "|" << save.finances.matchDayIncome << "|" << save.finances.sponsorIncome
-       << "|" << save.finances.merchandiseIncome << "|" << save.finances.tvRevenue
-       << "|" << save.finances.playerWages << "|" << save.finances.staffWages
-       << "|" << save.finances.stadiumCosts << "|" << save.finances.transferSpending
-       << "|" << save.finances.transferIncome << "\n";
+       << "|" << save.finances.matchDayIncome << "|" << save.finances.sponsorIncome << "|"
+       << save.finances.merchandiseIncome << "|" << save.finances.tvRevenue << "|"
+       << save.finances.playerWages << "|" << save.finances.staffWages << "|"
+       << save.finances.stadiumCosts << "|" << save.finances.transferSpending << "|"
+       << save.finances.transferIncome << "\n";
   file << "stadiumRevenue=" << save.stadium.matchDayRevenue << "\n";
   file << "stadiumMaintenance=" << save.stadium.maintenanceCost << "\n";
   auto writeUpgrades = [&](const char* prefix, const std::vector<StadiumUpgrade>& upgrades) {
@@ -70,7 +70,8 @@ std::string Serialize(const CareerSave& save, const std::vector<TransferBid>& bi
       const auto& u = upgrades[i];
       file << prefix << i << "=" << CareerCommon::Sanitize(u.name) << "|"
            << CareerCommon::Sanitize(u.description) << "|" << u.cost << "|" << u.buildTimeSeasons
-           << "|" << u.seasonsRemaining << "|" << u.capacityIncrease << "|" << u.revenueBonus << "\n";
+           << "|" << u.seasonsRemaining << "|" << u.capacityIncrease << "|" << u.revenueBonus
+           << "\n";
     }
   };
   writeUpgrades("upgrade.", save.stadium.upgrades);
@@ -130,8 +131,8 @@ std::string Serialize(const CareerSave& save, const std::vector<TransferBid>& bi
   for (size_t i = 0; i < save.season.fixtures.size(); i++) {
     const auto& f = save.season.fixtures[i];
     file << "fixture." << i << "=" << f.fixtureID << "|" << f.homeTeamID << "|" << f.awayTeamID
-         << "|" << f.homeGoals << "|" << f.awayGoals << "|" << (f.played ? 1 : 0)
-         << "|" << f.season << "\n";
+         << "|" << f.homeGoals << "|" << f.awayGoals << "|" << (f.played ? 1 : 0) << "|" << f.season
+         << "\n";
   }
   for (size_t i = 0; i < bids.size(); i++) {
     const auto& b = bids[i];
@@ -238,24 +239,28 @@ bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferB
       fresh.stadium.maintenanceCost = CareerCommon::SafeStoll(val);
     else if (key == "financeSnapshot") {
       auto fields = CareerCommon::SplitPipes(val);
-      long long* amounts[] = {&fresh.finances.totalRevenue, &fresh.finances.totalExpenses,
-          &fresh.finances.matchDayIncome, &fresh.finances.sponsorIncome,
-          &fresh.finances.merchandiseIncome, &fresh.finances.tvRevenue,
-          &fresh.finances.playerWages, &fresh.finances.staffWages, &fresh.finances.stadiumCosts,
-          &fresh.finances.transferSpending, &fresh.finances.transferIncome};
+      long long* amounts[] = {&fresh.finances.totalRevenue,      &fresh.finances.totalExpenses,
+                              &fresh.finances.matchDayIncome,    &fresh.finances.sponsorIncome,
+                              &fresh.finances.merchandiseIncome, &fresh.finances.tvRevenue,
+                              &fresh.finances.playerWages,       &fresh.finances.staffWages,
+                              &fresh.finances.stadiumCosts,      &fresh.finances.transferSpending,
+                              &fresh.finances.transferIncome};
       for (size_t i = 0; i < fields.size() && i < 11; ++i)
         *amounts[i] = CareerCommon::SafeStoll(fields[i]);
     } else if (key.rfind("upgrade.", 0) == 0 || key.rfind("availableUpgrade.", 0) == 0) {
       auto fields = CareerCommon::SplitPipes(val);
       if (fields.size() == 7) {
-        StadiumUpgrade u{fields[0], fields[1], CareerCommon::SafeStoll(fields[2]),
-            CareerCommon::SafeStoi(fields[3]), CareerCommon::SafeStoi(fields[4]),
-            CareerCommon::SafeStoi(fields[5]), CareerCommon::SafeStoi(fields[6])};
+        StadiumUpgrade u{fields[0],
+                         fields[1],
+                         CareerCommon::SafeStoll(fields[2]),
+                         CareerCommon::SafeStoi(fields[3]),
+                         CareerCommon::SafeStoi(fields[4]),
+                         CareerCommon::SafeStoi(fields[5]),
+                         CareerCommon::SafeStoi(fields[6])};
         (key.rfind("upgrade.", 0) == 0 ? fresh.stadium.upgrades : fresh.stadium.availableUpgrades)
             .push_back(u);
       }
-    }
-    else if (key == "trainingPlan") {
+    } else if (key == "trainingPlan") {
       int plan = CareerCommon::SafeStoi(val, 0);
       fresh.trainingPlan = plan >= 0 && plan <= 2 ? static_cast<CareerTrainingPlan>(plan)
                                                   : CareerTrainingPlan::BALANCED;
@@ -301,7 +306,8 @@ bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferB
         s.yearsRemaining = CareerCommon::SafeStoi(t[3]);
       if (t.size() > 4)
         s.reputationRequirement = CareerCommon::SafeStoi(t[4]);
-      (key.rfind("sponsor.", 0) == 0 ? fresh.activeSponsors : fresh.availableSponsorOffers).push_back(s);
+      (key.rfind("sponsor.", 0) == 0 ? fresh.activeSponsors : fresh.availableSponsorOffers)
+          .push_back(s);
     } else if (key.rfind("event.", 0) == 0) {
       std::vector<std::string> t = CareerCommon::SplitPipes(val);
       CareerEvent e;
@@ -609,8 +615,7 @@ bool Save(const CareerSave& save, const std::vector<TransferBid>& bids, const st
   if (fs::exists(path)) {
     CareerSaveSummary existing;
     const auto originalPath = path + ".pre-three-modes.bak";
-    if (ReadSummary(path, existing) && existing.schemaVersion == 1 &&
-        !fs::exists(originalPath)) {
+    if (ReadSummary(path, existing) && existing.schemaVersion == 1 && !fs::exists(originalPath)) {
       fs::copy_file(path, originalPath, fs::copy_options::none, ec);
       if (ec)
         return false;
@@ -659,13 +664,12 @@ static bool LoadDirect(CareerSave& save, std::vector<TransferBid>& bids, const s
   const std::string payload = SqliteText(stmt, 0);
   sqlite3_finalize(stmt);
   stmt = nullptr;
-  if (sqlite3_prepare_v2(db, "SELECT schema_version FROM career_meta LIMIT 1", -1,
-                       &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db, "SELECT schema_version FROM career_meta LIMIT 1", -1, &stmt,
+                         nullptr) != SQLITE_OK) {
     CloseDb(db);
     return false;
   }
-  const bool supported = sqlite3_step(stmt) == SQLITE_ROW &&
-                         sqlite3_column_int(stmt, 0) >= 1 &&
+  const bool supported = sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 0) >= 1 &&
                          sqlite3_column_int(stmt, 0) <= kSchemaVersion;
   sqlite3_finalize(stmt);
   CloseDb(db);
@@ -743,7 +747,8 @@ static bool ReadSummaryDirect(const std::string& path, CareerSaveSummary& outSum
     CareerSaveSummary summary;
     summary.schemaVersion = sqlite3_column_int(stmt, 0);
     bool handsOn = true;
-    const bool validRole = summary.schemaVersion >= 1 && summary.schemaVersion <= kSchemaVersion &&
+    const bool validRole =
+        summary.schemaVersion >= 1 && summary.schemaVersion <= kSchemaVersion &&
         DecodeCareerRole(SqliteText(stmt, 2), summary.mode, handsOn, summary.schemaVersion == 1);
     summary.name = SqliteText(stmt, 1);
     summary.season = sqlite3_column_int(stmt, 3);

@@ -21,15 +21,13 @@ LeagueStandingsPage::LeagueStandingsPage(Gui2WindowManager* windowManager,
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_standings", 2, 2, 66, 3,
-                      Localization::GetInstance().Translate("league_standings"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_standings", 2, 2, 66, 3,
+                                       Localization::GetInstance().Translate("league_standings"));
   frame->AddView(title);
   title->Show();
 
-  Gui2Button* btnLeague =
-      new Gui2Button(windowManager, "btn_standings_league", 0, 0, 60, 3,
-                     Localization::GetInstance().Translate("league_table"));
+  Gui2Button* btnLeague = new Gui2Button(windowManager, "btn_standings_league", 0, 0, 60, 3,
+                                         Localization::GetInstance().Translate("league_table"));
   Gui2Button* btnLeagueStats =
       new Gui2Button(windowManager, "btn_standings_league_stats", 0, 0, 60, 3,
                      Localization::GetInstance().Translate("league_stats"));
@@ -85,9 +83,9 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(
-      windowManager, "caption_league_standings_league_table", 2, 2, 86, 3,
-      Localization::GetInstance().Translate("league_table_title"));
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "caption_league_standings_league_table", 2, 2, 86, 3,
+                      Localization::GetInstance().Translate("league_table_title"));
   frame->AddView(title);
   title->Show();
 
@@ -218,10 +216,10 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
     if (tr.league != currentLeague) {
       currentLeague = tr.league;
       leaguePos = 0;
-      leagueSize = static_cast<int>(std::count_if(allTeams.begin(), allTeams.end(),
-                                                  [&tr](const TeamRow& t) {
-                                                    return t.league == tr.league;
-                                                  }));
+      leagueSize =
+          static_cast<int>(std::count_if(allTeams.begin(), allTeams.end(), [&tr](const TeamRow& t) {
+            return t.league == tr.league;
+          }));
       Gui2Caption* sep = new Gui2Caption(windowManager, "caption_league_sep_" + int_to_str(row), 0,
                                          0, 85, 2.5, "--- " + currentLeague + " ---");
       grid->AddView(sep, row++, 0);
@@ -291,9 +289,9 @@ LeagueStandingsLeagueStatsPage::LeagueStandingsLeagueStatsPage(Gui2WindowManager
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(
-      windowManager, "caption_league_standings_league_stats", 2, 2, 66, 3,
-      Localization::GetInstance().Translate("league_stats"));
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "caption_league_standings_league_stats", 2, 2, 66, 3,
+                      Localization::GetInstance().Translate("league_stats"));
   frame->AddView(title);
   title->Show();
 
@@ -317,9 +315,9 @@ LeagueStandingsLeagueStatsPage::LeagueStandingsLeagueStatsPage(Gui2WindowManager
   grid->AddView(totalCap, row++, 0);
 
   if (!highScoring->data.empty()) {
-    Gui2Caption* hdrCap = new Gui2Caption(
-        windowManager, "caption_stats_high", 0, 0, 65, 2.5,
-        Localization::GetInstance().Translate("league_stats_high_header"));
+    Gui2Caption* hdrCap =
+        new Gui2Caption(windowManager, "caption_stats_high", 0, 0, 65, 2.5,
+                        Localization::GetInstance().Translate("league_stats_high_header"));
     grid->AddView(hdrCap, row++, 0);
 
     for (const auto& r : highScoring->data) {

@@ -16,7 +16,7 @@ class Resource;
 template <typename T>
 class ResourceManager {
 public:
-  ResourceManager(const std::string& typeDescription) : typeDescription(typeDescription) {};
+  ResourceManager(const std::string& typeDescription) : typeDescription(typeDescription){};
 
   ~ResourceManager() {
     resources.Lock();

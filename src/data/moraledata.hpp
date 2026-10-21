@@ -16,7 +16,7 @@ struct TeamChemistry {
 };
 
 class MoraleManager {
- public:
+public:
   MoraleManager() = default;
 
   void SetMorale(int playerID, float score, const std::string& reason = "");
@@ -31,18 +31,15 @@ class MoraleManager {
   void UpdateAfterMatch(int playerID, bool won, bool drew);
   void UpdateAfterTransfer(int playerID, bool playerRequested);
 
-  TeamChemistry ComputeTeamChemistry(int teamID,
-                                     const std::vector<int>& playerIDs) const;
+  TeamChemistry ComputeTeamChemistry(int teamID, const std::vector<int>& playerIDs) const;
 
   const std::vector<PlayerMorale>& GetAllMorales() const { return m_morales; }
 
- private:
+private:
   std::vector<PlayerMorale> m_morales;
 
   PlayerMorale* FindOrCreate(int playerID);
   const PlayerMorale* Find(int playerID) const;
 
-  static float Clamp(float v, float lo, float hi) {
-    return v < lo ? lo : (v > hi ? hi : v);
-  }
+  static float Clamp(float v, float lo, float hi) { return v < lo ? lo : (v > hi ? hi : v); }
 };

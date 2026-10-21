@@ -88,7 +88,7 @@ void GamePlanPage::Reactivate() {
   delete map;
   map = new Gui2PlanMap(windowManager, "gameplan_planmap", 0, 0, 35, 28, teamData);
   grid->AddView(map, 0, 0);
-  
+
   grid->AddView(gridNav, 1, 0);
   grid->UpdateLayout(0.0);
   gridNav->Show();
@@ -99,9 +99,9 @@ void GamePlanPage::Reactivate() {
 
 Vector3 GamePlanPage::GetButtonColor(int id) {
   Vector3 color = windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
-  if (id > 10) // Substitutes: Gold/Warm
+  if (id > 10)  // Substitutes: Gold/Warm
     color = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);
-  if (id > 21) // Reserves: Silver/Muted
+  if (id > 21)  // Reserves: Silver/Muted
     color = windowManager->GetStyle()->GetColor(e_DecorationType_Dark2);
   return color;
 }
@@ -120,9 +120,8 @@ void GamePlanPage::GoLineupMenu() {
     std::string cond = playerData.at(i)->GetConditionSymbol();
     std::string label = role + " " + name + "  " + cond;
     Vector3 color = GetButtonColor(i);
-    Gui2Button* button =
-        lineupMenu->AddButton("playerbutton_id" + int_to_str(playerData.at(i)->GetDatabaseID()),
-                              label, i, 0, color);
+    Gui2Button* button = lineupMenu->AddButton(
+        "playerbutton_id" + int_to_str(playerData.at(i)->GetDatabaseID()), label, i, 0, color);
     button->sig_OnClick.connect([this](Gui2Button* btn) { LineupMenuOnClick(btn); });
     button->SetToggleable(true);
     if (i == 0)

@@ -8,10 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "onthepitch/aitactics.hpp"
-#include "onthepitch/gameplaytuning.hpp"
-#include "onthepitch/humanspeed.hpp"
-#include "onthepitch/matchduration.hpp"
 #include "data/careerdata.hpp"
 #include "menu/career/career_board.hpp"
 #include "menu/career/career_common.hpp"
@@ -22,6 +18,10 @@
 #include "menu/career/career_staff.hpp"
 #include "menu/career/career_training.hpp"
 #include "menu/career/career_transfers.hpp"
+#include "onthepitch/aitactics.hpp"
+#include "onthepitch/gameplaytuning.hpp"
+#include "onthepitch/humanspeed.hpp"
+#include "onthepitch/matchduration.hpp"
 #include "utils/localization.hpp"
 
 using namespace blunted;
@@ -29,14 +29,14 @@ using namespace blunted;
 int g_passedTests = 0;
 int g_failedTests = 0;
 
-#define TEST_ASSERT(cond, msg) \
-  do { \
-    if (!(cond)) { \
+#define TEST_ASSERT(cond, msg)                                                          \
+  do {                                                                                  \
+    if (!(cond)) {                                                                      \
       std::cerr << "  FAILED: " << msg << " (" << __FILE__ << ":" << __LINE__ << ")\n"; \
-      g_failedTests++; \
-    } else { \
-      g_passedTests++; \
-    } \
+      g_failedTests++;                                                                  \
+    } else {                                                                            \
+      g_passedTests++;                                                                  \
+    }                                                                                   \
   } while (0)
 
 #define TEST_NEAR(a, b, eps, msg) \
@@ -47,12 +47,26 @@ Localization& Localization::GetInstance() {
   static Localization instance;
   return instance;
 }
-bool Localization::Load(const std::string& l) { currentLanguage_ = l; return true; }
-std::string Localization::Translate(const std::string& k) const { return k; }
-std::string Localization::TranslateAndFormat(const std::string& k, const std::vector<std::string>& a) const { return k; }
-const std::string& Localization::GetCurrentLanguage() const { return currentLanguage_; }
-std::vector<std::string> Localization::GetAvailableLanguages() { return {"en"}; }
-std::string Localization::GetLanguageDisplayName(const std::string& c) { return "English"; }
+bool Localization::Load(const std::string& l) {
+  currentLanguage_ = l;
+  return true;
+}
+std::string Localization::Translate(const std::string& k) const {
+  return k;
+}
+std::string Localization::TranslateAndFormat(const std::string& k,
+                                             const std::vector<std::string>& a) const {
+  return k;
+}
+const std::string& Localization::GetCurrentLanguage() const {
+  return currentLanguage_;
+}
+std::vector<std::string> Localization::GetAvailableLanguages() {
+  return {"en"};
+}
+std::string Localization::GetLanguageDisplayName(const std::string& c) {
+  return "English";
+}
 
 class TestEventSink : public CareerCommon::CareerEvents {
 public:
@@ -68,7 +82,8 @@ void RunGameplayAuditTests() {
   TEST_NEAR(pt0, 0.0f, 0.005f, "Ideal first touch has zero penalty");
 
   float ptMax = GameplayTuning::GetFirstTouchContextPenalty(0.1f, 0.0f, 0.0f, 16.0f, -1.0f, 1);
-  TEST_ASSERT(ptMax > 0.15f && ptMax <= 0.25f, "Pressured blind first touch has bounded high penalty");
+  TEST_ASSERT(ptMax > 0.15f && ptMax <= 0.25f,
+              "Pressured blind first touch has bounded high penalty");
 
   // Fatigue tests
   float jog = GameplayTuning::GetFatigueWorkloadFactor(4.0f, 8.0f, false);
@@ -79,14 +94,19 @@ void RunGameplayAuditTests() {
   TEST_ASSERT(sprintBall > sprint, "Sprinting with ball increases workload");
 
   // Goal mouth detection
-  TEST_ASSERT(GameplayTuning::IsGoalMouthThreat(0.0f, 0.5f, 3.66f, 2.44f, 1.0f), "Centred ball is goal threat");
-  TEST_ASSERT(!GameplayTuning::IsGoalMouthThreat(5.0f, 0.5f, 3.66f, 2.44f, 1.0f), "Wide ball is not goal threat");
-  TEST_ASSERT(!GameplayTuning::IsGoalMouthThreat(0.0f, 3.5f, 3.66f, 2.44f, 1.0f), "High ball over crossbar is not threat");
+  TEST_ASSERT(GameplayTuning::IsGoalMouthThreat(0.0f, 0.5f, 3.66f, 2.44f, 1.0f),
+              "Centred ball is goal threat");
+  TEST_ASSERT(!GameplayTuning::IsGoalMouthThreat(5.0f, 0.5f, 3.66f, 2.44f, 1.0f),
+              "Wide ball is not goal threat");
+  TEST_ASSERT(!GameplayTuning::IsGoalMouthThreat(0.0f, 3.5f, 3.66f, 2.44f, 1.0f),
+              "High ball over crossbar is not threat");
 
   // Attacking runs
   float thNeutral = AITactics::GetAttackingRunThreshold(0.5f);
-  TEST_ASSERT(thNeutral >= 0.35f && thNeutral <= 0.62f, "Attacking run neutral threshold is in range");
-  TEST_ASSERT(AITactics::GetAttackingRunThreshold(1.0f) < AITactics::GetAttackingRunThreshold(0.0f), "High counter attack lowers run threshold");
+  TEST_ASSERT(thNeutral >= 0.35f && thNeutral <= 0.62f,
+              "Attacking run neutral threshold is in range");
+  TEST_ASSERT(AITactics::GetAttackingRunThreshold(1.0f) < AITactics::GetAttackingRunThreshold(0.0f),
+              "High counter attack lowers run threshold");
 
   // Territory
   // teamSide +1 defends right (+50) and attacks left (-50)
@@ -98,9 +118,12 @@ void RunGameplayAuditTests() {
   TEST_NEAR(tMid, 0.0f, 0.01f, "Midfield territory is 0");
 
   // Zone pressure
-  TEST_ASSERT(!AITactics::ShouldStartZonePressure(0.0f, 0.9f, 3.0f), "Zero pressure never triggers");
-  TEST_ASSERT(AITactics::ShouldStartZonePressure(1.0f, -0.3f, 8.0f), "High pressure triggers in defensive half");
-  TEST_ASSERT(!AITactics::ShouldStartZonePressure(1.0f, 0.9f, 25.0f), "Pressure does not trigger at 25m distance");
+  TEST_ASSERT(!AITactics::ShouldStartZonePressure(0.0f, 0.9f, 3.0f),
+              "Zero pressure never triggers");
+  TEST_ASSERT(AITactics::ShouldStartZonePressure(1.0f, -0.3f, 8.0f),
+              "High pressure triggers in defensive half");
+  TEST_ASSERT(!AITactics::ShouldStartZonePressure(1.0f, 0.9f, 25.0f),
+              "Pressure does not trigger at 25m distance");
 }
 
 void RunHumanSpeedAndDurationTests() {
@@ -118,8 +141,7 @@ void RunHumanSpeedAndDurationTests() {
   TEST_NEAR(slowDef, kDefaultHumanSlowDribbleSpeed, 0.05f, "Default slow dribble roundtrip");
 
   float runDef = HumanSpeedFromSlider(
-      HumanSpeedSliderFromSpeed(kDefaultHumanRunSpeed, HumanSpeedType::Run),
-      HumanSpeedType::Run);
+      HumanSpeedSliderFromSpeed(kDefaultHumanRunSpeed, HumanSpeedType::Run), HumanSpeedType::Run);
   TEST_NEAR(runDef, kDefaultHumanRunSpeed, 0.05f, "Default run speed roundtrip");
 
   float sprintDef = HumanSpeedFromSlider(
@@ -162,10 +184,14 @@ void RunCareerDataAndSimulationTests() {
 
   // PES 5/6 Condition Arrow Tiers
   auto GetConditionArrow = [](int form) -> std::string {
-    if (form >= 85) return "[^] TOP";
-    if (form >= 65) return "[/] GOOD";
-    if (form >= 40) return "[>] NORM";
-    if (form >= 20) return "[\\] POOR";
+    if (form >= 85)
+      return "[^] TOP";
+    if (form >= 65)
+      return "[/] GOOD";
+    if (form >= 40)
+      return "[>] NORM";
+    if (form >= 20)
+      return "[\\] POOR";
     return "[v] BAD";
   };
   TEST_ASSERT(GetConditionArrow(90) == "[^] TOP", "90 form is TOP condition (Red)");
@@ -242,13 +268,15 @@ void RunDefensiveSafetyChecks() {
   std::cout << "\n[Suite 5/5] Controller & Pointer Null Safety Tests...\n";
 
   TEST_ASSERT(AITactics::GetDefenderSupportScale(0.0f) > 0.0f, "Deep defender scale is positive");
-  TEST_ASSERT(AITactics::GetSecondaryPressureRolePenalty(1.0f) >= 0.0f, "Attacker penalty is non-negative");
+  TEST_ASSERT(AITactics::GetSecondaryPressureRolePenalty(1.0f) >= 0.0f,
+              "Attacker penalty is non-negative");
 
   // Gamepad Deadzone and Radial Normalization
   auto ProcessAnalogStick = [](float x, float y) -> std::pair<float, float> {
     constexpr float dz = 0.15f;
     float len = std::hypot(x, y);
-    if (len < dz) return {0.0f, 0.0f};
+    if (len < dz)
+      return {0.0f, 0.0f};
     if (len > 1.0f) {
       return {x / len, y / len};
     }
@@ -260,11 +288,13 @@ void RunDefensiveSafetyChecks() {
 
   auto [subX, subY] = ProcessAnalogStick(0.4f, 0.3f);
   float subLen = std::hypot(subX, subY);
-  TEST_ASSERT(std::fabs(subLen - 0.5f) < 0.001f, "Sub-maximum stick tilt preserves analog magnitude for walking/jogging");
+  TEST_ASSERT(std::fabs(subLen - 0.5f) < 0.001f,
+              "Sub-maximum stick tilt preserves analog magnitude for walking/jogging");
 
   auto [diagX, diagY] = ProcessAnalogStick(1.0f, 1.0f);
   float diagLen = std::hypot(diagX, diagY);
-  TEST_ASSERT(std::fabs(diagLen - 1.0f) < 0.001f, "Diagonal stick input is clamped to unit length (no diagonal overspeed)");
+  TEST_ASSERT(std::fabs(diagLen - 1.0f) < 0.001f,
+              "Diagonal stick input is clamped to unit length (no diagonal overspeed)");
 
   // Comprehensive controller profile auto-detection test
   enum class TestCtrlType { Xbox, PlayStation, NintendoSwitch, LogitechDirectInput, Generic };
@@ -279,7 +309,8 @@ void RunDefensiveSafetyChecks() {
       return TestCtrlType::PlayStation;
     }
     if (lower.find("nintendo") != std::string::npos || lower.find("switch") != std::string::npos ||
-        lower.find("joy-con") != std::string::npos || lower.find("pro controller") != std::string::npos ||
+        lower.find("joy-con") != std::string::npos ||
+        lower.find("pro controller") != std::string::npos ||
         lower.find("057e") != std::string::npos) {
       return TestCtrlType::NintendoSwitch;
     }
@@ -297,15 +328,25 @@ void RunDefensiveSafetyChecks() {
     return TestCtrlType::Generic;
   };
 
-  TEST_ASSERT(DetectProfile("Xbox Wireless Controller") == TestCtrlType::Xbox, "Xbox Wireless Controller auto-detected as Xbox");
-  TEST_ASSERT(DetectProfile("Microsoft X-Box 360 pad") == TestCtrlType::Xbox, "Xbox 360 pad auto-detected as Xbox");
-  TEST_ASSERT(DetectProfile("8BitDo Pro 2 Wired Controller") == TestCtrlType::Xbox, "8BitDo XInput pad auto-detected as Xbox");
-  TEST_ASSERT(DetectProfile("Sony Interactive Entertainment DualSense Wireless Controller") == TestCtrlType::PlayStation, "DualSense auto-detected as PlayStation");
-  TEST_ASSERT(DetectProfile("PS4 DualShock 4 Controller") == TestCtrlType::PlayStation, "DualShock 4 auto-detected as PlayStation");
-  TEST_ASSERT(DetectProfile("Nintendo Switch Pro Controller") == TestCtrlType::NintendoSwitch, "Switch Pro auto-detected as NintendoSwitch");
-  TEST_ASSERT(DetectProfile("Logitech Gamepad F310") == TestCtrlType::LogitechDirectInput, "Logitech F310 auto-detected as LogitechDirectInput");
-  TEST_ASSERT(DetectProfile("Logitech Dual Action") == TestCtrlType::LogitechDirectInput, "Logitech Dual Action auto-detected as LogitechDirectInput");
-  TEST_ASSERT(DetectProfile("DragonRise Inc. Generic USB Joystick") == TestCtrlType::Generic, "Generic USB Joystick auto-detected as Generic");
+  TEST_ASSERT(DetectProfile("Xbox Wireless Controller") == TestCtrlType::Xbox,
+              "Xbox Wireless Controller auto-detected as Xbox");
+  TEST_ASSERT(DetectProfile("Microsoft X-Box 360 pad") == TestCtrlType::Xbox,
+              "Xbox 360 pad auto-detected as Xbox");
+  TEST_ASSERT(DetectProfile("8BitDo Pro 2 Wired Controller") == TestCtrlType::Xbox,
+              "8BitDo XInput pad auto-detected as Xbox");
+  TEST_ASSERT(DetectProfile("Sony Interactive Entertainment DualSense Wireless Controller") ==
+                  TestCtrlType::PlayStation,
+              "DualSense auto-detected as PlayStation");
+  TEST_ASSERT(DetectProfile("PS4 DualShock 4 Controller") == TestCtrlType::PlayStation,
+              "DualShock 4 auto-detected as PlayStation");
+  TEST_ASSERT(DetectProfile("Nintendo Switch Pro Controller") == TestCtrlType::NintendoSwitch,
+              "Switch Pro auto-detected as NintendoSwitch");
+  TEST_ASSERT(DetectProfile("Logitech Gamepad F310") == TestCtrlType::LogitechDirectInput,
+              "Logitech F310 auto-detected as LogitechDirectInput");
+  TEST_ASSERT(DetectProfile("Logitech Dual Action") == TestCtrlType::LogitechDirectInput,
+              "Logitech Dual Action auto-detected as LogitechDirectInput");
+  TEST_ASSERT(DetectProfile("DragonRise Inc. Generic USB Joystick") == TestCtrlType::Generic,
+              "Generic USB Joystick auto-detected as Generic");
 }
 
 int main() {
@@ -325,7 +366,8 @@ int main() {
   auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
   std::cout << "\n====================================================================\n";
-  std::cout << "AUDIT RESULTS: " << g_passedTests << " PASSED, " << g_failedTests << " FAILED in " << elapsedMs << " ms\n";
+  std::cout << "AUDIT RESULTS: " << g_passedTests << " PASSED, " << g_failedTests << " FAILED in "
+            << elapsedMs << " ms\n";
   if (g_failedTests == 0) {
     std::cout << "STATUS: ALL SYSTEMS AUDITED AND VERIFIED 100% OPERATIONAL ✔\n";
   } else {

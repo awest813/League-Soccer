@@ -34,9 +34,8 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_management", 3, 2, 36, 3,
-                      Localization::GetInstance().Translate("league_management"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_management", 3, 2, 36, 3,
+                                       Localization::GetInstance().Translate("league_management"));
   frame->AddView(title);
   title->Show();
 
@@ -90,9 +89,8 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   summaryPanel->AddView(summaryTitle);
   summaryTitle->Show();
 
-  Gui2Caption* summaryBody =
-      new Gui2Caption(windowManager, "caption_management_summary_body", 2, 6, 30, 8,
-                      TRF("league_contracts_body", {squadContracts}));
+  Gui2Caption* summaryBody = new Gui2Caption(windowManager, "caption_management_summary_body", 2, 6,
+                                             30, 8, TRF("league_contracts_body", {squadContracts}));
   summaryPanel->AddView(summaryBody);
   summaryBody->Show();
 
@@ -107,9 +105,8 @@ LeagueManagementPage::LeagueManagementPage(Gui2WindowManager* windowManager,
   marketPanel->AddView(marketTitle);
   marketTitle->Show();
 
-  Gui2Caption* marketBody = new Gui2Caption(
-      windowManager, "caption_management_market_body", 2, 6, 30, 10,
-      TRF("league_market_body", {marketTargets}));
+  Gui2Caption* marketBody = new Gui2Caption(windowManager, "caption_management_market_body", 2, 6,
+                                            30, 10, TRF("league_market_body", {marketTargets}));
   marketPanel->AddView(marketBody);
   marketBody->Show();
 
@@ -179,11 +176,11 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
       snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s", fullName.c_str(), r.at(3).c_str(),
                r.at(4).c_str());
       std::string btnLabel(buf);
-      Gui2Button* btn = new Gui2Button(windowManager, "btn_contract_" + playerID, 0, 0, 65, 2.5,
-                                       btnLabel);
+      Gui2Button* btn =
+          new Gui2Button(windowManager, "btn_contract_" + playerID, 0, 0, 65, 2.5, btnLabel);
       btn->sig_OnClick.connect([this, windowManager, playerID, fullName](...) {
-        auto detail = GetDB()->Query(
-            "SELECT p.role, p.age, p.base_stat FROM players WHERE id = " + playerID);
+        auto detail =
+            GetDB()->Query("SELECT p.role, p.age, p.base_stat FROM players WHERE id = " + playerID);
         Gui2Dialog* dlg =
             new Gui2Dialog(windowManager, "dialog_contract_detail", 25, 20, 50, 50, fullName);
         if (!detail->data.empty()) {
@@ -198,9 +195,9 @@ LeagueManagementContractsPage::LeagueManagementContractsPage(Gui2WindowManager* 
           txt->AddText(Localization::GetInstance().Translate("league_release_hint"));
           dlg->AddContent(txt);
         }
-        Gui2Button* btnClose = dlg->AddPosNegButtons(
-            Localization::GetInstance().Translate("league_inbox_close"),
-            Localization::GetInstance().Translate("league_release"), false);
+        Gui2Button* btnClose =
+            dlg->AddPosNegButtons(Localization::GetInstance().Translate("league_inbox_close"),
+                                  Localization::GetInstance().Translate("league_release"), false);
         btnClose->SetFocus();
         dlg->sig_OnPositive.connect([this, dlg](...) {
           dlg->Exit();
@@ -253,9 +250,9 @@ void LeagueManagementContractsPage::ReleasePlayer(int playerID, const std::strin
       "SELECT COUNT(*) FROM players WHERE team_id = (SELECT team_id FROM settings LIMIT 1)");
   int squadSize = squad->data.empty() ? 0 : atoi(squad->data.at(0).at(0).c_str());
   if (squadSize <= kLeagueSquadMinSize) {
-    Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_release_toosmall", 25, 30, 50, 25,
-                                     loc.TranslateAndFormat("league_release_too_small",
-                                                            {int_to_str(kLeagueSquadMinSize)}));
+    Gui2Dialog* dlg = new Gui2Dialog(
+        windowManager, "dialog_release_toosmall", 25, 30, 50, 25,
+        loc.TranslateAndFormat("league_release_too_small", {int_to_str(kLeagueSquadMinSize)}));
     (dlg->AddSingleButton(loc.Translate("league_inbox_close")))->SetFocus();
     dlg->sig_OnPositive.connect([this, dlg](...) {
       dlg->Exit();
@@ -266,15 +263,14 @@ void LeagueManagementContractsPage::ReleasePlayer(int playerID, const std::strin
     return;
   }
 
-  Gui2Dialog* dlg = new Gui2Dialog(
-      windowManager, "dialog_release_confirm", 25, 30, 50, 25,
-      loc.TranslateAndFormat("league_release_confirm", {fullName}));
+  Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_release_confirm", 25, 30, 50, 25,
+                                   loc.TranslateAndFormat("league_release_confirm", {fullName}));
   (dlg->AddPosNegButtons(loc.Translate("league_yes"), loc.Translate("league_no")))->SetFocus();
   dlg->sig_OnPositive.connect([this, dlg, playerID, fullName](...) {
     dlg->Exit();
     delete dlg;
-    GetDB()->Query(
-        "UPDATE players SET team_id = 0, formationorder = 99 WHERE id = " + int_to_str(playerID));
+    GetDB()->Query("UPDATE players SET team_id = 0, formationorder = 99 WHERE id = " +
+                   int_to_str(playerID));
     GetDB()->Query(
         "INSERT INTO inbox_messages (sender, subject, body) VALUES "
         "('Board Office', 'Player released', '" +
@@ -282,8 +278,8 @@ void LeagueManagementContractsPage::ReleasePlayer(int playerID, const std::strin
     // Recreate the page so the squad list reflects the departure.
     this->Exit();
     Properties properties;
-    windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management_Contracts),
-                                                properties, 0);
+    windowManager->GetPageFactory()->CreatePage(
+        static_cast<int>(e_PageID_League_Management_Contracts), properties, 0);
     delete this;
   });
   dlg->sig_OnNegative.connect([this, dlg](...) {
@@ -366,9 +362,9 @@ LeagueManagementTransfersPage::LeagueManagementTransfersPage(Gui2WindowManager* 
           txt->AddText(Localization::GetInstance().Translate("league_sign_hint"));
           dlg->AddContent(txt);
         }
-        Gui2Button* btnClose = dlg->AddPosNegButtons(
-            Localization::GetInstance().Translate("league_inbox_close"),
-            Localization::GetInstance().Translate("league_sign"), false);
+        Gui2Button* btnClose =
+            dlg->AddPosNegButtons(Localization::GetInstance().Translate("league_inbox_close"),
+                                  Localization::GetInstance().Translate("league_sign"), false);
         btnClose->SetFocus();
         dlg->sig_OnPositive.connect([this, dlg](...) {
           dlg->Exit();
@@ -421,9 +417,9 @@ void LeagueManagementTransfersPage::SignPlayer(int playerID, const std::string& 
       "SELECT COUNT(*) FROM players WHERE team_id = (SELECT team_id FROM settings LIMIT 1)");
   int squadSize = squad->data.empty() ? 0 : atoi(squad->data.at(0).at(0).c_str());
   if (squadSize >= kLeagueSquadMaxSize) {
-    Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_sign_toobig", 25, 30, 50, 25,
-                                     loc.TranslateAndFormat("league_sign_too_big",
-                                                            {int_to_str(kLeagueSquadMaxSize)}));
+    Gui2Dialog* dlg = new Gui2Dialog(
+        windowManager, "dialog_sign_toobig", 25, 30, 50, 25,
+        loc.TranslateAndFormat("league_sign_too_big", {int_to_str(kLeagueSquadMaxSize)}));
     (dlg->AddSingleButton(loc.Translate("league_inbox_close")))->SetFocus();
     dlg->sig_OnPositive.connect([this, dlg](...) {
       dlg->Exit();
@@ -448,7 +444,7 @@ void LeagueManagementTransfersPage::SignPlayer(int playerID, const std::string& 
   // Recreate the page so the market list reflects the transfer.
   this->Exit();
   Properties properties;
-  windowManager->GetPageFactory()->CreatePage(static_cast<int>(e_PageID_League_Management_Transfers),
-                                              properties, 0);
+  windowManager->GetPageFactory()->CreatePage(
+      static_cast<int>(e_PageID_League_Management_Transfers), properties, 0);
   delete this;
 }

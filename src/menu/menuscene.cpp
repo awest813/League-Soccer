@@ -115,7 +115,8 @@ MenuScene::~MenuScene() {
 
 void MenuScene::PlayClickSound() {
   if (clickSound) {
-    clickSound->SetGain(0.6f * clamp(GetConfiguration()->GetReal("audio_volume", 0.5f), 0.0f, 1.0f));
+    clickSound->SetGain(0.6f *
+                        clamp(GetConfiguration()->GetReal("audio_volume", 0.5f), 0.0f, 1.0f));
     clickSound->SetPitch(1.0f);
     clickSound->Poke(e_SystemType_Audio);
   }
@@ -123,7 +124,8 @@ void MenuScene::PlayClickSound() {
 
 void MenuScene::PlayHoverSound() {
   if (hoverSound) {
-    hoverSound->SetGain(0.3f * clamp(GetConfiguration()->GetReal("audio_volume", 0.5f), 0.0f, 1.0f));
+    hoverSound->SetGain(0.3f *
+                        clamp(GetConfiguration()->GetReal("audio_volume", 0.5f), 0.0f, 1.0f));
     hoverSound->SetPitch(1.0f);
     hoverSound->Poke(e_SystemType_Audio);
   }

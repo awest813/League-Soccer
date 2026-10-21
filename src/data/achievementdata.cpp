@@ -20,7 +20,8 @@ AchievementManager::AchievementManager() {
 
 Achievement* AchievementManager::FindByName(const std::string& name) {
   for (auto& a : m_achievements) {
-    if (a.name == name) return &a;
+    if (a.name == name)
+      return &a;
   }
   return nullptr;
 }
@@ -66,7 +67,8 @@ bool AchievementManager::CheckAndUnlock(const std::string& event, int saveID) {
 std::vector<Achievement> AchievementManager::GetUnlocked() const {
   std::vector<Achievement> result;
   for (const auto& a : m_achievements) {
-    if (a.isUnlocked) result.push_back(a);
+    if (a.isUnlocked)
+      result.push_back(a);
   }
   return result;
 }

@@ -22,8 +22,8 @@ Gui2PlayerHUD::Gui2PlayerHUD(Gui2WindowManager* windowManager, Match* match)
   // Translucent backing plates
   for (int t = 0; t < 2; t++) {
     const float bgX = (t == 0) ? 1.5f : 73.5f;
-    hudBackingImage[t] = new Gui2Image(windowManager, "hud_player" + int_to_str(t) + "_bg", bgX,
-                                       91.5f, 25.0f, 6.2f);
+    hudBackingImage[t] =
+        new Gui2Image(windowManager, "hud_player" + int_to_str(t) + "_bg", bgX, 91.5f, 25.0f, 6.2f);
     this->AddView(hudBackingImage[t]);
     hudBackingImage[t]->Show();
 
@@ -146,18 +146,18 @@ void Gui2PlayerHUD::Put() {
         if (fillW > 0) {
           for (int y = 1; y < h - 1; y++) {
             float dist = std::abs((float)y - (h / 2.0f)) / (h / 2.0f);
-            float brightness = 0.6f + 0.4f * (1.0f - dist); // Brighter in the middle
+            float brightness = 0.6f + 0.4f * (1.0f - dist);  // Brighter in the middle
             Vector3 rowColor = color * brightness;
             img->DrawRectangle(1, y, fillW, 1, rowColor, 220);
           }
         }
-        
+
         // Borders (Inner Bevel)
         img->DrawRectangle(0, 0, w, 1, Vector3(0, 0, 0), 200);      // Top
         img->DrawRectangle(0, h - 1, w, 1, Vector3(0, 0, 0), 250);  // Bottom
         img->DrawRectangle(0, 0, 1, h, Vector3(0, 0, 0), 250);      // Left
         img->DrawRectangle(w - 1, 0, 1, h, Vector3(0, 0, 0), 200);  // Right
-        
+
         img->OnChange();
       }
     };
@@ -188,11 +188,11 @@ void Gui2PlayerHUD::Put() {
         boost::intrusive_ptr<Image2D> stmImg = staminaImage[t]->GetImage2D();
         Vector3 color;
         if (stamina >= 0.50f) {
-          color = Vector3(70, 220, 70);   // Green
+          color = Vector3(70, 220, 70);  // Green
         } else if (stamina >= 0.25f) {
           color = Vector3(240, 195, 40);  // Yellow
         } else {
-          color = Vector3(225, 45, 45);   // Red
+          color = Vector3(225, 45, 45);  // Red
         }
         drawBar(stmImg, stamina, color);
         lastStamina[t] = stamina;

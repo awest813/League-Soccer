@@ -18,7 +18,8 @@ Gui2Dialog::Gui2Dialog(Gui2WindowManager* windowManager, const std::string& name
 
   grid = new Gui2Grid(windowManager, name + "_maingrid", 0, 0, width_percent, height_percent - 5);
 
-  Gui2Caption* title = new Gui2Caption(windowManager, name + "title", 0, 0, std::max(1.0f, width_percent - 2.0f), 3, caption);
+  Gui2Caption* title = new Gui2Caption(windowManager, name + "title", 0, 0,
+                                       std::max(1.0f, width_percent - 2.0f), 3, caption);
   grid->AddView(title, 0, 0);
 
   grid->UpdateLayout(1, 1, 1, 1);
@@ -30,26 +31,25 @@ Gui2Dialog::~Gui2Dialog() {}
 
 void Gui2Dialog::AddContent(Gui2View* view) {
   if (auto* text = dynamic_cast<Gui2Text*>(view))
-    text->SetSize(std::max(1.0f, width_percent - 2.0f),
-                  std::max(1.0f, height_percent - 11.0f));
+    text->SetSize(std::max(1.0f, width_percent - 2.0f), std::max(1.0f, height_percent - 11.0f));
   grid->AddView(view);
   view->Show();
   grid->UpdateLayout(1, 1, 1, 1);
 }
 
 Gui2Button* Gui2Dialog::AddPosNegButtons(const std::string& posName, const std::string& negName,
-                                            bool negativeIsCancel) {
+                                         bool negativeIsCancel) {
   hasNegativeAction = true;
   cancelUsesNegative = negativeIsCancel;
   const float buttonWidth = std::min(20.0f, (width_percent - 4.0f) * 0.5f);
-  Gui2Grid* actions = new Gui2Grid(windowManager, name + "_actions",
-                                  (width_percent - 2 * buttonWidth - 1) * 0.5f,
-                                  height_percent - 4, 2 * buttonWidth + 1, 3);
+  Gui2Grid* actions =
+      new Gui2Grid(windowManager, name + "_actions", (width_percent - 2 * buttonWidth - 1) * 0.5f,
+                   height_percent - 4, 2 * buttonWidth + 1, 3);
   actions->SetWrapping(false, true);
-  Gui2Button* posButton = new Gui2Button(windowManager, name + "_positive", 0, 0,
-                                        buttonWidth, 3, posName);
-  Gui2Button* negButton = new Gui2Button(windowManager, name + "_negative", 0, 0,
-                                        buttonWidth, 3, negName);
+  Gui2Button* posButton =
+      new Gui2Button(windowManager, name + "_positive", 0, 0, buttonWidth, 3, posName);
+  Gui2Button* negButton =
+      new Gui2Button(windowManager, name + "_negative", 0, 0, buttonWidth, 3, negName);
   posButton->sig_OnClick.connect([this](auto*) { sig_OnPositive(this); });
   negButton->sig_OnClick.connect([this](auto*) { sig_OnNegative(this); });
   actions->AddView(posButton, 0, 0);

@@ -9,8 +9,8 @@ namespace blunted {
 
 class ResourceManagerPool : public Singleton<ResourceManagerPool> {
 public:
-  ResourceManagerPool() {};
-  virtual ~ResourceManagerPool() {};
+  ResourceManagerPool(){};
+  virtual ~ResourceManagerPool(){};
 
   virtual void Exit() { resourceManagers.clear(); }
 

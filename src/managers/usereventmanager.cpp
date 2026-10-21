@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "usereventmanager.hpp"
 
 #include "environmentmanager.hpp"
@@ -55,7 +54,8 @@ UserEventManager::UserEventManager() {
   // Load community SDL_GameControllerDB mappings if present (zlib / permissive license)
   int numMappings = SDL_GameControllerAddMappingsFromFile("data/gamecontrollerdb.txt");
   if (numMappings > 0) {
-    printf("[userevent] Loaded %d gamecontroller mappings from data/gamecontrollerdb.txt\n", numMappings);
+    printf("[userevent] Loaded %d gamecontroller mappings from data/gamecontrollerdb.txt\n",
+           numMappings);
   }
 
   for (int i = 0; i < SDL_NumJoysticks(); i++) {
@@ -246,16 +246,15 @@ void UserEventManager::CompactJoystickSlots(int removedSlot) {
   }
 }
 
-bool UserEventManager::SetJoystickRumble(int joyID, float low_frequency, float high_frequency, unsigned int duration_ms) {
+bool UserEventManager::SetJoystickRumble(int joyID, float low_frequency, float high_frequency,
+                                         unsigned int duration_ms) {
   if (joyID >= 0 && joyID < _JOYSTICK_MAX && joystick[joyID]) {
-    #if SDL_VERSION_ATLEAST(2, 0, 9)
-    return SDL_JoystickRumble(joystick[joyID], 
-                              static_cast<Uint16>(low_frequency * 65535), 
-                              static_cast<Uint16>(high_frequency * 65535), 
-                              duration_ms) == 0;
-    #else
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+    return SDL_JoystickRumble(joystick[joyID], static_cast<Uint16>(low_frequency * 65535),
+                              static_cast<Uint16>(high_frequency * 65535), duration_ms) == 0;
+#else
     return false;
-    #endif
+#endif
   }
   return false;
 }
@@ -323,7 +322,8 @@ bool UserEventManager::GetJoystickAxisInitialState(int joyID, int axisID, float*
 }
 
 bool UserEventManager::GetMouseButtonState(int sdlButtonID) const {
-  if (sdlButtonID < 0 || sdlButtonID >= 32) return false;
+  if (sdlButtonID < 0 || sdlButtonID >= 32)
+    return false;
   std::unique_lock<std::mutex> lock(mousePressedMutex);
   return mousePressed[sdlButtonID];
 }
@@ -339,19 +339,24 @@ Vector3 UserEventManager::GetMouseRelativePos() const {
 }
 
 bool UserEventManager::GetJoyButtonState(int joyID, int sdlJoyButtonID) const {
-  if (joyID < 0 || joyID >= _JOYSTICK_MAX || sdlJoyButtonID < 0 || sdlJoyButtonID >= _JOYSTICK_MAXBUTTONS) return false;
+  if (joyID < 0 || joyID >= _JOYSTICK_MAX || sdlJoyButtonID < 0 ||
+      sdlJoyButtonID >= _JOYSTICK_MAXBUTTONS)
+    return false;
   std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
   return joyButtonPressed[joyID][sdlJoyButtonID];
 }
 
 void UserEventManager::SetJoyButtonState(int joyID, int sdlJoyButtonID, bool newState) {
-  if (joyID < 0 || joyID >= _JOYSTICK_MAX || sdlJoyButtonID < 0 || sdlJoyButtonID >= _JOYSTICK_MAXBUTTONS) return;
+  if (joyID < 0 || joyID >= _JOYSTICK_MAX || sdlJoyButtonID < 0 ||
+      sdlJoyButtonID >= _JOYSTICK_MAXBUTTONS)
+    return;
   std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
   joyButtonPressed[joyID][sdlJoyButtonID] = newState;
 }
 
 float UserEventManager::GetJoystickAxis(int joyID, int axisID, bool deadzone) const {
-  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES) return 0.0f;
+  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES)
+    return 0.0f;
   std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
 
   float min = joyAxisCalibration[joyID][axisID][0];
@@ -406,32 +411,37 @@ float UserEventManager::GetJoystickAxis(int joyID, int axisID, bool deadzone) co
 }
 
 float UserEventManager::GetJoystickAxisRaw(int joyID, int axisID) const {
-  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES) return 0.0f;
+  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES)
+    return 0.0f;
   std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
   return joyAxis[joyID][axisID];
 }
 
 float UserEventManager::GetJoystickAxisCalibrationMin(int joyID, int axisID) {
-  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES) return 0.0f;
+  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES)
+    return 0.0f;
   std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
   return joyAxisCalibration[joyID][axisID][0];
 }
 
 float UserEventManager::GetJoystickAxisCalibrationMax(int joyID, int axisID) {
-  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES) return 0.0f;
+  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES)
+    return 0.0f;
   std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
   return joyAxisCalibration[joyID][axisID][1];
 }
 
 float UserEventManager::GetJoystickAxisCalibrationRest(int joyID, int axisID) {
-  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES) return 0.0f;
+  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES)
+    return 0.0f;
   std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
   return joyAxisCalibration[joyID][axisID][2];
 }
 
 void UserEventManager::SetJoystickAxisCalibration(int joyID, int axisID, float min, float max,
                                                   float rest) {
-  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES) return;
+  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES)
+    return;
   std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
   joyAxisCalibration[joyID][axisID][0] = min;
   joyAxisCalibration[joyID][axisID][1] = max;

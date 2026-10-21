@@ -12,13 +12,13 @@
 using namespace blunted;
 
 class SetPieceEditorPage : public Gui2Page {
- public:
+public:
   SetPieceEditorPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~SetPieceEditorPage();
 
   void Save();
 
- protected:
+protected:
   int teamDatabaseID;
 
   // One entry per editable set-piece type (FreeKick, Corner, GoalKick)

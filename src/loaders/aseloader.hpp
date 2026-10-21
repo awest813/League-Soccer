@@ -22,7 +22,8 @@ public:
   virtual ~ASELoader();
 
   // ----- encapsulating load function
-  virtual void Load(const std::string& filename, boost::intrusive_ptr<Resource<GeometryData>> resource);
+  virtual void Load(const std::string& filename,
+                    boost::intrusive_ptr<Resource<GeometryData>> resource);
 
   // ----- interpreter for the .ase treedata
   void Build(const s_tree* data, boost::intrusive_ptr<Resource<GeometryData>> resource);

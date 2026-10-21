@@ -279,8 +279,8 @@ TEST(LeagueBootstrapIntegrationTest, SeasonCompletesAdvancesAndSupportsSaveSlots
   EXPECT_FALSE(LeagueSaveToSlot(0));
   EXPECT_FALSE(LeagueSaveToSlot(kLeagueMaxSaveSlots + 1));
 
-  EXPECT_TRUE(std::filesystem::exists(std::filesystem::path("saves") / "slotworkspace" /
-                                      "slot_3.sqlite"));
+  EXPECT_TRUE(
+      std::filesystem::exists(std::filesystem::path("saves") / "slotworkspace" / "slot_3.sqlite"));
   // Loading rewrites the live autosave from the slot.
   {
     std::ofstream slot3(std::filesystem::path("saves") / "slotworkspace" / "slot_3.sqlite",
@@ -349,9 +349,9 @@ TEST(LeagueBootstrapIntegrationTest, MatchdayLoopRecordsSimulatedAndPlayedResult
   // Resolving the matchday plays out the remaining round-1 fixture.
   EXPECT_EQ(LeagueResolveMatchday(fixture.date), 1);
   EXPECT_EQ(QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM match_results WHERE played = 1"), 2);
-  EXPECT_EQ(
-      QuerySingleInt(GetDB(), "SELECT COUNT(*) FROM inbox_messages WHERE subject LIKE 'Match Result:%'"),
-      2);
+  EXPECT_EQ(QuerySingleInt(
+                GetDB(), "SELECT COUNT(*) FROM inbox_messages WHERE subject LIKE 'Match Result:%'"),
+            2);
   EXPECT_EQ(LeagueGetLastMatchdayDate(), "2013-10-23");
   EXPECT_EQ(QuerySingleString(GetDB(), "SELECT timestamp FROM settings LIMIT 1"), "2013-10-23");
 
@@ -368,9 +368,10 @@ TEST(LeagueBootstrapIntegrationTest, MatchdayLoopRecordsSimulatedAndPlayedResult
   ASSERT_TRUE(LeagueConsumePlayedFixture(3, 1));
   EXPECT_FALSE(LeagueHasPendingFixture());
 
-  auto playedRow = GetDB()->Query("SELECT team1_goals, team2_goals FROM match_results "
-                                  "WHERE calendar_id = " +
-                                  std::to_string(next.calendarID));
+  auto playedRow = GetDB()->Query(
+      "SELECT team1_goals, team2_goals FROM match_results "
+      "WHERE calendar_id = " +
+      std::to_string(next.calendarID));
   ASSERT_FALSE(playedRow->data.empty());
   EXPECT_EQ(std::stoi(playedRow->data.at(0).at(0)), 3);
   EXPECT_EQ(std::stoi(playedRow->data.at(0).at(1)), 1);

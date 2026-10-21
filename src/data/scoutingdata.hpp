@@ -7,7 +7,7 @@
 struct Scout {
   int scoutID = 0;
   std::string name;
-  int skill = 50;   // 0–100
+  int skill = 50;  // 0–100
   std::string region;
   int salary = 0;
 };
@@ -25,7 +25,7 @@ struct ScoutReport {
 };
 
 class ScoutingNetwork {
- public:
+public:
   ScoutingNetwork() = default;
 
   int HireScout(const Scout& scout);
@@ -41,7 +41,7 @@ class ScoutingNetwork {
 
   const std::vector<ScoutReport>& GetReports() const { return m_reports; }
 
- private:
+private:
   std::vector<Scout> m_scouts;
   std::vector<ScoutReport> m_reports;
   int m_nextScoutID = 1;

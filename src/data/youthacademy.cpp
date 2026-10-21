@@ -18,7 +18,8 @@ void YouthAcademy::RemoveProspect(int youthID) {
 
 YouthPlayer* YouthAcademy::GetProspect(int youthID) {
   for (auto& p : m_prospects) {
-    if (p.youthID == youthID) return &p;
+    if (p.youthID == youthID)
+      return &p;
   }
   return nullptr;
 }
@@ -34,14 +35,17 @@ void YouthAcademy::DevelopPlayers() {
         static_cast<int>(Clamp(static_cast<float>(p.currentRating) + improvement, 0.0f, 100.0f));
 
     // Players aged 21+ are released if not promoted
-    if (p.age > 20) toRemove.push_back(p.youthID);
+    if (p.age > 20)
+      toRemove.push_back(p.youthID);
   }
-  for (int id : toRemove) RemoveProspect(id);
+  for (int id : toRemove)
+    RemoveProspect(id);
 }
 
 int YouthAcademy::PromoteToFirstTeam(int youthID) {
   YouthPlayer* p = GetProspect(youthID);
-  if (!p) return -1;
+  if (!p)
+    return -1;
   // Return current rating as a placeholder new-player ID
   int promotedID = p->youthID;
   RemoveProspect(youthID);

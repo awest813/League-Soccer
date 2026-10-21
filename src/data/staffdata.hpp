@@ -15,13 +15,13 @@ struct StaffMember {
   int staffID = 0;
   std::string name;
   StaffRole role = StaffRole::ASSISTANT_COACH;
-  int skill = 50;   // 0–100
+  int skill = 50;  // 0–100
   int salary = 0;
   int teamID = 0;
 };
 
 class StaffManager {
- public:
+public:
   StaffManager() = default;
 
   int HireStaff(const StaffMember& member);
@@ -37,7 +37,7 @@ class StaffManager {
 
   int GetTotalWages(int teamID) const;
 
- private:
+private:
   std::vector<StaffMember> m_staff;
   int m_nextStaffID = 1;
 };

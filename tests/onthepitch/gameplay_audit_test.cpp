@@ -7,10 +7,10 @@
 
 #include "onthepitch/aitactics.hpp"
 #include "onthepitch/gameplaytuning.hpp"
-#include "onthepitch/sprinttap.hpp"
-#include "onthepitch/shotaim.hpp"
 #include "onthepitch/pendingcautions.hpp"
 #include "onthepitch/setpiecerules.hpp"
+#include "onthepitch/shotaim.hpp"
+#include "onthepitch/sprinttap.hpp"
 
 namespace {
 
@@ -31,22 +31,22 @@ TEST(FirstTouchTest, MaxPenaltyUnderHeavyPressure) {
   float penalty = GameplayTuning::GetFirstTouchContextPenalty(
       /*opponentDistance=*/0.1f, /*calmness=*/0.0f, /*balance=*/0.0f,
       /*ballSpeed=*/16.0f, /*facingAlignment=*/-1.0f, /*condition=*/1);
-  EXPECT_GT(penalty, 0.15f);   // must be meaningfully large
-  EXPECT_LE(penalty, 0.25f);   // capped
+  EXPECT_GT(penalty, 0.15f);  // must be meaningfully large
+  EXPECT_LE(penalty, 0.25f);  // capped
 }
 
 TEST(FirstTouchTest, PoorConditionAddsExtraPenalty) {
-  float good = GameplayTuning::GetFirstTouchContextPenalty(
-      2.0f, 0.5f, 0.5f, 8.0f, 0.0f, /*condition=*/5);
-  float poor = GameplayTuning::GetFirstTouchContextPenalty(
-      2.0f, 0.5f, 0.5f, 8.0f, 0.0f, /*condition=*/1);
+  float good =
+      GameplayTuning::GetFirstTouchContextPenalty(2.0f, 0.5f, 0.5f, 8.0f, 0.0f, /*condition=*/5);
+  float poor =
+      GameplayTuning::GetFirstTouchContextPenalty(2.0f, 0.5f, 0.5f, 8.0f, 0.0f, /*condition=*/1);
   EXPECT_GT(poor, good);
 }
 
 TEST(FirstTouchTest, PenaltyIsAlwaysNonNegative) {
   // Even best-case condition should never produce a negative penalty
-  float penalty = GameplayTuning::GetFirstTouchContextPenalty(
-      10.0f, 1.0f, 1.0f, 1.0f, 1.0f, /*condition=*/5);
+  float penalty =
+      GameplayTuning::GetFirstTouchContextPenalty(10.0f, 1.0f, 1.0f, 1.0f, 1.0f, /*condition=*/5);
   EXPECT_GE(penalty, 0.0f);
 }
 
@@ -104,10 +104,8 @@ TEST(GoalMouthTest, BallOverCrossbarIsNotThreat) {
 
 TEST(GoalMouthTest, AnticipationWidensWindow) {
   // Ball 4m wide; not a threat at 1.0 anticipation but is at 1.2
-  EXPECT_FALSE(GameplayTuning::IsGoalMouthThreat(
-      4.0f, 0.5f, 3.66f, 2.44f, /*anticipation=*/1.0f));
-  EXPECT_TRUE(GameplayTuning::IsGoalMouthThreat(
-      4.0f, 0.5f, 3.66f, 2.44f, /*anticipation=*/1.15f));
+  EXPECT_FALSE(GameplayTuning::IsGoalMouthThreat(4.0f, 0.5f, 3.66f, 2.44f, /*anticipation=*/1.0f));
+  EXPECT_TRUE(GameplayTuning::IsGoalMouthThreat(4.0f, 0.5f, 3.66f, 2.44f, /*anticipation=*/1.15f));
 }
 
 // ============================================================
@@ -241,8 +239,7 @@ TEST(SupportPassTest, ShouldPassWhenTeammateHasMoreSpace) {
 }
 
 TEST(SupportPassTest, ShouldNotPassWhenBothHaveEqualSpace) {
-  EXPECT_FALSE(AITactics::ShouldConsiderSupportPass(
-      0.6f, 0.5f, 0.6f, 0.5f, 0.3f));
+  EXPECT_FALSE(AITactics::ShouldConsiderSupportPass(0.6f, 0.5f, 0.6f, 0.5f, 0.3f));
 }
 
 TEST(SupportPassTest, SupportPassBonusScalesWithSpaceGain) {
@@ -281,8 +278,6 @@ TEST(ClampUtilTest, Clamp01AlwaysInRange) {
   EXPECT_FLOAT_EQ(GameplayTuning::Clamp01(5.0f), 1.0f);
   EXPECT_FLOAT_EQ(GameplayTuning::Clamp01(0.5f), 0.5f);
 }
-
-
 
 TEST(SprintTapTest, FirstPressAtKickoffDoesNotKnockOn) {
   SprintTap tap;
@@ -401,7 +396,7 @@ TEST(SetPieceRulesTest, DirectGoalKickCornerAndThrowInAreOffsideExempt) {
   EXPECT_TRUE(IsOffsideExemptRestart(e_SetPiece_ThrowIn));
 }
 
-TEST(SetPieceRulesTest,OpenPlayAndOtherRestartsStillCheckOffside) {
+TEST(SetPieceRulesTest, OpenPlayAndOtherRestartsStillCheckOffside) {
   EXPECT_FALSE(IsOffsideExemptRestart(e_SetPiece_None));
   EXPECT_FALSE(IsOffsideExemptRestart(e_SetPiece_FreeKick));
   EXPECT_FALSE(IsOffsideExemptRestart(e_SetPiece_KickOff));

@@ -9,15 +9,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #ifndef _HPP_GUI2_GUI2TASK
 #define _HPP_GUI2_GUI2TASK
 
 #include <SDL2/SDL_ttf.h>
 
+#include "menurepeat.hpp"
 #include "scene/scene2d/scene2d.hpp"
 #include "types/iusertask.hpp"
-#include "menurepeat.hpp"
 #include "windowmanager.hpp"
 
 namespace blunted {

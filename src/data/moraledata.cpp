@@ -4,7 +4,8 @@
 
 PlayerMorale* MoraleManager::FindOrCreate(int playerID) {
   for (auto& m : m_morales) {
-    if (m.playerID == playerID) return &m;
+    if (m.playerID == playerID)
+      return &m;
   }
   m_morales.push_back({playerID, 50.0f, ""});
   return &m_morales.back();
@@ -12,7 +13,8 @@ PlayerMorale* MoraleManager::FindOrCreate(int playerID) {
 
 const PlayerMorale* MoraleManager::Find(int playerID) const {
   for (const auto& m : m_morales) {
-    if (m.playerID == playerID) return &m;
+    if (m.playerID == playerID)
+      return &m;
   }
   return nullptr;
 }
@@ -20,7 +22,8 @@ const PlayerMorale* MoraleManager::Find(int playerID) const {
 void MoraleManager::SetMorale(int playerID, float score, const std::string& reason) {
   PlayerMorale* m = FindOrCreate(playerID);
   m->moraleScore = Clamp(score, 0.0f, 100.0f);
-  if (!reason.empty()) m->reason = reason;
+  if (!reason.empty())
+    m->reason = reason;
 }
 
 float MoraleManager::GetMorale(int playerID) const {
@@ -48,7 +51,7 @@ void MoraleManager::UpdateAfterTransfer(int playerID, bool playerRequested) {
 }
 
 TeamChemistry MoraleManager::ComputeTeamChemistry(int teamID,
-                                                   const std::vector<int>& playerIDs) const {
+                                                  const std::vector<int>& playerIDs) const {
   TeamChemistry tc;
   tc.teamID = teamID;
   if (playerIDs.empty()) {
@@ -56,7 +59,8 @@ TeamChemistry MoraleManager::ComputeTeamChemistry(int teamID,
     return tc;
   }
   float sum = 0.0f;
-  for (int id : playerIDs) sum += GetMorale(id);
+  for (int id : playerIDs)
+    sum += GetMorale(id);
   tc.chemistryScore = sum / static_cast<float>(playerIDs.size());
   return tc;
 }

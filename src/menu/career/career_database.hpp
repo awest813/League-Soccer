@@ -1,8 +1,8 @@
 #ifndef CAREER_DATABASE_HPP
 #define CAREER_DATABASE_HPP
 
-#include <memory>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -45,7 +45,8 @@ public:
   }
 
   bool SetPendingFixture(bool isHome, int userTeamDBID, int opponentTeamDBID,
-                         const std::string& opponentName, int expectedSeason = -1, int expectedWeek = -1);
+                         const std::string& opponentName, int expectedSeason = -1,
+                         int expectedWeek = -1);
   bool HasPendingFixture() const;
   const CareerPendingFixture& GetPendingFixture() const;
   void ClearPendingFixture();
@@ -70,19 +71,26 @@ public:
   void AddEvent(const std::string& eventType, const std::string& description, int reputationDelta,
                 bool isMajor) override;
 
-  void RecruitFreeAgent(const std::string& playerName, CareerActionSource source = CareerActionSource::USER);
+  void RecruitFreeAgent(const std::string& playerName,
+                        CareerActionSource source = CareerActionSource::USER);
   bool TrainSquad();
   bool SetHandsOnManagement(bool enabled);
-  bool SetTrainingPlan(CareerTrainingPlan plan, CareerActionSource source = CareerActionSource::USER);
+  bool SetTrainingPlan(CareerTrainingPlan plan,
+                       CareerActionSource source = CareerActionSource::USER);
   bool TrainFocus(const std::string& focusArea);
-  bool MotivatePlayer(const std::string& playerName, CareerActionSource source = CareerActionSource::USER);
-  bool DrillPlayer(const std::string& playerName, CareerActionSource source = CareerActionSource::USER);
-  void SetStrategy(const std::string& strategy, CareerActionSource source = CareerActionSource::USER);
+  bool MotivatePlayer(const std::string& playerName,
+                      CareerActionSource source = CareerActionSource::USER);
+  bool DrillPlayer(const std::string& playerName,
+                   CareerActionSource source = CareerActionSource::USER);
+  void SetStrategy(const std::string& strategy,
+                   CareerActionSource source = CareerActionSource::USER);
 
   void ScoutYouthPlayer(CareerActionSource source = CareerActionSource::USER);
-  void PromoteYouthPlayer(const std::string& playerName, CareerActionSource source = CareerActionSource::USER);
+  void PromoteYouthPlayer(const std::string& playerName,
+                          CareerActionSource source = CareerActionSource::USER);
 
-  void ModifyBudget(long long transferDelta, long long wageDelta, CareerActionSource source = CareerActionSource::USER);
+  void ModifyBudget(long long transferDelta, long long wageDelta,
+                    CareerActionSource source = CareerActionSource::USER);
   void ModifyBoardConfidence(int delta) override;
 
   bool ExtendContract(const std::string& playerName);
@@ -94,7 +102,8 @@ public:
                        const std::vector<std::string>& scorers = {});
   void ProcessPlayerGrowth(PlayerCareerState& player);
   void UpdatePlayerValue(PlayerCareerState& player);
-  void ReleasePlayer(const std::string& playerName, CareerActionSource source = CareerActionSource::USER);
+  void ReleasePlayer(const std::string& playerName,
+                     CareerActionSource source = CareerActionSource::USER);
   void RecordMatchStats(const std::string& playerName, int goals, int assists);
 
   void PopulateTransferMarket();
@@ -102,24 +111,29 @@ public:
   TransferBid PlaceBid(const std::string& playerName, long long bidAmount, int offeredWage,
                        int contractYears, CareerActionSource source = CareerActionSource::USER);
   std::vector<TransferBid>& GetActiveBids() { return m_activeBids; }
-  void WithdrawBid(const std::string& playerName, CareerActionSource source = CareerActionSource::USER);
+  void WithdrawBid(const std::string& playerName,
+                   CareerActionSource source = CareerActionSource::USER);
   void ProcessPendingBids();
   std::string GetBidStatusString(BidStatus status) const;
-  bool CompleteTransfer(const std::string& playerName, CareerActionSource source = CareerActionSource::USER);
+  bool CompleteTransfer(const std::string& playerName,
+                        CareerActionSource source = CareerActionSource::USER);
 
   void InitializeOwnerData();
   void UpgradeStadium(int upgradeIndex, CareerActionSource source = CareerActionSource::USER);
-  void RenameStadium(const std::string& newName, CareerActionSource source = CareerActionSource::USER);
+  void RenameStadium(const std::string& newName,
+                     CareerActionSource source = CareerActionSource::USER);
   void RepairStadium(int amount, CareerActionSource source = CareerActionSource::USER);
   void SetTicketPrice(int price, CareerActionSource source = CareerActionSource::USER);
 
   void HireStaff(const StaffMember& member, CareerActionSource source = CareerActionSource::USER);
-  void FireStaff(const std::string& staffName, CareerActionSource source = CareerActionSource::USER);
+  void FireStaff(const std::string& staffName,
+                 CareerActionSource source = CareerActionSource::USER);
   void GenerateStaffCandidates(std::vector<StaffMember>& candidates);
 
   void GenerateSponsorOffers();
   bool AcceptSponsorDeal(int dealIndex, CareerActionSource source = CareerActionSource::USER);
-  void TerminateSponsorDeal(const std::string& sponsorName, CareerActionSource source = CareerActionSource::USER);
+  void TerminateSponsorDeal(const std::string& sponsorName,
+                            CareerActionSource source = CareerActionSource::USER);
 
   long long GetSeasonProfit() const;
   std::string GetFinancialHealthString() const;

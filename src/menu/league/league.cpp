@@ -306,7 +306,8 @@ void LeagueStartLoadPage::GoLoadSave() {
 
   Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_league_load_save", 25, 30, 50, 25,
                                    loc.Translate("league_load_confirm"));
-  (dlg->AddPosNegButtons(loc.Translate("league_load"), loc.Translate("league_delete"), false))->SetFocus();
+  (dlg->AddPosNegButtons(loc.Translate("league_load"), loc.Translate("league_delete"), false))
+      ->SetFocus();
   dlg->sig_OnCancel.connect([dlg](...) {
     dlg->Exit();
     delete dlg;

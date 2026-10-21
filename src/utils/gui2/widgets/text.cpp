@@ -1,6 +1,6 @@
 #include "text.hpp"
-#include "../textlayout.hpp"
 
+#include "../textlayout.hpp"
 #include "../windowmanager.hpp"
 #include "SDL2/SDL_ttf.h"
 
@@ -65,9 +65,9 @@ void Gui2Text::AddText(const std::string& newText) {
   for (const auto& line : lines) {
     const size_t index = resultText.size();
     resultText.push_back(line);
-    auto* caption = new Gui2Caption(windowManager, GetName() + int_to_str(index), 0,
-                                    index * fontsize_percent * 1.5f, width_percent,
-                                    fontsize_percent, line);
+    auto* caption =
+        new Gui2Caption(windowManager, GetName() + int_to_str(index), 0,
+                        index * fontsize_percent * 1.5f, width_percent, fontsize_percent, line);
     caption->SetColor(color);
     caption->SetOutlineColor(outlineColor);
     AddView(caption);
@@ -78,8 +78,9 @@ void Gui2Text::AddText(const std::string& newText) {
 
 void Gui2Text::SetSize(float width, float height) {
   Gui2View::SetSize(width, height);
-  const float lineHeight = resultCaptions.empty() ? fontsize_percent :
-      std::min(fontsize_percent, height / (resultCaptions.size() * 1.5f));
+  const float lineHeight =
+      resultCaptions.empty() ? fontsize_percent
+                             : std::min(fontsize_percent, height / (resultCaptions.size() * 1.5f));
   for (size_t i = 0; i < resultCaptions.size(); ++i) {
     resultCaptions[i]->SetPosition(0, i * lineHeight * 1.5f);
     resultCaptions[i]->SetSize(width, lineHeight);

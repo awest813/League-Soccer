@@ -8,7 +8,7 @@
 // after substitution or dismissal. Separate offences may caution the same player.
 template <typename PlayerType>
 class PendingCautions {
- public:
+public:
   void Add(PlayerType* player) {
     if (player)
       players.push_back(player);
@@ -25,7 +25,7 @@ class PendingCautions {
     return result;
   }
 
- private:
+private:
   std::vector<PlayerType*> players;
 };
 

@@ -3,7 +3,7 @@
 
 // A knock-on is a short-lived double tap, never a stored future touch.
 class SprintTap {
- public:
+public:
   void Update(unsigned long now_ms, bool pressed, bool eligible) {
     if (!eligible) {
       Reset();
@@ -33,7 +33,7 @@ class SprintTap {
     pending = false;
   }
 
- private:
+private:
   unsigned long previousAt_ms = 0;
   unsigned long pendingAt_ms = 0;
   bool hasPrevious = false;

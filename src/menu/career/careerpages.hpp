@@ -68,7 +68,6 @@ private:
   void OpenTool(CareerHubAction action);
   void OpenInboxItem(size_t index);
   void GoMatchday();
-
 };
 
 // Transfer market browser

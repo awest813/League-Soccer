@@ -4,26 +4,19 @@
 #include <windows.h>
 #endif
 
-#include "main.hpp"
-
 #include "animator.hpp"
-#include "gui/gui.hpp"
-
-#include "base/utils.hpp"
+#include "base/log.hpp"
 #include "base/properties.hpp"
-
+#include "base/utils.hpp"
+#include "framework/scheduler.hpp"
+#include "gui/gui.hpp"
+#include "main.hpp"
+#include "managers/scenemanager.hpp"
+#include "managers/systemmanager.hpp"
 #include "scene/scene2d/scene2d.hpp"
 #include "scene/scene3d/scene3d.hpp"
-
 #include "systems/graphics/graphics_system.hpp"
 #include "systems/physics/physics_system.hpp"
-
-#include "framework/scheduler.hpp"
-
-#include "managers/systemmanager.hpp"
-#include "managers/scenemanager.hpp"
-
-#include "base/log.hpp"
 
 //#include <SDL/SDL.h>
 
@@ -34,7 +27,7 @@
 using namespace blunted;
 
 GraphicsSystem *graphicsSystem;
-//PhysicsSystem *physicsSystem;
+// PhysicsSystem *physicsSystem;
 
 boost::shared_ptr<Scene2D> scene2D;
 boost::shared_ptr<Scene3D> scene3D;
@@ -42,13 +35,12 @@ boost::shared_ptr<Scene3D> scene3D;
 boost::shared_ptr<TaskSequence> graphicsSequence;
 boost::shared_ptr<TaskSequence> physicsSequence;
 
-//int main(int argc, char* argv[]) {
-int main(int argc, const char** argv) {
+// int main(int argc, char* argv[]) {
+int main(int argc, const char **argv) {
   Properties config;
   config.LoadFile("animator.config");
 
   Initialize(config);
-
 
   // initialize systems
 
@@ -56,16 +48,17 @@ int main(int argc, const char** argv) {
 
   graphicsSystem = new GraphicsSystem();
   bool returnvalue = systemManager->RegisterSystem("GraphicsSystem", graphicsSystem);
-  if (!returnvalue) Log(e_FatalError, "blunted", "Initialize", "Could not register GraphicsSystem");
+  if (!returnvalue)
+    Log(e_FatalError, "blunted", "Initialize", "Could not register GraphicsSystem");
 
-//  physicsSystem = new PhysicsSystem();
-//  returnvalue = systemManager->RegisterSystem("PhysicsSystem", physicsSystem);
-//  if (!returnvalue) Log(e_FatalError, "blunted", "Initialize", "Could not register PhysicsSystem");
+  //  physicsSystem = new PhysicsSystem();
+  //  returnvalue = systemManager->RegisterSystem("PhysicsSystem", physicsSystem);
+  //  if (!returnvalue) Log(e_FatalError, "blunted", "Initialize", "Could not register
+  //  PhysicsSystem");
 
   // todo: let systemmanager init systems?
   graphicsSystem->Initialize(config);
-//  physicsSystem->Initialize(config);
-
+  //  physicsSystem->Initialize(config);
 
   // init scenes
 
@@ -75,12 +68,12 @@ int main(int argc, const char** argv) {
   scene3D = boost::shared_ptr<Scene3D>(new Scene3D("scene3D"));
   SceneManager::GetInstance().RegisterScene(scene3D);
 
-
   // sequences
 
   boost::mutex graphicsMutex;
 
-  graphicsSequence = boost::shared_ptr<TaskSequence>(new TaskSequence("graphics", config.GetInt("graphics3d_frametime_ms", 0)));
+  graphicsSequence = boost::shared_ptr<TaskSequence>(
+      new TaskSequence("graphics", config.GetInt("graphics3d_frametime_ms", 0)));
   graphicsSequence->AddLockEntry(graphicsMutex, e_LockAction_Lock);
   graphicsSequence->AddSystemTaskEntry(graphicsSystem, e_TaskPhase_Get);
   graphicsSequence->AddLockEntry(graphicsMutex, e_LockAction_Unlock);
@@ -88,17 +81,17 @@ int main(int argc, const char** argv) {
   graphicsSequence->AddSystemTaskEntry(graphicsSystem, e_TaskPhase_Put);
   GetScheduler()->RegisterTaskSequence(graphicsSequence);
 
-
   // gui
 
   boost::shared_ptr<GuiTask> guiTask(new GuiTask(scene2D, 20 / 10.0, 10));
   GuiInterface *guiInterface = guiTask->GetInterface();
   boost::shared_ptr<Animator> animator(new Animator(scene2D, scene3D, guiInterface));
-  physicsSequence = boost::shared_ptr<TaskSequence>(new TaskSequence("physics", config.GetInt("physics_frametime_ms", 10), false));
-  //physicsSequence->AddSystemTaskEntry(physicsSystem, e_TaskPhase_Get);
-  //physicsSequence->AddSystemTaskEntry(physicsSystem, e_TaskPhase_Process);
+  physicsSequence = boost::shared_ptr<TaskSequence>(
+      new TaskSequence("physics", config.GetInt("physics_frametime_ms", 10), false));
+  // physicsSequence->AddSystemTaskEntry(physicsSystem, e_TaskPhase_Get);
+  // physicsSequence->AddSystemTaskEntry(physicsSystem, e_TaskPhase_Process);
   physicsSequence->AddLockEntry(graphicsMutex, e_LockAction_Lock);
-  //physicsSequence->AddSystemTaskEntry(physicsSystem, e_TaskPhase_Put);
+  // physicsSequence->AddSystemTaskEntry(physicsSystem, e_TaskPhase_Put);
   physicsSequence->AddUserTaskEntry(guiTask, e_TaskPhase_Get);
   physicsSequence->AddUserTaskEntry(guiTask, e_TaskPhase_Process);
   physicsSequence->AddUserTaskEntry(guiTask, e_TaskPhase_Put);
@@ -108,13 +101,11 @@ int main(int argc, const char** argv) {
   physicsSequence->AddLockEntry(graphicsMutex, e_LockAction_Unlock);
   GetScheduler()->RegisterTaskSequence(physicsSequence);
 
-
   // fire!
 
-//  while (RunOnce()) {
-//  }
+  //  while (RunOnce()) {
+  //  }
   Run();
-
 
   // exit
 

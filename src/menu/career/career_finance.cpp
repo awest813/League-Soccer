@@ -32,8 +32,8 @@ void InitializeOwnerData(CareerSave& save) {
                                               "Improves overall squad fitness and growth.", 9000000,
                                               2, 2, 0, 1000000});
     save.stadium.availableUpgrades.push_back({"Youth Academy",
-                                              "Massively boosts development of young players.", 15000000,
-                                              3, 3, 0, 1200000});
+                                              "Massively boosts development of young players.",
+                                              15000000, 3, 3, 0, 1200000});
   }
 
   if (save.staff.empty()) {
@@ -123,42 +123,45 @@ void InvestInPrestige(CareerSave& save, long long amount) {
 
 void ProcessSeasonFinances(CareerSave& save) {
   InitializeOwnerData(save);
-  
+
   // Dynamic Attendance & Matchday Revenue
   // High prestige reduces the penalty of high ticket prices.
   double ticketRatio = 40.0 / static_cast<double>(std::max(10, save.finances.ticketPrice));
   double attendanceFactor = (save.fanBase * 0.4 + save.clubPrestige * 0.6) / 100.0;
-  double prestigeResistance = save.clubPrestige / 100.0; 
+  double prestigeResistance = save.clubPrestige / 100.0;
   if (ticketRatio < 1.0) {
-      ticketRatio = 1.0 - ((1.0 - ticketRatio) * (1.0 - prestigeResistance * 0.8));
+    ticketRatio = 1.0 - ((1.0 - ticketRatio) * (1.0 - prestigeResistance * 0.8));
   }
-  
+
   int expectedAttendance = static_cast<int>(save.stadium.capacity * attendanceFactor * ticketRatio);
   expectedAttendance = std::max(5000, std::min(save.stadium.capacity, expectedAttendance));
-  
-  long long seasonMatchRevenue = static_cast<long long>(expectedAttendance) * save.finances.ticketPrice * 19LL;
+
+  long long seasonMatchRevenue =
+      static_cast<long long>(expectedAttendance) * save.finances.ticketPrice * 19LL;
 
   // TV Revenue based on estimated league position
-  int finishPos = CareerSim::EstimateLeaguePosition(save.seasonWins, save.seasonDraws, save.seasonLosses);
+  int finishPos =
+      CareerSim::EstimateLeaguePosition(save.seasonWins, save.seasonDraws, save.seasonLosses);
   // 1st place gets ~20M, 20th place gets ~5M
   long long tvRevenue = 5000000LL + std::max(0, 20 - finishPos) * 750000LL;
 
   long long sponsorRevenue = 0;
   for (const auto& sponsor : save.activeSponsors)
     sponsorRevenue += sponsor.annualRevenue;
-  long long merchandiseRevenue = static_cast<long long>(save.fanBase) * 120000LL; // Boosted slightly
+  long long merchandiseRevenue =
+      static_cast<long long>(save.fanBase) * 120000LL;  // Boosted slightly
 
   save.finances.matchDayIncome = seasonMatchRevenue;
   save.finances.tvRevenue = tvRevenue;
   save.finances.sponsorIncome = sponsorRevenue;
   save.finances.merchandiseIncome = merchandiseRevenue;
   save.finances.stadiumCosts = save.stadium.maintenanceCost;
-  
+
   save.finances.totalRevenue = seasonMatchRevenue + sponsorRevenue + merchandiseRevenue +
                                tvRevenue + save.finances.transferIncome;
   save.finances.totalExpenses = save.finances.playerWages + save.finances.staffWages +
                                 save.finances.stadiumCosts + save.finances.transferSpending;
-                                
+
   long long profit = GetSeasonProfit(save);
   save.finances.netWorth = std::max(0LL, save.finances.netWorth + profit);
   save.transferBudget = std::max(0LL, save.transferBudget + profit / 2);

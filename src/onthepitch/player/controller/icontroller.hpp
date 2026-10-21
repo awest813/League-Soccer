@@ -9,11 +9,11 @@ class PlayerBase;
 
 class IController {
 public:
-  IController(Match* match) : match(match), fallbackController(0) {};
-  virtual ~IController() {};
+  IController(Match* match) : match(match), fallbackController(0){};
+  virtual ~IController(){};
 
   virtual void RequestCommand(PlayerCommandQueue& commandQueue) = 0;
-  virtual void Process() {};
+  virtual void Process(){};
   virtual Vector3 GetDirection() = 0;
   virtual float GetFloatVelocity() = 0;
 

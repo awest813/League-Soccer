@@ -125,7 +125,7 @@ void Gui2Pulldown::ProcessWindowingEvent(WindowingEvent* event) {
     else
       event->Ignore();
   } else if (pulledDown) {
-    event->Accept(); // An open popup owns navigation until selection or Escape.
+    event->Accept();  // An open popup owns navigation until selection or Escape.
   } else {
     event->Ignore();
   }

@@ -1,8 +1,8 @@
 #include "button.hpp"
 
 #include <algorithm>
-
 #include <cmath>
+
 #include "SDL2/SDL2_rotozoom.h"
 
 namespace blunted {
@@ -19,8 +19,9 @@ Gui2Button::Gui2Button(Gui2WindowManager* windowManager, const std::string& name
   windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
   image = windowManager->CreateImage2D(name, w, h, true);
 
-  captionView = new Gui2Caption(windowManager, name + "caption", 1.2, 0.3, std::max(0.1f, width_percent - 2.4f),
-                                height_percent - 0.6, caption);
+  captionView =
+      new Gui2Caption(windowManager, name + "caption", 1.2, 0.3,
+                      std::max(0.1f, width_percent - 2.4f), height_percent - 0.6, caption);
   this->AddView(captionView);
   captionView->Show();
 
@@ -62,32 +63,32 @@ void Gui2Button::SetColor(const Vector3& color) {
 void Gui2Button::Redraw() {
   int x, y, w, h;
   windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
-  
+
   // Base background fill (always slightly transparent dark)
   Vector3 baseColor = windowManager->GetStyle()->GetColor(e_DecorationType_Dark1);
   if (!active) {
     baseColor = windowManager->GetStyle()->GetColor(e_DecorationType_Dark2);
-    image->DrawRectangle(0, 0, w, h, baseColor, 120); // Disabled transparency
+    image->DrawRectangle(0, 0, w, h, baseColor, 120);  // Disabled transparency
   } else {
     // Dynamic full-button highlight overlay (Modern flat style)
     float bias = IsFocussed() ? 0.0f : std::clamp(fadeOut_ms / (float)fadeOutTime_ms, 0.0f, 1.0f);
     Vector3 highlightColor = windowManager->GetStyle()->GetColor(e_DecorationType_Bright2);
-    
+
     if (toggleable && toggled) {
       highlightColor = windowManager->GetStyle()->GetColor(e_DecorationType_Toggled);
-      bias = 0.0f; // Always highlight if toggled
+      bias = 0.0f;  // Always highlight if toggled
     }
-    
+
     // Blend base and highlight based on focus/fade
     Vector3 finalColor = highlightColor * (1.0f - bias) + baseColor * bias;
-    int finalAlpha = 200 + int(55.0f * (1.0f - bias)); // Fully opaque on hover
-    
+    int finalAlpha = 200 + int(55.0f * (1.0f - bias));  // Fully opaque on hover
+
     image->DrawRectangle(0, 0, w, h, finalColor, finalAlpha);
-    
+
     // Sleek border highlight for extra polish
     if (IsFocussed() || (toggleable && toggled)) {
-      image->DrawRectangle(0, 0, w, 2, highlightColor, 255); // Top border
-      image->DrawRectangle(0, h - 2, w, 2, highlightColor, 255); // Bottom border
+      image->DrawRectangle(0, 0, w, 2, highlightColor, 255);      // Top border
+      image->DrawRectangle(0, h - 2, w, 2, highlightColor, 255);  // Bottom border
     }
   }
 

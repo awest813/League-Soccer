@@ -10,8 +10,8 @@ BluntedException::BluntedException(const std::string& classname, const std::stri
                                    const std::string& description) {
   printf("exception in [%s::%s] %s\n", classname.c_str(), methodname.c_str(), description.c_str());
   char errorString[256];
-  std::snprintf(errorString, sizeof(errorString), "exception in [%s::%s] %s\n",
-                classname.c_str(), methodname.c_str(), description.c_str());
+  std::snprintf(errorString, sizeof(errorString), "exception in [%s::%s] %s\n", classname.c_str(),
+                methodname.c_str(), description.c_str());
   Log(e_FatalError, "blunted", "exception", errorString);
   exit(1);
 }

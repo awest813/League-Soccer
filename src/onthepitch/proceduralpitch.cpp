@@ -2,12 +2,11 @@
 
 #include <cmath>
 
-#include "pitchsampling.hpp"
-
 #include "../gamedefines.hpp"
 #include "../main.hpp"  // for getconfig
 #include "../misc/perlin.h"
 #include "managers/resourcemanagerpool.hpp"
+#include "pitchsampling.hpp"
 #include "systems/graphics/resources/texture.hpp"  // todo: via image
 #include "types/resource.hpp"
 
@@ -45,8 +44,8 @@ Uint32 GetPitchDiffuseColor(SDL_Surface* pitchSurf, float xCoord, float yCoord) 
   seamlessX = std::fmod(seamlessX, seamlessTexW);
   seamlessY = std::fmod(seamlessY, seamlessTexH);
   // printf("%f, %f - ", seamlessX, seamlessY);
-  Vector3 tex = pitchsampling::BilinearSample(
-      seamlessTex, seamlessX, seamlessY, seamlessTexW, seamlessTexH, true);
+  Vector3 tex = pitchsampling::BilinearSample(seamlessTex, seamlessX, seamlessY, seamlessTexW,
+                                              seamlessTexH, true);
   r = r * (1.0f - texMultiplier) + tex.coords[0] * texMultiplier;
   g = g * (1.0f - texMultiplier) + tex.coords[1] * texMultiplier;
   b = b * (1.0f - texMultiplier) + tex.coords[2] * texMultiplier;
@@ -120,7 +119,8 @@ inline Uint32 GetPitchSpecularColor(SDL_Surface* pitchSurf, float xCoord, float 
   float randomY = fastrandom(-1, 1);
   perlY = clamp(perlY + randomY * randomSpread, 0.0f, static_cast<float>(perlinTexH - 1));
   float noise =
-      base + pitchsampling::BilinearSample(perlinTex, perlX, perlY, perlinTexW, perlinTexH) * noisefac;
+      base +
+      pitchsampling::BilinearSample(perlinTex, perlX, perlY, perlinTexW, perlinTexH) * noisefac;
 
   Uint32 color = SDL_MapRGB(pitchSurf->format, static_cast<Uint8>(noise), static_cast<Uint8>(noise),
                             static_cast<Uint8>(noise));
@@ -153,11 +153,11 @@ Uint32 GetPitchNormalColor(SDL_Surface* pitchSurf, float xCoord, float yCoord,
   Vector3 normal = Vector3(0, 0, 1);
 
   if (fabs(xCoord) < pitchHalfW && fabs(yCoord) < pitchHalfH) {
-  float xRepeat = 11.0f * repeatMultiplier;
-  float yRepeat = 11.0f * repeatMultiplier;
-  float xStrength = 0.12f;
-  float yStrength = 0.1f;  // i *think* the mowing of the 'lateral' lines may undo the strength of
-                            // these medial lines. so make this less apparent
+    float xRepeat = 11.0f * repeatMultiplier;
+    float yRepeat = 11.0f * repeatMultiplier;
+    float xStrength = 0.12f;
+    float yStrength = 0.1f;  // i *think* the mowing of the 'lateral' lines may undo the strength of
+                             // these medial lines. so make this less apparent
 
     int transitionSharpness = 5;
     if (repeatMultiplier > 0.75f)
@@ -273,7 +273,8 @@ void DrawLines(SDL_PixelFormat* pixelFormat, Uint32* diffuseBitmap, int resX, in
   BmpRect(pixelFormat, diffuseBitmap, resX, resY, pitchHalfW - 16.5f - lineHalfW, 0.0f,
           pitchHalfW - 16.5f + lineHalfW, 20.15f - lineHalfW, offsetW, offsetH);  // vert
   BmpRect(pixelFormat, diffuseBitmap, resX, resY, pitchHalfW - 16.5f - lineHalfW,
-          20.15f - lineHalfW, pitchHalfW - lineHalfW, 20.15f + lineHalfW, offsetW, offsetH);  // horiz
+          20.15f - lineHalfW, pitchHalfW - lineHalfW, 20.15f + lineHalfW, offsetW,
+          offsetH);  // horiz
 
   // keeper box (9.16m half width)
   BmpRect(pixelFormat, diffuseBitmap, resX, resY, pitchHalfW - 5.5f - lineHalfW, 0.0f,
@@ -286,8 +287,8 @@ void DrawLines(SDL_PixelFormat* pixelFormat, Uint32* diffuseBitmap, int resX, in
   BmpArc(pixelFormat, diffuseBitmap, resX, resY, pitchHalfW - 11.0f, 0.0f, 9.15f, 1.208f * pi,
          1.5f * pi, offsetW, offsetH);  // penalty arc
 
-  BmpArc(pixelFormat, diffuseBitmap, resX, resY, pitchHalfW, pitchHalfH, 0.5f, 1.55f * pi, 2.0f * pi,
-         offsetW, offsetH);  // corner arc
+  BmpArc(pixelFormat, diffuseBitmap, resX, resY, pitchHalfW, pitchHalfH, 0.5f, 1.55f * pi,
+         2.0f * pi, offsetW, offsetH);  // corner arc
 
   // penalty spot
   BmpArc(pixelFormat, diffuseBitmap, resX, resY, pitchHalfW - 11.0f, 0.0f, 0.08f, 0.5f * pi,
@@ -349,10 +350,8 @@ void CreateChunk(int i, int resX, int resY, int resSpecularX, int resSpecularY, 
   // DrawMud(pitchDiffuseSurf->format, diffuseBitmap, resX, resY, offsetW, offsetH);
   for (int x = 0; x < resSpecularX; x++) {
     for (int y = 0; y < resSpecularY; y++) {
-      float xSpecularCoord =
-          x / (resSpecularX * 1.0f) * pitchFullHalfW + pitchFullHalfW * offsetW;
-      float ySpecularCoord =
-          y / (resSpecularY * 1.0f) * pitchFullHalfH + pitchFullHalfH * offsetH;
+      float xSpecularCoord = x / (resSpecularX * 1.0f) * pitchFullHalfW + pitchFullHalfW * offsetW;
+      float ySpecularCoord = y / (resSpecularY * 1.0f) * pitchFullHalfH + pitchFullHalfH * offsetH;
       specularBitmap[y * resSpecularX + x] =
           GetPitchSpecularColor(pitchSpecularSurf, xSpecularCoord, ySpecularCoord);
     }
@@ -468,8 +467,8 @@ void GeneratePitch(int resX, int resY, int resSpecularX, int resSpecularY, int r
   float scale = 0.06f;
 
   int seed = static_cast<int>(time(nullptr));
-  Perlin* perlin1 = new Perlin(4, 0.06f * scale, 0.5f, seed);            // low freq
-  Perlin* perlin2 = new Perlin(4, 0.14f * scale, 0.5f, seed + 139882);   // mid freq
+  Perlin* perlin1 = new Perlin(4, 0.06f * scale, 0.5f, seed);           // low freq
+  Perlin* perlin2 = new Perlin(4, 0.14f * scale, 0.5f, seed + 139882);  // mid freq
   //  Perlin *perlin3 = new Perlin(4, 25.4 / 20.0,   3, 423423); // high freq
   perlinTexW = 1600;
   perlinTexH = 1000;
@@ -478,7 +477,7 @@ void GeneratePitch(int resX, int resY, int resSpecularX, int resSpecularY, int r
   // make sure sines are in range -1 to 1
   // generate sine
   float noiseFactor = 0.15f;  // 'random grid of canals'
-  float sinScale = 4.0f;     // smaller is larger (heh)
+  float sinScale = 4.0f;      // smaller is larger (heh)
   std::vector<float> ynoise(perlinTexH);
   for (int y = 0; y < perlinTexH; y++) {
     ynoise[y] =

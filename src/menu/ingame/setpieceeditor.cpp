@@ -7,8 +7,7 @@
 
 using namespace blunted;
 
-static const char* kPieceKey[3] = {"setpiece_free_kick", "setpiece_corner",
-                                   "setpiece_goal_kick"};
+static const char* kPieceKey[3] = {"setpiece_free_kick", "setpiece_corner", "setpiece_goal_kick"};
 
 SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
                                        const Gui2PageData& pageData)
@@ -28,9 +27,8 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
   this->AddView(bg);
   bg->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_spe_title", 0, 8, 100, 4,
-                      Localization::GetInstance().Translate("setpiece_title"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_spe_title", 0, 8, 100, 4,
+                                       Localization::GetInstance().Translate("setpiece_title"));
   title->SetPosition(50 - title->GetTextWidthPercent() / 2, 8);
   this->AddView(title);
   title->Show();
@@ -111,8 +109,8 @@ SetPieceEditorPage::SetPieceEditorPage(Gui2WindowManager* windowManager,
   // reach them (before, a standalone button beside the grid held focus and arrow
   // keys never crossed into the +/- steppers).
   const int footerRow = kNumPieces + 1;
-  Gui2Button* btnSave = new Gui2Button(
-      windowManager, "spe_save", 0, 0, 18, 3, Localization::GetInstance().Translate("action_save"));
+  Gui2Button* btnSave = new Gui2Button(windowManager, "spe_save", 0, 0, 18, 3,
+                                       Localization::GetInstance().Translate("action_save"));
   btnSave->sig_OnClick.connect([this](...) { Save(); });
   grid->AddView(btnSave, footerRow, 0);
 

@@ -50,7 +50,9 @@ public:
   virtual void SetInFocusPath(bool onOff);
 
   void SetReadOnlyScrolling(bool enabled) { readOnlyScrolling = enabled; }
-  virtual bool IsSelectable() { return hasSelectables || (readOnlyScrolling && !container.empty()); }
+  virtual bool IsSelectable() {
+    return hasSelectables || (readOnlyScrolling && !container.empty());
+  }
 
   virtual void Show();
   virtual void Hide();

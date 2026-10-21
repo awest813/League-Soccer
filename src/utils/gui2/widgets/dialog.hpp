@@ -19,7 +19,7 @@ public:
   virtual void AddContent(Gui2View* view);
 
   virtual Gui2Button* AddPosNegButtons(const std::string& posName, const std::string& negName,
-                                         bool negativeIsCancel = true);
+                                       bool negativeIsCancel = true);
   virtual Gui2Button* AddSingleButton(const std::string& caption);
 
   virtual void ProcessWindowingEvent(WindowingEvent* event);

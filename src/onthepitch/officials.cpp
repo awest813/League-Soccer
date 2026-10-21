@@ -11,8 +11,7 @@
 
 Officials::Officials(Match* match, boost::intrusive_ptr<Node> fullbodySourceNode,
                      std::map<Vector3, Vector3>& colorCoords,
-                     boost::intrusive_ptr<Resource<Surface>> kit,
-                     std::shared_ptr<AnimCollection>)
+                     boost::intrusive_ptr<Resource<Surface>> kit, std::shared_ptr<AnimCollection>)
     : match(match) {
   ObjectLoader loader;
   boost::intrusive_ptr<Node> playerNode =

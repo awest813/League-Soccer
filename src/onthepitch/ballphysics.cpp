@@ -5,8 +5,8 @@
 
 #include "base/math/bluntmath.hpp"
 
-BallGroundInteraction ApplyBallMotionForces(BallPhysicsState& state, const BallPhysicsConfig& config,
-                                            float timeStep_s) {
+BallGroundInteraction ApplyBallMotionForces(BallPhysicsState& state,
+                                            const BallPhysicsConfig& config, float timeStep_s) {
   BallGroundInteraction interaction;
 
   state.momentum.coords[2] = state.momentum.coords[2] + config.gravity * timeStep_s;
@@ -32,8 +32,7 @@ BallGroundInteraction ApplyBallMotionForces(BallPhysicsState& state, const BallP
       interaction.frictionFactor =
           blunted::NormalizedClamp(-state.momentum.coords[2] - 0.5f, 0.0f, 12.0f);
       state.momentum.coords[2] = -state.momentum.coords[2] * config.bounce;
-      state.momentum.coords[2] =
-          std::max(state.momentum.coords[2] - config.linearBounce, 0.0f);
+      state.momentum.coords[2] = std::max(state.momentum.coords[2] - config.linearBounce, 0.0f);
     }
 
     state.position.coords[2] = config.ballRadius;

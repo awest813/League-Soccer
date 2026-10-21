@@ -618,8 +618,8 @@ void HumanController::_GetHidInput(Vector3& rawInputDirection, float& rawInputVe
     } else if (hid->GetButton(e_ButtonFunction_Dribble)) {
       rawInputVelocityFloat = slowDribbleSpeed;
     } else if (!UsesFullyManualPlayerSwitching(*GetConfiguration()) &&
-               switchModifier.ShouldBrake(hid->GetButton(e_ButtonFunction_Switch),
-                                          actionMode != 0, match->GetActualTime_ms()) &&
+               switchModifier.ShouldBrake(hid->GetButton(e_ButtonFunction_Switch), actionMode != 0,
+                                          match->GetActualTime_ms()) &&
                match->GetDesignatedPossessionPlayer() == CastPlayer()) {
       rawInputVelocityFloat = idleVelocity;
     } else {

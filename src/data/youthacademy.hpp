@@ -7,7 +7,7 @@ struct YouthPlayer {
   int youthID = 0;
   std::string firstName;
   std::string lastName;
-  int age = 16;           // 14–18
+  int age = 16;  // 14–18
   std::string position;
   int rawPotential = 0;   // 0–100, hidden until promoted
   int currentRating = 0;  // 0–100
@@ -15,7 +15,7 @@ struct YouthPlayer {
 };
 
 class YouthAcademy {
- public:
+public:
   explicit YouthAcademy(int teamID) : m_teamID(teamID) {}
 
   int TeamID() const { return m_teamID; }
@@ -32,12 +32,10 @@ class YouthAcademy {
   // Promote a youth player to the first team; returns a new PlayerData ID placeholder
   int PromoteToFirstTeam(int youthID);
 
- private:
+private:
   int m_teamID = 0;
   std::vector<YouthPlayer> m_prospects;
   int m_nextYouthID = 1;
 
-  static float Clamp(float v, float lo, float hi) {
-    return v < lo ? lo : (v > hi ? hi : v);
-  }
+  static float Clamp(float v, float lo, float hi) { return v < lo ? lo : (v > hi ? hi : v); }
 };

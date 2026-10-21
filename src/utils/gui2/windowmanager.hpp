@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <vector>
+
 #include "defines.hpp"
 #include "page.hpp"
 #include "scene/objects/image2d.hpp"
@@ -77,8 +78,14 @@ public:
   std::function<void()> onSoundClick;
   std::function<void()> onSoundHover;
 
-  void PlayClickSound() { if (onSoundClick) onSoundClick(); }
-  void PlayHoverSound() { if (onSoundHover) onSoundHover(); }
+  void PlayClickSound() {
+    if (onSoundClick)
+      onSoundClick();
+  }
+  void PlayHoverSound() {
+    if (onSoundHover)
+      onSoundHover();
+  }
 
 protected:
   std::shared_ptr<Scene2D> scene2D;

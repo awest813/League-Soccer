@@ -57,7 +57,7 @@ protected:
 class GraphicsTaskCommand_EnqueueView : public Command {
 public:
   GraphicsTaskCommand_EnqueueView(boost::intrusive_ptr<Camera> camera, int shadowSkipFrameCounter)
-      : Command("EnqueueView"), camera(camera), shadowSkipFrameCounter(shadowSkipFrameCounter) {};
+      : Command("EnqueueView"), camera(camera), shadowSkipFrameCounter(shadowSkipFrameCounter){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);

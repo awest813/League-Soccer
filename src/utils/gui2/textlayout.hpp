@@ -21,7 +21,7 @@ inline std::vector<std::string> WrapMenuText(const std::string& text, unsigned i
       }
       if (!line.empty())
         line += " ";
-      line += word; // Keep long words and UTF-8 sequences intact; captions fit their width.
+      line += word;  // Keep long words and UTF-8 sequences intact; captions fit their width.
     }
     lines.push_back(line);
   }

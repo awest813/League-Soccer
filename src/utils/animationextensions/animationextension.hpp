@@ -9,7 +9,7 @@ class Animation;
 
 class AnimationExtension {
 public:
-  AnimationExtension(Animation* parent) : parent(parent) {};
+  AnimationExtension(Animation* parent) : parent(parent){};
   virtual ~AnimationExtension() { parent = 0; };
 
   virtual void Shift(int fromFrame, int offset) = 0;

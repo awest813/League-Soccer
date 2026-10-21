@@ -4,9 +4,24 @@
 
 enum class CareerHubSection { OVERVIEW, TEAM, ROLE, COMPETITIONS, INBOX };
 enum class CareerHubAction {
-  SQUAD, STRATEGY, TRAINING, TRANSFERS, FREE_AGENTS, YOUTH, FINANCES, STADIUM,
-  STAFF, SPONSORS, BOARD, RESPONSIBILITIES, STANDINGS, SEASON, EXPANSION, CUSTOM,
-  REQUEST_TRANSFER, PRESS
+  SQUAD,
+  STRATEGY,
+  TRAINING,
+  TRANSFERS,
+  FREE_AGENTS,
+  YOUTH,
+  FINANCES,
+  STADIUM,
+  STAFF,
+  SPONSORS,
+  BOARD,
+  RESPONSIBILITIES,
+  STANDINGS,
+  SEASON,
+  EXPANSION,
+  CUSTOM,
+  REQUEST_TRANSFER,
+  PRESS
 };
 struct CareerHubTool {
   CareerHubAction action;
@@ -21,15 +36,17 @@ inline const PlayerCareerState* ControlledCareerPlayer(const CareerSave& save) {
   for (const auto& player : save.roster) {
     if (player.databaseID != save.controlledEntityID)
       continue;
-    if (found) return nullptr;  // Ambiguous old saves need identity repair, not a guess.
+    if (found)
+      return nullptr;  // Ambiguous old saves need identity repair, not a guess.
     found = &player;
   }
   return found;
 }
 
 inline const char* CareerWorkspaceKey(CareerMode mode) {
-  return mode == CareerMode::OWNER_GM ? "career_nav_office" :
-         mode == CareerMode::COACH ? "career_nav_coaching" : "career_nav_mypro";
+  return mode == CareerMode::OWNER_GM ? "career_nav_office"
+         : mode == CareerMode::COACH  ? "career_nav_coaching"
+                                      : "career_nav_mypro";
 }
 
 inline std::vector<CareerHubTool> CareerHubTools(const CareerSave& save, CareerHubSection section) {
@@ -53,16 +70,17 @@ inline std::vector<CareerHubTool> CareerHubTools(const CareerSave& save, CareerH
                {A::STAFF, "staff", "career_nav_staff"},
                {A::SPONSORS, "sponsors", "career_nav_sponsors"},
                {A::BOARD, "board", "career_nav_board"},
-               {A::RESPONSIBILITIES, "responsibilities", save.handsOnManagement ?
-                    "career_control_hands_on" : "career_control_delegated"}};
+               {A::RESPONSIBILITIES, "responsibilities",
+                save.handsOnManagement ? "career_control_hands_on" : "career_control_delegated"}};
     } else if (save.mode == CareerMode::COACH) {
       tools = {{A::SQUAD, "squad", "career_nav_squad"},
                {A::STRATEGY, "strategy", "career_nav_tactics"},
                {A::TRAINING, "training", "career_nav_training"}};
     } else if (const auto* player = ControlledCareerPlayer(save)) {
       tools = {{A::TRAINING, "training", "career_nav_personal_training"},
-               {A::REQUEST_TRANSFER, "request_transfer", player->contract.transferListed ?
-                    "career_nav_cancel_request" : "career_nav_request_transfer"}};
+               {A::REQUEST_TRANSFER, "request_transfer",
+                player->contract.transferListed ? "career_nav_cancel_request"
+                                                : "career_nav_request_transfer"}};
     }
     if (CanManageClub(save) || save.mode == CareerMode::COACH)
       tools.push_back({A::PRESS, "press", "career_press_nav"});

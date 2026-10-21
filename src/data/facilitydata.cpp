@@ -23,21 +23,24 @@ FacilityManager::FacilityManager() {
 
 Facility* FacilityManager::Find(FacilityType type) {
   for (auto& f : m_facilities) {
-    if (f.type == type) return &f;
+    if (f.type == type)
+      return &f;
   }
   return nullptr;
 }
 
 const Facility* FacilityManager::Find(FacilityType type) const {
   for (const auto& f : m_facilities) {
-    if (f.type == type) return &f;
+    if (f.type == type)
+      return &f;
   }
   return nullptr;
 }
 
 bool FacilityManager::Upgrade(FacilityType type) {
   Facility* f = Find(type);
-  if (!f || f->level >= 5) return false;
+  if (!f || f->level >= 5)
+    return false;
   f->level++;
   f->upgradeCost = UpgradeCostForLevel(f->level);
   f->weeklyMaintenance = MaintenanceForLevel(f->level);
@@ -57,14 +60,16 @@ float FacilityManager::GetBonus(FacilityType type) const {
 
 int FacilityManager::GetTotalWeeklyMaintenance() const {
   int total = 0;
-  for (const auto& f : m_facilities) total += f.weeklyMaintenance;
+  for (const auto& f : m_facilities)
+    total += f.weeklyMaintenance;
   return total;
 }
 
 int FacilityManager::UpgradeCostForLevel(int currentLevel) {
   // Escalating costs: L1->L2=500k, L2->L3=1M, L3->L4=2M, L4->L5=4M
   static const int costs[] = {0, 500000, 1000000, 2000000, 4000000};
-  if (currentLevel < 1 || currentLevel > 4) return 0;
+  if (currentLevel < 1 || currentLevel > 4)
+    return 0;
   return costs[currentLevel];
 }
 

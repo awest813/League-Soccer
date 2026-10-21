@@ -1,7 +1,7 @@
 #include "grid.hpp"
 
-#include "../windowmanager.hpp"
 #include "../gridlayout.hpp"
+#include "../windowmanager.hpp"
 
 namespace blunted {
 
@@ -159,9 +159,9 @@ void Gui2Grid::UpdateLayout(float margin_left_percent, float margin_right_percen
     item.view->GetSize(width, height);
     cells.push_back({item.row, item.col, width, height});
   }
-  const GridLayout layout = CalculateGridLayout(cells, rows, cols, offsetRows, maxVisibleRows,
-                                                margin_left_percent, margin_right_percent,
-                                                margin_top_percent, margin_bottom_percent);
+  const GridLayout layout =
+      CalculateGridLayout(cells, rows, cols, offsetRows, maxVisibleRows, margin_left_percent,
+                          margin_right_percent, margin_top_percent, margin_bottom_percent);
   SetSize(layout.width, layout.height);
   for (const auto& item : container) {
     if (item.row >= offsetRows && item.row < offsetRows + maxVisibleRows)
@@ -346,8 +346,8 @@ void Gui2Grid::SetInFocusPath(bool onOff) {
           selectedRow = container.at(i).row;
           selectedCol = container.at(i).col;
           if (maxVisibleRows != 10000)
-            UpdateLayout(margin_left_percent, margin_right_percent,
-                         margin_top_percent, margin_bottom_percent);
+            UpdateLayout(margin_left_percent, margin_right_percent, margin_top_percent,
+                         margin_bottom_percent);
           break;
         }
       }

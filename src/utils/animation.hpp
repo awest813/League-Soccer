@@ -67,8 +67,8 @@ public:
   int GetFrameCount() const;
   int GetEffectiveFrameCount() const { return GetFrameCount() - 1; }
 
-  bool GetKeyFrame(const std::string& nodeName, int frame, Quaternion& orientation, Vector3& position,
-                   bool getOrientation = true, bool getPosition = true) const;
+  bool GetKeyFrame(const std::string& nodeName, int frame, Quaternion& orientation,
+                   Vector3& position, bool getOrientation = true, bool getPosition = true) const;
   void SetKeyFrame(const std::string& nodeName, int frame, const Quaternion& orientation,
                    const Vector3& position = Vector3(0, 0, 0));
   void DeleteKeyFrame(const std::string& nodeName, int frame);

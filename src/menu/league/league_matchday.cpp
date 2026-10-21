@@ -5,8 +5,8 @@
 #include "../../league/leaguecode.hpp"
 #include "../../main.hpp"
 #include "menu_smoke.hpp"
-#include "utils/localization.hpp"
 #include "utils/database.hpp"
+#include "utils/localization.hpp"
 
 namespace {
 
@@ -83,12 +83,12 @@ void LeagueMatchdayPage::RefreshResults() {
       "JOIN teams t1 ON c.team1_id = t1.id "
       "JOIN teams t2 ON c.team2_id = t2.id "
       "WHERE date(c.timestamp) = date('" +
-      date + "') "
+      date +
+      "') "
       "ORDER BY c.id");
 
   auto& loc = Localization::GetInstance();
-  std::string headerCaption =
-      date.empty() ? loc.Translate("league_matchday_none") : date;
+  std::string headerCaption = date.empty() ? loc.Translate("league_matchday_none") : date;
   matchdayHeader =
       new Gui2Caption(windowManager, "caption_matchday_header", 2, 7, 66, 2, headerCaption);
   frame->AddView(matchdayHeader);
@@ -102,17 +102,15 @@ void LeagueMatchdayPage::RefreshResults() {
     const std::string goals1 = SafeCell(result, row, 2, "0");
     const std::string goals2 = SafeCell(result, row, 3, "0");
 
-    const bool userInvolved =
-        (atoi(SafeCell(result, row, 4, "0").c_str()) == userTeamID ||
-         atoi(SafeCell(result, row, 5, "0").c_str()) == userTeamID);
+    const bool userInvolved = (atoi(SafeCell(result, row, 4, "0").c_str()) == userTeamID ||
+                               atoi(SafeCell(result, row, 5, "0").c_str()) == userTeamID);
 
     char buf[256];
     snprintf(buf, sizeof(buf), "%s%-19s %3s - %-3s %s", userInvolved ? "> " : "  ",
              homeName.c_str(), goals1.c_str(), goals2.c_str(), awayName.c_str());
 
-    Gui2Button* btn =
-        new Gui2Button(windowManager, "btn_matchday_result_" + std::to_string(row), 0, 0, 65, 2.5,
-                       buf);
+    Gui2Button* btn = new Gui2Button(windowManager, "btn_matchday_result_" + std::to_string(row), 0,
+                                     0, 65, 2.5, buf);
     if (userInvolved) {
       btn->SetColor(Vector3(250, 210, 60));
     }
@@ -125,9 +123,8 @@ void LeagueMatchdayPage::RefreshResults() {
   }
 
   if (row == 0) {
-    Gui2Caption* empty = new Gui2Caption(
-        windowManager, "caption_matchday_empty", 2, 1, 60, 2,
-        loc.Translate("league_matchday_empty"));
+    Gui2Caption* empty = new Gui2Caption(windowManager, "caption_matchday_empty", 2, 1, 60, 2,
+                                         loc.Translate("league_matchday_empty"));
     resultsGrid->AddView(empty, 0, 0);
     row = 1;
   }
@@ -139,16 +136,14 @@ void LeagueMatchdayPage::RefreshResults() {
     banner->SetColor(Vector3(250, 210, 60));
     resultsGrid->AddView(banner, row++, 0);
 
-    btnStartSeason =
-        new Gui2Button(windowManager, "btn_matchday_startseason", 0, 0, 65, 2.5,
-                       loc.Translate("league_start_new_season"));
+    btnStartSeason = new Gui2Button(windowManager, "btn_matchday_startseason", 0, 0, 65, 2.5,
+                                    loc.Translate("league_start_new_season"));
     btnStartSeason->sig_OnClick.connect([this](...) { StartNewSeason(); });
     resultsGrid->AddView(btnStartSeason, row++, 0);
   }
 
-  Gui2Button* btnContinue =
-      new Gui2Button(windowManager, "btn_matchday_continue", 0, 0, 65, 2.5,
-                     loc.Translate("league_matchday_continue"));
+  Gui2Button* btnContinue = new Gui2Button(windowManager, "btn_matchday_continue", 0, 0, 65, 2.5,
+                                           loc.Translate("league_matchday_continue"));
   btnContinue->sig_OnClick.connect([this](...) { GoBackToDashboard(); });
   resultsGrid->AddView(btnContinue, row, 0);
 

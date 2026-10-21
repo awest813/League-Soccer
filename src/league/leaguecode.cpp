@@ -429,16 +429,22 @@ bool StepLeagueTime() {
 // Season matchday loop: fixture lookup, simulation, results, pending 3D match
 // ---------------------------------------------------------------------------
 
-bool LeagueHasPendingFixture() { return g_pendingFixtureActive; }
+bool LeagueHasPendingFixture() {
+  return g_pendingFixtureActive;
+}
 
-const LeagueFixtureInfo& LeagueGetPendingFixture() { return g_pendingFixture; }
+const LeagueFixtureInfo& LeagueGetPendingFixture() {
+  return g_pendingFixture;
+}
 
 void LeagueSetPendingFixture(const LeagueFixtureInfo& fixture) {
   g_pendingFixture = fixture;
   g_pendingFixtureActive = fixture.calendarID > 0;
 }
 
-void LeagueClearPendingFixture() { g_pendingFixtureActive = false; }
+void LeagueClearPendingFixture() {
+  g_pendingFixtureActive = false;
+}
 
 bool LeagueGetUserTeamID(int& teamID) {
   auto result = GetDB()->Query("SELECT team_id FROM settings LIMIT 1");
@@ -450,8 +456,7 @@ bool LeagueGetUserTeamID(int& teamID) {
 }
 
 std::string LeagueResolveLogoPath(int teamID) {
-  auto result =
-      GetDB()->Query("SELECT logo_url FROM teams WHERE id = " + int_to_str(teamID));
+  auto result = GetDB()->Query("SELECT logo_url FROM teams WHERE id = " + int_to_str(teamID));
   if (result->data.empty() || result->data.at(0).empty()) {
     return "";
   }
@@ -487,7 +492,8 @@ bool LeagueGetUserNextFixture(LeagueFixtureInfo& out) {
       FixtureQueryJoins() +
       "JOIN settings s ON (c.team1_id = s.team_id OR c.team2_id = s.team_id) "
       "WHERE (c.team1_id = " +
-      int_to_str(userTeamID) + " OR c.team2_id = " + int_to_str(userTeamID) + ") "
+      int_to_str(userTeamID) + " OR c.team2_id = " + int_to_str(userTeamID) +
+      ") "
       "AND c.id NOT IN (SELECT calendar_id FROM match_results WHERE played = 1) "
       "ORDER BY c.timestamp LIMIT 1");
 
@@ -522,15 +528,14 @@ bool LeagueGetNextMatchdayDate(std::string& outDate) {
 }
 
 void LeagueRecordResult(const LeagueFixtureInfo& fixture, int homeGoals, int awayGoals) {
-  GetDB()->Query("DELETE FROM match_results WHERE calendar_id = " +
-                 int_to_str(fixture.calendarID));
+  GetDB()->Query("DELETE FROM match_results WHERE calendar_id = " + int_to_str(fixture.calendarID));
   GetDB()->Query(
       "INSERT INTO match_results (calendar_id, team1_id, team2_id, team1_goals, team2_goals, "
       "played, competition_id) "
       "VALUES (" +
       int_to_str(fixture.calendarID) + ", " + int_to_str(fixture.homeTeamID) + ", " +
-      int_to_str(fixture.awayTeamID) + ", " + int_to_str(homeGoals) + ", " +
-      int_to_str(awayGoals) + ", 1, " + int_to_str(fixture.competitionID) + ")");
+      int_to_str(fixture.awayTeamID) + ", " + int_to_str(homeGoals) + ", " + int_to_str(awayGoals) +
+      ", 1, " + int_to_str(fixture.competitionID) + ")");
 
   std::string resultStr = fixture.homeTeamName + " " + int_to_str(homeGoals) + " - " +
                           int_to_str(awayGoals) + " " + fixture.awayTeamName;
@@ -571,8 +576,8 @@ int LeagueResolveMatchday(const std::string& date) {
   auto result = GetDB()->Query(
       "SELECT c.id, c.team1_id, c.team2_id, c.competition_id, t1.name, t2.name, l.name, "
       "date(c.timestamp) " +
-      FixtureQueryJoins() +
-      "WHERE date(c.timestamp) <= date('" + date + "') "
+      FixtureQueryJoins() + "WHERE date(c.timestamp) <= date('" + date +
+      "') "
       "AND c.id NOT IN (SELECT calendar_id FROM match_results WHERE played = 1) "
       "ORDER BY c.timestamp, c.id");
 
@@ -617,8 +622,8 @@ bool LeagueConsumePlayedFixture(int homeGoals, int awayGoals) {
   g_pendingFixtureActive = false;
 
   // Sanity-check the fixture still exists and has not been recorded meanwhile.
-  auto existing = GetDB()->Query("SELECT id FROM calendar WHERE id = " +
-                                 int_to_str(fixture.calendarID));
+  auto existing =
+      GetDB()->Query("SELECT id FROM calendar WHERE id = " + int_to_str(fixture.calendarID));
   if (existing->data.empty()) {
     return false;
   }
@@ -655,8 +660,8 @@ bool LeagueAdvanceSeason() {
   // start with a clean results sheet.
   GetDB()->Query("DELETE FROM match_results");
   GetDB()->Query("DELETE FROM calendar");
-  GetDB()->Query("UPDATE settings SET seasonyear = " + int_to_str(newYear) + ", timestamp = date('" +
-                 startDate + "')");
+  GetDB()->Query("UPDATE settings SET seasonyear = " + int_to_str(newYear) +
+                 ", timestamp = date('" + startDate + "')");
   g_lastMatchdayDate.clear();
   GenerateSeasonCalendars();
   GetDB()->Query(
@@ -685,8 +690,8 @@ bool LeagueLoadSlot(int slotIndex) {
     return false;
   }
   namespace fs = std::filesystem;
-  fs::path slotFile = fs::path("saves") / GetActiveSaveDirectory() /
-                      ("slot_" + int_to_str(slotIndex) + ".sqlite");
+  fs::path slotFile =
+      fs::path("saves") / GetActiveSaveDirectory() / ("slot_" + int_to_str(slotIndex) + ".sqlite");
   if (!fs::exists(slotFile)) {
     return false;
   }

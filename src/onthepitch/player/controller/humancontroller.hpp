@@ -2,9 +2,9 @@
 #define _HPP_FOOTBALL_ONTHEPITCH_HUMANCONTROLLER
 
 #include "../../../hid/ihidevice.hpp"
-#include "playercontroller.hpp"
 #include "../../playercontrolsettings.hpp"
 #include "../../sprinttap.hpp"
+#include "playercontroller.hpp"
 
 class Player;
 

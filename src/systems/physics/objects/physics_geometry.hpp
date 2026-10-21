@@ -42,8 +42,8 @@ public:
   virtual e_SystemType GetSystemType() const { return e_SystemType_Physics; }
 
   virtual void OnLoad(boost::intrusive_ptr<Geometry> geometry);
-  virtual void OnUpdateGeometry(boost::intrusive_ptr<Geometry> geometry, bool updateMaterials) {
-  };  // todo!
+  virtual void OnUpdateGeometry(boost::intrusive_ptr<Geometry> geometry,
+                                bool updateMaterials){};  // todo!
   virtual void OnUnload();
   inline virtual void OnMove(const Vector3& position);
   inline virtual void OnRotate(const Quaternion& rotation);

@@ -26,15 +26,13 @@ LeagueCalendarPage::LeagueCalendarPage(Gui2WindowManager* windowManager,
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_calendar", 2, 2, 66, 3,
-                      loc.Translate("league_calendar"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_calendar", 2, 2, 66, 3,
+                                       loc.Translate("league_calendar"));
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* filterLabel =
-      new Gui2Caption(windowManager, "caption_cal_filter", 2, 6, 20, 2.5,
-                      loc.Translate("league_calendar_filter"));
+  Gui2Caption* filterLabel = new Gui2Caption(windowManager, "caption_cal_filter", 2, 6, 20, 2.5,
+                                             loc.Translate("league_calendar_filter"));
   frame->AddView(filterLabel);
   filterLabel->Show();
 
@@ -99,9 +97,8 @@ void LeagueCalendarPage::RefreshFixtures() {
   query += "ORDER BY c.timestamp LIMIT 40";
 
   auto result = GetDB()->Query(query);
-  fixturesHeader =
-      new Gui2Caption(windowManager, "caption_cal_header", 2, 10, 66, 2,
-                      Localization::GetInstance().Translate("league_calendar_header"));
+  fixturesHeader = new Gui2Caption(windowManager, "caption_cal_header", 2, 10, 66, 2,
+                                   Localization::GetInstance().Translate("league_calendar_header"));
   frame->AddView(fixturesHeader);
   fixturesHeader->Show();
 
@@ -129,8 +126,7 @@ void LeagueCalendarPage::RefreshFixtures() {
       txt->AddText(Localization::GetInstance().Translate("league_simulate_prompt"));
       dlg->AddContent(txt);
 
-      (dlg->AddSingleButton(Localization::GetInstance().Translate("league_simulate")))
-          ->SetFocus();
+      (dlg->AddSingleButton(Localization::GetInstance().Translate("league_simulate")))->SetFocus();
       dlg->sig_OnPositive.connect([this, dlg, calID](...) {
         LeagueFixtureInfo fixture;
         if (LeagueGetFixtureByCalendarID(atoi(calID.c_str()), fixture)) {

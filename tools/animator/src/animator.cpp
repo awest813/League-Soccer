@@ -2,17 +2,19 @@
 
 #include "animator.hpp"
 
-#include "managers/usereventmanager.hpp"
-#include "managers/resourcemanagerpool.hpp"
-#include "scene/objects/geometry.hpp"
-#include "scene/objectfactory.hpp"
-#include "utils/objectloader.hpp"
-#include "gui/gui.hpp"
-
 #include "blunted.hpp"
+#include "gui/gui.hpp"
+#include "managers/resourcemanagerpool.hpp"
+#include "managers/usereventmanager.hpp"
+#include "scene/objectfactory.hpp"
+#include "scene/objects/geometry.hpp"
+#include "utils/objectloader.hpp"
 
-Animator::Animator(boost::shared_ptr<Scene2D> scene2D, boost::shared_ptr<Scene3D> scene3D, GuiInterface *guiInterface) : scene2D(scene2D), scene3D(scene3D), guiInterface(guiInterface) {
-  camera = static_pointer_cast<Camera>(ObjectFactory::GetInstance().CreateObject("camera", e_ObjectType_Camera));
+Animator::Animator(boost::shared_ptr<Scene2D> scene2D, boost::shared_ptr<Scene3D> scene3D,
+                   GuiInterface *guiInterface)
+    : scene2D(scene2D), scene3D(scene3D), guiInterface(guiInterface) {
+  camera = static_pointer_cast<Camera>(
+      ObjectFactory::GetInstance().CreateObject("camera", e_ObjectType_Camera));
   scene3D->CreateSystemObjects(camera);
 
   ObjectLoader loader;
@@ -20,15 +22,22 @@ Animator::Animator(boost::shared_ptr<Scene2D> scene2D, boost::shared_ptr<Scene3D
   objectNode->AddNode(loader.LoadObject(scene3D, "media/objects/studio/studio.object"));
 
   // debug pilon
-  boost::intrusive_ptr < Resource<GeometryData> > geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/helpers/green.ase", true);
-  greenPilon = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("greenPilon", e_ObjectType_Geometry));
+  boost::intrusive_ptr<Resource<GeometryData>> geometry =
+      ResourceManagerPool::GetInstance()
+          .GetManager<GeometryData>(e_ResourceType_GeometryData)
+          ->Fetch("media/objects/helpers/green.ase", true);
+  greenPilon = static_pointer_cast<Geometry>(
+      ObjectFactory::GetInstance().CreateObject("greenPilon", e_ObjectType_Geometry));
   scene3D->CreateSystemObjects(greenPilon);
   greenPilon->SetGeometryData(geometry);
   greenPilon->SetLocalMode(e_LocalMode_Absolute);
   scene3D->AddObject(greenPilon);
 
-  geometry = ResourceManagerPool::GetInstance().GetManager<GeometryData>(e_ResourceType_GeometryData)->Fetch("media/objects/helpers/blue.ase", true);
-  bluePilon = static_pointer_cast<Geometry>(ObjectFactory::GetInstance().CreateObject("bluePilon", e_ObjectType_Geometry));
+  geometry = ResourceManagerPool::GetInstance()
+                 .GetManager<GeometryData>(e_ResourceType_GeometryData)
+                 ->Fetch("media/objects/helpers/blue.ase", true);
+  bluePilon = static_pointer_cast<Geometry>(
+      ObjectFactory::GetInstance().CreateObject("bluePilon", e_ObjectType_Geometry));
   scene3D->CreateSystemObjects(bluePilon);
   bluePilon->SetGeometryData(geometry);
   bluePilon->SetLocalMode(e_LocalMode_Absolute);
@@ -58,11 +67,10 @@ Animator::Animator(boost::shared_ptr<Scene2D> scene2D, boost::shared_ptr<Scene3D
 
   currentDir = "../../../football/media/animations";
 
-  //rot.SetAngleAxis(-0.3 * pi, Vector3(0, 0, 1));
-  //objectNode->SetRotation(rot);
+  // rot.SetAngleAxis(-0.3 * pi, Vector3(0, 0, 1));
+  // objectNode->SetRotation(rot);
 
   scene3D->AddNode(objectNode);
-
 
   // interface
 
@@ -86,21 +94,22 @@ Animator::Animator(boost::shared_ptr<Scene2D> scene2D, boost::shared_ptr<Scene3D
   timeline = new GuiTimeline(scene2D, "motionTimeline", 0, 75, 100, 100);
   guiInterface->AddView(timeline);
 
-  //playerNode->PrintTree();
+  // playerNode->PrintTree();
 
   animation = new Animation;
 
   timeline->AddPart("player", "player");
-  managedNodes.insert(std::pair < std::string, boost::intrusive_ptr<Node> >("player", playerNode));
-  Vector3 position = playerNode->GetPosition(); // initial position
+  managedNodes.insert(std::pair<std::string, boost::intrusive_ptr<Node>>("player", playerNode));
+  Vector3 position = playerNode->GetPosition();  // initial position
   animation->SetKeyFrame("player", 0, Quaternion(QUATERNION_IDENTITY), position);
 
   AddNodeToTimeline(playerNode, timeline);
 
-  boost::shared_ptr<FootballAnimationExtension> extension(new FootballAnimationExtension(animation));
+  boost::shared_ptr<FootballAnimationExtension> extension(
+      new FootballAnimationExtension(animation));
   animation->AddExtension("football", extension);
   timeline->AddPart("ball", "ball");
-  //animation->GetExtension("football")->SetKeyFrame(0, Vector3(0), Vector3(0), 1.0);
+  // animation->GetExtension("football")->SetKeyFrame(0, Vector3(0), Vector3(0), 1.0);
 
   timelineIndex = new GuiCaption(scene2D, "caption_timelineIndex", 90, 0, 100, 10, "0/0");
   guiInterface->AddView(timelineIndex);
@@ -135,17 +144,18 @@ Animator::~Animator() {
   scene3D.reset();
 }
 
-
 Vector3 GetFrontOfFootOffset(float velocity) {
-  Vector3 ffo = Vector3(0, -0.2, 0); // basic ffo
+  Vector3 ffo = Vector3(0, -0.2, 0);  // basic ffo
   ffo += Vector3(0, -velocity / 35.0, 0);
   return ffo;
 }
 
-void Animator::FillNodeMap(boost::intrusive_ptr<Node> targetNode, std::map < const std::string, boost::intrusive_ptr<Node> > &nodeMap) {
-  nodeMap.insert(std::pair < std::string, boost::intrusive_ptr<Node> >(targetNode->GetName(), targetNode));
+void Animator::FillNodeMap(boost::intrusive_ptr<Node> targetNode,
+                           std::map<const std::string, boost::intrusive_ptr<Node>> &nodeMap) {
+  nodeMap.insert(
+      std::pair<std::string, boost::intrusive_ptr<Node>>(targetNode->GetName(), targetNode));
 
-  std::vector < boost::intrusive_ptr<Node> > gatherNodes;
+  std::vector<boost::intrusive_ptr<Node>> gatherNodes;
   targetNode->GetNodes(gatherNodes);
   for (int i = 0; i < (signed int)gatherNodes.size(); i++) {
     FillNodeMap(gatherNodes.at(i), nodeMap);
@@ -153,24 +163,35 @@ void Animator::FillNodeMap(boost::intrusive_ptr<Node> targetNode, std::map < con
 }
 
 void Animator::AddNodeToTimeline(boost::intrusive_ptr<Node> node, GuiTimeline *timeline) {
-  std::vector < boost::intrusive_ptr<Node> > nodes;
+  std::vector<boost::intrusive_ptr<Node>> nodes;
   node->GetNodes(nodes);
   for (int i = 0; i < (signed int)nodes.size(); i++) {
     timeline->AddPart(nodes.at(i)->GetName(), nodes.at(i)->GetName());
-    managedNodes.insert(std::pair < std::string, boost::intrusive_ptr<Node> >(nodes.at(i)->GetName(), nodes.at(i)));
-    Vector3 position = nodes.at(i)->GetPosition(); // initial position
+    managedNodes.insert(
+        std::pair<std::string, boost::intrusive_ptr<Node>>(nodes.at(i)->GetName(), nodes.at(i)));
+    Vector3 position = nodes.at(i)->GetPosition();  // initial position
     Vector3 angles;
     // initial angles
-    if (nodes.at(i)->GetName() == "left_shoulder") angles.Set(0.1, -0.25, -0.15);
-    if (nodes.at(i)->GetName() == "right_shoulder") angles.Set(0.1, 0.25, 0.15);
-    if (nodes.at(i)->GetName() == "left_elbow") angles.Set(-0.2, 0.0, 0.0);
-    if (nodes.at(i)->GetName() == "right_elbow") angles.Set(-0.2, -0.0, 0.0);
-    if (nodes.at(i)->GetName() == "left_thigh") angles.Set(-0.06, -0.04, 0);
-    if (nodes.at(i)->GetName() == "right_thigh") angles.Set(-0.06, 0.04, 0);
-    if (nodes.at(i)->GetName() == "left_knee") angles.Set(0.18, 0, 0);
-    if (nodes.at(i)->GetName() == "right_knee") angles.Set(0.18, 0, 0);
-    if (nodes.at(i)->GetName() == "left_ankle") angles.Set(-0.12, 0, 0);
-    if (nodes.at(i)->GetName() == "right_ankle") angles.Set(-0.12, 0, 0);
+    if (nodes.at(i)->GetName() == "left_shoulder")
+      angles.Set(0.1, -0.25, -0.15);
+    if (nodes.at(i)->GetName() == "right_shoulder")
+      angles.Set(0.1, 0.25, 0.15);
+    if (nodes.at(i)->GetName() == "left_elbow")
+      angles.Set(-0.2, 0.0, 0.0);
+    if (nodes.at(i)->GetName() == "right_elbow")
+      angles.Set(-0.2, -0.0, 0.0);
+    if (nodes.at(i)->GetName() == "left_thigh")
+      angles.Set(-0.06, -0.04, 0);
+    if (nodes.at(i)->GetName() == "right_thigh")
+      angles.Set(-0.06, 0.04, 0);
+    if (nodes.at(i)->GetName() == "left_knee")
+      angles.Set(0.18, 0, 0);
+    if (nodes.at(i)->GetName() == "right_knee")
+      angles.Set(0.18, 0, 0);
+    if (nodes.at(i)->GetName() == "left_ankle")
+      angles.Set(-0.12, 0, 0);
+    if (nodes.at(i)->GetName() == "right_ankle")
+      angles.Set(-0.12, 0, 0);
 
     Quaternion rotX, rotY, rotZ, quat;
     rotX.SetAngleAxis(angles.coords[0], Vector3(1, 0, 0));
@@ -183,8 +204,7 @@ void Animator::AddNodeToTimeline(boost::intrusive_ptr<Node> node, GuiTimeline *t
 }
 
 void Animator::PopulateTimeline(Animation *animation, GuiTimeline *timeline) {
-
-  std::vector<NodeAnimation*> &nodeAnimations = animation->GetNodeAnimations();
+  std::vector<NodeAnimation *> &nodeAnimations = animation->GetNodeAnimations();
 
   // iterate nodes
   int animSize = nodeAnimations.size();
@@ -198,13 +218,18 @@ void Animator::PopulateTimeline(Animation *animation, GuiTimeline *timeline) {
   }
   int i = animSize;
 
-  std::map < std::string, boost::shared_ptr<AnimationExtension> >::iterator extensionIter = animation->GetExtensions().begin();
+  std::map<std::string, boost::shared_ptr<AnimationExtension>>::iterator extensionIter =
+      animation->GetExtensions().begin();
   while (extensionIter != animation->GetExtensions().end()) {
-
-    //extensionIter->second->PopulateTimeline(i, timeline);
-    //void FootballAnimationExtension::PopulateTimeline(int part, GuiTimeline *timeline) {
-    std::map<int, FootballKeyFrame>::iterator animIter = boost::static_pointer_cast<FootballAnimationExtension>(extensionIter->second)->GetAnimation().begin();
-    while (animIter != boost::static_pointer_cast<FootballAnimationExtension>(extensionIter->second)->GetAnimation().end()) {
+    // extensionIter->second->PopulateTimeline(i, timeline);
+    // void FootballAnimationExtension::PopulateTimeline(int part, GuiTimeline *timeline) {
+    std::map<int, FootballKeyFrame>::iterator animIter =
+        boost::static_pointer_cast<FootballAnimationExtension>(extensionIter->second)
+            ->GetAnimation()
+            .begin();
+    while (animIter != boost::static_pointer_cast<FootballAnimationExtension>(extensionIter->second)
+                           ->GetAnimation()
+                           .end()) {
       timeline->EnableKeyFrame(i, animIter->first);
       animIter++;
     }
@@ -218,20 +243,22 @@ void Animator::PopulateTimeline(Animation *animation, GuiTimeline *timeline) {
 //!
 // adds touches around main touch
 // debug: adds touches around main touch
-void AddExtraTouches(Animation* animation, boost::intrusive_ptr<Node> playerNode, const std::list < boost::intrusive_ptr<Object> > &bodyParts, const std::map < const std::string, boost::intrusive_ptr<Node> > &nodeMap) {
-
+void AddExtraTouches(Animation *animation, boost::intrusive_ptr<Node> playerNode,
+                     const std::list<boost::intrusive_ptr<Object>> &bodyParts,
+                     const std::map<const std::string, boost::intrusive_ptr<Node>> &nodeMap) {
   Vector3 animBallPos;
   int animTouchFrame;
-  bool isTouch = boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"))->GetFirstTouch(animBallPos, animTouchFrame);
+  bool isTouch =
+      boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"))
+          ->GetFirstTouch(animBallPos, animTouchFrame);
   if (isTouch) {
-
     // find out what body part the balltouchpos is closest to
     animation->Apply(nodeMap, animTouchFrame, 0, false);
 
     boost::intrusive_ptr<Object> closestBodyPart = (*bodyParts.begin());
     float closestDistance = 100;
     Vector3 toBallVector = Vector3(0);
-    std::list < boost::intrusive_ptr<Object> > ::const_iterator iter = bodyParts.begin();
+    std::list<boost::intrusive_ptr<Object>>::const_iterator iter = bodyParts.begin();
 
     while (iter != bodyParts.end()) {
       float distance = (animBallPos - (*iter)->GetDerivedPosition()).GetLength();
@@ -242,10 +269,11 @@ void AddExtraTouches(Animation* animation, boost::intrusive_ptr<Node> playerNode
       }
       iter++;
     }
-    //printf("closest: %s\n", closestBodyPart->GetName().c_str());
+    // printf("closest: %s\n", closestBodyPart->GetName().c_str());
 
     float heightCheat = 1.0;
-    if (animBallPos.coords[2] > 0.8) heightCheat = 1.6;
+    if (animBallPos.coords[2] > 0.8)
+      heightCheat = 1.6;
 
     int range_pre = int(round(2.f * heightCheat));
     int range_post = int(round(4.f * heightCheat));
@@ -262,16 +290,17 @@ void AddExtraTouches(Animation* animation, boost::intrusive_ptr<Node> playerNode
       range_pre = int(round(2.f * heightCheat));
       range_post = int(round(6.f * heightCheat));
     }
-    //range_pre *= 0.6;
+    // range_pre *= 0.6;
 
-    int frameOffset = 4; // correct for animation smoothing: player limbs always seem to be late at ballposition otherwise
+    int frameOffset = 4;  // correct for animation smoothing: player limbs always seem to be late at
+                          // ballposition otherwise
     if (animTouchFrame + frameOffset - range_pre <= animation->GetFrameCount()) {
-      boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"))->DeleteKeyFrame(animTouchFrame);
+      boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"))
+          ->DeleteKeyFrame(animTouchFrame);
     }
 
     for (int i = animTouchFrame - range_pre; i < animTouchFrame + range_post + 1; i += 2) {
       if (i >= 0 && /*i != animTouchFrame &&*/ i < animation->GetFrameCount() - frameOffset - 1) {
-
         // set animation to this frame
         animation->Apply(nodeMap, i, 0, false);
         // find new ball position, based on the closest body part's position in this frame
@@ -279,111 +308,118 @@ void AddExtraTouches(Animation* animation, boost::intrusive_ptr<Node> playerNode
         Vector3 origBodyPos = nodeMap.find("player")->second->GetDerivedPosition();
         animation->Apply(nodeMap, i + frameOffset, 0, false);
         Vector3 futureBodyPos = nodeMap.find("player")->second->GetDerivedPosition();
-        //origBodyPos.Print();
+        // origBodyPos.Print();
         Vector3 diff2D = (futureBodyPos - origBodyPos).Get2D();
         Quaternion orientation;
-        //Vector3 position = animBallPos + (animBallPos.Get2D() * (-animTouchFrame + i) * 0.05);
-        boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"))->SetKeyFrame(i + frameOffset, orientation, position + diff2D, 0);
+        // Vector3 position = animBallPos + (animBallPos.Get2D() * (-animTouchFrame + i) * 0.05);
+        boost::static_pointer_cast<FootballAnimationExtension>(animation->GetExtension("football"))
+            ->SetKeyFrame(i + frameOffset, orientation, position + diff2D, 0);
       }
     }
   }
 }
 
-
-
-void Animator::GetPhase() {
-}
+void Animator::GetPhase() {}
 
 void Animator::ProcessPhase() {
-
   std::string partName;
   int currentFrame;
   bool isKeyFrame;
   timeline->GetLocation(partName, currentFrame, isKeyFrame);
 
-  //test->SetPosition(Vector3(1, -0.01, 0.47));
+  // test->SetPosition(Vector3(1, -0.01, 0.47));
 
   bool newMessage = true;
   while (newMessage) {
     GuiSignal signal = guiInterface->signalQueue.GetMessage(newMessage);
     if (newMessage) {
       if (signal.sender->GetName() == "button_save" && signal.key == SDLK_RETURN) {
-        saveDialog = new GuiFileDialog(scene2D, "dialog_save", 30, 10, 70, 90, currentDir, currentFile.substr(currentFile.find_last_of("/") + 1, std::string::npos));
+        saveDialog = new GuiFileDialog(
+            scene2D, "dialog_save", 30, 10, 70, 90, currentDir,
+            currentFile.substr(currentFile.find_last_of("/") + 1, std::string::npos));
         guiInterface->AddView(saveDialog);
         guiInterface->SetFocussedView(saveDialog);
-      }
-      else if (signal.sender->GetName() == "dialog_save_CancelButton" && signal.key == SDLK_RETURN) {
+      } else if (signal.sender->GetName() == "dialog_save_CancelButton" &&
+                 signal.key == SDLK_RETURN) {
         guiInterface->DeleteView(saveDialog);
         saveDialog = 0;
-      }
-      else if (signal.sender->GetName() == "dialog_save_OkayButton" && signal.key == SDLK_RETURN) {
+      } else if (signal.sender->GetName() == "dialog_save_OkayButton" &&
+                 signal.key == SDLK_RETURN) {
         currentFile = saveDialog->GetFilename();
         currentDir = saveDialog->GetDirectory();
-        //printf("loading %s\n", currentFile.c_str());
+        // printf("loading %s\n", currentFile.c_str());
         animation->Save(currentFile);
 
         guiInterface->DeleteView(saveDialog);
         saveDialog = 0;
-      }
-      else if (signal.sender->GetName() == "button_load" && signal.key == SDLK_RETURN) {
-        loadDialog = new GuiFileDialog(scene2D, "dialog_load", 30, 10, 70, 90, currentDir, currentFile.substr(currentFile.find_last_of("/") + 1, std::string::npos));
+      } else if (signal.sender->GetName() == "button_load" && signal.key == SDLK_RETURN) {
+        loadDialog = new GuiFileDialog(
+            scene2D, "dialog_load", 30, 10, 70, 90, currentDir,
+            currentFile.substr(currentFile.find_last_of("/") + 1, std::string::npos));
         guiInterface->AddView(loadDialog);
         guiInterface->SetFocussedView(loadDialog);
-      }
-      else if (signal.sender->GetName() == "dialog_load_CancelButton" && signal.key == SDLK_RETURN) {
+      } else if (signal.sender->GetName() == "dialog_load_CancelButton" &&
+                 signal.key == SDLK_RETURN) {
         guiInterface->DeleteView(loadDialog);
         loadDialog = 0;
-      }
-      else if (signal.sender->GetName() == "dialog_load_OkayButton" && signal.key == SDLK_RETURN) {
+      } else if (signal.sender->GetName() == "dialog_load_OkayButton" &&
+                 signal.key == SDLK_RETURN) {
         currentFile = loadDialog->GetFilename();
         currentDir = loadDialog->GetDirectory();
-        //printf("loading %s\n", currentFile.c_str());
+        // printf("loading %s\n", currentFile.c_str());
         animation->Reset();
         delete animation;
         animation = new Animation;
-        boost::shared_ptr<FootballAnimationExtension> extension(new FootballAnimationExtension(animation));
+        boost::shared_ptr<FootballAnimationExtension> extension(
+            new FootballAnimationExtension(animation));
         animation->AddExtension("football", extension);
         animation->Load(currentFile);
-        //animation->ConvertToStartFacingForwardIfIdle();
-        //animation->ConvertAngles();
-        //animation->Invert();
+        // animation->ConvertToStartFacingForwardIfIdle();
+        // animation->ConvertAngles();
+        // animation->Invert();
 
-/*
-        // debug
-        std::list < boost::intrusive_ptr<Object> > bodyParts;
-        playerNode->GetObjects(e_ObjectType_Geometry, bodyParts, true);
-        std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap;
-        FillNodeMap(playerNode, nodeMap);
-        AddExtraTouches(animation, playerNode, bodyParts, nodeMap); //!
-*/
+        /*
+                // debug
+                std::list < boost::intrusive_ptr<Object> > bodyParts;
+                playerNode->GetObjects(e_ObjectType_Geometry, bodyParts, true);
+                std::map < const std::string, boost::intrusive_ptr<Node> > nodeMap;
+                FillNodeMap(playerNode, nodeMap);
+                AddExtraTouches(animation, playerNode, bodyParts, nodeMap); //!
+        */
 
         timeline->ClearKeys();
         PopulateTimeline(animation, timeline);
-        //animation->Hax();
+        // animation->Hax();
 
         printf("angle: %f\n", animation->GetOutgoingAngle());
         printf("body angle: %f\n", animation->GetOutgoingBodyAngle());
 
         float velocity = animation->GetIncomingMovement().GetLength();
         std::string mode;
-        if (velocity < 1.8) mode = "idle";
-        else if (velocity >= 1.8 && velocity < 4.2) mode = "dribble";
-        else if (velocity >= 4.2 && velocity < 6.0) mode = "walk";
-        else if (velocity >= 6.0) mode = "sprint";
+        if (velocity < 1.8)
+          mode = "idle";
+        else if (velocity >= 1.8 && velocity < 4.2)
+          mode = "dribble";
+        else if (velocity >= 4.2 && velocity < 6.0)
+          mode = "walk";
+        else if (velocity >= 6.0)
+          mode = "sprint";
         printf("%s - ", mode.c_str());
 
         velocity = animation->GetOutgoingMovement().GetLength();
-        if (velocity < 1.8) mode = "idle";
-        else if (velocity >= 1.8 && velocity < 4.2) mode = "dribble";
-        else if (velocity >= 4.2 && velocity < 6.0) mode = "walk";
-        else if (velocity >= 6.0) mode = "sprint";
+        if (velocity < 1.8)
+          mode = "idle";
+        else if (velocity >= 1.8 && velocity < 4.2)
+          mode = "dribble";
+        else if (velocity >= 4.2 && velocity < 6.0)
+          mode = "walk";
+        else if (velocity >= 6.0)
+          mode = "sprint";
         printf("%s\n", mode.c_str());
 
         guiInterface->DeleteView(loadDialog);
         loadDialog = 0;
-      }
-      else if (signal.sender->GetName() == "motionTimeline") {
-
+      } else if (signal.sender->GetName() == "motionTimeline") {
         if (signal.key == SDLK_INSERT) {
           // insert new frame (move all keyframes from this frame on to the 'right')
           printf("shifting..\n");
@@ -393,19 +429,18 @@ void Animator::ProcessPhase() {
         }
 
         if (signal.key == SDLK_BACKSPACE) {
-          // insert new frame (move all keyframes from this frame on to the 'left', erasing current keyframes)
+          // insert new frame (move all keyframes from this frame on to the 'left', erasing current
+          // keyframes)
           printf("shifting..\n");
           animation->Shift(currentFrame, -1);
           timeline->ClearKeys();
           PopulateTimeline(animation, timeline);
         }
 
-
         // is this a normal node?
         if (managedNodes.find(partName) != managedNodes.end()) {
-
           if (signal.key == SDLK_DELETE && isKeyFrame && currentFrame != 0) {
-            static_cast<GuiTimeline*>(signal.sender)->ToggleKeyFrame();
+            static_cast<GuiTimeline *>(signal.sender)->ToggleKeyFrame();
             animation->DeleteKeyFrame(partName, currentFrame);
           }
 
@@ -413,37 +448,57 @@ void Animator::ProcessPhase() {
             animation->Hax();
           }
 
-          if (signal.key == SDLK_q || signal.key == SDLK_w || signal.key == SDLK_a || signal.key == SDLK_s || signal.key == SDLK_z || signal.key == SDLK_x ||
-              signal.key == SDLK_e || signal.key == SDLK_d || signal.key == SDLK_c || signal.key == SDLK_i || signal.key == SDLK_k || signal.key == SDLK_j ||
-              signal.key == SDLK_l || signal.key == SDLK_u || signal.key == SDLK_o || signal.key == SDLK_0) {
-
+          if (signal.key == SDLK_q || signal.key == SDLK_w || signal.key == SDLK_a ||
+              signal.key == SDLK_s || signal.key == SDLK_z || signal.key == SDLK_x ||
+              signal.key == SDLK_e || signal.key == SDLK_d || signal.key == SDLK_c ||
+              signal.key == SDLK_i || signal.key == SDLK_k || signal.key == SDLK_j ||
+              signal.key == SDLK_l || signal.key == SDLK_u || signal.key == SDLK_o ||
+              signal.key == SDLK_0) {
             Quaternion orientation;
             Vector3 rotationAngles, position;
             int adaptedCurrentFrame = currentFrame;
-            if (adaptedCurrentFrame > animation->GetFrameCount() - 1) adaptedCurrentFrame = animation->GetFrameCount() - 1;
+            if (adaptedCurrentFrame > animation->GetFrameCount() - 1)
+              adaptedCurrentFrame = animation->GetFrameCount() - 1;
             animation->GetKeyFrame(partName, adaptedCurrentFrame, orientation, position);
-            orientation.GetAngles(rotationAngles.coords[0], rotationAngles.coords[1], rotationAngles.coords[2]);
+            orientation.GetAngles(rotationAngles.coords[0], rotationAngles.coords[1],
+                                  rotationAngles.coords[2]);
             if (!isKeyFrame) {
-              static_cast<GuiTimeline*>(signal.sender)->ToggleKeyFrame();
-              //position = managedNodes.find(partName)->second->GetPosition();
+              static_cast<GuiTimeline *>(signal.sender)->ToggleKeyFrame();
+              // position = managedNodes.find(partName)->second->GetPosition();
             }
             float rotStep = pi * 0.01;
-            if (signal.key == SDLK_q) rotationAngles.coords[0] -= rotStep;
-            if (signal.key == SDLK_e) rotationAngles.coords[0] += rotStep;
-            if (signal.key == SDLK_w) rotationAngles.coords[0] = 0;
-            if (signal.key == SDLK_a) rotationAngles.coords[1] -= rotStep;
-            if (signal.key == SDLK_d) rotationAngles.coords[1] += rotStep;
-            if (signal.key == SDLK_s) rotationAngles.coords[1] = 0;
-            if (signal.key == SDLK_z) rotationAngles.coords[2] -= rotStep;
-            if (signal.key == SDLK_c) rotationAngles.coords[2] += rotStep;
-            if (signal.key == SDLK_x) rotationAngles.coords[2] = 0;
-            if (signal.key == SDLK_j) position.coords[0] += 0.02;
-            if (signal.key == SDLK_l) position.coords[0] -= 0.02;
-            if (signal.key == SDLK_i) position.coords[1] -= 0.02;
-            if (signal.key == SDLK_k) position.coords[1] += 0.02;
-            if (signal.key == SDLK_u) position.coords[2] -= 0.01;
-            if (signal.key == SDLK_o) position.coords[2] += 0.01;
-            if (signal.key == SDLK_0) position.Set(0, 0, 0);
+            if (signal.key == SDLK_q)
+              rotationAngles.coords[0] -= rotStep;
+            if (signal.key == SDLK_e)
+              rotationAngles.coords[0] += rotStep;
+            if (signal.key == SDLK_w)
+              rotationAngles.coords[0] = 0;
+            if (signal.key == SDLK_a)
+              rotationAngles.coords[1] -= rotStep;
+            if (signal.key == SDLK_d)
+              rotationAngles.coords[1] += rotStep;
+            if (signal.key == SDLK_s)
+              rotationAngles.coords[1] = 0;
+            if (signal.key == SDLK_z)
+              rotationAngles.coords[2] -= rotStep;
+            if (signal.key == SDLK_c)
+              rotationAngles.coords[2] += rotStep;
+            if (signal.key == SDLK_x)
+              rotationAngles.coords[2] = 0;
+            if (signal.key == SDLK_j)
+              position.coords[0] += 0.02;
+            if (signal.key == SDLK_l)
+              position.coords[0] -= 0.02;
+            if (signal.key == SDLK_i)
+              position.coords[1] -= 0.02;
+            if (signal.key == SDLK_k)
+              position.coords[1] += 0.02;
+            if (signal.key == SDLK_u)
+              position.coords[2] -= 0.01;
+            if (signal.key == SDLK_o)
+              position.coords[2] += 0.01;
+            if (signal.key == SDLK_0)
+              position.Set(0, 0, 0);
             Quaternion rotX, rotY, rotZ, quat;
             rotX.SetAngleAxis(rotationAngles.coords[0], Vector3(1, 0, 0));
             rotY.SetAngleAxis(rotationAngles.coords[1], Vector3(0, 1, 0));
@@ -453,67 +508,92 @@ void Animator::ProcessPhase() {
 
             float velocity = animation->GetIncomingMovement().GetLength();
             std::string mode;
-            if (velocity < 1.8) mode = "idle";
-            else if (velocity >= 1.8 && velocity < 4.2) mode = "dribble";
-            else if (velocity >= 4.2 && velocity < 6.0) mode = "walk";
-            else if (velocity >= 6.0) mode = "sprint";
+            if (velocity < 1.8)
+              mode = "idle";
+            else if (velocity >= 1.8 && velocity < 4.2)
+              mode = "dribble";
+            else if (velocity >= 4.2 && velocity < 6.0)
+              mode = "walk";
+            else if (velocity >= 6.0)
+              mode = "sprint";
             float diff = 0;
-            if (mode == "idle") diff = velocity - idleVelocity;
-            if (mode == "dribble") diff = velocity - dribbleVelocity;
-            if (mode == "walk") diff = velocity - walkVelocity;
-            if (mode == "sprint") diff = velocity - sprintVelocity;
+            if (mode == "idle")
+              diff = velocity - idleVelocity;
+            if (mode == "dribble")
+              diff = velocity - dribbleVelocity;
+            if (mode == "walk")
+              diff = velocity - walkVelocity;
+            if (mode == "sprint")
+              diff = velocity - sprintVelocity;
             printf("%s (%f) - ", mode.c_str(), diff);
 
             velocity = animation->GetOutgoingMovement().GetLength();
-            if (velocity < 1.8) mode = "idle";
-            else if (velocity >= 1.8 && velocity < 4.2) mode = "dribble";
-            else if (velocity >= 4.2 && velocity < 6.0) mode = "walk";
-            else if (velocity >= 6.0) mode = "sprint";
-            if (mode == "idle") diff = velocity - idleVelocity;
-            if (mode == "dribble") diff = velocity - dribbleVelocity;
-            if (mode == "walk") diff = velocity - walkVelocity;
-            if (mode == "sprint") diff = velocity - sprintVelocity;
+            if (velocity < 1.8)
+              mode = "idle";
+            else if (velocity >= 1.8 && velocity < 4.2)
+              mode = "dribble";
+            else if (velocity >= 4.2 && velocity < 6.0)
+              mode = "walk";
+            else if (velocity >= 6.0)
+              mode = "sprint";
+            if (mode == "idle")
+              diff = velocity - idleVelocity;
+            if (mode == "dribble")
+              diff = velocity - dribbleVelocity;
+            if (mode == "walk")
+              diff = velocity - walkVelocity;
+            if (mode == "sprint")
+              diff = velocity - sprintVelocity;
             printf("%s (%f)\n", mode.c_str(), diff);
-            //animation->GetOutgoingDirection().Print();
+            // animation->GetOutgoingDirection().Print();
           }
 
-        // then what is it? a football extension maybe?
+          // then what is it? a football extension maybe?
         } else {
-
           if (signal.key == SDLK_DELETE && isKeyFrame) {
-            static_cast<GuiTimeline*>(signal.sender)->ToggleKeyFrame();
+            static_cast<GuiTimeline *>(signal.sender)->ToggleKeyFrame();
             animation->GetExtension("football")->DeleteKeyFrame(currentFrame);
           }
 
           if (signal.key == SDLK_i || signal.key == SDLK_k || signal.key == SDLK_j ||
-              signal.key == SDLK_l || signal.key == SDLK_u || signal.key == SDLK_o || signal.key == SDLK_0) {
-
+              signal.key == SDLK_l || signal.key == SDLK_u || signal.key == SDLK_o ||
+              signal.key == SDLK_0) {
             Quaternion tmp;
             Vector3 position;
             float power;
             animation->GetExtension("football")->GetKeyFrame(currentFrame, tmp, position, power);
             if (!isKeyFrame) {
-              static_cast<GuiTimeline*>(signal.sender)->ToggleKeyFrame();
-              //position = managedNodes.find(partName)->second->GetPosition();
+              static_cast<GuiTimeline *>(signal.sender)->ToggleKeyFrame();
+              // position = managedNodes.find(partName)->second->GetPosition();
               position.coords[2] = 0.11;
             }
             float rotStep = pi * 0.01;
-            if (signal.key == SDLK_j) position.coords[0] += 0.01;
-            if (signal.key == SDLK_l) position.coords[0] -= 0.01;
-            if (signal.key == SDLK_i) position.coords[1] -= 0.01;
-            if (signal.key == SDLK_k) position.coords[1] += 0.01;
-            if (signal.key == SDLK_u) position.coords[2] -= 0.01;
-            if (signal.key == SDLK_o) position.coords[2] += 0.01;
-            if (signal.key == SDLK_0) position.Set(0, 0, 0.11);
+            if (signal.key == SDLK_j)
+              position.coords[0] += 0.01;
+            if (signal.key == SDLK_l)
+              position.coords[0] -= 0.01;
+            if (signal.key == SDLK_i)
+              position.coords[1] -= 0.01;
+            if (signal.key == SDLK_k)
+              position.coords[1] += 0.01;
+            if (signal.key == SDLK_u)
+              position.coords[2] -= 0.01;
+            if (signal.key == SDLK_o)
+              position.coords[2] += 0.01;
+            if (signal.key == SDLK_0)
+              position.Set(0, 0, 0.11);
             animation->GetExtension("football")->SetKeyFrame(currentFrame, tmp, position, power);
           }
-
         }
 
-        if (signal.key == SDLK_SPACE) { if (!play) play = true; else play = false; }
+        if (signal.key == SDLK_SPACE) {
+          if (!play)
+            play = true;
+          else
+            play = false;
+        }
       }
     }
-
   }
 
   Quaternion orientation;
@@ -522,42 +602,44 @@ void Animator::ProcessPhase() {
 
   if (managedNodes.find(partName) != managedNodes.end()) {
     animation->GetKeyFrame(partName, currentFrame, orientation, position);
-    if (partName != "player") position = managedNodes.find(partName)->second->GetDerivedPosition();
+    if (partName != "player")
+      position = managedNodes.find(partName)->second->GetDerivedPosition();
   } else {
     animation->GetExtension("football")->GetKeyFrame(currentFrame, orientation, position, power);
   }
 
   Vector3 rotationAngles;
-  orientation.GetAngles(rotationAngles.coords[0], rotationAngles.coords[1], rotationAngles.coords[2]);
+  orientation.GetAngles(rotationAngles.coords[0], rotationAngles.coords[1],
+                        rotationAngles.coords[2]);
 
-  debugValues1->Set("rot: " +
-                            int_to_str(360 * rotationAngles.coords[0] / (pi * 2)) + ", " +
-                            int_to_str(360 * rotationAngles.coords[1] / (pi * 2)) + ", " +
-                            int_to_str(360 * rotationAngles.coords[2] / (pi * 2)));
-  debugValues2->Set("pos: " +
-                            real_to_str(position.coords[0]).substr(0, 5) + ", " +
-                            real_to_str(position.coords[1]).substr(0, 5) + ", " +
-                            real_to_str(position.coords[2]).substr(0, 5));
+  debugValues1->Set("rot: " + int_to_str(360 * rotationAngles.coords[0] / (pi * 2)) + ", " +
+                    int_to_str(360 * rotationAngles.coords[1] / (pi * 2)) + ", " +
+                    int_to_str(360 * rotationAngles.coords[2] / (pi * 2)));
+  debugValues2->Set("pos: " + real_to_str(position.coords[0]).substr(0, 5) + ", " +
+                    real_to_str(position.coords[1]).substr(0, 5) + ", " +
+                    real_to_str(position.coords[2]).substr(0, 5));
   debugValues3->Set("outgoing rot: " +
-                            int_to_str(int(round(animation->GetOutgoingAngle() / (2 * pi) * 360))));
+                    int_to_str(int(round(animation->GetOutgoingAngle() / (2 * pi) * 360))));
 
   Vector3 ballPosition;
   Quaternion tmp;
   if (!play) {
     int adaptedCurrentFrame = currentFrame;
-    if (adaptedCurrentFrame > animation->GetFrameCount() - 1) adaptedCurrentFrame = animation->GetFrameCount() - 1;
+    if (adaptedCurrentFrame > animation->GetFrameCount() - 1)
+      adaptedCurrentFrame = animation->GetFrameCount() - 1;
     animation->Apply(nodeMap, adaptedCurrentFrame, 0, false, 1.0f, Vector(0), 0);
 
     timelineIndex->Set(int_to_str(currentFrame) + "/" + int_to_str(timeline->GetFrameCount()));
 
     animation->GetExtension("football")->GetKeyFrame(currentFrame, tmp, ballPosition, power);
-    //counter = 0;
+    // counter = 0;
   } else {
     animation->Apply(nodeMap, currentPlayFrame, 0, false);
-    /*if (is_odd(counter)) */currentPlayFrame++;
+    /*if (is_odd(counter)) */ currentPlayFrame++;
     counter++;
     int frameCount = timeline->GetFrameCount();
-    if (currentPlayFrame >= frameCount - 1) currentPlayFrame = 0;
+    if (currentPlayFrame >= frameCount - 1)
+      currentPlayFrame = 0;
 
     timelineIndex->Set(int_to_str(currentPlayFrame) + "/" + int_to_str(timeline->GetFrameCount()));
 
@@ -570,9 +652,13 @@ void Animator::ProcessPhase() {
   ballNode->GetObject("genericball")->SetPosition(ballPosition);
   if (ballPosition != Vector3(0)) {
     Vector3 ballDir;
-    if (animation->GetVariable("incomingballdirection") != "") ballDir = GetVectorFromString(animation->GetVariable("incomingballdirection")) * -1.0;
-    if (ballDir.GetLength() == 0) if (animation->GetVariable("balldirection") != "") ballDir = GetVectorFromString(animation->GetVariable("balldirection"));
-    if (ballDir.GetLength() != 0) bluePilon->SetPosition(ballPosition + ballDir);
+    if (animation->GetVariable("incomingballdirection") != "")
+      ballDir = GetVectorFromString(animation->GetVariable("incomingballdirection")) * -1.0;
+    if (ballDir.GetLength() == 0)
+      if (animation->GetVariable("balldirection") != "")
+        ballDir = GetVectorFromString(animation->GetVariable("balldirection"));
+    if (ballDir.GetLength() != 0)
+      bluePilon->SetPosition(ballPosition + ballDir);
   }
 
   studioRot += UserEventManager::GetInstance().GetMouseRelativePos().coords[0] / 100.0;
@@ -580,8 +666,7 @@ void Animator::ProcessPhase() {
   rot.SetAngleAxis(studioRot, Vector3(0, 0, 1));
   cameraNode->SetRotation(rot);
   cameraNode->SetPosition(playerNode->GetPosition().Get2D() + Vector3(0, 0, 0.65));
-  //camera->SetPosition(Vector3(0, -3.4, 1.8 - 0.74) + playerNode->GetPosition());
+  // camera->SetPosition(Vector3(0, -3.4, 1.8 - 0.74) + playerNode->GetPosition());
 }
 
-void Animator::PutPhase() {
-}
+void Animator::PutPhase() {}

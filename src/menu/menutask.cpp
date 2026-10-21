@@ -1,13 +1,13 @@
-#include "career/career_navigation.hpp"
 #include "menutask.hpp"
 
+#include "../main.hpp"
 #include "../onthepitch/match.hpp"
 #include "career/career_database.hpp"
+#include "career/career_navigation.hpp"
 #include "data/careerdata.hpp"
-#include "../main.hpp"
 #include "framework/scheduler.hpp"
-#include "hid/controllersetup.hpp"
 #include "gametask.hpp"
+#include "hid/controllersetup.hpp"
 #include "ingame/gameover.hpp"
 #include "ingame/ingame.hpp"
 #include "ingame/phasemenu.hpp"
@@ -74,19 +74,20 @@ MenuTask::MenuTask(float aspectRatio, float margin, TTF_Font* defaultFont,
   style->SetFont(e_TextType_ToolTip, defaultFont);
 
   // Classic PES 5/6 Theme: Deep Navy, Silver, and Broadcast Gold
-  style->SetColor(e_DecorationType_Dark1, Vector3(12, 22, 45));   // Deep navy blue (backgrounds)
-  style->SetColor(e_DecorationType_Dark2, Vector3(45, 55, 80));   // Cool silver-blue (borders/inactive)
-  style->SetColor(e_DecorationType_Bright1, Vector3(255, 255, 255)); // Pure crisp white (text)
-  style->SetColor(e_DecorationType_Bright2, Vector3(255, 215, 0));   // Classic PES broadcast gold (hover/focus)
-  style->SetColor(e_DecorationType_Toggled, Vector3(210, 40, 40));   // PES Red (active/toggled)
+  style->SetColor(e_DecorationType_Dark1, Vector3(12, 22, 45));  // Deep navy blue (backgrounds)
+  style->SetColor(e_DecorationType_Dark2,
+                  Vector3(45, 55, 80));  // Cool silver-blue (borders/inactive)
+  style->SetColor(e_DecorationType_Bright1, Vector3(255, 255, 255));  // Pure crisp white (text)
+  style->SetColor(e_DecorationType_Bright2,
+                  Vector3(255, 215, 0));  // Classic PES broadcast gold (hover/focus)
+  style->SetColor(e_DecorationType_Toggled, Vector3(210, 40, 40));  // PES Red (active/toggled)
 
   windowManager->SetTimeStep_ms(10);
 
   Gui2Root* root = windowManager->GetRoot();
   root->Show();
 
-  menuBackground =
-      new Gui2Image(windowManager, "image_menu_background", 0, 0, 100, 100);
+  menuBackground = new Gui2Image(windowManager, "image_menu_background", 0, 0, 100, 100);
   menuBackground->LoadImage("media/menu/backgrounds/stadium01.png");
   root->AddView(menuBackground);
   menuBackground->Show();

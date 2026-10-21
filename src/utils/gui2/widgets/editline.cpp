@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "editline.hpp"
 
 #include "../windowmanager.hpp"
@@ -40,7 +39,7 @@ Gui2EditLine::Gui2EditLine(Gui2WindowManager* windowManager, const std::string& 
   Vector3 cursorSize = cursor->GetImage2D()->GetSize();
   cursor->GetImage2D()->DrawRectangle(0, 0, cursorSize.coords[0], cursorSize.coords[1],
                                       windowManager->GetStyle()->GetColor(e_DecorationType_Bright2),
-                                      255); // Solid neon cursor
+                                      255);  // Solid neon cursor
   cursor->GetImage2D()->OnChange();
   this->AddView(cursor);
   cursor->Hide();

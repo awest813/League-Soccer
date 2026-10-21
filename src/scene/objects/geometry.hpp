@@ -47,8 +47,7 @@ public:
 
   virtual void OnPoke() = 0;
 
-  virtual void ApplyForceAtRelativePosition(float, const Vector3&,
-                                            const Vector3&) {};
+  virtual void ApplyForceAtRelativePosition(float, const Vector3&, const Vector3&){};
 
 protected:
 };

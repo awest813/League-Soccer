@@ -73,8 +73,8 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
       new Gui2Caption(windowManager, "caption_controllerselect_t1", 0, 0, 28, 3, TR("ctrl_home"));
   Gui2Caption* t2 =
       new Gui2Caption(windowManager, "caption_controllerselect_t2", 0, 0, 28, 3, TR("ctrl_away"));
-  Gui2Caption* tNeutral =
-      new Gui2Caption(windowManager, "caption_controllerselect_tn", 0, 0, 28, 3, TR("ctrl_unassigned"));
+  Gui2Caption* tNeutral = new Gui2Caption(windowManager, "caption_controllerselect_tn", 0, 0, 28, 3,
+                                          TR("ctrl_unassigned"));
 
   t1->SetPosition(25 - t1->GetTextWidthPercent() * 0.5, 10);
   t2->SetPosition(75 - t2->GetTextWidthPercent() * 0.5, 10);
@@ -127,9 +127,8 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
       // is, so it is not forced into every match (think gamepad-only testing).
       side.side = 0;
       const e_HIDeviceType deviceType = controllers.at(i)->GetDeviceType();
-      const bool playerOneCandidate =
-          deviceType == e_HIDeviceType_Gamepad ||
-          (!hasGamepad && deviceType == e_HIDeviceType_Keyboard);
+      const bool playerOneCandidate = deviceType == e_HIDeviceType_Gamepad ||
+                                      (!hasGamepad && deviceType == e_HIDeviceType_Keyboard);
       if (!autoAssignedPlayerOne && playerOneCandidate) {
         side.side = -1;
         autoAssignedPlayerOne = true;
@@ -159,14 +158,14 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
 
   SetImagePositions();
 
-  Gui2Caption* hintGamepad = new Gui2Caption(
-      windowManager, "caption_ctrl_hint_gp", 5, 72.0f, 70, 2.0f, TR("ctrl_hint_gamepad"));
+  Gui2Caption* hintGamepad = new Gui2Caption(windowManager, "caption_ctrl_hint_gp", 5, 72.0f, 70,
+                                             2.0f, TR("ctrl_hint_gamepad"));
   hintGamepad->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   ctrlFrame->AddView(hintGamepad);
   hintGamepad->Show();
 
-  Gui2Caption* hintKbd = new Gui2Caption(
-      windowManager, "caption_ctrl_hint_kbd", 5, 75.0f, 70, 2.0f, TR("ctrl_hint_keyboard"));
+  Gui2Caption* hintKbd = new Gui2Caption(windowManager, "caption_ctrl_hint_kbd", 5, 75.0f, 70, 2.0f,
+                                         TR("ctrl_hint_keyboard"));
   hintKbd->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   ctrlFrame->AddView(hintKbd);
   hintKbd->Show();
@@ -291,7 +290,8 @@ void ControllerSelectPage::Process() {
       // Confirm/back act on a fresh press only: the button that opened this
       // page (or backed out of Team Select) is often still held on arrival.
       auto pressedNow = [gamepad](e_ButtonFunction function) {
-        return gamepad->GetButtonValue(function) > 0.5 && !gamepad->GetPreviousButtonState(function);
+        return gamepad->GetButtonValue(function) > 0.5 &&
+               !gamepad->GetPreviousButtonState(function);
       };
       // The D-pad hat is reported as raw buttons 17 (right) and 19 (left).
       const int slot = gamepad->GetGamepadID();

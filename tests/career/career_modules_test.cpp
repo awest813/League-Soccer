@@ -6,8 +6,8 @@
 #include "data/careerdata.hpp"
 #include "menu/career/career_board.hpp"
 #include "menu/career/career_common.hpp"
-#include "menu/career/career_hub_model.hpp"
 #include "menu/career/career_finance.hpp"
+#include "menu/career/career_hub_model.hpp"
 #include "menu/career/career_sim.hpp"
 #include "menu/career/career_training.hpp"
 #include "menu/career/career_transfers.hpp"
@@ -405,9 +405,8 @@ TEST(CareerHub, RoleWorkspacesRespectResponsibilities) {
   using A = CareerHubAction;
   auto has = [](const CareerSave& save, CareerHubSection section, A action) {
     const auto tools = CareerHubTools(save, section);
-    return std::any_of(tools.begin(), tools.end(), [&](const CareerHubTool& tool) {
-      return tool.action == action;
-    });
+    return std::any_of(tools.begin(), tools.end(),
+                       [&](const CareerHubTool& tool) { return tool.action == action; });
   };
   CareerSave save;
   for (auto role : {CareerMode::OWNER_GM, CareerMode::COACH, CareerMode::PLAYER}) {
@@ -419,7 +418,8 @@ TEST(CareerHub, RoleWorkspacesRespectResponsibilities) {
       EXPECT_EQ(has(save, CareerHubSection::TEAM, A::TRANSFERS), role == CareerMode::OWNER_GM);
       EXPECT_EQ(has(save, CareerHubSection::ROLE, A::PRESS), role != CareerMode::PLAYER);
       EXPECT_EQ(has(save, CareerHubSection::ROLE, A::FINANCES), role == CareerMode::OWNER_GM);
-      EXPECT_EQ(has(save, CareerHubSection::ROLE, A::RESPONSIBILITIES), role == CareerMode::OWNER_GM);
+      EXPECT_EQ(has(save, CareerHubSection::ROLE, A::RESPONSIBILITIES),
+                role == CareerMode::OWNER_GM);
       EXPECT_EQ(has(save, CareerHubSection::COMPETITIONS, A::CUSTOM), role == CareerMode::OWNER_GM);
       EXPECT_TRUE(has(save, CareerHubSection::COMPETITIONS, A::STANDINGS));
     }

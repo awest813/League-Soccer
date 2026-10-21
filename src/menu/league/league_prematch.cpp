@@ -24,9 +24,8 @@ LeaguePreMatchPage::LeaguePreMatchPage(Gui2WindowManager* windowManager,
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title =
-      new Gui2Caption(windowManager, "caption_league_prematch", 2, 2, 56, 3,
-                      loc.Translate("league_prematch_title"));
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_prematch", 2, 2, 56, 3,
+                                       loc.Translate("league_prematch_title"));
   frame->AddView(title);
   title->Show();
 
@@ -46,16 +45,14 @@ LeaguePreMatchPage::LeaguePreMatchPage(Gui2WindowManager* windowManager,
     std::string homeLogo = LeagueResolveLogoPath(fixture.homeTeamID);
     std::string awayLogo = LeagueResolveLogoPath(fixture.awayTeamID);
 
-    Gui2Image* homeLogoView =
-        new Gui2Image(windowManager, "image_league_prematch_home", 15.0f - logoWidth * 0.5f, 11,
-                      logoWidth, logoHeight);
+    Gui2Image* homeLogoView = new Gui2Image(windowManager, "image_league_prematch_home",
+                                            15.0f - logoWidth * 0.5f, 11, logoWidth, logoHeight);
     frame->AddView(homeLogoView);
     homeLogoView->LoadImage(homeLogo.empty() ? fallbackLogo : homeLogo);
     homeLogoView->Show();
 
-    Gui2Image* awayLogoView =
-        new Gui2Image(windowManager, "image_league_prematch_away", 45.0f - logoWidth * 0.5f, 11,
-                      logoWidth, logoHeight);
+    Gui2Image* awayLogoView = new Gui2Image(windowManager, "image_league_prematch_away",
+                                            45.0f - logoWidth * 0.5f, 11, logoWidth, logoHeight);
     frame->AddView(awayLogoView);
     awayLogoView->LoadImage(awayLogo.empty() ? fallbackLogo : awayLogo);
     awayLogoView->Show();
@@ -79,9 +76,8 @@ LeaguePreMatchPage::LeaguePreMatchPage(Gui2WindowManager* windowManager,
     frame->AddView(venue);
     venue->Show();
   } else {
-    Gui2Caption* noFixture = new Gui2Caption(
-        windowManager, "caption_league_prematch_nofixture", 2, 9, 56, 3,
-        loc.Translate("league_prematch_no_fixture"));
+    Gui2Caption* noFixture = new Gui2Caption(windowManager, "caption_league_prematch_nofixture", 2,
+                                             9, 56, 3, loc.Translate("league_prematch_no_fixture"));
     frame->AddView(noFixture);
     noFixture->Show();
   }
@@ -90,9 +86,8 @@ LeaguePreMatchPage::LeaguePreMatchPage(Gui2WindowManager* windowManager,
 
   int row = 0;
   if (hasFixture) {
-    Gui2Button* buttonKickOff =
-        new Gui2Button(windowManager, "button_league_prematch_kickoff", 0, 0, 52, 4,
-                       loc.Translate("league_prematch_kickoff"));
+    Gui2Button* buttonKickOff = new Gui2Button(windowManager, "button_league_prematch_kickoff", 0,
+                                               0, 52, 4, loc.Translate("league_prematch_kickoff"));
     buttonKickOff->sig_OnClick.connect([this](...) { KickOff(); });
     grid->AddView(buttonKickOff, row++, 0);
 
@@ -103,9 +98,8 @@ LeaguePreMatchPage::LeaguePreMatchPage(Gui2WindowManager* windowManager,
     grid->AddView(buttonSimulate, row++, 0);
   }
 
-  Gui2Button* buttonBack =
-      new Gui2Button(windowManager, "button_league_prematch_back", 0, 0, 52, 4,
-                     loc.Translate("action_back"));
+  Gui2Button* buttonBack = new Gui2Button(windowManager, "button_league_prematch_back", 0, 0, 52, 4,
+                                          loc.Translate("action_back"));
   buttonBack->sig_OnClick.connect([this](...) { GoBackToDashboard(); });
   grid->AddView(buttonBack, row, 0);
 

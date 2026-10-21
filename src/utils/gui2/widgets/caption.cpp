@@ -1,7 +1,6 @@
 #include "caption.hpp"
 
 #include <algorithm>
-
 #include <cmath>
 
 #include "../windowmanager.hpp"

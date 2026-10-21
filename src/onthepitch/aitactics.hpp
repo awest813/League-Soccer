@@ -13,8 +13,8 @@ inline float GetAttackingProbeX(float playerX, int teamSide, float lead) {
   return playerX - static_cast<float>(teamSide) * std::max(0.0f, lead);
 }
 
-inline bool IsAutomaticRunnerEligible(bool active, bool humanControlled,
-                                      bool goalkeeper, bool ballCarrier) {
+inline bool IsAutomaticRunnerEligible(bool active, bool humanControlled, bool goalkeeper,
+                                      bool ballCarrier) {
   return active && !humanControlled && !goalkeeper && !ballCarrier;
 }
 

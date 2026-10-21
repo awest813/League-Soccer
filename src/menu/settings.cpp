@@ -966,9 +966,9 @@ void GamepadsPage::GoGamepadSetup(int controllerID) {
 namespace {
 
 std::string GamepadLayoutCaption(controlpresets::GamepadPreset preset) {
-  return TRF("gamepad_layout", {TR(preset == controlpresets::GamepadPreset::Fifa
-                                       ? "gamepad_layout_fifa"
-                                       : "gamepad_layout_pes")});
+  return TRF("gamepad_layout",
+             {TR(preset == controlpresets::GamepadPreset::Fifa ? "gamepad_layout_fifa"
+                                                               : "gamepad_layout_pes")});
 }
 
 std::string GamepadInvertCaption(bool invert) {
@@ -981,7 +981,7 @@ std::string GamepadDeadzoneCaption(float deadzone) {
 }
 
 std::string GamepadRumbleCaption(float strength) {
-  const char* key = strength <= 0.0f   ? "gamepad_rumble_off"
+  const char* key = strength <= 0.0f  ? "gamepad_rumble_off"
                     : strength < 1.0f ? "gamepad_rumble_half"
                                       : "gamepad_rumble_full";
   return TRF("gamepad_rumble", {TR(key)});
@@ -1047,9 +1047,8 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
 
   // Layout preset and per-pad options. Each click cycles the value, saves it,
   // and updates the button's own caption.
-  Gui2Button* buttonLayout =
-      new Gui2Button(windowManager, "button_gamepadsetupmenu_layout", 0, 0, 36, 3,
-                     GamepadLayoutCaption(controller->GetPreset()));
+  Gui2Button* buttonLayout = new Gui2Button(windowManager, "button_gamepadsetupmenu_layout", 0, 0,
+                                            36, 3, GamepadLayoutCaption(controller->GetPreset()));
   buttonLayout->sig_OnClick.connect([controllerID, buttonLayout](...) {
     if (HIDGamepad* pad = GetGamepadIfAvailable(controllerID)) {
       const auto next = pad->GetPreset() == controlpresets::GamepadPreset::Pes
@@ -1065,8 +1064,7 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
   buttonInvert->sig_OnClick.connect([controllerID, buttonInvert](...) {
     if (HIDGamepad* pad = GetGamepadIfAvailable(controllerID)) {
       pad->SetInvertVertical(!pad->GetInvertVertical());
-      buttonInvert->GetCaptionWidget()->SetCaption(
-          GamepadInvertCaption(pad->GetInvertVertical()));
+      buttonInvert->GetCaptionWidget()->SetCaption(GamepadInvertCaption(pad->GetInvertVertical()));
     }
   });
   Gui2Button* buttonDeadzone =
@@ -1085,8 +1083,7 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
   buttonRumble->sig_OnClick.connect([controllerID, buttonRumble](...) {
     if (HIDGamepad* pad = GetGamepadIfAvailable(controllerID)) {
       pad->SetRumbleStrength(controlpresets::NextRumbleStrength(pad->GetRumbleStrength()));
-      buttonRumble->GetCaptionWidget()->SetCaption(
-          GamepadRumbleCaption(pad->GetRumbleStrength()));
+      buttonRumble->GetCaptionWidget()->SetCaption(GamepadRumbleCaption(pad->GetRumbleStrength()));
       if (pad->GetRumbleStrength() > 0.0f)
         pad->SetRumble(0.6f, 0.6f, 250);  // let the player feel the new strength
     }
@@ -2377,8 +2374,9 @@ AudioPage::AudioPage(Gui2WindowManager* windowManager, const Gui2PageData& pageD
 AudioPage::~AudioPage() {}
 
 void AudioPage::UpdateVolumeCaption() {
-  sliderVolume->SetCaption(Localization::GetInstance().Translate("audio_volume") + " " +
-                           int_to_str(static_cast<int>(std::round(sliderVolume->GetValue() * 100))) + "%");
+  sliderVolume->SetCaption(
+      Localization::GetInstance().Translate("audio_volume") + " " +
+      int_to_str(static_cast<int>(std::round(sliderVolume->GetValue() * 100))) + "%");
 }
 
 void AudioPage::Process() {

@@ -101,8 +101,8 @@ protected:
 
 class OdePhysicsActor : public IPhysicsActor {
 public:
-  OdePhysicsActor() {};
-  virtual ~OdePhysicsActor() {};
+  OdePhysicsActor(){};
+  virtual ~OdePhysicsActor(){};
 
   dBodyID id;
 
@@ -111,7 +111,7 @@ protected:
 
 class OdePhysicsCollisionMesh : public IPhysicsCollisionMesh {
 public:
-  OdePhysicsCollisionMesh() : vertices(0), indices(0) {};
+  OdePhysicsCollisionMesh() : vertices(0), indices(0){};
   virtual ~OdePhysicsCollisionMesh() {
     if (vertices)
       delete[] vertices;
@@ -129,8 +129,8 @@ protected:
 
 class OdePhysicsJoint : public IPhysicsJoint {
 public:
-  OdePhysicsJoint() {};
-  virtual ~OdePhysicsJoint() {};
+  OdePhysicsJoint(){};
+  virtual ~OdePhysicsJoint(){};
 
   dJointID id;
   e_JointType jointType;

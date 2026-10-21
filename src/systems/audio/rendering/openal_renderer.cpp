@@ -6,9 +6,9 @@
 
 namespace blunted {
 
-OpenALRenderer::OpenALRenderer() : context(0) {};
+OpenALRenderer::OpenALRenderer() : context(0){};
 
-OpenALRenderer::~OpenALRenderer() {};
+OpenALRenderer::~OpenALRenderer(){};
 
 // init & exit
 

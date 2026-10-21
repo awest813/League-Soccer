@@ -47,15 +47,13 @@ LoadingMatchPage::LoadingMatchPage(Gui2WindowManager* windowManager, const Gui2P
   this->AddView(loadingPanel);
   loadingPanel->Show();
 
-  Gui2Caption* header =
-      new Gui2Caption(windowManager, "main_loading_header", 18, 28, 64, 4,
-                      Localization::GetInstance().Translate("loading_match_day"));
+  Gui2Caption* header = new Gui2Caption(windowManager, "main_loading_header", 18, 28, 64, 4,
+                                        Localization::GetInstance().Translate("loading_match_day"));
   header->SetPosition(50.0f - header->GetTextWidthPercent() * 0.5f, 28);
   this->AddView(header);
   header->Show();
 
-  Gui2Caption* versus =
-      new Gui2Caption(windowManager, "main_loading_versus", 47, 52, 6, 4, "VS");
+  Gui2Caption* versus = new Gui2Caption(windowManager, "main_loading_versus", 47, 52, 6, 4, "VS");
   versus->SetPosition(50.0f - versus->GetTextWidthPercent() * 0.5f, 52);
   this->AddView(versus);
   versus->Show();
@@ -71,8 +69,9 @@ LoadingMatchPage::LoadingMatchPage(Gui2WindowManager* windowManager, const Gui2P
   float w = caption1->GetTextWidthPercent();
   caption1->SetPosition(30.0f - w * 0.5f, 35);
   this->AddView(caption1);
-  Gui2Image* logo1 = new Gui2Image(windowManager, "main_loading_team1logo",
-                                   30.0f - teamLogoWidth * 0.5f, 48, teamLogoWidth, kTeamLogoHeight);
+  Gui2Image* logo1 =
+      new Gui2Image(windowManager, "main_loading_team1logo", 30.0f - teamLogoWidth * 0.5f, 48,
+                    teamLogoWidth, kTeamLogoHeight);
   this->AddView(logo1);
   logo1->LoadImage(ResolveTeamLogo(teamData1));
 
@@ -81,8 +80,9 @@ LoadingMatchPage::LoadingMatchPage(Gui2WindowManager* windowManager, const Gui2P
   w = caption2->GetTextWidthPercent();
   caption2->SetPosition(70.0f - w * 0.5f, 35);
   this->AddView(caption2);
-  Gui2Image* logo2 = new Gui2Image(windowManager, "main_loading_team2logo",
-                                   70.0f - teamLogoWidth * 0.5f, 48, teamLogoWidth, kTeamLogoHeight);
+  Gui2Image* logo2 =
+      new Gui2Image(windowManager, "main_loading_team2logo", 70.0f - teamLogoWidth * 0.5f, 48,
+                    teamLogoWidth, kTeamLogoHeight);
   this->AddView(logo2);
   logo2->LoadImage(ResolveTeamLogo(teamData2));
 

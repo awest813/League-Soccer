@@ -1,6 +1,7 @@
 #ifndef _HPP_MENU_LEAGUE_CALENDAR
 #define _HPP_MENU_LEAGUE_CALENDAR
 
+#include "../pagefactory.hpp"
 #include "utils/gui2/page.hpp"
 #include "utils/gui2/widgets/button.hpp"
 #include "utils/gui2/widgets/caption.hpp"
@@ -10,8 +11,6 @@
 #include "utils/gui2/widgets/pulldown.hpp"
 #include "utils/gui2/widgets/text.hpp"
 #include "utils/gui2/windowmanager.hpp"
-
-#include "../pagefactory.hpp"
 
 using namespace blunted;
 

@@ -18,7 +18,8 @@ void StaffManager::FireStaff(int staffID) {
 
 StaffMember* StaffManager::GetStaff(int staffID) {
   for (auto& m : m_staff) {
-    if (m.staffID == staffID) return &m;
+    if (m.staffID == staffID)
+      return &m;
   }
   return nullptr;
 }
@@ -26,7 +27,8 @@ StaffMember* StaffManager::GetStaff(int staffID) {
 std::vector<StaffMember> StaffManager::GetStaffForTeam(int teamID) const {
   std::vector<StaffMember> result;
   for (const auto& m : m_staff) {
-    if (m.teamID == teamID) result.push_back(m);
+    if (m.teamID == teamID)
+      result.push_back(m);
   }
   return result;
 }
@@ -34,7 +36,8 @@ std::vector<StaffMember> StaffManager::GetStaffForTeam(int teamID) const {
 float StaffManager::GetStaffBonus(int teamID, StaffRole role) const {
   int bestSkill = 0;
   for (const auto& m : m_staff) {
-    if (m.teamID == teamID && m.role == role && m.skill > bestSkill) bestSkill = m.skill;
+    if (m.teamID == teamID && m.role == role && m.skill > bestSkill)
+      bestSkill = m.skill;
   }
   // skill 0 -> 1.0x, skill 100 -> 1.2x
   return 1.0f + (static_cast<float>(bestSkill) / 100.0f) * 0.20f;
@@ -43,7 +46,8 @@ float StaffManager::GetStaffBonus(int teamID, StaffRole role) const {
 int StaffManager::GetTotalWages(int teamID) const {
   int total = 0;
   for (const auto& m : m_staff) {
-    if (m.teamID == teamID) total += m.salary;
+    if (m.teamID == teamID)
+      total += m.salary;
   }
   return total;
 }

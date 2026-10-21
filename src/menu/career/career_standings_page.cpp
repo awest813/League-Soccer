@@ -1,9 +1,9 @@
-#include "career_navigation.hpp"
 #include "career_standings_page.hpp"
 
 #include "../../main.hpp"
 #include "../pagefactory.hpp"
 #include "career_common.hpp"
+#include "career_navigation.hpp"
 #include "utils/database.hpp"
 #include "utils/localization.hpp"
 
@@ -190,8 +190,7 @@ void CareerStandingsPage::PopulateScorersGrid() {
 
 void CareerStandingsPage::GoBack() {
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
-  const int hubPage =
-      CareerHubPageID(save);
+  const int hubPage = CareerHubPageID(save);
   Properties props;
   CreatePage(hubPage, props);
 }

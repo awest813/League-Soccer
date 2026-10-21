@@ -14,9 +14,9 @@ public:
   }
 
   virtual ~Singleton() {
-    // assert(singleton);  // actually, if it's already deleted via Destroy(), this might be called again?
-    // wait, if Destroy() calls delete singleton, it calls this destructor.
-    // So this is correct.
+    // assert(singleton);  // actually, if it's already deleted via Destroy(), this might be called
+    // again? wait, if Destroy() calls delete singleton, it calls this destructor. So this is
+    // correct.
     singleton = nullptr;
   }
 

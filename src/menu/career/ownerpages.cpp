@@ -1,4 +1,3 @@
-#include "career_navigation.hpp"
 #include "ownerpages.hpp"
 
 #include <algorithm>
@@ -7,6 +6,7 @@
 #include "../../main.hpp"
 #include "../../utils/gui2/widgets/frame.hpp"  // For card layout
 #include "../pagefactory.hpp"
+#include "career_navigation.hpp"
 #include "careerpages.hpp"  // For PageIDs
 #include "utils/localization.hpp"
 

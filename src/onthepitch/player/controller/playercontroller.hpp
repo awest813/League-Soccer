@@ -6,7 +6,7 @@
 class PlayerController : public IController {
 public:
   PlayerController(Match* match);
-  virtual ~PlayerController() {};
+  virtual ~PlayerController(){};
 
   virtual void Process();
 

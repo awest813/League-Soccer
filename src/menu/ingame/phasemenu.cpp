@@ -1,10 +1,10 @@
 #include "phasemenu.hpp"
 
+#include "../../onthepitch/match.hpp"
 #include "../gameplan.hpp"
 #include "../pagefactory.hpp"
 #include "main.hpp"
 #include "utils/localization.hpp"
-#include "../../onthepitch/match.hpp"
 
 using namespace blunted;
 
@@ -74,10 +74,12 @@ MatchPhasePage::MatchPhasePage(Gui2WindowManager* windowManager, const Gui2PageD
     bgPanel->AddView(statsGrid);
 
     // Header (Team Names)
-    Gui2Caption* h0 = new Gui2Caption(windowManager, "s_t1", 0, 0, 15, 3, md->GetTeamData(0)->GetShortName());
+    Gui2Caption* h0 =
+        new Gui2Caption(windowManager, "s_t1", 0, 0, 15, 3, md->GetTeamData(0)->GetShortName());
     Gui2Caption* h1 = new Gui2Caption(windowManager, "s_l1", 0, 0, 16, 3,
-                                    Localization::GetInstance().Translate("ingame_match_stats"));
-    Gui2Caption* h2 = new Gui2Caption(windowManager, "s_t2", 0, 0, 15, 3, md->GetTeamData(1)->GetShortName());
+                                      Localization::GetInstance().Translate("ingame_match_stats"));
+    Gui2Caption* h2 =
+        new Gui2Caption(windowManager, "s_t2", 0, 0, 15, 3, md->GetTeamData(1)->GetShortName());
     h0->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
     h1->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
     h2->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
@@ -86,43 +88,58 @@ MatchPhasePage::MatchPhasePage(Gui2WindowManager* windowManager, const Gui2PageD
     statsGrid->AddView(h2, 0, 2);
 
     // Score
-    statsGrid->AddView(new Gui2Caption(windowManager, "s_v1", 0, 0, 15, 3, int_to_str(md->GetGoalCount(0))), 1, 0);
+    statsGrid->AddView(
+        new Gui2Caption(windowManager, "s_v1", 0, 0, 15, 3, int_to_str(md->GetGoalCount(0))), 1, 0);
     statsGrid->AddView(new Gui2Caption(windowManager, "s_l2", 0, 0, 16, 3,
-                                    Localization::GetInstance().Translate("ingame_score")), 1, 1);
-    statsGrid->AddView(new Gui2Caption(windowManager, "s_v2", 0, 0, 15, 3, int_to_str(md->GetGoalCount(1))), 1, 2);
+                                       Localization::GetInstance().Translate("ingame_score")),
+                       1, 1);
+    statsGrid->AddView(
+        new Gui2Caption(windowManager, "s_v2", 0, 0, 15, 3, int_to_str(md->GetGoalCount(1))), 1, 2);
 
     // Possession
     unsigned long p0 = md->GetPossessionTime_ms(0);
     unsigned long p1 = md->GetPossessionTime_ms(1);
     int p0_pct = (p0 + p1 > 0) ? (p0 * 100) / (p0 + p1) : 50;
-    statsGrid->AddView(new Gui2Caption(windowManager, "s_p1", 0, 0, 15, 3, int_to_str(p0_pct) + "%"), 2, 0);
+    statsGrid->AddView(
+        new Gui2Caption(windowManager, "s_p1", 0, 0, 15, 3, int_to_str(p0_pct) + "%"), 2, 0);
     statsGrid->AddView(new Gui2Caption(windowManager, "s_l3", 0, 0, 16, 3,
-                                    Localization::GetInstance().Translate("ingame_possession")), 2, 1);
-    statsGrid->AddView(new Gui2Caption(windowManager, "s_p2", 0, 0, 15, 3, int_to_str(100 - p0_pct) + "%"), 2, 2);
+                                       Localization::GetInstance().Translate("ingame_possession")),
+                       2, 1);
+    statsGrid->AddView(
+        new Gui2Caption(windowManager, "s_p2", 0, 0, 15, 3, int_to_str(100 - p0_pct) + "%"), 2, 2);
 
     // Shots (On Target)
-    std::string sh0 = int_to_str(md->GetShots(0)) + " (" + int_to_str(md->GetShotsOnTarget(0)) + ")";
-    std::string sh1 = int_to_str(md->GetShots(1)) + " (" + int_to_str(md->GetShotsOnTarget(1)) + ")";
+    std::string sh0 =
+        int_to_str(md->GetShots(0)) + " (" + int_to_str(md->GetShotsOnTarget(0)) + ")";
+    std::string sh1 =
+        int_to_str(md->GetShots(1)) + " (" + int_to_str(md->GetShotsOnTarget(1)) + ")";
     statsGrid->AddView(new Gui2Caption(windowManager, "s_sh1", 0, 0, 15, 3, sh0), 3, 0);
-    statsGrid->AddView(new Gui2Caption(windowManager, "s_l4", 0, 0, 16, 3,
-                                    Localization::GetInstance().Translate(
-                                        "ingame_shots_on_target")), 3, 1);
+    statsGrid->AddView(
+        new Gui2Caption(windowManager, "s_l4", 0, 0, 16, 3,
+                        Localization::GetInstance().Translate("ingame_shots_on_target")),
+        3, 1);
     statsGrid->AddView(new Gui2Caption(windowManager, "s_sh2", 0, 0, 15, 3, sh1), 3, 2);
 
     // Passes (Completed)
-    std::string pa0 = int_to_str(md->GetPassesCompleted(0)) + " / " + int_to_str(md->GetPassAttempts(0));
-    std::string pa1 = int_to_str(md->GetPassesCompleted(1)) + " / " + int_to_str(md->GetPassAttempts(1));
+    std::string pa0 =
+        int_to_str(md->GetPassesCompleted(0)) + " / " + int_to_str(md->GetPassAttempts(0));
+    std::string pa1 =
+        int_to_str(md->GetPassesCompleted(1)) + " / " + int_to_str(md->GetPassAttempts(1));
     statsGrid->AddView(new Gui2Caption(windowManager, "s_pa1", 0, 0, 15, 3, pa0), 4, 0);
-    statsGrid->AddView(new Gui2Caption(windowManager, "s_l5", 0, 0, 16, 3,
-                                    Localization::GetInstance().Translate(
-                                        "ingame_passes_completed")), 4, 1);
+    statsGrid->AddView(
+        new Gui2Caption(windowManager, "s_l5", 0, 0, 16, 3,
+                        Localization::GetInstance().Translate("ingame_passes_completed")),
+        4, 1);
     statsGrid->AddView(new Gui2Caption(windowManager, "s_pa2", 0, 0, 15, 3, pa1), 4, 2);
 
     // Fouls
-    statsGrid->AddView(new Gui2Caption(windowManager, "s_f1", 0, 0, 15, 3, int_to_str(md->GetFouls(0))), 5, 0);
+    statsGrid->AddView(
+        new Gui2Caption(windowManager, "s_f1", 0, 0, 15, 3, int_to_str(md->GetFouls(0))), 5, 0);
     statsGrid->AddView(new Gui2Caption(windowManager, "s_l6", 0, 0, 16, 3,
-                                    Localization::GetInstance().Translate("ingame_fouls")), 5, 1);
-    statsGrid->AddView(new Gui2Caption(windowManager, "s_f2", 0, 0, 15, 3, int_to_str(md->GetFouls(1))), 5, 2);
+                                       Localization::GetInstance().Translate("ingame_fouls")),
+                       5, 1);
+    statsGrid->AddView(
+        new Gui2Caption(windowManager, "s_f2", 0, 0, 15, 3, int_to_str(md->GetFouls(1))), 5, 2);
 
     statsGrid->UpdateLayout(0.5);
     statsGrid->Show();

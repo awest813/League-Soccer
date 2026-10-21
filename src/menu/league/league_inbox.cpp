@@ -18,7 +18,7 @@ LeagueInboxPage::LeagueInboxPage(Gui2WindowManager* windowManager, const Gui2Pag
   frame->Show();
 
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_league_inbox", 2, 2, 66, 3,
-                                      Localization::GetInstance().Translate("league_inbox"));
+                                       Localization::GetInstance().Translate("league_inbox"));
   frame->AddView(title);
   title->Show();
 
@@ -48,7 +48,8 @@ void LeagueInboxPage::RefreshMessages() {
   if (!countResult->data.empty()) {
     total = atoi(countResult->data.at(0).at(0).c_str());
   }
-  countCaption->SetCaption(Localization::GetInstance().TranslateAndFormat("league_inbox_unread", {std::to_string(total)}));
+  countCaption->SetCaption(Localization::GetInstance().TranslateAndFormat("league_inbox_unread",
+                                                                          {std::to_string(total)}));
 
   messageGrid = new Gui2Grid(windowManager, "grid_inbox", 2, 9, 66, 78);
 
@@ -82,14 +83,15 @@ void LeagueInboxPage::RefreshMessages() {
             new Gui2Dialog(windowManager, "dialog_msg_" + msgID, 20, 15, 60, 70, subject);
         Gui2Text* txt = new Gui2Text(windowManager, "text_msg_" + msgID, 5, 5, 90, 70, 2.5, 50, "");
         txt->AddText(Localization::GetInstance().TranslateAndFormat("league_inbox_from", {sender}));
-        txt->AddText(Localization::GetInstance().TranslateAndFormat("league_inbox_date", {timestamp}));
+        txt->AddText(
+            Localization::GetInstance().TranslateAndFormat("league_inbox_date", {timestamp}));
         txt->AddEmptyLine();
         txt->AddText(body);
         dlg->AddContent(txt);
 
-        Gui2Button* btnClose = dlg->AddPosNegButtons(
-            Localization::GetInstance().Translate("league_inbox_close"),
-            Localization::GetInstance().Translate("league_delete"), false);
+        Gui2Button* btnClose =
+            dlg->AddPosNegButtons(Localization::GetInstance().Translate("league_inbox_close"),
+                                  Localization::GetInstance().Translate("league_delete"), false);
         btnClose->SetFocus();
         dlg->sig_OnPositive.connect([this, dlg](...) {
           dlg->Exit();

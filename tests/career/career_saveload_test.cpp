@@ -376,9 +376,8 @@ namespace {
 
 // Exercise the real text and SQLite readers rather than only the role decoder.
 TEST(CareerRoleMigrationTest, AllFiveLegacyRolesSurviveBothFormatsAndRepeatedSaves) {
-  const CareerMode expected[] = {CareerMode::PLAYER, CareerMode::OWNER_GM,
-                                CareerMode::OWNER_GM, CareerMode::COACH,
-                                CareerMode::OWNER_GM};
+  const CareerMode expected[] = {CareerMode::PLAYER, CareerMode::OWNER_GM, CareerMode::OWNER_GM,
+                                 CareerMode::COACH, CareerMode::OWNER_GM};
   for (int oldRole = 0; oldRole < 5; ++oldRole) {
     for (bool sqlite : {false, true}) {
       SCOPED_TRACE(std::to_string(oldRole) + (sqlite ? " sqlite" : " text"));
@@ -386,7 +385,8 @@ TEST(CareerRoleMigrationTest, AllFiveLegacyRolesSurviveBothFormatsAndRepeatedSav
       fs::remove_all(dir);
       fs::create_directories(dir);
       const auto path = (dir / "legacy.save").string();
-      const std::string payload = "name=Preserved Club\nmode=" + std::to_string(oldRole) +
+      const std::string payload =
+          "name=Preserved Club\nmode=" + std::to_string(oldRole) +
           "\nmanagerName=Alex\nclubID=12\ntransferBudget=1234567\nwageBudget=76543\n"
           "season=7\nweek=19\ncontrolledEntityID=901\ntrainingPoints=9\n"
           "player.0=Alex|CF|24|76|90|100000|5000\n"
@@ -396,13 +396,17 @@ TEST(CareerRoleMigrationTest, AllFiveLegacyRolesSurviveBothFormatsAndRepeatedSav
         sqlite3* db = nullptr;
         ASSERT_EQ(sqlite3_open(path.c_str(), &db), SQLITE_OK);
         const std::string sql =
-            "CREATE TABLE career_meta(schema_version INTEGER,name TEXT,mode INTEGER,season INTEGER);"
-            "INSERT INTO career_meta VALUES(1,'Preserved Club'," + std::to_string(oldRole) + ",7);"
+            "CREATE TABLE career_meta(schema_version INTEGER,name TEXT,mode INTEGER,season "
+            "INTEGER);"
+            "INSERT INTO career_meta VALUES(1,'Preserved Club'," +
+            std::to_string(oldRole) +
+            ",7);"
             "CREATE TABLE career_payload(id INTEGER,data TEXT);";
         ASSERT_EQ(sqlite3_exec(db, sql.c_str(), nullptr, nullptr, nullptr), SQLITE_OK);
         sqlite3_stmt* stmt = nullptr;
-        ASSERT_EQ(sqlite3_prepare_v2(db, "INSERT INTO career_payload VALUES(1,?)", -1, &stmt,
-                                    nullptr), SQLITE_OK);
+        ASSERT_EQ(
+            sqlite3_prepare_v2(db, "INSERT INTO career_payload VALUES(1,?)", -1, &stmt, nullptr),
+            SQLITE_OK);
         sqlite3_bind_text(stmt, 1, payload.c_str(), -1, SQLITE_TRANSIENT);
         ASSERT_EQ(sqlite3_step(stmt), SQLITE_DONE);
         sqlite3_finalize(stmt);
@@ -478,7 +482,8 @@ TEST(CareerRoleMigrationTest, ThreeRolesAndLegacyAliasesCreateCorrectResponsibil
   const auto dir = UniqueTempDir("creation_roles");
   fs::remove_all(dir);
   db.Initialize(dir);
-  for (const std::string alias : {"owner_gm", "manager", "owner", "mygm", "coach", "mycoach", "player"}) {
+  for (const std::string alias :
+       {"owner_gm", "manager", "owner", "mygm", "coach", "mycoach", "player"}) {
     SCOPED_TRACE(alias);
     ASSERT_TRUE(db.CreateNewCareer("Role Club", alias, "Alex"));
     auto* save = db.GetActiveSave();

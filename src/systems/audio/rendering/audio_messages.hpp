@@ -10,7 +10,7 @@ namespace blunted {
 
 class AudioRendererMessage_CreateContext : public Command {
 public:
-  AudioRendererMessage_CreateContext() : Command("audiomsg_CreateContext") {};
+  AudioRendererMessage_CreateContext() : Command("audiomsg_CreateContext"){};
 
   // return values
   bool success;
@@ -24,7 +24,7 @@ protected:
 
 class AudioRendererMessage_DeleteContext : public Command {
 public:
-  AudioRendererMessage_DeleteContext() : Command("audiomsg_DeleteContext") {};
+  AudioRendererMessage_DeleteContext() : Command("audiomsg_DeleteContext"){};
 
   // return values
   bool success;
@@ -39,7 +39,7 @@ protected:
 class AudioRendererMessage_CreateAudioSoundBuffer : public Command {
 public:
   AudioRendererMessage_CreateAudioSoundBuffer(const WavData* wavData)
-      : Command("audiomsg_CreateAudioSoundBuffer"), wavData(wavData) {};
+      : Command("audiomsg_CreateAudioSoundBuffer"), wavData(wavData){};
 
   int audioSoundBufferID;
 
@@ -52,7 +52,7 @@ protected:
 class AudioRendererMessage_DeleteAudioSoundBuffer : public Command {
 public:
   AudioRendererMessage_DeleteAudioSoundBuffer(int audioSoundBufferID)
-      : Command("audiomsg_DeleteAudioSoundBuffer"), audioSoundBufferID(audioSoundBufferID) {};
+      : Command("audiomsg_DeleteAudioSoundBuffer"), audioSoundBufferID(audioSoundBufferID){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -63,7 +63,7 @@ protected:
 class AudioRendererMessage_PlayAudioSoundBuffer : public Command {
 public:
   AudioRendererMessage_PlayAudioSoundBuffer(int audioSoundBufferID)
-      : Command("audiomsg_PlayAudioSoundBuffer"), audioSoundBufferID(audioSoundBufferID) {};
+      : Command("audiomsg_PlayAudioSoundBuffer"), audioSoundBufferID(audioSoundBufferID){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -79,7 +79,7 @@ public:
         audioSoundBufferID(audioSoundBufferID),
         gain(gain),
         pitch(pitch),
-        loop(loop) {};
+        loop(loop){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -95,7 +95,7 @@ public:
   AudioRendererMessage_SetSourcePosition(int audioSoundBufferID, const Vector3& position)
       : Command("audiomsg_SetSourcePosition"),
         audioSoundBufferID(audioSoundBufferID),
-        position(position) {};
+        position(position){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);
@@ -111,7 +111,7 @@ public:
       : Command("audiomsg_SetListenerParameters"),
         position(position),
         velocity(velocity),
-        orientation(orientation) {};
+        orientation(orientation){};
 
 protected:
   virtual bool Execute(void* caller = nullptr);

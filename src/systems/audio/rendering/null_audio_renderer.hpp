@@ -20,8 +20,7 @@ public:
   virtual void SetListenerParameters(const Vector3& position, const Vector3& velocity,
                                      const Quaternion& orientation) override;
 
-  virtual void SetSourceParameter(int audioSoundBufferID,
-                                  e_AudioRenderer_SourceParameter parameter,
+  virtual void SetSourceParameter(int audioSoundBufferID, e_AudioRenderer_SourceParameter parameter,
                                   float value) override;
   virtual void SetSourcePosition(int audioSoundBufferID, const Vector3& position) override;
 

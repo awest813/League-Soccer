@@ -87,13 +87,12 @@ std::string PlayerToRecord(const PlayerCareerState& p) {
   os << Sanitize(p.name) << "|" << Sanitize(p.position) << "|" << p.age << "|" << p.ovr << "|"
      << p.pot << "|" << p.value << "|" << p.wage << "|" << p.morale << "|" << p.matchForm << "|"
      << p.fitness << "|" << p.careerGoals << "|" << p.careerAssists << "|" << p.matchesPlayed << "|"
-     << p.developmentPoints << "|" << static_cast<int>(p.injury)
-     << "|" << p.databaseID << "|" << p.playerID << "|" << p.teamID
-     << "|" << p.contract.yearsRemaining << "|" << p.contract.wage
-     << "|" << p.contract.releaseClause << "|" << p.contract.loanListed
-     << "|" << p.contract.transferListed << "|" << static_cast<int>(p.role)
-     << "|" << p.isYouth << "|" << p.isPromotedFromAcademy
-     << "|" << Sanitize(p.preferredPosition) << "|" << static_cast<int>(p.transferStatus);
+     << p.developmentPoints << "|" << static_cast<int>(p.injury) << "|" << p.databaseID << "|"
+     << p.playerID << "|" << p.teamID << "|" << p.contract.yearsRemaining << "|" << p.contract.wage
+     << "|" << p.contract.releaseClause << "|" << p.contract.loanListed << "|"
+     << p.contract.transferListed << "|" << static_cast<int>(p.role) << "|" << p.isYouth << "|"
+     << p.isPromotedFromAcademy << "|" << Sanitize(p.preferredPosition) << "|"
+     << static_cast<int>(p.transferStatus);
   return os.str();
 }
 
@@ -133,17 +132,28 @@ PlayerCareerState PlayerFromRecord(const std::string& val) {
     if (injury >= 0 && injury <= 3)
       p.injury = static_cast<InjuryStatus>(injury);
   }
-  if (t.size() > 15) p.databaseID = SafeStoi(t[15]);
-  if (t.size() > 16) p.playerID = SafeStoi(t[16]);
-  if (t.size() > 17) p.teamID = SafeStoi(t[17]);
-  if (t.size() > 18) p.contract.yearsRemaining = SafeStoi(t[18]);
-  if (t.size() > 19) p.contract.wage = SafeStoll(t[19]);
-  if (t.size() > 20) p.contract.releaseClause = SafeStoll(t[20]);
-  if (t.size() > 21) p.contract.loanListed = SafeStoi(t[21]) != 0;
-  if (t.size() > 22) p.contract.transferListed = SafeStoi(t[22]) != 0;
-  if (t.size() > 23) p.role = static_cast<ClubRole>(ClampInt(SafeStoi(t[23]), 0, 5));
-  if (t.size() > 24) p.isYouth = SafeStoi(t[24]) != 0;
-  if (t.size() > 25) p.isPromotedFromAcademy = SafeStoi(t[25]) != 0;
+  if (t.size() > 15)
+    p.databaseID = SafeStoi(t[15]);
+  if (t.size() > 16)
+    p.playerID = SafeStoi(t[16]);
+  if (t.size() > 17)
+    p.teamID = SafeStoi(t[17]);
+  if (t.size() > 18)
+    p.contract.yearsRemaining = SafeStoi(t[18]);
+  if (t.size() > 19)
+    p.contract.wage = SafeStoll(t[19]);
+  if (t.size() > 20)
+    p.contract.releaseClause = SafeStoll(t[20]);
+  if (t.size() > 21)
+    p.contract.loanListed = SafeStoi(t[21]) != 0;
+  if (t.size() > 22)
+    p.contract.transferListed = SafeStoi(t[22]) != 0;
+  if (t.size() > 23)
+    p.role = static_cast<ClubRole>(ClampInt(SafeStoi(t[23]), 0, 5));
+  if (t.size() > 24)
+    p.isYouth = SafeStoi(t[24]) != 0;
+  if (t.size() > 25)
+    p.isPromotedFromAcademy = SafeStoi(t[25]) != 0;
   p.preferredPosition = t.size() > 26 && !t[26].empty() ? t[26] : p.position;
   if (t.size() > 27)
     p.transferStatus = static_cast<TransferStatus>(ClampInt(SafeStoi(t[27]), 0, 4));
@@ -200,8 +210,8 @@ std::string PositionFromDbRole(const std::string& dbRole) {
   if (position == "F" || position == "ST")
     return "CF";
   // Already a short code (e.g. "CB", "CF") or unknown notation.
-  static const char* const kShortCodes[] = {"GK", "CB", "LB", "RB", "DM", "CM",
-                                            "LM", "RM", "AM", "CF"};
+  static const char* const kShortCodes[] = {"GK", "CB", "LB", "RB", "DM",
+                                            "CM", "LM", "RM", "AM", "CF"};
   for (const char* code : kShortCodes) {
     if (position == code)
       return position;

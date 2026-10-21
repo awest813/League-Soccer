@@ -24,7 +24,7 @@ struct TransferBid {
 };
 
 class TransferMarket {
- public:
+public:
   TransferMarket() = default;
 
   void OpenWindow() { m_windowOpen = true; }
@@ -42,7 +42,7 @@ class TransferMarket {
 
   void ProcessAIBids();
 
- private:
+private:
   bool m_windowOpen = false;
   std::vector<TransferListing> m_listings;
   std::vector<TransferBid> m_bids;

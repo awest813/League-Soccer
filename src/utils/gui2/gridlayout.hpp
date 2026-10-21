@@ -18,9 +18,9 @@ struct GridLayout {
 };
 
 // Column widths stay stable while scrolling; only visible rows contribute height.
-inline GridLayout CalculateGridLayout(const std::vector<GridLayoutCell>& cells,
-                                     int rows, int columns, int firstRow, int visibleRows,
-                                     float left, float right, float top, float bottom) {
+inline GridLayout CalculateGridLayout(const std::vector<GridLayoutCell>& cells, int rows,
+                                      int columns, int firstRow, int visibleRows, float left,
+                                      float right, float top, float bottom) {
   GridLayout result;
   result.x.resize(columns);
   result.y.resize(rows);

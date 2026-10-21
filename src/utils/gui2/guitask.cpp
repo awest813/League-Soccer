@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "guitask.hpp"
 
 #include "managers/environmentmanager.hpp"
@@ -169,10 +168,14 @@ void Gui2Task::ProcessEvents() {
     // 17: Right, 18: Down, 19: Left), repeated at the same rate as held keys.
     // Evaluated every tick so a held D-pad repeats too (it raises no new events).
     Vector3 stick1Direction = Vector3(axes[0], axes[1], 0);
-    if (UserEventManager::GetInstance().GetJoyButtonState(j, 16)) stick1Direction += Vector3(0, -1, 0);
-    if (UserEventManager::GetInstance().GetJoyButtonState(j, 18)) stick1Direction += Vector3(0, 1, 0);
-    if (UserEventManager::GetInstance().GetJoyButtonState(j, 19)) stick1Direction += Vector3(-1, 0, 0);
-    if (UserEventManager::GetInstance().GetJoyButtonState(j, 17)) stick1Direction += Vector3(1, 0, 0);
+    if (UserEventManager::GetInstance().GetJoyButtonState(j, 16))
+      stick1Direction += Vector3(0, -1, 0);
+    if (UserEventManager::GetInstance().GetJoyButtonState(j, 18))
+      stick1Direction += Vector3(0, 1, 0);
+    if (UserEventManager::GetInstance().GetJoyButtonState(j, 19))
+      stick1Direction += Vector3(-1, 0, 0);
+    if (UserEventManager::GetInstance().GetJoyButtonState(j, 17))
+      stick1Direction += Vector3(1, 0, 0);
     if (stickRepeat[j].Update(stick1Direction.GetLength() != 0, now_ms)) {
       SetActiveJoystickID(j);
       wEvent->SetDirection(stick1Direction);

@@ -19,12 +19,12 @@ struct MatchHistoryEntry {
 };
 
 class MatchHistory {
- public:
+public:
   static void EnsureTable();
   static void SaveMatch(const MatchHistoryEntry& entry);
   static std::vector<MatchHistoryEntry> LoadRecent(int limit = 10);
 
- private:
+private:
   static std::string GetDbPath();
 };
 

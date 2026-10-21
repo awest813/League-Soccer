@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "utils/gui2/gridlayout.hpp"
 #include "utils/gui2/textlayout.hpp"
 
@@ -26,8 +27,7 @@ TEST(MenuGridLayout, ScrollingStartsAtTopWithoutPhantomRow) {
 }
 
 TEST(MenuGridLayout, HiddenRowsDoNotEnlargeViewport) {
-  const auto layout = CalculateGridLayout({{0, 0, 10, 3}, {1, 0, 10, 80}},
-                                         2, 1, 0, 1, 0, 0, 0, 0);
+  const auto layout = CalculateGridLayout({{0, 0, 10, 3}, {1, 0, 10, 80}}, 2, 1, 0, 1, 0, 0, 0, 0);
   EXPECT_FLOAT_EQ(layout.height, 3.0f);
 }
 
@@ -38,8 +38,8 @@ TEST(MenuGridLayout, EmptyGridHasNoPhantomMargins) {
 }
 
 TEST(MenuGridLayout, ConfirmationFitsItsFrame) {
-  const auto layout = CalculateGridLayout({{0, 0, 44, 3}, {1, 0, 44, 3}, {2, 0, 44, 3}},
-                                         3, 1, 0, 3, .5f, .5f, .5f, .5f);
+  const auto layout = CalculateGridLayout({{0, 0, 44, 3}, {1, 0, 44, 3}, {2, 0, 44, 3}}, 3, 1, 0, 3,
+                                          .5f, .5f, .5f, .5f);
   EXPECT_LE(layout.width, 46.0f);
   EXPECT_LE(layout.height, 16.0f);
 }

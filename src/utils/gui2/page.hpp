@@ -50,7 +50,7 @@ protected:
 
 class Gui2PagePath {
 public:
-  Gui2PagePath() {};
+  Gui2PagePath(){};
   virtual ~Gui2PagePath() { Clear(); };
 
   const std::vector<Gui2PageData>& GetPath() { return path; }

@@ -12,10 +12,11 @@ void SetPieceConfig::EnsureTable(int /*teamDatabaseID*/) {
   std::filesystem::create_directories("data/saves");
 
   sqlite3* db = nullptr;
-  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db,
-                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                           nullptr);
   if (rc != SQLITE_OK) {
-    if (db) sqlite3_close(db);
+    if (db)
+      sqlite3_close(db);
     return;
   }
 
@@ -30,7 +31,8 @@ void SetPieceConfig::EnsureTable(int /*teamDatabaseID*/) {
 
   char* errMsg = nullptr;
   sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
-  if (errMsg) sqlite3_free(errMsg);
+  if (errMsg)
+    sqlite3_free(errMsg);
 
   sqlite3_close(db);
 }
@@ -41,10 +43,11 @@ SetPieceParams SetPieceConfig::Load(int teamDatabaseID, e_SetPiece setPiece) {
   defaults.formation_width = 0.95f;
 
   sqlite3* db = nullptr;
-  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db,
-                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                           nullptr);
   if (rc != SQLITE_OK) {
-    if (db) sqlite3_close(db);
+    if (db)
+      sqlite3_close(db);
     return defaults;
   }
 
@@ -68,13 +71,13 @@ SetPieceParams SetPieceConfig::Load(int teamDatabaseID, e_SetPiece setPiece) {
   return result;
 }
 
-void SetPieceConfig::Save(int teamDatabaseID, e_SetPiece setPiece,
-                          const SetPieceParams& params) {
+void SetPieceConfig::Save(int teamDatabaseID, e_SetPiece setPiece, const SetPieceParams& params) {
   sqlite3* db = nullptr;
-  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db,
-                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+  int rc = sqlite3_open_v2(GetDbPath().c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                           nullptr);
   if (rc != SQLITE_OK) {
-    if (db) sqlite3_close(db);
+    if (db)
+      sqlite3_close(db);
     return;
   }
 

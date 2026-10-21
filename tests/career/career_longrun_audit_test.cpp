@@ -245,9 +245,9 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
         EXPECT_LE(result.homeGoals, 9);
         EXPECT_GE(result.awayGoals, 0);
         EXPECT_LE(result.awayGoals, 7);
-        ASSERT_TRUE(db.CompleteFixture(save->season.currentSeason, save->season.currentWeek,
-                                      isHome, 1000, match + 1, opponent,
-                                      result.homeGoals, result.awayGoals, result.scorers));
+        ASSERT_TRUE(db.CompleteFixture(save->season.currentSeason, save->season.currentWeek, isHome,
+                                       1000, match + 1, opponent, result.homeGoals,
+                                       result.awayGoals, result.scorers));
       }
 
       save = db.GetActiveSave();

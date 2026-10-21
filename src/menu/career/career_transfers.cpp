@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include <sqlite3.h>
+
 #include "career_common.hpp"
 #include "utils/localization.hpp"
 
@@ -55,7 +56,10 @@ void ReleasePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
   // Severance pay: ~25 weeks of wages
   long long severance = it->wage * 25;
   if (save.finances.netWorth < severance) {
-    events.AddEvent("financial", "Cannot afford severance pay (" + std::to_string(severance) + ") to release " + playerName, 0, false);
+    events.AddEvent(
+        "financial",
+        "Cannot afford severance pay (" + std::to_string(severance) + ") to release " + playerName,
+        0, false);
     return;
   }
 
@@ -66,7 +70,9 @@ void ReleasePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
   released.transferStatus = TransferStatus::NONE;
   save.freeAgents.push_back(released);
   save.roster.erase(it);
-  events.AddEvent("squad", "Released player " + playerName + " (Severance: " + std::to_string(severance) + ")", -1, false);
+  events.AddEvent(
+      "squad", "Released player " + playerName + " (Severance: " + std::to_string(severance) + ")",
+      -1, false);
   events.ModifyBoardConfidence(-1);
 }
 
@@ -89,7 +95,7 @@ void SeedFreeAgents(CareerSave& save) {
         const char* firstRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
         const char* lastRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
         const char* roleRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-        
+
         std::string first = firstRaw ? firstRaw : "";
         std::string last = lastRaw ? lastRaw : "";
         fa.name = first.empty() ? last : (first + " " + last);
@@ -97,7 +103,7 @@ void SeedFreeAgents(CareerSave& save) {
         fa.preferredPosition = fa.position;
         fa.age = sqlite3_column_int(stmt, 3);
         fa.ovr = BaseStatToRating(sqlite3_column_double(stmt, 4));
-        
+
         fa.pot = std::min(90, fa.ovr + CareerCommon::RandomInt(2, 8));
         fa.value = ComputeMarketValue(fa.ovr, fa.pot, fa.age);
         fa.wage = std::max(1500LL, fa.value / 1400LL);
@@ -105,7 +111,7 @@ void SeedFreeAgents(CareerSave& save) {
         fa.morale = 75;
         fa.fitness = 90;
         fa.matchForm = 50;
-        
+
         save.freeAgents.push_back(fa);
         loadedFromDb = true;
       }
@@ -116,7 +122,8 @@ void SeedFreeAgents(CareerSave& save) {
 
   if (!loadedFromDb) {
     // Fallback if DB query fails
-    static const std::vector<std::string> lastNames = {"Smith", "Silva", "Muller", "Rossi", "Garcia"};
+    static const std::vector<std::string> lastNames = {"Smith", "Silva", "Muller", "Rossi",
+                                                       "Garcia"};
     for (int i = 0; i < 5; ++i) {
       PlayerCareerState fa;
       fa.name = "FreeAgent " + lastNames[i];
@@ -163,7 +170,7 @@ void PopulateTransferMarket(std::vector<TransferTarget>& targets, int userClubID
         const char* firstRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
         const char* lastRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
         const char* roleRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-        
+
         std::string first = firstRaw ? firstRaw : "";
         std::string last = lastRaw ? lastRaw : "";
         target.name = first.empty() ? last : (first + " " + last);
@@ -171,8 +178,9 @@ void PopulateTransferMarket(std::vector<TransferTarget>& targets, int userClubID
         target.age = sqlite3_column_int(stmt, 3);
         target.overallRating = BaseStatToRating(sqlite3_column_double(stmt, 4));
         target.teamID = sqlite3_column_int(stmt, 5);
-        
-        target.potentialRating = std::max(target.overallRating, target.overallRating + RandomInt(1, 10));
+
+        target.potentialRating =
+            std::max(target.overallRating, target.overallRating + RandomInt(1, 10));
         target.value = ComputeMarketValue(target.overallRating, target.potentialRating, target.age);
         target.askingPrice = target.value + target.value * RandomInt(10, 30) / 100;
         target.wage = std::max(1500LL, target.value / 1400LL);
@@ -195,7 +203,8 @@ void PopulateTransferMarket(std::vector<TransferTarget>& targets, int userClubID
       target.preferredPosition = positions[i % 5];
       target.age = RandomInt(18, 31);
       target.overallRating = RandomInt(62, 84);
-      target.potentialRating = std::max(target.overallRating, target.overallRating + RandomInt(1, 10));
+      target.potentialRating =
+          std::max(target.overallRating, target.overallRating + RandomInt(1, 10));
       target.value = ComputeMarketValue(target.overallRating, target.potentialRating, target.age);
       target.askingPrice = target.value + target.value * RandomInt(10, 30) / 100;
       target.wage = std::max(1500LL, target.value / 1400LL);

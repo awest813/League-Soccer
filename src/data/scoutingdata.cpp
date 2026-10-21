@@ -11,15 +11,15 @@ int ScoutingNetwork::HireScout(const Scout& scout) {
 }
 
 void ScoutingNetwork::FireScout(int scoutID) {
-  m_scouts.erase(
-      std::remove_if(m_scouts.begin(), m_scouts.end(),
-                     [scoutID](const Scout& s) { return s.scoutID == scoutID; }),
-      m_scouts.end());
+  m_scouts.erase(std::remove_if(m_scouts.begin(), m_scouts.end(),
+                                [scoutID](const Scout& s) { return s.scoutID == scoutID; }),
+                 m_scouts.end());
 }
 
 Scout* ScoutingNetwork::GetScout(int scoutID) {
   for (auto& s : m_scouts) {
-    if (s.scoutID == scoutID) return &s;
+    if (s.scoutID == scoutID)
+      return &s;
   }
   return nullptr;
 }
@@ -37,8 +37,8 @@ ScoutReport ScoutingNetwork::GenerateReport(int scoutID, int playerID, int seaso
   // Uncertainty is inversely proportional to scout skill: skill 100 = ±5, skill 0 = ±30
   int baseUncertainty = 30 - static_cast<int>(skill * 25.0f / 100.0f);
 
-  static const char* attrs[] = {"pace", "shooting", "passing", "dribbling", "defending",
-                                 "physical", nullptr};
+  static const char* attrs[] = {"pace",      "shooting", "passing", "dribbling",
+                                "defending", "physical", nullptr};
   for (int i = 0; attrs[i]; ++i) {
     // Placeholder attribute values; in a full implementation these would come
     // from the player database

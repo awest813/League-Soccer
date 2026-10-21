@@ -783,8 +783,8 @@ TEST(CareerLifecycleTest, LegacySimulatedResultBeforeBackDoesNotReplayTheWeek) {
   const fs::path dir = UniqueTempDir("legacy_back");
   fs::remove_all(dir);
   fs::create_directories(dir);
-  std::ofstream(dir / "career.save") <<
-      "name=Legacy\nmode=1\nclubID=10\nweek=1\nseasonWins=1\nfixture.0=100|10|20|2|1|1\n";
+  std::ofstream(dir / "career.save")
+      << "name=Legacy\nmode=1\nclubID=10\nweek=1\nseasonWins=1\nfixture.0=100|10|20|2|1|1\n";
   auto& db = CareerDatabase::GetInstance();
   db.Initialize(dir.string());
   ASSERT_TRUE(db.LoadCareerSlot(0));

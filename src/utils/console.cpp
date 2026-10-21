@@ -52,8 +52,8 @@ void Console::PrintLog(e_LogType logType, const std::string& className,
   }
 
   char bla[2048];
-  std::snprintf(bla, sizeof(bla), "[%s] in [%s::%s]: %s", logTypeString.c_str(),
-                className.c_str(), methodName.c_str(), message.c_str());
+  std::snprintf(bla, sizeof(bla), "[%s] in [%s::%s]: %s", logTypeString.c_str(), className.c_str(),
+                methodName.c_str(), message.c_str());
 
   Print(bla, color);
 }

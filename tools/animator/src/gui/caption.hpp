@@ -3,36 +3,35 @@
 #ifndef _HPP_GUI_CAPTION
 #define _HPP_GUI_CAPTION
 
-#include "view.hpp"
-#include "scene/objects/image2d.hpp"
-
 #include <SDL/SDL_ttf.h>
+
+#include "scene/objects/image2d.hpp"
+#include "view.hpp"
 
 namespace blunted {
 
-  class GuiCaption : public GuiView {
+class GuiCaption : public GuiView {
+public:
+  GuiCaption(boost::shared_ptr<Scene2D> scene2D, const std::string &name, float x1_percent,
+             float y1_percent, float x2_percent, float y2_percent, const std::string &caption);
+  virtual ~GuiCaption();
 
-    public:
-      GuiCaption(boost::shared_ptr<Scene2D> scene2D, const std::string &name, float x1_percent, float y1_percent, float x2_percent, float y2_percent, const std::string &caption);
-      virtual ~GuiCaption();
+  virtual void Init();
 
-      virtual void Init();
+  virtual void Set(const std::string &value);
 
-      virtual void Set(const std::string &value);
+  virtual void OnFocus();
+  virtual void OnLoseFocus();
+  virtual void OnKey(int sdlkID);
 
-      virtual void OnFocus();
-      virtual void OnLoseFocus();
-      virtual void OnKey(int sdlkID);
+protected:
+  boost::intrusive_ptr<Image2D> captionImage;
+  std::string caption;
+  boost::intrusive_ptr<Resource<Surface>> captionResource;
 
-    protected:
-      boost::intrusive_ptr<Image2D> captionImage;
-      std::string caption;
-      boost::intrusive_ptr < Resource<Surface> > captionResource;
+  TTF_Font *font;
+};
 
-      TTF_Font *font;
-
-  };
-
-}
+}  // namespace blunted
 
 #endif

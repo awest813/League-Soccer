@@ -39,7 +39,7 @@ struct BallGroundInteraction {
   float grassInfluenceBias = 0.0f;
 };
 
-BallGroundInteraction ApplyBallMotionForces(BallPhysicsState& state, const BallPhysicsConfig& config,
-                                            float timeStep_s);
+BallGroundInteraction ApplyBallMotionForces(BallPhysicsState& state,
+                                            const BallPhysicsConfig& config, float timeStep_s);
 
 #endif

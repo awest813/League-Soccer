@@ -5,15 +5,19 @@
 
 static const char* kFirstNames[] = {"James", "Lucas", "Marco",  "Ivan",
                                     "Pedro", "Luca",  "Carlos", "Sergio"};
-static const char* kLastNames[] = {"Silva", "Santos", "Fernandez", "Rossi",
-                                   "Müller", "Dupont", "Ahmed",    "Kim"};
+static const char* kLastNames[] = {"Silva",  "Santos", "Fernandez", "Rossi",
+                                   "Müller", "Dupont", "Ahmed",     "Kim"};
 static const char* kPositions[] = {"GK", "CB", "LB", "RB", "CM", "CAM", "LW", "RW", "ST"};
 
 ScoutGrade DraftSystem::GradeFromRating(int rating) {
-  if (rating >= 80) return ScoutGrade::A;
-  if (rating >= 70) return ScoutGrade::B;
-  if (rating >= 60) return ScoutGrade::C;
-  if (rating >= 50) return ScoutGrade::D;
+  if (rating >= 80)
+    return ScoutGrade::A;
+  if (rating >= 70)
+    return ScoutGrade::B;
+  if (rating >= 60)
+    return ScoutGrade::C;
+  if (rating >= 50)
+    return ScoutGrade::D;
   return ScoutGrade::F;
 }
 
@@ -46,7 +50,8 @@ std::vector<std::pair<int, int>> DraftSystem::ConductDraft(const std::vector<int
   std::vector<std::pair<int, int>> results;
   size_t pickIdx = 0;
   for (int teamID : teamOrder) {
-    if (pickIdx >= m_prospects.size()) break;
+    if (pickIdx >= m_prospects.size())
+      break;
     results.emplace_back(teamID, m_prospects[pickIdx].prospectID);
     pickIdx++;
   }

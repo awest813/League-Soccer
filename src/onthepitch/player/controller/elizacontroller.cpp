@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "elizacontroller.hpp"
 
 #include <cmath>
@@ -531,8 +530,7 @@ float ElizaController::GetLazyVelocity(float desiredVelocityFloat) {
 
   Player* oppPossPlayer =
       match->GetTeam(abs(team->GetID() - 1))->GetDesignatedTeamPossessionPlayer();
-  Vector3 oppPos = oppPossPlayer ? oppPossPlayer->GetPosition()
-                                 : match->GetBall()->Predict(100);
+  Vector3 oppPos = oppPossPlayer ? oppPossPlayer->GetPosition() : match->GetBall()->Predict(100);
   float actionDistance = (player->GetPosition() - oppPos).GetLength();
   float teamPossession = clamp(GetFadingTeamPossessionAmount() - 0.5f, 0.0f, 1.0f);
   float mindSet = AI_GetMindSet(CastPlayer()->GetDynamicFormationEntry().role);

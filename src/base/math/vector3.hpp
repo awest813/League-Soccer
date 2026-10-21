@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #ifndef _hpp_bluntmath_vector3
 #define _hpp_bluntmath_vector3
 
@@ -37,7 +36,7 @@ public:
      // sizeof(real)); }
   Vector3(real xyz);
   Vector3(real x, real y, real z);
-  inline virtual ~Vector3() {};
+  inline virtual ~Vector3(){};
 
   void Set(real xyz);
   void Set(real x, real y, real z);
@@ -242,8 +241,7 @@ inline bool Vector3::operator<(const Vector3& vector) const {
 }
 
 inline real Vector3::GetLength() const {
-  real length =
-      std::sqrt(coords[0] * coords[0] + coords[1] * coords[1] + coords[2] * coords[2]);
+  real length = std::sqrt(coords[0] * coords[0] + coords[1] * coords[1] + coords[2] * coords[2]);
 
   if (length < 0.000001f)
     length = 0.0f;

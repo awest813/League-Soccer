@@ -9,7 +9,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "humanoid_utils.hpp"
 
 #include <cmath>
@@ -630,9 +629,11 @@ Vector3 GetShotVector(Match* match, Player* player, const Vector3& nextStartPos,
 
   // forward/backward 'curve' (chips get heavy backspin)
   float backspinMult = (shotStyle == ShotStyle::Chip) ? 2.5f : 1.0f;
-  xRot = (-currentAnim->originatingCommand.touchInfo.desiredDirection.coords[1] * 20.0f * backspinMult) +
+  xRot = (-currentAnim->originatingCommand.touchInfo.desiredDirection.coords[1] * 20.0f *
+          backspinMult) +
          (random(-20, 20) * randomCurveFactor);
-  yRot = (-currentAnim->originatingCommand.touchInfo.desiredDirection.coords[0] * 20.0f * backspinMult) +
+  yRot = (-currentAnim->originatingCommand.touchInfo.desiredDirection.coords[0] * 20.0f *
+          backspinMult) +
          (random(-20, 20) * randomCurveFactor);
 
   // lateral curve
@@ -643,7 +644,9 @@ Vector3 GetShotVector(Match* match, Player* player, const Vector3& nextStartPos,
   // printf("bodyTouchAngle: %f\n", bodyTouchAngle);
   radian amount = bodyTouchAngle * 0.25f;
   if (shotStyle == ShotStyle::Finesse) {
-    amount = (fabs(amount) < 0.05f) ? (0.12f * (signSide(bodyTouchAngle) == 0 ? 1 : signSide(bodyTouchAngle))) : (amount * 1.7f);
+    amount = (fabs(amount) < 0.05f)
+                 ? (0.12f * (signSide(bodyTouchAngle) == 0 ? 1 : signSide(bodyTouchAngle)))
+                 : (amount * 1.7f);
   }
   shot.Rotate2D(amount * (0.4f + 0.6f * NormalizedClamp(shot.GetLength(), 0.0f, 70.0f)));
   float finesseCurveGain = (shotStyle == ShotStyle::Finesse) ? 1.6f : 1.0f;

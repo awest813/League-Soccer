@@ -22,7 +22,7 @@ class Object;
 
 class ISystem {
 public:
-  virtual ~ISystem() {};
+  virtual ~ISystem(){};
 
   virtual void Initialize(const Properties& config) = 0;
   virtual void Exit() = 0;

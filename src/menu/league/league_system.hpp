@@ -1,6 +1,7 @@
 #ifndef _HPP_MENU_LEAGUE_SYSTEM
 #define _HPP_MENU_LEAGUE_SYSTEM
 
+#include "../pagefactory.hpp"
 #include "utils/gui2/page.hpp"
 #include "utils/gui2/widgets/button.hpp"
 #include "utils/gui2/widgets/caption.hpp"
@@ -11,8 +12,6 @@
 #include "utils/gui2/widgets/pulldown.hpp"
 #include "utils/gui2/widgets/slider.hpp"
 #include "utils/gui2/windowmanager.hpp"
-
-#include "../pagefactory.hpp"
 
 using namespace blunted;
 

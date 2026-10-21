@@ -30,7 +30,7 @@ class IPhysicsJoint;
 
 class IPhysicsWrapper {
 public:
-  virtual ~IPhysicsWrapper() {};
+  virtual ~IPhysicsWrapper(){};
 
   // the mother of all functions, returns: remainder in ms
   virtual int StepTime(int timediff_ms, int resolution_ms) = 0;

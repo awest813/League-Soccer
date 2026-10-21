@@ -13,14 +13,14 @@ enum class FacilityType {
 
 struct Facility {
   FacilityType type = FacilityType::TRAINING_GROUND;
-  int level = 1;              // 1–5
-  int upgradeCost = 0;        // cost to reach next level
+  int level = 1;        // 1–5
+  int upgradeCost = 0;  // cost to reach next level
   int weeklyMaintenance = 0;
   std::string bonusDescription;
 };
 
 class FacilityManager {
- public:
+public:
   FacilityManager();
 
   bool Upgrade(FacilityType type);
@@ -33,7 +33,7 @@ class FacilityManager {
 
   const std::vector<Facility>& GetFacilities() const { return m_facilities; }
 
- private:
+private:
   std::vector<Facility> m_facilities;
 
   Facility* Find(FacilityType type);

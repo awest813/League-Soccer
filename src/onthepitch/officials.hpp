@@ -1,8 +1,9 @@
 #ifndef _HPP_OFFICIALS
 #define _HPP_OFFICIALS
 
-#include "player/humanoid/animcollection.hpp"
 #include <memory>
+
+#include "player/humanoid/animcollection.hpp"
 
 class PlayerBase;
 class PlayerOfficial;
