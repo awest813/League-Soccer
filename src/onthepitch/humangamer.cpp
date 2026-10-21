@@ -38,6 +38,11 @@ int HumanGamer::GetSelectedPlayerID() const {
 }
 
 void HumanGamer::SetSelectedPlayerID(int id) {
+  if (id != -1 && lockedPlayerID != -1) {
+    Player* locked = team->GetPlayer(lockedPlayerID);
+    if (locked && locked->IsActive())
+      id = lockedPlayerID;
+  }
   if (selectedPlayer) {
     if (selectedPlayer->GetID() == id)
       return;

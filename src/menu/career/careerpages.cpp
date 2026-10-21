@@ -2319,6 +2319,18 @@ CareerMatchdayPage::~CareerMatchdayPage() {}
 
 void CareerMatchdayPage::Process() {
   Gui2Page::Process();
+  // Smoke route: play this week's fixture as a 3D match.
+  if (GetConfiguration()->Get("menu_smoke_test_page", "") == "career_match") {
+    const unsigned long now = EnvironmentManager::GetInstance().GetTime_ms();
+    if (smokeMatchAt_ms == 0) {
+      smokeMatchAt_ms = now + 1000;
+    } else if (now >= smokeMatchAt_ms) {
+      smokeMatchAt_ms = ~0UL;
+      printf("[menu-smoke] Career match: kicking off week %d\n", m_week);
+      PlayMatchFixture(0);  // replaces this page
+      return;
+    }
+  }
 }
 
 void CareerMatchdayPage::BuildFixtures() {
@@ -2556,6 +2568,47 @@ void CareerMatchdayPage::PlayMatch() {
   PlayMatchFixture(0);
 }
 
+namespace {
+
+// The career roster as the 3D match squad: the match squad the simulation
+// uses as the starting eleven, then up to seven substitutes by rating.
+SquadOverride CareerMatchSquad(CareerSave& save) {
+  CareerSim::AssignRosterIdentities(save);
+  std::vector<int> order = CareerSim::SelectMatchSquad(save);
+  std::vector<int> bench;
+  for (int i = 0; i < static_cast<int>(save.roster.size()); i++) {
+    if (std::find(order.begin(), order.end(), i) == order.end())
+      bench.push_back(i);
+  }
+  std::sort(bench.begin(), bench.end(),
+            [&save](int a, int b) { return save.roster[a].ovr > save.roster[b].ovr; });
+  if (bench.size() > 7)
+    bench.resize(7);
+  order.insert(order.end(), bench.begin(), bench.end());
+
+  SquadOverride squad;
+  squad.teamDatabaseID = save.club.clubID;
+  for (int index : order) {
+    const PlayerCareerState& career = save.roster[index];
+    SquadOverridePlayer player;
+    player.databaseID = career.databaseID;
+    std::string name = career.name;
+    name.erase(0, name.find_first_not_of(' '));
+    const size_t space = name.find(' ');
+    player.firstName = space == std::string::npos ? "" : name.substr(0, space);
+    player.lastName = space == std::string::npos ? name : name.substr(space + 1);
+    player.role = career.preferredPosition.empty() ? career.position : career.preferredPosition;
+    player.baseStat = std::clamp(career.ovr / 100.0f, 0.3f, 0.99f);
+    player.age = career.age;
+    squad.players.push_back(player);
+  }
+  if (const PlayerCareerState* controlled = ControlledCareerPlayer(save))
+    squad.lockedPlayerDatabaseID = controlled->databaseID;
+  return squad;
+}
+
+}  // namespace
+
 void CareerMatchdayPage::PlayMatchFixture(int fixtureIndex) {
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
   if (!save || !CanPlayCareerMatch(*save) || fixtureIndex < 0 ||
@@ -2589,6 +2642,9 @@ void CareerMatchdayPage::PlayMatchFixture(int fixtureIndex) {
     GetMenuTask()->SetTeamIDs(std::to_string(opponentDBID), std::to_string(teamDBID));
   }
   GetMenuTask()->SetControllerSetup(sides);
+  // Field the career squad, not the club's database squad; in Player mode the
+  // controller stays on the user's footballer.
+  SetSquadOverride(CareerMatchSquad(*save));
 
   Properties props;
   CreatePage((int)e_PageID_MatchOptions, props);

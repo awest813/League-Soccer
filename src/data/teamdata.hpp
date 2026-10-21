@@ -2,6 +2,8 @@
 #define _HPP_TEAMDATA
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "../gamedefines.hpp"
 #include "base/properties.hpp"
@@ -17,6 +19,29 @@ struct TeamTactics {
   Properties humanReadableNames;
   Properties descriptions;
 };
+
+// A squad that replaces a team's database squad for the next match (a career
+// club fields its career roster). Database players are loaded as usual; the
+// others are built from the career's stats.
+struct SquadOverridePlayer {
+  int databaseID = 0;  // unique within the squad; may be absent from the database
+  std::string firstName;
+  std::string lastName;
+  std::string role = "CM";  // GK, CB, LB, RB, DM, CM, LM, RM, AM or CF
+  float baseStat = 0.6f;    // 0-1
+  int age = 25;
+};
+
+struct SquadOverride {
+  int teamDatabaseID = 0;
+  std::vector<SquadOverridePlayer> players;  // starting eleven first, then the bench
+  // Keeps the team's human controller on this player (Player-mode careers).
+  int lockedPlayerDatabaseID = 0;
+};
+
+// Applies to every TeamData built for the team until cleared.
+void SetSquadOverride(const SquadOverride& squad);
+void ClearSquadOverride();
 
 class TeamData {
 public:
@@ -45,6 +70,8 @@ public:
   int GetPlayerNum() { return static_cast<int>(playerData.size()); }
   PlayerData* GetPlayerData(int num) { return playerData.at(num).get(); }
   PlayerData* GetPlayerDataByDatabaseID(int id);
+  // Database ID of the player the human controller is locked to, or 0.
+  int GetLockedPlayerDatabaseID() const { return lockedPlayerDatabaseID; }
 
   void SaveLineup();
   void SaveTactics();
@@ -64,6 +91,10 @@ protected:
   FormationEntry formation[playerNum];
 
   std::vector<std::unique_ptr<PlayerData>> playerData;
+  int lockedPlayerDatabaseID = 0;
+
+private:
+  bool LoadSquadOverride();
 };
 
 #endif

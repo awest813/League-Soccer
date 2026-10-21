@@ -6,6 +6,7 @@
 #include <ctime>
 
 #include "../../data/matchhistory.hpp"
+#include "../../data/teamdata.hpp"
 #include "../../league/leaguecode.hpp"
 #include "../../onthepitch/match.hpp"
 #include "../career/career_database.hpp"
@@ -270,6 +271,24 @@ void GameOverPage::Process() {
       EnvironmentManager::GetInstance().GetTime_ms() >=
           pageCreatedTime_ms + kMenuSmokeQuitDelay_ms) {
     autoQuitTriggered = true;
+    // A career fixture: record it as Continue would, then report what the
+    // career kept from the 3D match.
+    if (CareerDatabase::GetInstance().HasPendingFixture()) {
+      auto* matchData = match->GetMatchData();
+      const bool recorded = CareerDatabase::GetInstance().ConsumePlayedFixture(
+          matchData->GetGoalCount(0), matchData->GetGoalCount(1), matchData->GetGoalScorers(0),
+          matchData->GetGoalScorers(1));
+      const CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+      int appearances = 0;
+      int goals = 0;
+      for (const auto& player : save ? save->roster : std::vector<PlayerCareerState>{}) {
+        appearances += player.matchesPlayed;
+        goals += player.careerGoals;
+      }
+      printf("[menu-smoke] Career match %s: week now %d, %d appearances, %d goals credited\n",
+             recorded ? "recorded" : "NOT recorded", save ? save->season.currentWeek : 0,
+             appearances, goals);
+    }
     printf("[menu-smoke] Full match complete: %s %i - %i %s\n",
            match->GetTeam(0)->GetTeamData()->GetName().c_str(),
            match->GetMatchData()->GetGoalCount(0), match->GetMatchData()->GetGoalCount(1),
@@ -334,6 +353,8 @@ void GameOverPage::GoMainMenu() {
       CareerDatabase::GetInstance().ClearPendingFixture();
     }
   }
+  // A career squad applies to its fixture only.
+  ClearSquadOverride();
   if (resumeCareer) {
     GetConfiguration()->SetBool("career_resume_hub", true);
   }

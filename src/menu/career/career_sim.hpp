@@ -70,6 +70,12 @@ void UpdatePlayerValue(PlayerCareerState& player);
 // to 11. Deterministic for a given roster.
 std::vector<int> SelectMatchSquad(const CareerSave& save);
 
+// Gives every roster player a unique, positive database ID so a 3D match can
+// field them and report their goals back. Signings and academy graduates start
+// at 0; they get IDs from 900000 up, which the bundled database does not use.
+// Existing unique IDs (and the controlled footballer's) are kept.
+void AssignRosterIdentities(CareerSave& save);
+
 // Records one appearance, with goals and assists, for a named roster player.
 void RecordMatchStats(CareerSave& save, const std::string& playerName, int goals, int assists);
 

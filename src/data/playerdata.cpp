@@ -76,8 +76,27 @@ PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
   CalculateCondition(0);
 }
 
+PlayerData::PlayerData(int playerDatabaseID, const std::string& firstName,
+                       const std::string& lastName, const std::string& role, float baseStat,
+                       int age)
+    : PlayerData() {
+  databaseID = playerDatabaseID;
+  this->firstName = firstName;
+  this->lastName = lastName;
+  roles.push_back(GetRoleFromString(role));
+  // An average profile (0.5) for every stat the default constructor defines.
+  const map_Properties* defaults = stats.GetProperties();
+  std::vector<std::string> names;
+  for (const auto& entry : *defaults)
+    names.push_back(entry.first);
+  for (const auto& name : names)
+    stats.Set(name.c_str(), CalculateStat(baseStat, 0.5f, age, e_DevelopmentCurveType_Normal));
+  CalculateCondition(0);
+}
+
 PlayerData::PlayerData() {
   // officials, for example, use this constructor
+  databaseID = 0;
   skinColor = int(round(random(1, 4)));
   hairStyle = "short01";
   hairColor = "darkblonde";

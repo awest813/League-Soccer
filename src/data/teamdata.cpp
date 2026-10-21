@@ -6,9 +6,22 @@
 
 #include "../main.hpp"
 #include "base/utils.hpp"
+#include "squadslots.hpp"
 #include "utils/database.hpp"
 
 namespace {
+
+std::unique_ptr<SquadOverride>& ActiveSquadOverride() {
+  static std::unique_ptr<SquadOverride> squad;
+  return squad;
+}
+
+bool PlayerInDatabase(int playerDatabaseID) {
+  if (playerDatabaseID <= 0)
+    return false;
+  auto result = GetDB()->Query("select id from players where id = " + int_to_str(playerDatabaseID));
+  return result && !result->data.empty();
+}
 
 void EnsureTacticDefinition(TeamTactics& tactics, const char* name, float defaultValue,
                             const char* displayName, const char* description) {
@@ -62,6 +75,43 @@ Vector3 GetDefaultRolePosition(e_PlayerRole role) {
       return Vector3(0.0, 0.0, 0);
       break;
   }
+}
+
+void SetSquadOverride(const SquadOverride& squad) {
+  ActiveSquadOverride() = std::make_unique<SquadOverride>(squad);
+}
+
+void ClearSquadOverride() {
+  ActiveSquadOverride().reset();
+}
+
+bool TeamData::LoadSquadOverride() {
+  const SquadOverride* squad = ActiveSquadOverride().get();
+  if (!squad || squad->teamDatabaseID != databaseID || squad->players.empty())
+    return false;
+
+  std::vector<std::string> slotRoles;
+  for (int num = 0; num < playerNum; num++)
+    slotRoles.push_back(GetRoleName(formation[num].role));
+  std::vector<std::string> playerRoles;
+  for (const auto& player : squad->players)
+    playerRoles.push_back(player.role);
+  const size_t starters = std::min(static_cast<size_t>(playerNum), squad->players.size());
+
+  for (int index : squadslots::AssignToSlots(slotRoles, playerRoles, starters)) {
+    const SquadOverridePlayer& player = squad->players[index];
+    if (PlayerInDatabase(player.databaseID)) {
+      playerData.push_back(std::make_unique<PlayerData>(player.databaseID));
+    } else {
+      playerData.push_back(std::make_unique<PlayerData>(player.databaseID, player.firstName,
+                                                        player.lastName, player.role,
+                                                        player.baseStat, player.age));
+    }
+  }
+  lockedPlayerDatabaseID = squad->lockedPlayerDatabaseID;
+  printf("[career-squad] %s fields %d career players, controller locked to %d\n", name.c_str(),
+         static_cast<int>(playerData.size()), lockedPlayerDatabaseID);
+  return true;
 }
 
 TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
@@ -309,6 +359,9 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
       "Higher values use secondary pressure more often and deeper on the pitch.");
 
   // load players
+
+  if (LoadSquadOverride())
+    return;
 
   std::string order = "formationorder";
   if (national)

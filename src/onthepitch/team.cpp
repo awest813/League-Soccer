@@ -168,6 +168,18 @@ void Team::GetActivePlayers(std::vector<Player*>& activePlayers) {
 void Team::AddHumanGamer(IHIDevice* hid, e_PlayerColor color) {
   auto humanGamer = std::make_unique<HumanGamer>(this, hid, color);
 
+  if (const int lockedDatabaseID = teamData->GetLockedPlayerDatabaseID()) {
+    for (const auto& player : players) {
+      if (player->GetPlayerData()->GetDatabaseID() == lockedDatabaseID) {
+        humanGamer->SetLockedPlayerID(player->GetID());
+        printf("[career-squad] Controller locked to %s %s\n",
+               player->GetPlayerData()->GetFirstName().c_str(),
+               player->GetPlayerData()->GetLastName().c_str());
+        break;
+      }
+    }
+  }
+
   humanGamer->SetSelectedPlayerID(
       AI_GetClosestPlayer(this, match->GetBall()->Predict(0).Get2D(), true)->GetID());
 

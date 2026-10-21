@@ -240,6 +240,7 @@ protected:
   int m_losses;
   int m_goalsFor;
   int m_goalsAgainst;
+  unsigned long smokeMatchAt_ms = 0;  // career_match smoke route: when to kick off
 };
 
 // ---------------------------------------------------------------------------

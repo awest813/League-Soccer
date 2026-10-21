@@ -36,6 +36,20 @@ void RecordAppearance(PlayerCareerState& player, int goals, int assists) {
 }
 }  // namespace
 
+void AssignRosterIdentities(CareerSave& save) {
+  constexpr int kFirstCareerID = 900000;
+  int next = kFirstCareerID;
+  for (const auto& player : save.roster)
+    next = std::max(next, player.databaseID + 1);
+  std::vector<int> seen;
+  for (auto& player : save.roster) {
+    const bool duplicate = std::find(seen.begin(), seen.end(), player.databaseID) != seen.end();
+    if (player.databaseID <= 0 || (duplicate && player.databaseID != save.controlledEntityID))
+      player.databaseID = next++;
+    seen.push_back(player.databaseID);
+  }
+}
+
 std::vector<int> SelectMatchSquad(const CareerSave& save) {
   std::vector<int> order(save.roster.size());
   std::iota(order.begin(), order.end(), 0);

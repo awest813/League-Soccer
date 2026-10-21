@@ -4,6 +4,7 @@
 #include <cctype>
 #include <set>
 
+#include "../data/teamdata.hpp"
 #include "../league/leaguecode.hpp"
 #include "../main.hpp"
 #include "blunted.hpp"
@@ -165,6 +166,8 @@ MainMenuPage::MainMenuPage(Gui2WindowManager* windowManager, const Gui2PageData&
     : Gui2Page(windowManager, pageData),
       pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
       autoAdvanceTriggered(false) {
+  // Back at the main menu, any career squad from an abandoned match is stale.
+  ClearSquadOverride();
   Gui2Frame* root = new Gui2Frame(windowManager, "frame_mm_root", 2, 3, 96, 94, true);
   this->AddView(root);
   root->Show();
@@ -316,7 +319,8 @@ void MainMenuPage::Process() {
         auditRoute == "career_owner_legacy" || auditRoute == "career_owner_delegated" ||
         auditRoute == "career_training" || auditRoute == "career_owner_gm" ||
         auditRoute == "career_coach" || auditRoute == "career_player" ||
-        auditRoute == "career_season" || auditRoute == "career_matchday") {
+        auditRoute == "career_season" || auditRoute == "career_matchday" ||
+        auditRoute == "career_match") {
       const std::string directory = GetConfiguration()->Get("menu_smoke_career_save_directory", "");
       if (directory.empty() || !CareerDatabase::GetInstance().Initialize(directory) ||
           !CareerDatabase::GetInstance().LoadCareerSave("Training Audit")) {

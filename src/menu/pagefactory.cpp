@@ -382,7 +382,10 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
       AuditMenuLayout(page);
     }
     const std::string smokeRoute = GetConfiguration()->Get("menu_smoke_test_page", "");
-    if (!smokeRoute.empty() && pageData.pageID == StandaloneMenuSmokePage(smokeRoute)) {
+    // career_match plays the fixture from the matchday page and finishes at
+    // full time (CareerMatchdayPage::Process, GameOverPage::Process).
+    if (!smokeRoute.empty() && smokeRoute != "career_match" &&
+        pageData.pageID == StandaloneMenuSmokePage(smokeRoute)) {
       bool passed = true;
       if (smokeRoute == "career_season_pending") {
         const auto* save = CareerDatabase::GetInstance().GetActiveSave();

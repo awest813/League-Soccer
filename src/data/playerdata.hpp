@@ -17,6 +17,10 @@ enum e_PlayerCondition {
 class PlayerData {
 public:
   PlayerData(int playerDatabaseID);
+  // A player who is not in the database (a career's created footballer or
+  // academy graduate): every stat comes from baseStat (0-1) and age.
+  PlayerData(int playerDatabaseID, const std::string& firstName, const std::string& lastName,
+             const std::string& role, float baseStat, int age);
   PlayerData();
   virtual ~PlayerData();
 

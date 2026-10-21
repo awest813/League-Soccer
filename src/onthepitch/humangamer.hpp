@@ -27,6 +27,10 @@ public:
   int GetSelectedPlayerID() const;
   Player* GetSelectedPlayer() const { return selectedPlayer; }
   void SetSelectedPlayerID(int id);
+  // Keeps this gamer on one player (a Player-mode career's footballer): while
+  // that player is on the pitch, every selection resolves to them. -1 unlocks.
+  void SetLockedPlayerID(int id) { lockedPlayerID = id; }
+  int GetLockedPlayerID() const { return lockedPlayerID; }
   IHIDevice* GetHIDevice() { return hid; }
   HumanController* GetHumanController() { return controller; }
 
@@ -42,6 +46,7 @@ protected:
 
   e_PlayerColor playerColor;
   Player* selectedPlayer;
+  int lockedPlayerID = -1;
 };
 
 #endif

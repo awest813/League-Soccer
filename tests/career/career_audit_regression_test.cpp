@@ -388,4 +388,39 @@ TEST(CareerAuditRegression, BoardObjectivesKeepTheirTargetAndReportTheOutcome) {
   EXPECT_TRUE(reported);
 }
 
+// Signings and academy graduates had database ID 0, so a 3D match could not
+// field them and their goals could not be credited.
+TEST(CareerAuditRegression, RosterIdentitiesAreUniqueAndStable) {
+  CareerSave save;
+  save.mode = CareerMode::PLAYER;
+  save.controlledEntityID = 99999;
+  save.roster.push_back(MakePlayer("Database Player", 25, 3));
+  save.roster.back().databaseID = 95;
+  save.roster.push_back(MakePlayer("Signing", 25, 3));
+  save.roster.push_back(MakePlayer("Graduate", 17, 3));
+  save.roster.push_back(MakePlayer("Pro", 18, 3));
+  save.roster.back().databaseID = 99999;
+  save.roster.push_back(MakePlayer("Duplicate", 25, 3));
+  save.roster.back().databaseID = 95;
+
+  blunted::CareerSim::AssignRosterIdentities(save);
+  EXPECT_EQ(save.roster[0].databaseID, 95);
+  EXPECT_EQ(save.roster[3].databaseID, 99999);
+  std::vector<int> ids;
+  for (const auto& player : save.roster) {
+    EXPECT_GT(player.databaseID, 0) << player.name;
+    EXPECT_EQ(std::count(ids.begin(), ids.end(), player.databaseID), 0) << player.name;
+    ids.push_back(player.databaseID);
+  }
+  const std::vector<int> before = ids;
+  blunted::CareerSim::AssignRosterIdentities(save);
+  for (size_t i = 0; i < save.roster.size(); ++i)
+    EXPECT_EQ(save.roster[i].databaseID, before[i]);
+
+  // The user's footballer is always in the match squad, even when weaker.
+  save.roster[3].ovr = 40;
+  const std::vector<int> squad = blunted::CareerSim::SelectMatchSquad(save);
+  EXPECT_NE(std::find(squad.begin(), squad.end(), 3), squad.end());
+}
+
 }  // namespace

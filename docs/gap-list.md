@@ -143,9 +143,7 @@ multipliers for the CPU.
 
 | Pri | Feature | State |
 | --- | --- | --- |
-| P0 | Player-mode match control | `CareerMatchdayPage::PlayMatchFixture` gives the user the whole team. The controlled footballer is not mapped into the 3D match, and the Pro (database ID 99999) is not in the match squad. |
 | P1 | Fixture list | No round-robin schedule: the opponent is `(week*3) % N` over every database team in every league, so opponents repeat about 5 times a season. Opponent strength is a hash of the club name. |
-| P1 | Match squad | The 3D match uses the full database squad, not the career squad, so signings, releases and youth promotions never appear on the pitch. |
 | P1 | Competitions | There are no cups or continental competitions ("Continental Cup" is only a message). Promotion and relegation are computed but never applied. |
 | P1 | Transfer market | Bids resolve instantly. There are no transfer windows or deadlines, no outgoing sales or loans, and no AI clubs; "Agent Patience" is display-only and contract length is fixed at 3 years. |
 | P1 | Contracts | No renewal negotiation, player refusals, release clauses or loans. Staff contracts expire silently. |
@@ -169,7 +167,6 @@ multipliers for the CPU.
 | Owner/GM | P2 | No player sales, loans, transfer/wage budget split, or coach hire/fire. |
 | Coach | P1 | No line-up, formation or bench selection that affects results. |
 | Coach | P2 | No resource or transfer requests to the front office, opponent scouting, or job market. |
-| Player | P0 | No locked single-player control in 3D matches (above). |
 | Player | P1 | There is no selection or bench status: the user's footballer is always in the match squad. A transfer request only sets a flag. |
 | Player | P2 | No personal contract offers or renewals, and no personal objectives. |
 
@@ -307,8 +304,8 @@ Audited by capturing frames of each menu route and of live matches under Xvfb
 
 ## 6. Career, second pass
 
-The six P0 career defects from [section 2](#2-known-defects-not-yet-fixed), plus
-two related ones, are fixed. Each has a regression test in
+The career P0 defects from [section 2](#2-known-defects-not-yet-fixed) and
+[section 3](#3-feature-gaps) are fixed, along with three related gaps. Each has a regression test in
 `tests/career/career_audit_regression_test.cpp`.
 
 | Area | Defect | Fix |
@@ -321,6 +318,13 @@ two related ones, are fixed. Each has a regression test in
 | Standings | AI records were regenerated from a new seed each week, so points could go down. The bundled database has two clubs per league, so the table showed two clubs. Rank, prize money, TV revenue and the board used `EstimateLeaguePosition`, and the form guide was invented. | Other clubs' records are stored in the save and advance one round per user fixture. Every round pairs them, and the club meeting the user gets the mirrored score. Results come from a local, platform-independent RNG, so the career RNG is untouched. Lists of fewer than ten clubs are replaced by a 20-club default league. Rank, prize money, TV revenue, the board and the season summary use the table position. Form guides show real results. |
 | Board | Objectives were judged against targets recomputed from reputation *after* the season's changes, and regenerating them wiped the outcome. | Targets are fixed and saved when objectives are set. They are judged before the rollover, and each outcome is recorded as a board event. |
 | Wages | Recalculating a player's value (after every appearance and at rollover) overwrote their negotiated or extended wage. | Value updates no longer touch the wage. |
+| 3D match squad | The 3D match used the club's database squad, so signings, releases and academy graduates never appeared on the pitch. | A one-shot `SquadOverride` gives `TeamData` the career squad: the match squad starts and up to seven substitutes sit on the bench. Starters are placed in formation slots by position (`data/squadslots.hpp`). Database players load as usual. Players not in the database (the user's footballer, academy graduates, signings) are built from their career rating and age. Roster players get unique IDs so their goals map back. |
+| Player mode | A Player-mode career gave the user the whole team in 3D matches, and the user's footballer was not in the match. | The footballer is always in the match squad, and the human controller is locked to them while they are on the pitch (`HumanGamer::SetLockedPlayerID`). |
+
+A new smoke test (`career_match` route, run in CI) plays a Player-mode fixture
+in 3D from the fixture in `data/menu_smoke_career_match`. It checks that the
+career squad is fielded, the controller is locked to the user's footballer, and
+the result and appearances are recorded.
 
 The long-run audit test now checks that each season's finish equals the club's
 place in the final table, instead of the old estimate.
@@ -329,12 +333,10 @@ place in the final table, instead of the old estimate.
 
 ## Suggested order
 
-1. **Career squad in the 3D match, and Player-mode lock:** these two together make
-   Player mode real and make transfers matter on the pitch.
-2. **Substitutions and injuries:** one feature, and a prerequisite for Coach-mode
+1. **Substitutions and injuries:** one feature, and a prerequisite for Coach-mode
    bench decisions.
-3. **Fixture generator and competitions:** a round-robin schedule, a knockout cup
+2. **Fixture generator and competitions:** a round-robin schedule, a knockout cup
    using `match_extra_time` plus a new penalty shootout, and applied promotion and
    relegation.
-4. **Localization backfill:** the 292 missing keys per language, and moving
+3. **Localization backfill:** the 292 missing keys per language, and moving
    hardcoded English into locale files.
