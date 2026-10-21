@@ -63,6 +63,10 @@ protected:
   bool active;
 
   Vector3 color;
+  // While the bright focus fill is behind the caption it is drawn in the dark
+  // style colour; this keeps the caption's own colour to restore afterwards.
+  bool contrastCaption = false;
+  Vector3 captionColorBeforeContrast;
 };
 
 }  // namespace blunted

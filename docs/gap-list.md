@@ -4,7 +4,8 @@ Date: 2026-10-21
 Scope: the in-match game (`src/onthepitch`, `src/menu/ingame`) and Career mode
 (`src/menu/career`, `src/data/careerdata.*`). The standalone League mode was not
 audited. A second pass covering controls (input devices, remapping, menus and
-in-match handling) is in [section 4](#4-controls).
+in-match handling) is in [section 4](#4-controls), and a third pass covering
+menu and in-match UI is in [section 5](#5-ui-and-in-match-ui).
 
 This document has three parts:
 
@@ -268,11 +269,43 @@ route checks the new option buttons with a real `HIDGamepad`.
 | --- | --- |
 | P1 | **SDL GameController API.** Devices are opened as raw joysticks, so layouts differ per platform and driver: PlayStation/Switch pads under SDL's HIDAPI driver get wrong defaults and no D-pad. `data/gamecontrollerdb.txt` is loaded but absent. Moving to `SDL_GameController` would replace the per-platform guesses fixed above. |
 | P2 | **Controller Select while open.** It builds its device list when it opens, so a pad plugged in while it is showing appears only after reopening it. |
-| P2 | **Remapping.** No conflict warning for duplicate bindings, no secondary keys, no keyboard presets, no trigger-threshold setting. The layout label still says PES/FIFA after individual functions are remapped. The keyboard, gamepad mapping and function pages have hard-coded English text. |
+| P2 | **Remapping.** No conflict warning for duplicate bindings, no secondary keys, no keyboard presets, no trigger-threshold setting. The layout label still says PES/FIFA after individual functions are remapped. |
 | P2 | **On-screen control legend.** Button glyphs for Xbox/PlayStation/Switch exist (`HIDGamepad::GetButtonGlyphPath`) but nothing displays them. |
 | P2 | **Special button.** Mapped (Z / LT) but not read anywhere in a match. |
 | P2 | **Fake shot.** It is a ball-control cut at dribbling pace; the `FakeShot` modifier it sets is never read, so there is no dedicated feint animation. (`docs/gameplay.md` now describes it as it is.) |
 | P2 | **Second local player on one team.** The power gauge only shows for the first human on a team. |
+
+## 5. UI and in-match UI
+
+Audited by capturing frames of each menu route and of live matches under Xvfb
+(`GF_CAPTURE_DIRECTORY`, now with `GF_CAPTURE_INTERVAL_MS` and
+`GF_CAPTURE_LIMIT`), in all five languages.
+
+### Fixed
+
+| Area | Defect | Fix |
+| --- | --- | --- |
+| Focus colours | Buttons, icon selectors and sliders drew white text on the gold focus highlight, which was hard to read. | Focused text is now dark navy on gold (`Gui2Button`, `Gui2IconSelector`, `Gui2Slider`); unfocused text keeps its own colour. |
+| In-match HUD | The radar and player panels kept drawing over the pause menu, game-over screen and replay menu. | `Match::SetHUDVisible`; the in-match page shows the HUD and hides it when an overlay replaces it. |
+| Game over | The OK button overlapped the man-of-the-match caption, and the stats grid left a large empty gap. | Tighter frame, stats grid, caption and button positions. |
+| Replay menu | The replay banner covered the scoreboard, and the timer read "-0s" at the end. | Banner moved below the scoreboard; timer reads `elapsed / total (percent)`. |
+| Scoreboard | The clock started as "0:00" and switched to "00:00" on the first update. | Starts at "00:00". |
+| Player condition | Condition used ASCII marks ("^", "/^", "->", "\\v", "v"). | Unicode arrows (↑ ↗ → ↘ ↓), written as UTF-8 byte escapes so MSVC keeps them. |
+| Sliders | Gameplay sliders and slider values were too small to read at 720p. | Taller gameplay sliders; larger value text. |
+| Gamepad calibration | The panel ran off the right edge of the screen and had no title. | Fixed-size centred panel with a title. |
+| Gamepad functions | Long labels were squeezed into a 10% column and shrank to a few pixels; modifier buttons did not line up with the rest. | 22% label column for every row, and a short dribble label for this page. |
+| Localization | The keyboard, gamepad list, gamepad setup, calibration, button mapping, function, graphics and language pages, and the icon selector's "None selected", were hard-coded English. | 55 new keys in all five locale files; prompts with a device or control name use `TRF`. |
+| Smoke tooling | Layout-audit routes quit before slower pages had drawn, so captures showed the previous page. | `menu_smoke_quit_delay_ms` keeps the route open for a set time. |
+
+### Known gaps
+
+| Pri | Gap |
+| --- | --- |
+| P2 | **Empty panels.** The Settings, Audio and Language pages draw a full-height panel around a few rows, leaving most of it empty. |
+| P2 | **Version watermark.** The build/version text sits close to the right-hand in-match HUD panel. |
+| P2 | **Key names.** The keyboard page shows SDL's English key names ("Up", "Left") in every language. |
+| P2 | **First match frame.** With software GL the first live frame after loading can be white before the pitch draws. Not seen with hardware GL; needs checking on a real GPU. |
+| P2 | **Layout audit scope.** The audit flags controls outside the screen, not text that a caption shrinks to fit its box. Shrunken text still has to be found by looking at captures. |
 
 ---
 

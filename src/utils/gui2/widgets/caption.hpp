@@ -17,6 +17,7 @@ public:
   virtual void GetImages(std::vector<boost::intrusive_ptr<Image2D>>& target);
 
   void SetColor(const Vector3& color);
+  const Vector3& GetColor() const { return color; }
   void SetOutlineColor(const Vector3& outlineColor);
   void SetTransparency(float trans);
 

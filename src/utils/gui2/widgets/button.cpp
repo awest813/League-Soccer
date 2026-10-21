@@ -56,7 +56,10 @@ void Gui2Button::Process() {
 
 void Gui2Button::SetColor(const Vector3& color) {
   this->color = color;
-  captionView->SetColor(color);
+  if (contrastCaption)
+    captionColorBeforeContrast = color;  // applied when the highlight goes away
+  else
+    captionView->SetColor(color);
   Redraw();
 }
 
@@ -66,6 +69,7 @@ void Gui2Button::Redraw() {
 
   // Base background fill (always slightly transparent dark)
   Vector3 baseColor = windowManager->GetStyle()->GetColor(e_DecorationType_Dark1);
+  bool brightHighlight = false;
   if (!active) {
     baseColor = windowManager->GetStyle()->GetColor(e_DecorationType_Dark2);
     image->DrawRectangle(0, 0, w, h, baseColor, 120);  // Disabled transparency
@@ -90,6 +94,22 @@ void Gui2Button::Redraw() {
       image->DrawRectangle(0, 0, w, 2, highlightColor, 255);      // Top border
       image->DrawRectangle(0, h - 2, w, 2, highlightColor, 255);  // Bottom border
     }
+
+    // White text on the gold focus fill is hard to read: switch the caption
+    // to the dark style colour while a bright fill is fully behind it.
+    const float fillLuminance = 0.299f * highlightColor.coords[0] +
+                                0.587f * highlightColor.coords[1] +
+                                0.114f * highlightColor.coords[2];
+    brightHighlight = bias < 0.001f && fillLuminance > 160.0f;
+  }
+
+  if (brightHighlight && !contrastCaption) {
+    captionColorBeforeContrast = captionView->GetColor();
+    captionView->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Dark1));
+    contrastCaption = true;
+  } else if (!brightHighlight && contrastCaption) {
+    captionView->SetColor(captionColorBeforeContrast);
+    contrastCaption = false;
   }
 
   image->OnChange();

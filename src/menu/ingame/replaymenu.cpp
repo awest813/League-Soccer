@@ -33,7 +33,8 @@ ReplayPage::ReplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   stayInReplay = true;
   closeWhenAutorunCompletes = false;
 
-  Gui2Frame* header = new Gui2Frame(windowManager, "frame_replay_header", 36, 2, 28, 7, true);
+  // Below the scoreboard (top ~6% of the screen), which stays visible.
+  Gui2Frame* header = new Gui2Frame(windowManager, "frame_replay_header", 36, 8, 28, 7, true);
   this->AddView(header);
   header->Show();
   Gui2Caption* title =
@@ -101,11 +102,11 @@ void ReplayPage::UpdateTimeLabel() {
   unsigned long replaySize_ms = maxTime_ms - minTime_ms;
   unsigned long elapsed_ms = actualTime_ms - minTime_ms;
   float positionPct = (replaySize_ms > 0) ? (elapsed_ms * 100.0f / replaySize_ms) : 0.0f;
-  unsigned long secsAgo = (maxTime_ms - actualTime_ms) / 1000;
+  // "elapsed / length (position%)"; the old trailing "-Ns" repeated the same
+  // information and read as "-0s" at the end of a replay.
   std::string label = std::string(slowMotion ? "[0.5x] " : "") + int_to_str(elapsed_ms / 1000) +
                       "s / " + int_to_str(replaySize_ms / 1000) + "s  (" +
-                      int_to_str(static_cast<int>(round(positionPct))) + "%)  -" +
-                      int_to_str(secsAgo) + "s";
+                      int_to_str(static_cast<int>(round(positionPct))) + "%)";
   timeLabel->SetCaption(label);
   timeLabel->SetPosition(35.0f - timeLabel->GetTextWidthPercent() * 0.5f, 4.5f);
 }

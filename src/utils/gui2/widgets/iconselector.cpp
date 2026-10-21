@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "../../localization.hpp"
 #include "../windowmanager.hpp"
 #include "SDL2/SDL2_rotozoom.h"
 
@@ -20,10 +21,10 @@ Gui2IconSelector::Gui2IconSelector(Gui2WindowManager* windowManager, const std::
   windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
   image = windowManager->CreateImage2D(name + "bg", w, h, true);
 
-  Gui2Caption* captionView =
+  titleCaption =
       new Gui2Caption(windowManager, name + "caption", 1, 0.3, width_percent, 2.5, caption);
-  this->AddView(captionView);
-  captionView->Show();
+  this->AddView(titleCaption);
+  titleCaption->Show();
   selectedCaption = new Gui2Caption(windowManager, name + "selectedcaption", 1,
                                     height_percent * 0.83, width_percent, 2.5, "empty");
   this->AddView(selectedCaption);
@@ -91,6 +92,12 @@ void Gui2IconSelector::Redraw() {
                        alpha);
   image->OnChange();
 
+  // Dark text on the gold focus fill, white otherwise (as for buttons).
+  const Vector3 textColor = windowManager->GetStyle()->GetColor(
+      IsFocussed() ? e_DecorationType_Dark1 : e_DecorationType_Bright1);
+  titleCaption->SetColor(textColor);
+  selectedCaption->SetColor(textColor);
+
   // calculate sizes and positions for each entry
   for (int i = 0; i < (signed int)entries.size(); i++) {
     float position = i - visibleSelectedEntry;
@@ -112,7 +119,7 @@ void Gui2IconSelector::Redraw() {
       selectedCaption->SetCaption(entries.at(selectedEntry).caption);
     }
   } else
-    selectedCaption->SetCaption("None selected");
+    selectedCaption->SetCaption(TR("widget_none_selected"));
 }
 
 void Gui2IconSelector::ClearEntries() {

@@ -78,6 +78,10 @@ OpenGLRenderer3D::OpenGLRenderer3D()
   const char* capturePath = SDL_getenv("GF_CAPTURE_DIRECTORY");
   if (capturePath)
     captureDirectory = capturePath;
+  if (const char* interval = SDL_getenv("GF_CAPTURE_INTERVAL_MS"))
+    captureInterval_ms = static_cast<Uint32>(std::max(0, atoi(interval)));
+  if (const char* limit = SDL_getenv("GF_CAPTURE_LIMIT"))
+    captureLimit = static_cast<unsigned int>(std::max(1, atoi(limit)));
   FOV = 45;
   overallBrightness = 128;
 
@@ -97,10 +101,10 @@ void OpenGLRenderer3D::SwapBuffers() {
 
 void OpenGLRenderer3D::CaptureFrame() {
   // Bound disk use and avoid per-frame GPU stalls. Captures include the HUD.
-  if (captureDirectory.empty() || captureCount >= 60)
+  if (captureDirectory.empty() || captureCount >= captureLimit)
     return;
   const Uint32 now = SDL_GetTicks();
-  if (captureCount != 0 && now - lastCaptureTime < 2000)
+  if (captureCount != 0 && now - lastCaptureTime < captureInterval_ms)
     return;
   lastCaptureTime = now;
 

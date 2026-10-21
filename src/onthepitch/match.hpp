@@ -105,6 +105,10 @@ public:
   // own rumble-strength option still applies).
   void RumblePlayingPads(float lowFrequency, float highFrequency, unsigned int duration_ms);
 
+  // Shows or hides the radar and player panels. Overlay pages (pause, replay,
+  // half time, full time) hide them so they do not show through or overlap.
+  void SetHUDVisible(bool visible);
+
   void SpamMessage(const std::string& msg, int time_ms = 3000);
   int GetScore(int teamID) { return matchData->GetGoalCount(teamID); }
   Ball* GetBall() { return ball.get(); }

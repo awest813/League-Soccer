@@ -51,6 +51,9 @@ public:
 
   bool QuickStart();
   void QuitGame();
+  // Quits once delay_ms has passed (smoke tests keep a page on screen long
+  // enough to be drawn and captured).
+  void QuitGameAfter(unsigned long delay_ms);
 
   void ReleaseAllButtons();
 
@@ -108,6 +111,7 @@ protected:
   void HandleRemovedControllers();
 
   int disconnectedSide = 0;
+  unsigned long quitAt_ms = 0;
   bool controllerSetupChanged = false;
 
   e_MenuAction menuAction;

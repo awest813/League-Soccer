@@ -681,6 +681,13 @@ void Match::UpdateControllerSetup() {
   }
 }
 
+void Match::SetHUDVisible(bool visible) {
+  if (radar)
+    visible ? radar->Show() : radar->Hide();
+  if (playerHUD)
+    visible ? playerHUD->Show() : playerHUD->Hide();
+}
+
 void Match::RumblePlayingPads(float lowFrequency, float highFrequency, unsigned int duration_ms) {
   for (int t = 0; t < 2; t++) {
     for (HumanGamer* gamer : teams[t]->GetHumanGamers()) {

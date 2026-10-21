@@ -209,6 +209,10 @@ void SettingsPage::GoLanguage() {
 
 // GAMEPLAY MENU
 
+// Seven sliders per column fill the grid with room for 7%-tall rows, which
+// keeps their labels and values readable.
+constexpr float kGameplaySliderHeight = 7.0f;
+
 GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
       pageCreatedTime_ms(EnvironmentManager::GetInstance().GetTime_ms()),
@@ -221,72 +225,76 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
   title->Show();
 
   slider_ShortPass_AutoDirection =
-      new Gui2Slider(windowManager, "slider_shortpass_autodirection", 0, 0, 36, 5.5,
-                     TR("gameplay_short_pass_direction"));
+      new Gui2Slider(windowManager, "slider_shortpass_autodirection", 0, 0, 36,
+                     kGameplaySliderHeight, TR("gameplay_short_pass_direction"));
   slider_ShortPass_AutoDirection->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"), _default_ShortPass_AutoDirection);
   slider_ShortPass_AutoDirection->SetValue(GetConfiguration()->GetReal(
       "gameplay_shortpass_autodirection", _default_ShortPass_AutoDirection));
 
-  slider_ShortPass_AutoPower = new Gui2Slider(windowManager, "slider_shortpass_autopower", 0, 0, 36,
-                                              5.5, TR("gameplay_short_pass_power"));
+  slider_ShortPass_AutoPower =
+      new Gui2Slider(windowManager, "slider_shortpass_autopower", 0, 0, 36, kGameplaySliderHeight,
+                     TR("gameplay_short_pass_power"));
   slider_ShortPass_AutoPower->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                              _default_ShortPass_AutoPower);
   slider_ShortPass_AutoPower->SetValue(
       GetConfiguration()->GetReal("gameplay_shortpass_autopower", _default_ShortPass_AutoPower));
 
   slider_ThroughPass_AutoDirection =
-      new Gui2Slider(windowManager, "slider_throughpass_autodirection", 0, 0, 36, 5.5,
-                     TR("gameplay_through_pass_direction"));
+      new Gui2Slider(windowManager, "slider_throughpass_autodirection", 0, 0, 36,
+                     kGameplaySliderHeight, TR("gameplay_through_pass_direction"));
   slider_ThroughPass_AutoDirection->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"), _default_ThroughPass_AutoDirection);
   slider_ThroughPass_AutoDirection->SetValue(GetConfiguration()->GetReal(
       "gameplay_throughpass_autodirection", _default_ThroughPass_AutoDirection));
 
-  slider_ThroughPass_AutoPower = new Gui2Slider(windowManager, "slider_throughpass_autopower", 0, 0,
-                                                36, 5.5, TR("gameplay_through_pass_power"));
+  slider_ThroughPass_AutoPower =
+      new Gui2Slider(windowManager, "slider_throughpass_autopower", 0, 0, 36, kGameplaySliderHeight,
+                     TR("gameplay_through_pass_power"));
   slider_ThroughPass_AutoPower->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                                _default_ThroughPass_AutoPower);
   slider_ThroughPass_AutoPower->SetValue(GetConfiguration()->GetReal(
       "gameplay_throughpass_autopower", _default_ThroughPass_AutoPower));
 
-  slider_HighPass_AutoDirection = new Gui2Slider(windowManager, "slider_highpass_autodirection", 0,
-                                                 0, 36, 5.5, TR("gameplay_high_pass_direction"));
+  slider_HighPass_AutoDirection =
+      new Gui2Slider(windowManager, "slider_highpass_autodirection", 0, 0, 36,
+                     kGameplaySliderHeight, TR("gameplay_high_pass_direction"));
   slider_HighPass_AutoDirection->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"), _default_HighPass_AutoDirection);
   slider_HighPass_AutoDirection->SetValue(GetConfiguration()->GetReal(
       "gameplay_highpass_autodirection", _default_HighPass_AutoDirection));
 
   slider_HighPass_AutoPower = new Gui2Slider(windowManager, "slider_highpass_autopower", 0, 0, 36,
-                                             5.5, TR("gameplay_high_pass_power"));
+                                             kGameplaySliderHeight, TR("gameplay_high_pass_power"));
   slider_HighPass_AutoPower->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                             _default_HighPass_AutoPower);
   slider_HighPass_AutoPower->SetValue(
       GetConfiguration()->GetReal("gameplay_highpass_autopower", _default_HighPass_AutoPower));
 
   slider_Shot_AutoDirection = new Gui2Slider(windowManager, "slider_shot_autodirection", 0, 0, 36,
-                                             5.5, TR("gameplay_shot_direction"));
+                                             kGameplaySliderHeight, TR("gameplay_shot_direction"));
   slider_Shot_AutoDirection->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                             _default_Shot_AutoDirection);
   slider_Shot_AutoDirection->SetValue(
       GetConfiguration()->GetReal("gameplay_shot_autodirection", _default_Shot_AutoDirection));
 
-  slider_Agility =
-      new Gui2Slider(windowManager, "slider_agility", 0, 0, 36, 5.5, TR("gameplay_human_agility"));
+  slider_Agility = new Gui2Slider(windowManager, "slider_agility", 0, 0, 36, kGameplaySliderHeight,
+                                  TR("gameplay_human_agility"));
   slider_Agility->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                  _default_AgilityFactor);
   slider_Agility->SetValue(
       GetConfiguration()->GetReal("gameplay_agilityfactor", _default_AgilityFactor));
 
-  slider_Acceleration = new Gui2Slider(windowManager, "slider_acceleration", 0, 0, 36, 5.5,
-                                       TR("gameplay_human_acceleration"));
+  slider_Acceleration = new Gui2Slider(windowManager, "slider_acceleration", 0, 0, 36,
+                                       kGameplaySliderHeight, TR("gameplay_human_acceleration"));
   slider_Acceleration->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                       _default_AccelerationFactor);
   slider_Acceleration->SetValue(
       GetConfiguration()->GetReal("gameplay_accelerationfactor", _default_AccelerationFactor));
 
-  slider_SlowDribbleSpeed = new Gui2Slider(windowManager, "slider_human_slowdribblespeed", 0, 0, 36,
-                                           5.5, TR("gameplay_human_slow_dribble_speed"));
+  slider_SlowDribbleSpeed =
+      new Gui2Slider(windowManager, "slider_human_slowdribblespeed", 0, 0, 36,
+                     kGameplaySliderHeight, TR("gameplay_human_slow_dribble_speed"));
   slider_SlowDribbleSpeed->SetQuantization(HumanSpeedSliderSteps(HumanSpeedType::SlowDribble));
   slider_SlowDribbleSpeed->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"),
@@ -295,8 +303,8 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
       ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::SlowDribble),
       HumanSpeedType::SlowDribble));
 
-  slider_RunSpeed = new Gui2Slider(windowManager, "slider_human_runspeed", 0, 0, 36, 5.5,
-                                   TR("gameplay_human_run_speed"));
+  slider_RunSpeed = new Gui2Slider(windowManager, "slider_human_runspeed", 0, 0, 36,
+                                   kGameplaySliderHeight, TR("gameplay_human_run_speed"));
   slider_RunSpeed->SetQuantization(HumanSpeedSliderSteps(HumanSpeedType::Run));
   slider_RunSpeed->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"),
@@ -304,8 +312,8 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
   slider_RunSpeed->SetValue(HumanSpeedSliderFromSpeed(
       ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Run), HumanSpeedType::Run));
 
-  slider_SprintSpeed = new Gui2Slider(windowManager, "slider_human_sprintspeed", 0, 0, 36, 5.5,
-                                      TR("gameplay_human_sprint_speed"));
+  slider_SprintSpeed = new Gui2Slider(windowManager, "slider_human_sprintspeed", 0, 0, 36,
+                                      kGameplaySliderHeight, TR("gameplay_human_sprint_speed"));
   slider_SprintSpeed->SetQuantization(HumanSpeedSliderSteps(HumanSpeedType::Sprint));
   slider_SprintSpeed->AddHelperValue(
       Vector3(80, 80, 250), TR("settings_factory_default"),
@@ -314,16 +322,17 @@ GameplayPage::GameplayPage(Gui2WindowManager* windowManager, const Gui2PageData&
       ReadConfiguredHumanSpeed(*GetConfiguration(), HumanSpeedType::Sprint),
       HumanSpeedType::Sprint));
 
-  slider_PlayerSwitchMode = new Gui2Slider(windowManager, "slider_player_switch_mode", 0, 0, 36,
-                                           5.5, TR("gameplay_player_switch_assisted"));
+  slider_PlayerSwitchMode =
+      new Gui2Slider(windowManager, "slider_player_switch_mode", 0, 0, 36, kGameplaySliderHeight,
+                     TR("gameplay_player_switch_assisted"));
   slider_PlayerSwitchMode->SetQuantization(2);
   slider_PlayerSwitchMode->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                           0.0f);
   slider_PlayerSwitchMode->SetValue(
       PlayerSwitchModeToSlider(ReadConfiguredPlayerSwitchMode(*GetConfiguration())));
 
-  slider_Quantization = new Gui2Slider(windowManager, "slider_quantization", 0, 0, 36, 5.5,
-                                       TR("gameplay_input_quantization"));
+  slider_Quantization = new Gui2Slider(windowManager, "slider_quantization", 0, 0, 36,
+                                       kGameplaySliderHeight, TR("gameplay_input_quantization"));
   slider_Quantization->AddHelperValue(Vector3(80, 80, 250), TR("settings_factory_default"),
                                       _default_QuantizedDirectionBias);
   slider_Quantization->SetValue(GetConfiguration()->GetReal("gameplay_quantizeddirectionbias",
@@ -630,7 +639,7 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   frame->Show();
 
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_keyboard", 2, 2,
-                                       66, 3, "Keyboard Setup");
+                                       66, 3, TR("settings_keyboard_title"));
   frame->AddView(title);
   title->Show();
 
@@ -653,112 +662,130 @@ KeyboardPage::KeyboardPage(Gui2WindowManager* windowManager, const Gui2PageData&
   buttonDefaults->sig_OnClick.connect([this](...) { SetDefaults(); });
 
   Gui2Caption* captionNorth =
-      new Gui2Caption(windowManager, "caption_keyboard_north", 0, 0, 44, 3, "walk north");
+      new Gui2Caption(windowManager, "caption_keyboard_north", 0, 0, 44, 3, TR("control_move_up"));
   keyButtons[0] =
       new Gui2Button(windowManager, "button_keyboard_up", 0, 0, 16, 3, SDL_GetKeyName(keyIDs[0]));
-  keyButtons[0]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 0, "walk north"));
+  keyButtons[0]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 0, TR("control_move_up")));
 
-  Gui2Caption* captionEast =
-      new Gui2Caption(windowManager, "caption_keyboard_east", 0, 0, 44, 3, "walk east");
+  Gui2Caption* captionEast = new Gui2Caption(windowManager, "caption_keyboard_east", 0, 0, 44, 3,
+                                             TR("control_move_right"));
   keyButtons[1] =
       new Gui2Button(windowManager, "button_keyboard_east", 0, 0, 16, 3, SDL_GetKeyName(keyIDs[1]));
-  keyButtons[1]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 1, "walk east"));
+  keyButtons[1]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 1, TR("control_move_right")));
 
-  Gui2Caption* captionSouth =
-      new Gui2Caption(windowManager, "caption_keyboard_south", 0, 0, 44, 3, "walk south");
+  Gui2Caption* captionSouth = new Gui2Caption(windowManager, "caption_keyboard_south", 0, 0, 44, 3,
+                                              TR("control_move_down"));
   keyButtons[2] = new Gui2Button(windowManager, "button_keyboard_south", 0, 0, 16, 3,
                                  SDL_GetKeyName(keyIDs[2]));
-  keyButtons[2]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 2, "walk south"));
+  keyButtons[2]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 2, TR("control_move_down")));
 
   Gui2Caption* captionWest =
-      new Gui2Caption(windowManager, "caption_keyboard_west", 0, 0, 44, 3, "walk west");
+      new Gui2Caption(windowManager, "caption_keyboard_west", 0, 0, 44, 3, TR("control_move_left"));
   keyButtons[3] =
       new Gui2Button(windowManager, "button_keyboard_west", 0, 0, 16, 3, SDL_GetKeyName(keyIDs[3]));
-  keyButtons[3]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 3, "walk west"));
+  keyButtons[3]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 3, TR("control_move_left")));
 
   Gui2Caption* captionThrough = new Gui2Caption(windowManager, "caption_keyboard_through", 0, 0, 44,
-                                                3, "(on ball) through pass");
+                                                3, TR("control_through_pass_on_ball"));
   keyButtons[4] = new Gui2Button(windowManager, "button_keyboard_through", 0, 0, 16, 3,
                                  SDL_GetKeyName(keyIDs[4]));
-  keyButtons[4]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 4, "through pass"));
+  keyButtons[4]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 4, TR("control_through_pass")));
 
-  Gui2Caption* captionHigh =
-      new Gui2Caption(windowManager, "caption_keyboard_high", 0, 0, 44, 3, "(on ball) high pass");
+  Gui2Caption* captionHigh = new Gui2Caption(windowManager, "caption_keyboard_high", 0, 0, 44, 3,
+                                             TR("control_high_pass_on_ball"));
   keyButtons[5] =
       new Gui2Button(windowManager, "button_keyboard_high", 0, 0, 16, 3, SDL_GetKeyName(keyIDs[5]));
-  keyButtons[5]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 5, "high pass"));
+  keyButtons[5]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 5, TR("control_high_pass")));
 
-  Gui2Caption* captionPass =
-      new Gui2Caption(windowManager, "caption_keyboard_pass", 0, 0, 44, 3, "(on ball) normal pass");
+  Gui2Caption* captionPass = new Gui2Caption(windowManager, "caption_keyboard_pass", 0, 0, 44, 3,
+                                             TR("control_short_pass_on_ball"));
   keyButtons[6] =
       new Gui2Button(windowManager, "button_keyboard_pass", 0, 0, 16, 3, SDL_GetKeyName(keyIDs[6]));
-  keyButtons[6]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 6, "normal pass"));
+  keyButtons[6]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 6, TR("control_short_pass")));
 
   Gui2Caption* captionShoot = new Gui2Caption(windowManager, "caption_keyboard_shoot", 0, 0, 44, 3,
-                                              "(on ball) shoot / fake shot (w/ pass)");
+                                              TR("control_shot_on_ball"));
   keyButtons[7] = new Gui2Button(windowManager, "button_keyboard_shoot", 0, 0, 16, 3,
                                  SDL_GetKeyName(keyIDs[7]));
-  keyButtons[7]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 7, "shoot"));
+  keyButtons[7]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 7, TR("control_shot")));
 
   Gui2Caption* captionKeeper = new Gui2Caption(windowManager, "caption_keyboard_keeper", 0, 0, 44,
-                                               3, "(off ball) keeper to ball");
+                                               3, TR("control_keeper_rush_off_ball"));
   keyButtons[8] = new Gui2Button(windowManager, "button_keyboard_keeper", 0, 0, 16, 3,
                                  SDL_GetKeyName(keyIDs[8]));
-  keyButtons[8]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 8, "keeper to ball"));
+  keyButtons[8]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 8, TR("control_keeper_rush")));
 
-  Gui2Caption* captionSliding =
-      new Gui2Caption(windowManager, "caption_keyboard_sliding", 0, 0, 44, 3, "(off ball) sliding");
+  Gui2Caption* captionSliding = new Gui2Caption(windowManager, "caption_keyboard_sliding", 0, 0, 44,
+                                                3, TR("control_sliding_off_ball"));
   keyButtons[9] = new Gui2Button(windowManager, "button_keyboard_sliding", 0, 0, 16, 3,
                                  SDL_GetKeyName(keyIDs[9]));
-  keyButtons[9]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 9, "sliding"));
+  keyButtons[9]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 9, TR("control_sliding")));
 
   Gui2Caption* captionPressure = new Gui2Caption(windowManager, "caption_keyboard_pressure", 0, 0,
-                                                 44, 3, "(off ball) pressure");
+                                                 44, 3, TR("control_pressure_off_ball"));
   keyButtons[10] = new Gui2Button(windowManager, "button_keyboard_pressure", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[10]));
-  keyButtons[10]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 10, "pressure"));
+  keyButtons[10]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 10, TR("control_pressure")));
 
-  Gui2Caption* captionTeamPressure = new Gui2Caption(windowManager, "caption_keyboard_teampressure",
-                                                     0, 0, 44, 3, "(off ball) team pressure");
+  Gui2Caption* captionTeamPressure =
+      new Gui2Caption(windowManager, "caption_keyboard_teampressure", 0, 0, 44, 3,
+                      TR("control_team_pressure_off_ball"));
   keyButtons[11] = new Gui2Button(windowManager, "button_keyboard_teampressure", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[11]));
-  keyButtons[11]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 11, "team pressure"));
+  keyButtons[11]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 11, TR("control_team_pressure")));
 
-  Gui2Caption* captionSwitch = new Gui2Caption(windowManager, "caption_keyboard_switch", 0, 0, 44,
-                                               3, "switch / chip / 1-2 pass");
+  Gui2Caption* captionSwitch =
+      new Gui2Caption(windowManager, "caption_keyboard_switch", 0, 0, 44, 3, TR("control_switch"));
   keyButtons[12] = new Gui2Button(windowManager, "button_keyboard_switch", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[12]));
-  keyButtons[12]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 12, "switch player"));
+  keyButtons[12]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 12, TR("control_switch")));
 
-  Gui2Caption* captionSpecial =
-      new Gui2Caption(windowManager, "caption_keyboard_special", 0, 0, 44, 3, "special");
+  Gui2Caption* captionSpecial = new Gui2Caption(windowManager, "caption_keyboard_special", 0, 0, 44,
+                                                3, TR("control_special"));
   keyButtons[13] = new Gui2Button(windowManager, "button_keyboard_special", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[13]));
-  keyButtons[13]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 13, "special"));
+  keyButtons[13]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 13, TR("control_special")));
 
   Gui2Caption* captionSprint =
-      new Gui2Caption(windowManager, "caption_keyboard_sprint", 0, 0, 44, 3, "sprint / knock-on");
+      new Gui2Caption(windowManager, "caption_keyboard_sprint", 0, 0, 44, 3, TR("control_sprint"));
   keyButtons[14] = new Gui2Button(windowManager, "button_keyboard_sprint", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[14]));
-  keyButtons[14]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 14, "sprint"));
+  keyButtons[14]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 14, TR("control_sprint")));
 
   Gui2Caption* captionSlow = new Gui2Caption(windowManager, "caption_keyboard_dribble", 0, 0, 44, 3,
-                                             "dribble / finesse / SC (+sprint)");
+                                             TR("control_dribble"));
   keyButtons[15] = new Gui2Button(windowManager, "button_keyboard_dribble", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[15]));
-  keyButtons[15]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 15, "slow dribble"));
+  keyButtons[15]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 15, TR("control_dribble")));
 
   Gui2Caption* captionSelect =
-      new Gui2Caption(windowManager, "caption_keyboard_select", 0, 0, 44, 3, "select");
+      new Gui2Caption(windowManager, "caption_keyboard_select", 0, 0, 44, 3, TR("control_select"));
   keyButtons[16] = new Gui2Button(windowManager, "button_keyboard_select", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[16]));
-  keyButtons[16]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 16, "select"));
+  keyButtons[16]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 16, TR("control_select")));
 
   Gui2Caption* captionStart =
-      new Gui2Caption(windowManager, "caption_keyboard_start", 0, 0, 44, 3, "start");
+      new Gui2Caption(windowManager, "caption_keyboard_start", 0, 0, 44, 3, TR("control_start"));
   keyButtons[17] = new Gui2Button(windowManager, "button_keyboard_start", 0, 0, 16, 3,
                                   SDL_GetKeyName(keyIDs[17]));
-  keyButtons[17]->sig_OnClick.connect(std::bind(&KeyboardPage::SetKey, this, 17, "start"));
+  keyButtons[17]->sig_OnClick.connect(
+      std::bind(&KeyboardPage::SetKey, this, 17, TR("control_start")));
 
   Gui2Grid* grid = new Gui2Grid(windowManager, "grid_keyboard_settings_keys", 0, 0, 60, 50);
   grid->SetWrapping(false);
@@ -857,7 +884,7 @@ void KeyboardPage::SetKey(int buttonID, const std::string& name) {
   bg = new Gui2Frame(windowManager, "image_capturekey_bg", 0, 47, 100, 5, true);
 
   pressKeyCaption = new Gui2Caption(windowManager, "caption_settings_keyboard_presskey", 0, 48, 100,
-                                    3, "press key for '" + name + "'");
+                                    3, TRF("settings_press_key_for", {name}));
   pressKeyCaption->SetPosition(50 - pressKeyCaption->GetTextWidthPercent() * 0.5, 48);
 
   bg->SetPosition(50 - pressKeyCaption->GetTextWidthPercent() * 0.5 - 1, 47);
@@ -905,7 +932,7 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   frame->Show();
 
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_gamepads", 2, 2,
-                                       66, 3, "Gamepads");
+                                       66, 3, TR("controller_gamepads"));
   frame->AddView(title);
   title->Show();
 
@@ -933,7 +960,7 @@ GamepadsPage::GamepadsPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
   if (x == 0) {
     AddSettingsNotice(this, windowManager, "caption_settings_controller_gamepads_empty", 62,
-                      "No gamepads detected. Connect one to edit gamepad settings.");
+                      TR("settings_no_gamepads"));
     Gui2Button* backButton = AddSettingsBackButton(this, windowManager, "button_gamepadsmenu_back");
     backButton->SetFocus();
   } else {
@@ -996,12 +1023,12 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
   HIDGamepad* controller = GetGamepadIfAvailable(controllerID);
   if (!controller) {
     Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_gamepadsetup",
-                                         20, 20, 60, 3, "Gamepad unavailable");
+                                         20, 20, 60, 3, TR("settings_gamepad_unavailable"));
     this->AddView(title);
     title->Show();
 
     AddSettingsNotice(this, windowManager, "caption_settings_controller_gamepadsetup_invalid", 45,
-                      "That gamepad is no longer connected.");
+                      TR("settings_gamepad_disconnected"));
     Gui2Button* backButton =
         AddSettingsBackButton(this, windowManager, "button_gamepadsetupmenu_back");
     backButton->SetFocus();
@@ -1014,8 +1041,9 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
   this->AddView(frame);
   frame->Show();
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_controller_gamepadsetup", 2,
-                                       2, 66, 3, "'" + controller->GetDisplayName() + "' Setup");
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "caption_settings_controller_gamepadsetup", 2, 2, 66, 3,
+                      TRF("gamepad_setup_title", {controller->GetDisplayName()}));
   frame->AddView(title);
   title->Show();
 
@@ -1026,16 +1054,17 @@ GamepadSetupPage::GamepadSetupPage(Gui2WindowManager* windowManager, const Gui2P
   frame->AddView(profileCap);
   profileCap->Show();
 
-  Gui2Button* buttonCalibration = new Gui2Button(
-      windowManager, "button_gamepadsetupmenu_calibration", 0, 0, 36, 3, "axes calibration");
+  Gui2Button* buttonCalibration =
+      new Gui2Button(windowManager, "button_gamepadsetupmenu_calibration", 0, 0, 36, 3,
+                     TR("gamepad_axes_calibration"));
   buttonCalibration->sig_OnClick.connect(
       std::bind(&GamepadSetupPage::GoGamepadCalibrationPage, this, controllerID));
   Gui2Button* buttonMapping = new Gui2Button(windowManager, "button_gamepadsetupmenu_mapping", 0, 0,
-                                             36, 3, "button mapping");
+                                             36, 3, TR("gamepad_button_mapping"));
   buttonMapping->sig_OnClick.connect(
       std::bind(&GamepadSetupPage::GoGamepadMappingPage, this, controllerID));
   Gui2Button* buttonFunction = new Gui2Button(windowManager, "button_gamepadsetupmenu_function", 0,
-                                              0, 36, 3, "function setup");
+                                              0, 36, 3, TR("gamepad_function_setup"));
   buttonFunction->sig_OnClick.connect(
       std::bind(&GamepadSetupPage::GoGamepadFunctionPage, this, controllerID));
 
@@ -1153,11 +1182,11 @@ GamepadCalibrationPage::GamepadCalibrationPage(Gui2WindowManager* windowManager,
 
   if (!GetGamepadIfAvailable(controllerID)) {
     Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_calibration_missing", 20,
-                                         20, 60, 3, "Gamepad calibration");
+                                         20, 60, 3, TR("gamepad_calibration_title"));
     this->AddView(title);
     title->Show();
     AddSettingsNotice(this, windowManager, "caption_settings_calibration_invalid", 45,
-                      "That gamepad is no longer connected.");
+                      TR("settings_gamepad_disconnected"));
     Gui2Button* backButton =
         AddSettingsBackButton(this, windowManager, "button_settings_calibration_back");
     backButton->SetFocus();
@@ -1171,29 +1200,31 @@ GamepadCalibrationPage::GamepadCalibrationPage(Gui2WindowManager* windowManager,
     max[i] = -32767;
   }
 
-  bg = new Gui2Frame(windowManager, "image_settings_calibration_bg", 0, 0, 100, 13, true);
+  // Fixed-size panel: resizing a frame after construction left its background
+  // at the old size, which pushed it off the right edge of the screen.
+  bg = new Gui2Frame(windowManager, "image_settings_calibration_bg", 15, 35, 70, 22, true);
+  Gui2Caption* title = new Gui2Caption(windowManager, "caption_settings_calibration_title", 0, 0,
+                                       100, 3.5, TR("gamepad_calibration_title"));
+  title->SetPosition(50 - title->GetTextWidthPercent() * 0.5, 37);
 
-  captionExplanation[0] =
-      new Gui2Caption(windowManager, "caption_settings_calibration_info1", 0, 0, 100, 3,
-                      "1) rotate all axes and analog buttons into their extreme positions");
-  captionExplanation[1] =
-      new Gui2Caption(windowManager, "caption_settings_calibration_info2", 0, 0, 100, 3,
-                      "2) release all axes and analog buttons in their untouched positions");
-  captionExplanation[2] =
-      new Gui2Caption(windowManager, "caption_settings_calibration_info3", 0, 0, 100, 3,
-                      "3) press [A] / Enter when done, or [B] / Esc to cancel");
-  captionExplanation[0]->SetPosition(50 - captionExplanation[0]->GetTextWidthPercent() * 0.5, 44);
-  captionExplanation[1]->SetPosition(50 - captionExplanation[1]->GetTextWidthPercent() * 0.5, 48);
-  captionExplanation[2]->SetPosition(50 - captionExplanation[2]->GetTextWidthPercent() * 0.5, 52);
-
-  bg->SetPosition(50 - captionExplanation[0]->GetTextWidthPercent() * 0.5 - 1, 43);
-  bg->SetSize(captionExplanation[0]->GetTextWidthPercent() + 2, 13);
+  captionExplanation[0] = new Gui2Caption(windowManager, "caption_settings_calibration_info1", 0, 0,
+                                          100, 3, TR("gamepad_calibration_step1"));
+  captionExplanation[1] = new Gui2Caption(windowManager, "caption_settings_calibration_info2", 0, 0,
+                                          100, 3, TR("gamepad_calibration_step2"));
+  captionExplanation[2] = new Gui2Caption(windowManager, "caption_settings_calibration_info3", 0, 0,
+                                          100, 3, TR("gamepad_calibration_step3"));
+  for (int i = 0; i < 3; i++) {
+    captionExplanation[i]->SetPosition(50 - captionExplanation[i]->GetTextWidthPercent() * 0.5,
+                                       43 + i * 4);
+  }
 
   this->AddView(bg);
+  this->AddView(title);
   this->AddView(captionExplanation[0]);
   this->AddView(captionExplanation[1]);
   this->AddView(captionExplanation[2]);
   bg->Show();
+  title->Show();
   captionExplanation[0]->Show();
   captionExplanation[1]->Show();
   captionExplanation[2]->Show();
@@ -1307,11 +1338,11 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
   if (!controller) {
     Gui2Caption* title =
         new Gui2Caption(windowManager, "caption_settings_controller_gamepadmapping", 10, 20, 80, 3,
-                        "Gamepad mapping");
+                        TR("gamepad_button_mapping"));
     this->AddView(title);
     title->Show();
     AddSettingsNotice(this, windowManager, "caption_settings_controller_gamepadmapping_invalid", 45,
-                      "That gamepad is no longer connected.");
+                      TR("settings_gamepad_disconnected"));
     Gui2Button* backButton =
         AddSettingsBackButton(this, windowManager, "button_gamepadmapping_back");
     backButton->SetFocus();
@@ -1321,7 +1352,7 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
 
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_settings_controller_gamepadmapping", 10, 20, 80, 3,
-                      "'" + controller->GetDisplayName() + "' mapping");
+                      TRF("gamepad_mapping_title", {controller->GetDisplayName()}));
   this->AddView(title);
   title->Show();
 
@@ -1352,44 +1383,45 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
     }
   }
 
-  Gui2Caption* captionUp = new Gui2Caption(windowManager, "caption_gamepad_up", 0, 0, 10, 3, "up");
+  Gui2Caption* captionUp =
+      new Gui2Caption(windowManager, "caption_gamepad_up", 0, 0, 10, 3, TR("control_dpad_up"));
   gpbuttonButtons[0] =
       new Gui2Button(windowManager, "button_gamepad_up", 0, 0, 8, 3, gpbuttonIDs_string[0]);
   gpbuttonButtons[0]->sig_OnClick.connect(
-      std::bind(&GamepadMappingPage::SetGpbutton, this, 0, "up"));
+      std::bind(&GamepadMappingPage::SetGpbutton, this, 0, TR("control_dpad_up")));
   gpbuttonButtons[0]->sig_OnGainFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_left, "media/menu/controller/controller_left_up.png"));
   gpbuttonButtons[0]->sig_OnLoseFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_left, "media/menu/controller/controller_left.png"));
 
-  Gui2Caption* captionRight =
-      new Gui2Caption(windowManager, "caption_gamepad_right", 0, 0, 10, 3, "right");
+  Gui2Caption* captionRight = new Gui2Caption(windowManager, "caption_gamepad_right", 0, 0, 10, 3,
+                                              TR("control_dpad_right"));
   gpbuttonButtons[1] =
       new Gui2Button(windowManager, "button_gamepad_right", 0, 0, 8, 3, gpbuttonIDs_string[1]);
   gpbuttonButtons[1]->sig_OnClick.connect(
-      std::bind(&GamepadMappingPage::SetGpbutton, this, 1, "right"));
+      std::bind(&GamepadMappingPage::SetGpbutton, this, 1, TR("control_dpad_right")));
   gpbuttonButtons[1]->sig_OnGainFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_left, "media/menu/controller/controller_left_right.png"));
   gpbuttonButtons[1]->sig_OnLoseFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_left, "media/menu/controller/controller_left.png"));
 
   Gui2Caption* captionDown =
-      new Gui2Caption(windowManager, "caption_gamepad_down", 0, 0, 10, 3, "down");
+      new Gui2Caption(windowManager, "caption_gamepad_down", 0, 0, 10, 3, TR("control_dpad_down"));
   gpbuttonButtons[2] =
       new Gui2Button(windowManager, "button_gamepad_down", 0, 0, 8, 3, gpbuttonIDs_string[2]);
   gpbuttonButtons[2]->sig_OnClick.connect(
-      std::bind(&GamepadMappingPage::SetGpbutton, this, 2, "down"));
+      std::bind(&GamepadMappingPage::SetGpbutton, this, 2, TR("control_dpad_down")));
   gpbuttonButtons[2]->sig_OnGainFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_left, "media/menu/controller/controller_left_down.png"));
   gpbuttonButtons[2]->sig_OnLoseFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_left, "media/menu/controller/controller_left.png"));
 
   Gui2Caption* captionLeft =
-      new Gui2Caption(windowManager, "caption_gamepad_left", 0, 0, 10, 3, "left");
+      new Gui2Caption(windowManager, "caption_gamepad_left", 0, 0, 10, 3, TR("control_dpad_left"));
   gpbuttonButtons[3] =
       new Gui2Button(windowManager, "button_gamepad_left", 0, 0, 8, 3, gpbuttonIDs_string[3]);
   gpbuttonButtons[3]->sig_OnClick.connect(
-      std::bind(&GamepadMappingPage::SetGpbutton, this, 3, "left"));
+      std::bind(&GamepadMappingPage::SetGpbutton, this, 3, TR("control_dpad_left")));
   gpbuttonButtons[3]->sig_OnGainFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_left, "media/menu/controller/controller_left_left.png"));
   gpbuttonButtons[3]->sig_OnLoseFocus.connect(std::bind(
@@ -1476,22 +1508,22 @@ GamepadMappingPage::GamepadMappingPage(Gui2WindowManager* windowManager,
       &Gui2Image::LoadImage, controller_right, "media/menu/controller/controller_right.png"));
 
   Gui2Caption* captionSelect =
-      new Gui2Caption(windowManager, "caption_gamepad_select", 0, 0, 10, 3, "select");
+      new Gui2Caption(windowManager, "caption_gamepad_select", 0, 0, 10, 3, TR("control_select"));
   gpbuttonButtons[12] =
       new Gui2Button(windowManager, "button_gamepad_select", 0, 0, 8, 3, gpbuttonIDs_string[12]);
   gpbuttonButtons[12]->sig_OnClick.connect(
-      std::bind(&GamepadMappingPage::SetGpbutton, this, 12, "select"));
+      std::bind(&GamepadMappingPage::SetGpbutton, this, 12, TR("control_select")));
   gpbuttonButtons[12]->sig_OnGainFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_left, "media/menu/controller/controller_left_select.png"));
   gpbuttonButtons[12]->sig_OnLoseFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_left, "media/menu/controller/controller_left.png"));
 
   Gui2Caption* captionStart =
-      new Gui2Caption(windowManager, "caption_gamepad_start", 0, 0, 10, 3, "start");
+      new Gui2Caption(windowManager, "caption_gamepad_start", 0, 0, 10, 3, TR("control_start"));
   gpbuttonButtons[13] =
       new Gui2Button(windowManager, "button_gamepad_start", 0, 0, 8, 3, gpbuttonIDs_string[13]);
   gpbuttonButtons[13]->sig_OnClick.connect(
-      std::bind(&GamepadMappingPage::SetGpbutton, this, 13, "start"));
+      std::bind(&GamepadMappingPage::SetGpbutton, this, 13, TR("control_start")));
   gpbuttonButtons[13]->sig_OnGainFocus.connect(std::bind(
       &Gui2Image::LoadImage, controller_right, "media/menu/controller/controller_right_start.png"));
   gpbuttonButtons[13]->sig_OnLoseFocus.connect(std::bind(
@@ -1587,7 +1619,7 @@ void GamepadMappingPage::SetGpbutton(int buttonID, const std::string& name) {
   bg = new Gui2Frame(windowManager, "image_capturebutton_bg", 0, 47, 100, 5, true);
 
   pressGpbuttonCaption = new Gui2Caption(windowManager, "caption_settings_gamepad_pressbutton", 0,
-                                         48, 100, 3, "press button/stick for '" + name + "'");
+                                         48, 100, 3, TRF("settings_press_button_for", {name}));
   pressGpbuttonCaption->SetPosition(50 - pressGpbuttonCaption->GetTextWidthPercent() * 0.5, 48);
 
   bg->SetPosition(50 - pressGpbuttonCaption->GetTextWidthPercent() * 0.5 - 1, 47);
@@ -1654,11 +1686,11 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   if (!controller) {
     Gui2Caption* title =
         new Gui2Caption(windowManager, "caption_settings_controller_gamepadfunction", 10, 10, 80, 3,
-                        "Gamepad functions");
+                        TR("gamepad_function_setup"));
     this->AddView(title);
     title->Show();
     AddSettingsNotice(this, windowManager, "caption_settings_controller_gamepadfunction_invalid",
-                      45, "That gamepad is no longer connected.");
+                      45, TR("settings_gamepad_disconnected"));
     Gui2Button* backButton =
         AddSettingsBackButton(this, windowManager, "button_gamepadfunction_back");
     backButton->SetFocus();
@@ -1668,7 +1700,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
 
   Gui2Caption* title =
       new Gui2Caption(windowManager, "caption_settings_controller_gamepadfunction", 10, 10, 80, 3,
-                      "'" + controller->GetDisplayName() + "' function");
+                      TRF("gamepad_function_title", {controller->GetDisplayName()}));
   this->AddView(title);
   title->Show();
 
@@ -1721,11 +1753,11 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
       new Gui2Grid(windowManager, "grid_gamepad_function_modifier", 0, 0, 20, 20);
   gridModifier->SetWrapping(false, false);
 
-  Gui2Caption* captionModifier =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_modifiers", 0, 0, 30, 3, "modifiers");
+  Gui2Caption* captionModifier = new Gui2Caption(windowManager, "caption_gamepadfunction_modifiers",
+                                                 0, 0, 30, 3, TR("gamepad_modifiers"));
 
   Gui2Caption* captionSwitch = new Gui2Caption(windowManager, "caption_gamepadfunction_switch", 0,
-                                               0, 10, 3, "switch / chip / 1-2 pass");
+                                               0, 22, 3, TR("control_switch"));
   modifierButtons[0] =
       new Gui2Button(windowManager, "button_gamepadfunction_modifier0", 0, 0, 8, 3, modifierStr[0]);
   modifierButtons[0]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1739,8 +1771,8 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
                 "media/menu/controller/controller_" + modifierTargetImageLRstr[0] + ".png"));
   modifierButtons[0]->SetToggleable(true);
 
-  Gui2Caption* captionSpecial =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_special", 0, 0, 10, 3, "special");
+  Gui2Caption* captionSpecial = new Gui2Caption(windowManager, "caption_gamepadfunction_special", 0,
+                                                0, 22, 3, TR("control_special"));
   modifierButtons[1] =
       new Gui2Button(windowManager, "button_gamepadfunction_modifier1", 0, 0, 8, 3, modifierStr[1]);
   modifierButtons[1]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1755,7 +1787,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   modifierButtons[1]->SetToggleable(true);
 
   Gui2Caption* captionSprint = new Gui2Caption(windowManager, "caption_gamepadfunction_sprint", 0,
-                                               0, 10, 3, "sprint / knock-on");
+                                               0, 22, 3, TR("control_sprint"));
   modifierButtons[2] =
       new Gui2Button(windowManager, "button_gamepadfunction_modifier2", 0, 0, 8, 3, modifierStr[2]);
   modifierButtons[2]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1770,7 +1802,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   modifierButtons[2]->SetToggleable(true);
 
   Gui2Caption* captionDribble = new Gui2Caption(windowManager, "caption_gamepadfunction_dribble", 0,
-                                                0, 10, 3, "dribble / finesse / SC (+sprint)");
+                                                0, 22, 3, TR("control_dribble_short"));
   modifierButtons[3] =
       new Gui2Button(windowManager, "button_gamepadfunction_modifier3", 0, 0, 8, 3, modifierStr[3]);
   modifierButtons[3]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1806,11 +1838,12 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
       new Gui2Grid(windowManager, "grid_gamepad_function_ontheball", 0, 0, 20, 20);
   gridOnTheBall->SetWrapping(false, false);
 
-  Gui2Caption* captionOnTheBall = new Gui2Caption(
-      windowManager, "caption_gamepadfunction_ontheball", 0, 0, 30, 3, "on the ball controls");
+  Gui2Caption* captionOnTheBall =
+      new Gui2Caption(windowManager, "caption_gamepadfunction_ontheball", 0, 0, 30, 3,
+                      TR("gamepad_on_ball_controls"));
 
   Gui2Caption* captionLongPass = new Gui2Caption(windowManager, "caption_gamepadfunction_longpass",
-                                                 0, 0, 10, 3, "through pass");
+                                                 0, 0, 22, 3, TR("control_through_pass"));
   onTheBallButtons[0] = new Gui2Button(windowManager, "button_gamepadfunction_ontheball0", 0, 0, 8,
                                        3, onTheBallStr[0]);
   onTheBallButtons[0]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1824,7 +1857,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   onTheBallButtons[0]->SetToggleable(true);
 
   Gui2Caption* captionHighPass = new Gui2Caption(windowManager, "caption_gamepadfunction_highpass",
-                                                 0, 0, 10, 3, "cross / loft");
+                                                 0, 0, 22, 3, TR("control_high_pass"));
   onTheBallButtons[1] = new Gui2Button(windowManager, "button_gamepadfunction_ontheball1", 0, 0, 8,
                                        3, onTheBallStr[1]);
   onTheBallButtons[1]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1837,8 +1870,8 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
       &Gui2Image::LoadImage, controller_right, "media/menu/controller/controller_right.png"));
   onTheBallButtons[1]->SetToggleable(true);
 
-  Gui2Caption* captionPass =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_pass", 0, 0, 10, 3, "normal pass");
+  Gui2Caption* captionPass = new Gui2Caption(windowManager, "caption_gamepadfunction_pass", 0, 0,
+                                             22, 3, TR("control_short_pass"));
   onTheBallButtons[2] = new Gui2Button(windowManager, "button_gamepadfunction_ontheball2", 0, 0, 8,
                                        3, onTheBallStr[2]);
   onTheBallButtons[2]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1852,7 +1885,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   onTheBallButtons[2]->SetToggleable(true);
 
   Gui2Caption* captionShot = new Gui2Caption(windowManager, "caption_gamepadfunction_shot", 0, 0,
-                                             10, 3, "shoot / fake shot (w/ pass)");
+                                             22, 3, TR("control_shot"));
   onTheBallButtons[3] = new Gui2Button(windowManager, "button_gamepadfunction_ontheball3", 0, 0, 8,
                                        3, onTheBallStr[3]);
   onTheBallButtons[3]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1887,11 +1920,12 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
       new Gui2Grid(windowManager, "grid_gamepad_function_offtheball", 0, 0, 20, 20);
   gridOffTheBall->SetWrapping(false, false);
 
-  Gui2Caption* captionOffTheBall = new Gui2Caption(
-      windowManager, "caption_gamepadfunction_offtheball", 0, 0, 30, 3, "off the ball controls");
+  Gui2Caption* captionOffTheBall =
+      new Gui2Caption(windowManager, "caption_gamepadfunction_offtheball", 0, 0, 30, 3,
+                      TR("gamepad_off_ball_controls"));
 
-  Gui2Caption* captionKeeper =
-      new Gui2Caption(windowManager, "caption_gamepadfunction_keeper", 0, 0, 10, 3, "keeper rush");
+  Gui2Caption* captionKeeper = new Gui2Caption(windowManager, "caption_gamepadfunction_keeper", 0,
+                                               0, 22, 3, TR("control_keeper_rush"));
   offTheBallButtons[0] = new Gui2Button(windowManager, "button_gamepadfunction_offtheball0", 0, 0,
                                         8, 3, offTheBallStr[0]);
   offTheBallButtons[0]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1905,7 +1939,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   offTheBallButtons[0]->SetToggleable(true);
 
   Gui2Caption* captionSliding = new Gui2Caption(windowManager, "caption_gamepadfunction_sliding", 0,
-                                                0, 10, 3, "sliding tackle");
+                                                0, 22, 3, TR("control_sliding"));
   offTheBallButtons[1] = new Gui2Button(windowManager, "button_gamepadfunction_offtheball1", 0, 0,
                                         8, 3, offTheBallStr[1]);
   offTheBallButtons[1]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1919,7 +1953,7 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
   offTheBallButtons[1]->SetToggleable(true);
 
   Gui2Caption* captionPressure = new Gui2Caption(windowManager, "caption_gamepadfunction_pressure",
-                                                 0, 0, 10, 3, "pressure / contain");
+                                                 0, 0, 22, 3, TR("control_pressure"));
   offTheBallButtons[2] = new Gui2Button(windowManager, "button_gamepadfunction_offtheball2", 0, 0,
                                         8, 3, offTheBallStr[2]);
   offTheBallButtons[2]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -1932,8 +1966,9 @@ GamepadFunctionPage::GamepadFunctionPage(Gui2WindowManager* windowManager,
       &Gui2Image::LoadImage, controller_right, "media/menu/controller/controller_right.png"));
   offTheBallButtons[2]->SetToggleable(true);
 
-  Gui2Caption* captionTeamPressure = new Gui2Caption(
-      windowManager, "caption_gamepadfunction_teampressure", 0, 0, 10, 3, "2nd man press");
+  Gui2Caption* captionTeamPressure =
+      new Gui2Caption(windowManager, "caption_gamepadfunction_teampressure", 0, 0, 22, 3,
+                      TR("control_team_pressure"));
   offTheBallButtons[3] = new Gui2Button(windowManager, "button_gamepadfunction_offtheball3", 0, 0,
                                         8, 3, offTheBallStr[3]);
   offTheBallButtons[3]->sig_OnClick.connect(std::bind(&GamepadFunctionPage::SelectGpbutton, this,
@@ -2155,7 +2190,7 @@ GraphicsPage::GraphicsPage(Gui2WindowManager* windowManager, const Gui2PageData&
   title->Show();
 
   Gui2Caption* hint = new Gui2Caption(windowManager, "caption_settings_graphics_hint", 2, 6, 66, 3,
-                                      "Choose a 16:9 resolution. A restart may be required.");
+                                      TR("graphics_choose_resolution"));
   frame->AddView(hint);
   hint->Show();
 
@@ -2297,9 +2332,9 @@ void GraphicsPage::SetResolution(int resIndex) {
       new Gui2Caption(windowManager, "caption_settings_resolution_info1", 0, 0, 100, 3,
                       Localization::GetInstance().Translate("graphics_restart_note"));
   restartCaption2 = new Gui2Caption(windowManager, "caption_settings_resolution_info2", 0, 0, 100,
-                                    3, "If this resolution does not work, you can always");
+                                    3, TR("graphics_restart_fallback1"));
   restartCaption3 = new Gui2Caption(windowManager, "caption_settings_resolution_info3", 0, 0, 100,
-                                    3, "change it manually by editing football.config.");
+                                    3, TR("graphics_restart_fallback2"));
   restartCaption1->SetPosition(50 - restartCaption1->GetTextWidthPercent() * 0.5, 44);
   restartCaption2->SetPosition(50 - restartCaption2->GetTextWidthPercent() * 0.5, 48);
   restartCaption3->SetPosition(50 - restartCaption3->GetTextWidthPercent() * 0.5, 52);
@@ -2420,8 +2455,7 @@ LanguagePage::LanguagePage(Gui2WindowManager* windowManager, const Gui2PageData&
   Gui2Grid* grid = new Gui2Grid(windowManager, "languagegrid", 2, 17, 66, 70);
 
   if (langs.empty()) {
-    AddSettingsNotice(this, windowManager, "caption_language_empty", 40,
-                      "No language packs were found.");
+    AddSettingsNotice(this, windowManager, "caption_language_empty", 40, TR("language_none_found"));
     Gui2Button* backButton = AddSettingsBackButton(this, windowManager, "button_language_back");
     backButton->SetFocus();
     this->Show();

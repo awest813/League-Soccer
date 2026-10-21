@@ -1,5 +1,7 @@
 #include "menutask.hpp"
 
+#include <algorithm>
+
 #include "../main.hpp"
 #include "../onthepitch/match.hpp"
 #include "career/career_database.hpp"
@@ -156,6 +158,10 @@ void MenuTask::HandleRemovedControllers() {
 }
 
 void MenuTask::ProcessPhase() {
+  if (quitAt_ms != 0 && EnvironmentManager::GetInstance().GetTime_ms() >= quitAt_ms) {
+    quitAt_ms = 0;
+    QuitGame();
+  }
   HandleRemovedControllers();
   Gui2Task::ProcessPhase();
 
@@ -204,6 +210,10 @@ bool MenuTask::QuickStart() {
 
 void MenuTask::QuitGame() {
   EnvironmentManager::GetInstance().SignalQuit();
+}
+
+void MenuTask::QuitGameAfter(unsigned long delay_ms) {
+  quitAt_ms = EnvironmentManager::GetInstance().GetTime_ms() + std::max(1UL, delay_ms);
 }
 
 void MenuTask::ReleaseAllButtons() {

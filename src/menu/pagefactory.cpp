@@ -426,7 +426,11 @@ Gui2Page* PageFactory::CreatePage(const Gui2PageData& pageData) {
         printf("[menu-smoke] Standalone %s reached successfully\n", smokeRoute.c_str());
       else
         printf("[menu-smoke] Career navigation checks failed\n");
-      GetMenuTask()->QuitGame();
+      const int quitDelay_ms = GetConfiguration()->GetInt("menu_smoke_quit_delay_ms", 0);
+      if (quitDelay_ms > 0)
+        GetMenuTask()->QuitGameAfter(static_cast<unsigned long>(quitDelay_ms));
+      else
+        GetMenuTask()->QuitGame();
     }
   }
 

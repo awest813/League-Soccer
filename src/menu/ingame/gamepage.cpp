@@ -56,6 +56,15 @@ GamePage::~GamePage() {
     conn_ShortReplayMoment.disconnect();
     conn_ExtendedReplayMoment.disconnect();
     conn_GameOver.disconnect();
+
+    // Any page replacing this one is an overlay (pause, replay, half time,
+    // full time): hide the radar and player panels under it. Look the match
+    // up again because this may run after the match has ended.
+    if (std::shared_ptr<GameTask> gameTask = GetGameTask()) {
+      std::lock_guard<std::mutex> lock(gameTask->matchLifetimeMutex);
+      if (gameTask->GetMatch() == match)
+        match->SetHUDVisible(false);
+    }
   }
 }
 
@@ -66,6 +75,7 @@ void GamePage::Process() {
     GetGameTask()->matchLifetimeMutex.lock();
     if (GetGameTask()->GetMatch() != 0) {
       match = GetGameTask()->GetMatch();
+      match->SetHUDVisible(true);  // back from an overlay page
 
       if (Verbose())
         printf("connecting signals\n");

@@ -54,6 +54,7 @@ protected:
   std::string caption;
 
   std::vector<Gui2IconSelectorEntry> entries;
+  Gui2Caption* titleCaption;
   Gui2Caption* selectedCaption;
 
   int selectedEntry;

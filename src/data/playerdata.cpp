@@ -154,18 +154,20 @@ float PlayerData::GetConditionMultiplier() const {
 
 std::string PlayerData::GetConditionSymbol() const {
   switch (condition) {
+    // PES-style condition arrows as UTF-8 bytes (portable to MSVC code
+    // pages); the HUD font has these glyphs.
     case e_PlayerCondition_Top:
-      return "^";
+      return "\xE2\x86\x91";  // up arrow
     case e_PlayerCondition_Good:
-      return "/^";
+      return "\xE2\x86\x97";  // up-right arrow
     case e_PlayerCondition_Normal:
-      return "->";
+      return "\xE2\x86\x92";  // right arrow
     case e_PlayerCondition_Poor:
-      return "\\v";
+      return "\xE2\x86\x98";  // down-right arrow
     case e_PlayerCondition_Terrible:
-      return "v";
+      return "\xE2\x86\x93";  // down arrow
     default:
-      return "->";
+      return "\xE2\x86\x92";
   }
 }
 

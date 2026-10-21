@@ -37,7 +37,9 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   }
   match->Pause(true);
 
-  Gui2Frame* frame = new Gui2Frame(windowManager, "gameover_frame", 10, 8, 80, 84, true);
+  // Layout (frame-relative %): title 3, score 8, stats 18-42, player of the
+  // match 46, buttons 54. The frame is sized to its content.
+  Gui2Frame* frame = new Gui2Frame(windowManager, "gameover_frame", 10, 8, 80, 64, true);
   this->AddView(frame);
   frame->Show();
 
@@ -57,7 +59,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   frame->AddView(header);
   header->Show();
 
-  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 28, 74, 24, 4,
+  buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 42, 54, 24, 4,
                               Localization::GetInstance().Translate("gameover_continue"));
   frame->AddView(buttonOkay);
   buttonOkay->Show();
@@ -76,7 +78,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   int fouls1 = match->GetMatchData()->GetFouls(0);
   int fouls2 = match->GetMatchData()->GetFouls(1);
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_gameover_stats", 5, 18, 70, 44);
+  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_gameover_stats", 5, 18, 70, 24);
 
   float totalPossession = possession1 + possession2;
   int possession1Pct = (totalPossession > 0) ? round(possession1 / totalPossession * 100) : 50;
@@ -193,10 +195,10 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   std::string momStr = Localization::GetInstance().Translate("gameover_mom") + ": " + momName +
                        " (" + std::string(ratingBuf) + ")";
 
-  Gui2Caption* momCaption = new Gui2Caption(windowManager, "caption_mom", 2, 70, 76, 4, momStr);
+  Gui2Caption* momCaption = new Gui2Caption(windowManager, "caption_mom", 2, 46, 76, 4, momStr);
   momCaption->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));  // Gold
   momCaption->SetOutlineColor(Vector3(0, 0, 0));
-  momCaption->SetPosition(40 - momCaption->GetTextWidthPercent() * 0.5f, 66);
+  momCaption->SetPosition(40 - momCaption->GetTextWidthPercent() * 0.5f, 46);
   frame->AddView(momCaption);
   momCaption->Show();
 
@@ -247,7 +249,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   }
 
   Gui2Button* buttonHistory =
-      new Gui2Button(windowManager, "button_gameover_history", 14, 76, 24, 4,
+      new Gui2Button(windowManager, "button_gameover_history", 14, 54, 24, 4,
                      Localization::GetInstance().Translate("gameover_match_history"));
   frame->AddView(buttonHistory);
   buttonHistory->Show();

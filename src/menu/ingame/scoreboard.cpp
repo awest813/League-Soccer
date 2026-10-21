@@ -76,7 +76,7 @@ Gui2ScoreBoard::Gui2ScoreBoard(Gui2WindowManager* windowManager, Match* match)
   const float timeX = leagueLogoX + squareLogoWidth + bgW * 0.015f;
   const float timeW = bgW * 0.15f;
   timeCaption = new Gui2Caption(windowManager, "game_scoreboard_timecaption", timeX, 0, timeW,
-                                height_percent * 0.9f, "0:00");
+                                height_percent * 0.9f, "00:00");  // same format as the live clock
 
   // 3. Team 1 (Home) Logo & Name
   const float team1LogoX = bgX + bgW * 0.23f;

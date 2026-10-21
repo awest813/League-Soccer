@@ -149,6 +149,9 @@ protected:
   std::string captureDirectory;
   unsigned int captureCount = 0;
   Uint32 lastCaptureTime = 0;
+  // Frame capture pacing; GF_CAPTURE_INTERVAL_MS / GF_CAPTURE_LIMIT override.
+  Uint32 captureInterval_ms = 2000;
+  unsigned int captureLimit = 60;
 
   SDL_GLContext context;
   SDL_Window* window;

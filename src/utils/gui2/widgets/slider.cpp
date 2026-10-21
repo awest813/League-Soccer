@@ -33,8 +33,10 @@ Gui2Slider::Gui2Slider(Gui2WindowManager* windowManager, const std::string& name
   this->AddView(titleCaption);
   titleCaption->Show();
 
+  // Value text sits between the title and the track (drawn at 80% height);
+  // 31% keeps it close to the title's size so it stays readable.
   valueCaption = new Gui2Caption(windowManager, name + "valuecaption", 1.0, height_percent * 0.39f,
-                                 width_percent - 2.0f, height_percent * 0.25f, "");
+                                 width_percent - 2.0f, height_percent * 0.31f, "");
   this->AddView(valueCaption);
   valueCaption->Show();
 
@@ -115,6 +117,13 @@ void Gui2Slider::Redraw() {
     image->DrawRectangle(0, 0, w, 2, brightColor, 255);
     image->DrawRectangle(0, h - 2, w, 2, brightColor, 255);
   }
+
+  // Dark text on the gold focus fill, white otherwise (as for buttons).
+  const Vector3 textColor = IsFocussed() ? darkColor : accentColor;
+  if (titleCaption)
+    titleCaption->SetColor(textColor);
+  if (valueCaption)
+    valueCaption->SetColor(textColor);
 
   // Groove / Track geometry
   int trackMarginX = int(round(x_ratio * 0.8f));
