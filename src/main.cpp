@@ -382,6 +382,17 @@ const std::vector<IHIDevice*>& GetControllers() {
   return controllers;
 }
 
+// Menu confirm/back follow the first gamepad's A/B mapping. Axis mappings
+// (negative IDs) cannot drive the GUI's raw-button check, so they are ignored.
+static void ApplyMenuJoyButtons(HIDGamepad* gamepad) {
+  if (!menuTask || !gamepad)
+    return;
+  const int activate = gamepad->GetControllerMapping(e_ControllerButton_A);
+  const int escape = gamepad->GetControllerMapping(e_ControllerButton_B);
+  if (activate >= 0 && escape >= 0 && activate != escape)
+    menuTask->SetEventJoyButtons(activate, escape);
+}
+
 void AddGamepad(int deviceIndex, int gamepadID) {
   if (deviceIndex < 0 || deviceIndex >= SDL_NumJoysticks())
     return;
@@ -389,15 +400,30 @@ void AddGamepad(int deviceIndex, int gamepadID) {
   controllers.push_back(gamepad);
   printf("[main] Gamepad added: index %d (slot %d), total controllers: %zu\n", deviceIndex,
          gamepadID, controllers.size());
+
+  // A pad plugged in after startup becomes the menu pad when it is the first one.
+  bool firstGamepad = true;
+  for (IHIDevice* device : controllers) {
+    if (device != gamepad && dynamic_cast<HIDGamepad*>(device)) {
+      firstGamepad = false;
+      break;
+    }
+  }
+  if (firstGamepad)
+    ApplyMenuJoyButtons(gamepad);
 }
 
+// Unplugged gamepads are retired rather than deleted: a live match may still
+// hold the raw pointer (HumanGamer) on the game thread. A retired pad samples
+// slot -1, which reads as no input.
+static std::vector<HIDGamepad*> retiredGamepads;
+
 void RemoveGamepad(int gamepadID) {
-  if (controllers.size() <= 1)
-    return;
-  for (auto it = controllers.begin() + 1; it != controllers.end(); ++it) {
+  for (auto it = controllers.begin(); it != controllers.end(); ++it) {
     HIDGamepad* gp = dynamic_cast<HIDGamepad*>(*it);
     if (gp && gp->GetGamepadID() == gamepadID) {
-      delete gp;
+      gp->SetGamepadID(-1);
+      retiredGamepads.push_back(gp);
       controllers.erase(it);
       printf("[main] Gamepad removed: slot %d, total controllers: %zu\n", gamepadID,
              controllers.size());
@@ -611,8 +637,11 @@ int main(int argc, const char** argv) {
   printf("[MAIN] init controllers\n");
   fflush(stdout);
 
+  // The keyboard is always controller 0. Gamepads present at launch were
+  // already added by UserEventManager, so insert in front of them; settings
+  // pages and the menu gamepad lookup rely on this order.
   HIDKeyboard* keyboard = new HIDKeyboard();
-  controllers.push_back(keyboard);
+  controllers.insert(controllers.begin(), keyboard);
 
   // Headless "gamepad controls" smoke match: inject an autonomous scripted
   // controller that drives a human team through the real input pipeline.
@@ -646,13 +675,8 @@ int main(int argc, const char** argv) {
   fflush(stdout);
   menuTask =
       std::shared_ptr<MenuTask>(new MenuTask(kMenuAspectRatio, 0, defaultFont, defaultOutlineFont));
-  if (controllers.size() > 1) {
-    HIDGamepad* menuGamepad = dynamic_cast<HIDGamepad*>(controllers.at(1));
-    if (menuGamepad) {
-      menuTask->SetEventJoyButtons(menuGamepad->GetControllerMapping(e_ControllerButton_A),
-                                   menuGamepad->GetControllerMapping(e_ControllerButton_B));
-    }
-  }
+  if (controllers.size() > 1)
+    ApplyMenuJoyButtons(dynamic_cast<HIDGamepad*>(controllers.at(1)));
 
   gameSequence = std::shared_ptr<TaskSequence>(new TaskSequence("game", timeStep_ms, false));
 

@@ -26,6 +26,9 @@ public:
 
   virtual void LoadConfig();
   virtual void SaveConfig();
+  // Forgets saved mapping and calibration for this pad and reloads the
+  // auto-detected profile defaults.
+  void ResetToDefaults();
 
   virtual void Process();
 

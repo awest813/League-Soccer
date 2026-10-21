@@ -31,6 +31,17 @@ inline bool ShouldCallForPass(PlayerSwitchMode mode, bool isInPlay, bool isSetPi
          !shortPassWasDown;
 }
 
+// Whether a fresh Switch press should move control to another player.
+// assistedSwitchAllowed carries Assisted mode's extra possession checks. In
+// every mode the player dribbling the ball keeps control: Switch doubles as the
+// chip / one-two modifier, and switching would hand the ball to the AI.
+inline bool ShouldSwitchOnPress(PlayerSwitchMode mode, bool selectedHasUniquePossession,
+                                bool assistedSwitchAllowed) {
+  if (selectedHasUniquePossession)
+    return false;
+  return mode == PlayerSwitchMode::FullyManual || assistedSwitchAllowed;
+}
+
 inline unsigned long PassRequestExpiresAt(unsigned long requestedAt_ms) {
   return requestedAt_ms + kPassRequestDuration_ms;
 }

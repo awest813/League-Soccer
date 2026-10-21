@@ -2609,6 +2609,9 @@ void OpenGLRenderer3D::operator()() {
       if (event.type == SDL_WINDOWEVENT) {
         if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
           contextIsActive = false;
+          // Releases that happen while unfocused are never delivered; drop
+          // held keys/buttons so nothing stays "pressed" after Alt-Tab.
+          UserEventManager::GetInstance().ReleaseAllInputs();
         } else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
           contextIsActive = true;
         }
@@ -2631,7 +2634,13 @@ void OpenGLRenderer3D::operator()() {
           break;
       }
 
-      if (contextIsActive) {  // context must be active
+      // Presses only count while focused, but releases and device hot-plug
+      // must always be processed or state goes stale (stuck keys, phantom pads).
+      const bool alwaysForward =
+          event.type == SDL_KEYUP || event.type == SDL_JOYBUTTONUP ||
+          event.type == SDL_MOUSEBUTTONUP || event.type == SDL_JOYDEVICEADDED ||
+          event.type == SDL_JOYDEVICEREMOVED;
+      if (contextIsActive || alwaysForward) {
         UserEventManager::GetInstance().InputSDLEvent(event);
       }
     }

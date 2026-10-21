@@ -13,6 +13,7 @@
 #ifndef _HPP_MANAGERS_USEREVENT
 #define _HPP_MANAGERS_USEREVENT
 
+#include <algorithm>
 #include <map>
 
 #include <SDL2/SDL.h>
@@ -51,7 +52,14 @@ public:
   bool GetMouseButtonState(int sdlButtonID) const;
   Vector3 GetMouseRelativePos() const;
 
-  int GetJoystickCount() { return SDL_NumJoysticks(); }
+  // Clamped to the slots this manager tracks; SDL may report more devices.
+  int GetJoystickCount() { return std::min(SDL_NumJoysticks(), _JOYSTICK_MAX); }
+  // Clears held keys/buttons, e.g. when the window loses focus and the
+  // matching release events will never arrive.
+  void ReleaseAllInputs();
+  // The axis value SDL observed when the device was opened (a trigger rests
+  // near -32768, a stick near 0). Returns false when unavailable.
+  bool GetJoystickAxisInitialState(int joyID, int axisID, float* state) const;
   bool GetJoyButtonState(int joyID, int sdlJoyButtonID) const;
   void SetJoyButtonState(int joyID, int sdlJoyButtonID, bool newState);
 

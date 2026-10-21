@@ -38,6 +38,16 @@ bool Properties::Exists(const char* name) const {
   }
 }
 
+int Properties::EraseWithPrefix(const std::string& prefix) {
+  int erased = 0;
+  for (auto it = properties.lower_bound(prefix);
+       it != properties.end() && it->first.compare(0, prefix.size(), prefix) == 0;) {
+    it = properties.erase(it);
+    erased++;
+  }
+  return erased;
+}
+
 void Properties::Set(const char* name, const std::string& value) {
   properties[std::string(name)] = value;
 }

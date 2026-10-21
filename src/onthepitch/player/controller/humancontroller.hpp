@@ -44,6 +44,9 @@ protected:
   e_ButtonFunction actionButton;
   int actionBufferTime_ms;
   int gauge_ms;
+  // gauge_ms when the charged action was last handed to the humanoid; -1 if
+  // not yet dispatched. Power is fixed at that point.
+  int dispatchedGauge_ms = -1;
 
   SprintTap sprintTap;
 

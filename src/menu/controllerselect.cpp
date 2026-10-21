@@ -109,6 +109,13 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
   if (inGame) {
     sides = GetMenuTask()->GetControllerSetup();
   }
+  // With no gamepad at all, the keyboard is the only way to play; start it on
+  // Home instead of silently defaulting to CPU vs CPU.
+  bool hasGamepad = false;
+  for (IHIDevice* device : controllers) {
+    if (device->GetDeviceType() == e_HIDeviceType_Gamepad)
+      hasGamepad = true;
+  }
   for (unsigned int i = 0; i < controllers.size(); i++) {
     SideSelection side;
     side.controllerID = i;
@@ -119,7 +126,11 @@ ControllerSelectPage::ControllerSelectPage(Gui2WindowManager* windowManager,
       // Only the first gamepad is auto-selected as Player 1; the keyboard never
       // is, so it is not forced into every match (think gamepad-only testing).
       side.side = 0;
-      if (!autoAssignedPlayerOne && controllers.at(i)->GetDeviceType() == e_HIDeviceType_Gamepad) {
+      const e_HIDeviceType deviceType = controllers.at(i)->GetDeviceType();
+      const bool playerOneCandidate =
+          deviceType == e_HIDeviceType_Gamepad ||
+          (!hasGamepad && deviceType == e_HIDeviceType_Keyboard);
+      if (!autoAssignedPlayerOne && playerOneCandidate) {
         side.side = -1;
         autoAssignedPlayerOne = true;
       }
@@ -277,23 +288,35 @@ void ControllerSelectPage::Process() {
       }
     } else if (controller->GetDeviceType() == e_HIDeviceType_Gamepad) {
       HIDGamepad* gamepad = static_cast<HIDGamepad*>(controller);
-      if (gamepad->GetButtonValue(e_ButtonFunction_Left) > 0.5 ||
+      // Confirm/back act on a fresh press only: the button that opened this
+      // page (or backed out of Team Select) is often still held on arrival.
+      auto pressedNow = [gamepad](e_ButtonFunction function) {
+        return gamepad->GetButtonValue(function) > 0.5 && !gamepad->GetPreviousButtonState(function);
+      };
+      // The D-pad hat is reported as raw buttons 17 (right) and 19 (left).
+      const int slot = gamepad->GetGamepadID();
+      const bool dpadLeft = UserEventManager::GetInstance().GetJoyButtonState(slot, 19);
+      const bool dpadRight = UserEventManager::GetInstance().GetJoyButtonState(slot, 17);
+      if (gamepad->GetButtonValue(e_ButtonFunction_Left) > 0.5 || dpadLeft ||
           gamepad->GetButtonValue(e_ButtonFunction_Switch) > 0.5) {
         sides.at(i).side -= 1;
         moved = true;
       }
-      if (gamepad->GetButtonValue(e_ButtonFunction_Right) > 0.5 ||
+      if (gamepad->GetButtonValue(e_ButtonFunction_Right) > 0.5 || dpadRight ||
           gamepad->GetButtonValue(e_ButtonFunction_Sprint) > 0.5) {
         sides.at(i).side += 1;
         moved = true;
       }
-      if (gamepad->GetButtonValue(e_ButtonFunction_ShortPass) > 0.5 ||
-          gamepad->GetButtonValue(e_ButtonFunction_Start) > 0.5) {
+      if (pressedNow(e_ButtonFunction_ShortPass) || pressedNow(e_ButtonFunction_Start)) {
         ConfirmSelection();
         return;
       }
-      if (gamepad->GetButtonValue(e_ButtonFunction_HighPass) > 0.5 ||
-          gamepad->GetButtonValue(e_ButtonFunction_Select) > 0.5) {
+      if (pressedNow(e_ButtonFunction_HighPass) || pressedNow(e_ButtonFunction_Select)) {
+        // Same as Escape: in a match, keep the sides the player just chose.
+        if (inGame) {
+          GetMenuTask()->SetControllerSetup(sides);
+          GetGameTask()->GetMatch()->UpdateControllerSetup();
+        }
         GoBack();
         return;
       }

@@ -3,6 +3,21 @@
 #include "../main.hpp"
 #include "base/utils.hpp"
 #include "managers/usereventmanager.hpp"
+#include "stickinput.hpp"
+
+namespace {
+
+// The raw SDL joystick API orders axes per platform: Linux evdev reports LT as
+// axis 2, while XInput and SDL's HIDAPI drivers report LT as axis 4. RT is
+// axis 5 on all of them. Opening devices through SDL_GameController would
+// remove this guesswork (see docs/gap-list.md).
+#if defined(__linux__)
+const int kXboxLeftTriggerBinding = stickinput::EncodeAxisBinding(2, 1);
+#else
+const int kXboxLeftTriggerBinding = stickinput::EncodeAxisBinding(4, 1);
+#endif
+
+}  // namespace
 
 HIDGamepad::HIDGamepad(int deviceIndex, int gamepadID)
     : deviceIndex(deviceIndex), gamepadID(gamepadID) {
@@ -30,9 +45,17 @@ void HIDGamepad::LoadConfig() {
     float max = GetConfiguration()->GetReal(
         ("input_gamepad_" + GetIdentifier() + "_calibration_" + int_to_str(i) + "_max").c_str(),
         32767);
+    // Uncalibrated triggers default to resting at their initial (released)
+    // value; a centre rest of 0 would read a released trigger as fully pulled
+    // in the opposite direction.
+    float initialState = 0.0f;
+    float defaultRest = 0.0f;
+    if (UserEventManager::GetInstance().GetJoystickAxisInitialState(GetGamepadID(), i,
+                                                                    &initialState))
+      defaultRest = stickinput::DefaultAxisRest(initialState);
     float rest = GetConfiguration()->GetReal(
         ("input_gamepad_" + GetIdentifier() + "_calibration_" + int_to_str(i) + "_rest").c_str(),
-        0);
+        defaultRest);
     UserEventManager::GetInstance().SetJoystickAxisCalibration(GetGamepadID(), i, min, max, rest);
   }
 
@@ -81,7 +104,7 @@ void HIDGamepad::LoadConfig() {
       else if (controllerType == e_ControllerType_NintendoSwitch || controllerType == e_ControllerType_LogitechDirectInput)
         defaultButton = 6;
       else
-        defaultButton = -6; // Xbox LT (Axis)
+        defaultButton = kXboxLeftTriggerBinding;
     }
     else if (i == 10)
       defaultButton = 5;  // R1 / RB
@@ -91,7 +114,7 @@ void HIDGamepad::LoadConfig() {
       else if (controllerType == e_ControllerType_NintendoSwitch || controllerType == e_ControllerType_LogitechDirectInput)
         defaultButton = 7;
       else
-        defaultButton = -5; // Xbox RT (Axis)
+        defaultButton = stickinput::EncodeAxisBinding(5, 1);  // Xbox RT: axis 5, positive
     }
     else if (i == 12) {   // Select / Share / Back / Minus
       if (controllerType == e_ControllerType_PlayStation)
@@ -116,6 +139,13 @@ void HIDGamepad::LoadConfig() {
 
     controllerMapping[i] = GetConfiguration()->GetInt(
         ("input_gamepad_" + GetIdentifier() + "_" + int_to_str(i)).c_str(), defaultButton);
+    // A hand-edited or corrupt config must not index past the button/axis arrays.
+    int axis = 0;
+    int sign = 0;
+    const bool isAxis = stickinput::DecodeAxisBinding(controllerMapping[i], &axis, &sign);
+    if ((isAxis && axis >= _JOYSTICK_MAXAXES) ||
+        (!isAxis && controllerMapping[i] >= _JOYSTICK_MAXBUTTONS))
+      controllerMapping[i] = defaultButton;
   }
 
   for (int i = 0; i < e_ButtonFunction_Size; i++) {
@@ -157,8 +187,11 @@ void HIDGamepad::LoadConfig() {
     else if (i == e_ButtonFunction_Select)
       defaultMapping = e_ControllerButton_Select;
 
-    functionMapping[i] = (e_ControllerButton)GetConfiguration()->GetInt(
+    int mapping = GetConfiguration()->GetInt(
         ("input_gamepad_" + GetIdentifier() + "_mapping_" + int_to_str(i)).c_str(), defaultMapping);
+    if (mapping < 0 || mapping >= e_ControllerButton_Size)
+      mapping = defaultMapping;
+    functionMapping[i] = (e_ControllerButton)mapping;
   }
 }
 
@@ -176,6 +209,13 @@ void HIDGamepad::SaveConfig() {
   GetConfiguration()->SaveFile(GetConfigFilename());
 }
 
+void HIDGamepad::ResetToDefaults() {
+  // LoadConfig() prefers saved keys over defaults, so they must go first.
+  GetConfiguration()->EraseWithPrefix("input_gamepad_" + GetIdentifier() + "_");
+  LoadConfig();
+  SaveConfig();
+}
+
 void HIDGamepad::Process() {
   std::unique_lock<std::mutex> blah(mutex);
   for (int i = 0; i < e_ControllerButton_Size; i++) {
@@ -185,12 +225,15 @@ void HIDGamepad::Process() {
       controllerButtonState[i] =
           UserEventManager::GetInstance().GetJoyButtonState(gamepadID, buttonID) ? 1.0 : 0.0;
     } else {  // axis
-      // decode negative buttonID to axis
-      int axisID = -buttonID - 1;
-      signed int sign = ((axisID % 2) * 2) - 1;
-      axisID /= 2;
-      bool deadzone = true;  // always apply deadzone now for better compatibility
-      float value = UserEventManager::GetInstance().GetJoystickAxis(gamepadID, axisID, deadzone);
+      int axisID = 0;
+      int sign = 0;
+      stickinput::DecodeAxisBinding(buttonID, &axisID, &sign);
+      // Movement directions get one radial deadzone in GetDirection(); a
+      // per-axis deadzone here would snap near-cardinal stick angles onto the
+      // axes. Buttons and triggers keep the per-axis deadzone.
+      const bool isDirection = i <= e_ControllerButton_Left;
+      float value =
+          UserEventManager::GetInstance().GetJoystickAxis(gamepadID, axisID, !isDirection);
       if ((sign < 0 && value < 0) || (sign > 0 && value > 0))
         controllerButtonState[i] = fabs(value);
       else
@@ -225,15 +268,7 @@ Vector3 HIDGamepad::GetDirection() {
   inputDirection.coords[0] += GetButtonValue(e_ButtonFunction_Right);
   inputDirection.coords[1] += GetButtonValue(e_ButtonFunction_Up);
   inputDirection.coords[1] -= GetButtonValue(e_ButtonFunction_Down);
-  float len = inputDirection.GetLength();
-  if (len < analogStickDeadzone) {
-    return Vector3(0);
-  }
-  // Clamp maximum magnitude to 1.0 so diagonals don't exceed unit length
-  if (len > 1.0f) {
-    inputDirection.Normalize(0);
-  }
-  return inputDirection;
+  return stickinput::ApplyRadialDeadzone(inputDirection, analogStickDeadzone);
 }
 
 void HIDGamepad::SetRumble(float low_frequency, float high_frequency, unsigned int duration_ms) {

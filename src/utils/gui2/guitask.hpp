@@ -17,6 +17,7 @@
 
 #include "scene/scene2d/scene2d.hpp"
 #include "types/iusertask.hpp"
+#include "menurepeat.hpp"
 #include "windowmanager.hpp"
 
 namespace blunted {
@@ -54,6 +55,8 @@ protected:
   Gui2WindowManager* windowManager;
 
   std::map<SDL_Keycode, TimedKeyPress> prevKeyState;
+  std::map<SDL_Keycode, MenuRepeat> keyRepeat;
+  MenuRepeat stickRepeat[_JOYSTICK_MAX];
   bool prevButtonState[_JOYSTICK_MAX][_JOYSTICK_MAXBUTTONS];
   bool prevAxisState[_JOYSTICK_MAX][_JOYSTICK_MAXAXES];
 

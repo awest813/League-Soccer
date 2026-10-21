@@ -12,10 +12,13 @@ class SprintTap {
     if (pending && now_ms - pendingAt_ms >= 280)
       pending = false;
     if (pressed) {
-      pending = hasPrevious && now_ms - previousAt_ms < 280;
+      // The press that completes a pair is not also the first press of the
+      // next one, so steady tapping knocks on every other tap, not every tap.
+      const bool completesPair = hasPrevious && now_ms - previousAt_ms < 280;
+      pending = completesPair;
       pendingAt_ms = now_ms;
       previousAt_ms = now_ms;
-      hasPrevious = true;
+      hasPrevious = !completesPair;
     }
   }
 

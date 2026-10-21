@@ -26,7 +26,7 @@ The following parameters and systems have been audited, tuned, and polished to r
 All the classic PES inputs have been meticulously mapped and tuned:
 * **Super Cancel:** Full 360-degree unassisted manual movement, allowing you to break off rails and fight for position.
 * **1-2 Pass (L1 + Short Pass):** Forces the passer to immediately break forward dynamically.
-* **Fake Shot:** Instantly triggers a sharp cut in the stick direction, completely dropping the player's momentum.
+* **Fake Shot (Shot, then Short Pass before the kick):** Cancels the shot and cuts the ball in the stick direction at dribbling pace.
 * **Chip Shot (L1 + Shoot):** Uses a classic scoop trajectory (desired height `0.42f`).
 * **Finesse/Controlled Shot (R2 + Shoot):** Drops shot power significantly but cuts the error/scatter radius by 50% for high placement precision.
 

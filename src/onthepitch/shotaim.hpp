@@ -10,6 +10,9 @@
 inline blunted::Vector3 RefineShotDirection(const blunted::Vector3& committed,
                                            const blunted::Vector3& requested,
                                            float maxDeviation) {
+  // No usable aim input: keep the committed direction rather than a zero vector.
+  if (requested.Get2D().GetLength() < 1e-4f)
+    return committed;
   const float angle = requested.Get2D().GetAngle2D(committed.Get2D());
   const float limit = std::max(0.0f, maxDeviation);
   if (std::fabs(angle) <= limit)

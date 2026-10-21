@@ -265,21 +265,41 @@ nix-shell          # or: nix develop
 
 ## Controls
 
-> Default keyboard layout. Gamepad support — including remapping and
-> calibration — is configurable via the Settings menu.
+> Default bindings. Keyboard keys and gamepad buttons can be remapped, and
+> gamepads calibrated, under **Settings > Controllers**. Gamepad names below
+> use the Xbox layout (PlayStation: A = Cross, B = Circle, X = Square,
+> Y = Triangle).
 
 ### In-Game
 
-| Action | Key |
-|--------|-----|
-| Move player | Arrow keys / **WASD** |
-| Sprint | Hold **Shift** |
-| Short pass | **A** |
-| Long pass / Cross | **S** |
-| Shoot | **D** |
-| Tackle / Press | **F** |
-| Switch player | **Space** |
-| Pause | **Escape** |
+Most action buttons do one thing with the ball and another without it.
+
+| Action (with the ball / without it) | Keyboard | Gamepad |
+|--------------------------------------|----------|---------|
+| Move player | Arrow keys | Left stick |
+| Short pass / Press the ball carrier | **S** | **A** |
+| High pass or cross / Sliding tackle | **A** | **B** |
+| Long through pass / Keeper rushes out | **W** | **Y** |
+| Shoot / Team pressure | **D** | **X** |
+| Switch player | **Q** | **LB** |
+| Sprint (tap twice to knock the ball on) | **E** | **RB** |
+| Slow, close-control dribble | **C** | **RT** |
+| Pause | **Escape** | **Start** |
+| Match statistics overlay | **Tab** | — |
+
+Hold an action button to charge power; the gauge above the player shows it.
+
+| Combination | Keyboard | Gamepad |
+|-------------|----------|---------|
+| One-two (pass, then run for the return) | **Q** + **S** | **LB** + **A** |
+| Chip shot | **Q** + **D** | **LB** + **X** |
+| Finesse (placed) shot | **C** + **D** | **RT** + **X** |
+| Fake shot | **D**, then **S** before the kick | **X**, then **A** |
+| Super Cancel (manual movement, no auto-touches) | **E** + **C** | **RB** + **RT** |
+
+Menus use the arrow keys / left stick or D-pad, **Enter** / **A** to confirm
+and **Escape** / **B** to go back. **F12** quits the game. Escape, Tab and F12
+cannot be assigned to match actions.
 
 ### Gameplay Options
 

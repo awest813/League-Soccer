@@ -1032,7 +1032,9 @@ void Match::Process() {
   timeSincePreviousProcess_ms = time_ms - GetPreviousProcessTime_ms();
   previousProcessTime_ms = time_ms;
 
-  if (UserEventManager::GetInstance().GetKeyboardState(SDLK_F1)) {
+  // Debug lighting shortcut. F1 is also the default keyboard Select binding,
+  // so release builds must not swallow it.
+  if (!IsReleaseVersion() && UserEventManager::GetInstance().GetKeyboardState(SDLK_F1)) {
     SetRandomSunParams();
     UserEventManager::GetInstance().SetKeyboardState(SDLK_F1, false);
   }

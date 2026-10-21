@@ -387,32 +387,36 @@ void Team::Process() {
         selectedPlayer = GetPlayer(selectedPlayerID);
         assert(selectedPlayer);
 
+        const bool assistedSwitchAllowed =
+            !(selectedPlayerID == GetBestPossessionPlayerID() &&
+              selectedPlayerID == designatedTeamPossessionPlayer->GetID()) ||
+            GetTeamPossessionAmount() < 1.0f;
         if (humanGamers.at(i)->GetHIDevice()->GetButton(e_ButtonFunction_Switch) &&
             !humanGamers.at(i)->GetHIDevice()->GetPreviousButtonState(e_ButtonFunction_Switch) &&
-            (fullyManualSwitching ||
-             ((!(selectedPlayerID == GetBestPossessionPlayerID() &&
-                 selectedPlayerID == designatedTeamPossessionPlayer->GetID()) ||
-               GetTeamPossessionAmount() < 1.0f) &&
-              !selectedPlayer->HasUniquePossession()))) {
+            ShouldSwitchOnPress(
+                fullyManualSwitching ? PlayerSwitchMode::FullyManual : PlayerSwitchMode::Assisted,
+                selectedPlayer->HasUniquePossession(), assistedSwitchAllowed)) {
           int targetPlayerID = -1;
           Player* targetPlayer = nullptr;
 
-          if (!IsHumanControlled(designatedTeamPossessionPlayer->GetID()) &&
-              match->GetBestPossessionTeamID() == GetID()) {
+          // The keeper cannot be selected during play (unless passed to by a
+          // teammate), so skip him here and fall through to the next candidate
+          // instead of ignoring the press.
+          Player* goalie = GetGoalie();
+          auto selectable = [this, goalie](Player* candidate) {
+            return candidate && candidate != goalie && !IsHumanControlled(candidate->GetID());
+          };
+          const bool ourBall = match->GetBestPossessionTeamID() == GetID();
+          if (ourBall && selectable(designatedTeamPossessionPlayer)) {
             targetPlayer = designatedTeamPossessionPlayer;
-          } else if (!IsHumanControlled(GetBestPossessionPlayer()->GetID()) &&
-                     match->GetBestPossessionTeamID() == GetID()) {
+          } else if (ourBall && selectable(GetBestPossessionPlayer())) {
             targetPlayer = GetBestPossessionPlayer();
           } else {
             targetPlayer = AI_GetBestSwitchTargetPlayer(
                 match, this, humanGamers.at(i)->GetHIDevice()->GetDirection());
-            if (targetPlayer)
-              if (IsHumanControlled(targetPlayer->GetID()))
-                targetPlayer = 0;
+            if (!selectable(targetPlayer))
+              targetPlayer = 0;
           }
-          if (targetPlayer == GetGoalie())
-            targetPlayer = 0;  // can not be goalie in current version, at least not during play,
-                               // unless being directly passed to by teammate
 
           if (targetPlayer) {
             targetPlayerID = targetPlayer->GetID();

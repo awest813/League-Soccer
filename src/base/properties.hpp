@@ -28,6 +28,8 @@ public:
   virtual ~Properties();
 
   bool Exists(const char* name) const;
+  // Removes every property whose name starts with prefix; returns the count.
+  int EraseWithPrefix(const std::string& prefix);
 
   void Set(const char* name, const std::string& value);
   void SetInt(const char* name, int value);

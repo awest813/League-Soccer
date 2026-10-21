@@ -870,9 +870,13 @@ void KeyboardPage::SetKey(int buttonID, const std::string& name) {
 
 void KeyboardPage::SetKeyDone(int buttonID) {
   SDL_Keycode value = (SDL_Keycode)captureKey->GetKeyID();
-  // printf("clickah! %i\n", value);
-  keyButtons[buttonID]->GetCaptionWidget()->SetCaption(SDL_GetKeyName(value));
-  keyIDs[buttonID] = value;
+  // Keys with fixed meanings (pause, stats overlay, quit) cannot also be
+  // match actions; keep the previous binding if one is chosen.
+  const bool reserved = value == SDLK_ESCAPE || value == SDLK_TAB || value == SDLK_F12;
+  if (!reserved) {
+    keyButtons[buttonID]->GetCaptionWidget()->SetCaption(SDL_GetKeyName(value));
+    keyIDs[buttonID] = value;
+  }
   keyButtons[buttonID]->SetFocus();
 
   bg->Exit();
@@ -1050,8 +1054,10 @@ void GamepadSetupPage::GoGamepadFunctionPage(int controllerID) {
 void GamepadSetupPage::ResetToAutoDetectProfile(int controllerID) {
   HIDGamepad* controller = GetGamepadIfAvailable(controllerID);
   if (controller) {
-    controller->LoadConfig();
-    controller->SaveConfig();
+    controller->ResetToDefaults();
+    if (controllerID == 1)
+      GetMenuTask()->SetEventJoyButtons(controller->GetControllerMapping(e_ControllerButton_A),
+                                        controller->GetControllerMapping(e_ControllerButton_B));
   }
   Properties properties;
   properties.Set("controllerID", controllerID);
@@ -1184,8 +1190,12 @@ void GamepadCalibrationPage::SaveCalibration() {
   }
 
   for (int i = 0; i < _JOYSTICK_MAXAXES; i++) {
-    if (min[i] > max[i])
-      min[i] = max[i];  // happens if people forget to excite some joystick.. oh my
+    // An axis that was not moved through most of its travel (forgotten
+    // trigger, absent axis) would get a near-zero range and read as dead.
+    // Keep its previous calibration instead.
+    const float kMinCalibratedRange = 8000.0f;
+    if (max[i] - min[i] < kMinCalibratedRange)
+      continue;
     float rest = UserEventManager::GetInstance().GetJoystickAxisRaw(controller->GetGamepadID(), i);
     UserEventManager::GetInstance().SetJoystickAxisCalibration(controller->GetGamepadID(), i,
                                                                min[i], max[i], rest);

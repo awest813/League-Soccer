@@ -24,6 +24,7 @@ add_executable(gameplayfootball_math_tests
   base/math_test.cpp
   onthepitch/ball_physics_test.cpp
   onthepitch/gameplay_audit_test.cpp
+  onthepitch/controls_audit_test.cpp
   onthepitch/pitch_sampling_test.cpp
 )
 

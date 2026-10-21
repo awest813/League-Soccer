@@ -137,6 +137,10 @@ void UserEventManager::InputSDLEvent(const SDL_Event& event) {
       break;
     }
     case SDL_KEYDOWN:
+      // OS auto-repeat must not refresh the press time: menus implement their
+      // own repeat from the moment the key first went down.
+      if (event.key.repeat)
+        break;
       keyPressedMutex.lock();
       keyPressed[event.key.keysym.sym].pressTime_ms =
           EnvironmentManager::GetInstance().GetTime_ms();
@@ -163,14 +167,14 @@ void UserEventManager::InputSDLEvent(const SDL_Event& event) {
     case SDL_JOYAXISMOTION: {
       std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
       int joyID = FindJoystickSlot(event.jaxis.which);
-      if (joyID >= 0)
+      if (joyID >= 0 && event.jaxis.axis < _JOYSTICK_MAXAXES)
         joyAxis[joyID][event.jaxis.axis] = event.jaxis.value;
       break;
     }
     case SDL_JOYHATMOTION: {
       std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
       int joyID = FindJoystickSlot(event.jhat.which);
-      if (joyID >= 0) {
+      if (joyID >= 0 && event.jhat.hat == 0) {
         // Map D-pad hat states to virtual button indices (16..19):
         // Button 16: Up, 17: Right, 18: Down, 19: Left
         joyButtonPressed[joyID][16] = (event.jhat.value & SDL_HAT_UP) != 0;
@@ -183,14 +187,14 @@ void UserEventManager::InputSDLEvent(const SDL_Event& event) {
     case SDL_JOYBUTTONDOWN: {
       std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
       int joyID = FindJoystickSlot(event.jbutton.which);
-      if (joyID >= 0)
+      if (joyID >= 0 && event.jbutton.button < _JOYSTICK_MAXBUTTONS)
         joyButtonPressed[joyID][event.jbutton.button] = true;
       break;
     }
     case SDL_JOYBUTTONUP: {
       std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
       int joyID = FindJoystickSlot(event.jbutton.which);
-      if (joyID >= 0)
+      if (joyID >= 0 && event.jbutton.button < _JOYSTICK_MAXBUTTONS)
         joyButtonPressed[joyID][event.jbutton.button] = false;
       break;
     }
@@ -279,7 +283,40 @@ unsigned long UserEventManager::GetLastKeyPressDiff_ms() {
 
 unsigned long UserEventManager::GetLastKeyPressDiff_ms(SDL_Keycode key) {
   std::unique_lock<std::mutex> lock(keyPressedMutex);
-  return EnvironmentManager::GetInstance().GetTime_ms() - keyPressed[key].pressTime_ms;
+  // find(), not operator[]: inserting a key released since the caller's
+  // snapshot would leave it reading as held forever.
+  auto it = keyPressed.find(key);
+  if (it == keyPressed.end())
+    return 0;
+  return EnvironmentManager::GetInstance().GetTime_ms() - it->second.pressTime_ms;
+}
+
+void UserEventManager::ReleaseAllInputs() {
+  {
+    std::unique_lock<std::mutex> lock(keyPressedMutex);
+    keyPressed.clear();
+  }
+  {
+    std::unique_lock<std::mutex> lock(mousePressedMutex);
+    for (int i = 0; i < 32; i++)
+      mousePressed[i] = false;
+  }
+  std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
+  for (int j = 0; j < _JOYSTICK_MAX; j++) {
+    for (int i = 0; i < _JOYSTICK_MAXBUTTONS; i++)
+      joyButtonPressed[j][i] = false;
+  }
+}
+
+bool UserEventManager::GetJoystickAxisInitialState(int joyID, int axisID, float* state) const {
+  if (joyID < 0 || joyID >= _JOYSTICK_MAX || axisID < 0 || axisID >= _JOYSTICK_MAXAXES || !state)
+    return false;
+  std::unique_lock<std::mutex> lock(joyButtonPressedMutex);
+  Sint16 initial = 0;
+  if (!joystick[joyID] || !SDL_JoystickGetAxisInitialState(joystick[joyID], axisID, &initial))
+    return false;
+  *state = initial;
+  return true;
 }
 
 bool UserEventManager::GetMouseButtonState(int sdlButtonID) const {

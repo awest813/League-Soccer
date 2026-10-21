@@ -12,6 +12,7 @@
 
 #include "guitask.hpp"
 
+#include "managers/environmentmanager.hpp"
 #include "managers/usereventmanager.hpp"
 
 namespace blunted {
@@ -30,7 +31,9 @@ Gui2Task::Gui2Task(std::shared_ptr<Scene2D> scene2D, float aspectRatio, float ma
     }
   }
 
-  joyButtonActivate = 1;
+  // Raw SDL buttons 0/1 are A/B (Cross/Circle) on common pads. Until a gamepad
+  // supplies its own mapping, confirm and back must not share a button.
+  joyButtonActivate = 0;
   joyButtonEscape = 1;
   activeJoystick = 0;
 
@@ -74,6 +77,7 @@ void Gui2Task::ProcessEvents() {
   bool needsKeyboardEvent = false;
 
   auto currentKeyState = UserEventManager::GetInstance().GetKeyboardState();
+  const unsigned long now_ms = EnvironmentManager::GetInstance().GetTime_ms();
 
   for (auto keyState : currentKeyState) {
     auto pressedKey = keyState.first;
@@ -99,9 +103,8 @@ void Gui2Task::ProcessEvents() {
       }
     }
 
-    // when pressed first time, or when held for longer than some threshold
-    if (prevKeyState.count(pressedKey) == 0 ||
-        UserEventManager::GetInstance().GetLastKeyPressDiff_ms(pressedKey) > 250) {
+    // when pressed first time, then at a steady rate while held
+    if (keyRepeat[pressedKey].Update(true, now_ms)) {
       event->SetKeyRepeated(pressedKey);
 
       if (keyboard) {
@@ -123,6 +126,12 @@ void Gui2Task::ProcessEvents() {
   }
 
   prevKeyState = currentKeyState;
+  for (auto it = keyRepeat.begin(); it != keyRepeat.end();) {
+    if (currentKeyState.count(it->first) == 0)
+      it = keyRepeat.erase(it);
+    else
+      ++it;
+  }
 
   if (needsKeyboardEvent) {
     if (windowManager->GetFocus() == currentFocus)
@@ -156,24 +165,25 @@ void Gui2Task::ProcessEvents() {
       }
     }
 
+    // Direction from the analog stick and the D-pad hat buttons (16: Up,
+    // 17: Right, 18: Down, 19: Left), repeated at the same rate as held keys.
+    // Evaluated every tick so a held D-pad repeats too (it raises no new events).
+    Vector3 stick1Direction = Vector3(axes[0], axes[1], 0);
+    if (UserEventManager::GetInstance().GetJoyButtonState(j, 16)) stick1Direction += Vector3(0, -1, 0);
+    if (UserEventManager::GetInstance().GetJoyButtonState(j, 18)) stick1Direction += Vector3(0, 1, 0);
+    if (UserEventManager::GetInstance().GetJoyButtonState(j, 19)) stick1Direction += Vector3(-1, 0, 0);
+    if (UserEventManager::GetInstance().GetJoyButtonState(j, 17)) stick1Direction += Vector3(1, 0, 0);
+    if (stickRepeat[j].Update(stick1Direction.GetLength() != 0, now_ms)) {
+      SetActiveJoystickID(j);
+      wEvent->SetDirection(stick1Direction);
+      needsWindowingEvent = true;
+    }
+
     if (stick || buttonChanged) {
       JoystickEvent* event = new JoystickEvent();
 
       for (int i = 0; i < _JOYSTICK_MAXAXES; i++) {
         event->SetAxis(j, i, axes[i]);
-      }
-
-      // Calculate direction from analog stick and D-pad hat buttons (16: Up, 17: Right, 18: Down, 19: Left)
-      Vector3 stick1Direction = Vector3(axes[0], axes[1], 0);
-      if (UserEventManager::GetInstance().GetJoyButtonState(j, 16)) stick1Direction += Vector3(0, -1, 0); // D-pad Up
-      if (UserEventManager::GetInstance().GetJoyButtonState(j, 18)) stick1Direction += Vector3(0, 1, 0);  // D-pad Down
-      if (UserEventManager::GetInstance().GetJoyButtonState(j, 19)) stick1Direction += Vector3(-1, 0, 0); // D-pad Left
-      if (UserEventManager::GetInstance().GetJoyButtonState(j, 17)) stick1Direction += Vector3(1, 0, 0);  // D-pad Right
-
-      if (stick1Direction.GetLength() != 0) {
-        SetActiveJoystickID(j);
-        wEvent->SetDirection(stick1Direction);
-        needsWindowingEvent = true;
       }
 
       for (int i = 0; i < _JOYSTICK_MAXBUTTONS; i++) {
@@ -207,6 +217,10 @@ void Gui2Task::ProcessEvents() {
 }
 
 void Gui2Task::SetEventJoyButtons(int activate, int escape) {
+  // Menus compare raw buttons, so axis mappings (negative) and a shared
+  // confirm/back button would make one of them unusable; keep the old pair.
+  if (activate < 0 || escape < 0 || activate == escape)
+    return;
   this->joyButtonActivate = activate;
   this->joyButtonEscape = escape;
 }

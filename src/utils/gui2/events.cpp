@@ -28,10 +28,13 @@ KeyboardEvent::~KeyboardEvent() {}
 // JOYSTICK EVENT
 
 JoystickEvent::JoystickEvent() : Gui2Event(e_Gui2EventType_Joystick) {
-  for (int j = 0; j < UserEventManager::GetInstance().GetJoystickCount(); j++) {
-    for (int i = 0; i < _JOYSTICK_MAXBUTTONS; i++) {
+  // Clear every slot, not just connected pads: handlers (e.g. button capture)
+  // read axes for a specific pad from events raised by another one.
+  for (int j = 0; j < _JOYSTICK_MAX; j++) {
+    for (int i = 0; i < _JOYSTICK_MAXBUTTONS; i++)
       button[j][i] = false;
-    }
+    for (int i = 0; i < _JOYSTICK_MAXAXES; i++)
+      axes[j][i] = 0.0f;
   }
 }
 

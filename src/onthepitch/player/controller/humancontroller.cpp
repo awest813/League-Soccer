@@ -1,5 +1,7 @@
 #include "humancontroller.hpp"
 
+#include <algorithm>
+
 #include "../../../main.hpp"
 #include "../../AIsupport/AIfunctions.hpp"
 #include "../../humanspeed.hpp"
@@ -111,6 +113,9 @@ void HumanController::RequestCommand(PlayerCommandQueue& commandQueue) {
           60;  // substract a little because we can't really press a button shorter than this
       float gaugeFactor = (gauge_ms - baseTime_ms) * (1.0f / float(1000 - baseTime_ms));
       gaugeFactor = clamp(gaugeFactor, 0.0f, 1.0f);
+      // The command's power is fixed once its animation is selected, so the
+      // HUD shows this value from here on rather than the still-growing gauge.
+      dispatchedGauge_ms = gauge_ms;
 
       // action button released!
 
@@ -369,6 +374,18 @@ void HumanController::Process() {
 
   PlayerController::Process();
 
+  // A new action starts with an uncommitted gauge.
+  if (actionMode != 2)
+    dispatchedGauge_ms = -1;
+
+  // Defensive (mode 1) actions end when their button is released. Otherwise
+  // this waited for the next animation requeue, and an attacking press made
+  // in the meantime (e.g. a shot right after winning the ball) was dropped.
+  if (actionMode == 1 && !hid->GetButton(actionButton)) {
+    actionMode = 0;
+    actionBufferTime_ms = 0;
+  }
+
   Vector3 currentDirection;
   float dud;
   _GetHidInput(currentDirection, dud);
@@ -539,7 +556,9 @@ float HumanController::GetGaugeFactor() const {
   if (actionMode != 2)
     return 0.0f;
   int baseTime_ms = 60;
-  float factor = (gauge_ms - baseTime_ms) * (1.0f / float(1000 - baseTime_ms));
+  const int shownGauge_ms =
+      (dispatchedGauge_ms >= 0) ? std::min(gauge_ms, dispatchedGauge_ms) : gauge_ms;
+  float factor = (shownGauge_ms - baseTime_ms) * (1.0f / float(1000 - baseTime_ms));
   return clamp(factor, 0.0f, 1.0f);
 }
 
@@ -562,6 +581,7 @@ int HumanController::GetReactionTime_ms() {
 void HumanController::Reset() {
   actionMode = 0;
   gauge_ms = 0;
+  dispatchedGauge_ms = -1;
   actionButton = e_ButtonFunction_ShortPass;
   actionBufferTime_ms = 0;
 

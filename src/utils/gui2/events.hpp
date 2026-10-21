@@ -99,15 +99,32 @@ public:
   JoystickEvent();
   virtual ~JoystickEvent();
 
-  bool GetButton(int joyID, int id) const { return button[joyID][id]; }
-  void SetButton(int joyID, int id) { button[joyID][id] = true; }
-  float GetAxis(int joyID, int id) const { return axes[joyID][id]; }
-  void SetAxis(int joyID, int id, float value) { this->axes[joyID][id] = value; }
+  // Out-of-range IDs (e.g. a function remapped to an axis, which is encoded
+  // as a negative ID) read as released rather than indexing out of bounds.
+  bool GetButton(int joyID, int id) const {
+    return ValidButton(joyID, id) && button[joyID][id];
+  }
+  void SetButton(int joyID, int id) {
+    if (ValidButton(joyID, id))
+      button[joyID][id] = true;
+  }
+  float GetAxis(int joyID, int id) const { return ValidAxis(joyID, id) ? axes[joyID][id] : 0.0f; }
+  void SetAxis(int joyID, int id, float value) {
+    if (ValidAxis(joyID, id))
+      this->axes[joyID][id] = value;
+  }
 
 protected:
   // todo: doesn't it make more sense to have one joystick event per joyid? that's what we're
   // actually doing, but then why have this multidimensional array and not just a seperate joyid
   // variable?
+  static bool ValidButton(int joyID, int id) {
+    return joyID >= 0 && joyID < _JOYSTICK_MAX && id >= 0 && id < _JOYSTICK_MAXBUTTONS;
+  }
+  static bool ValidAxis(int joyID, int id) {
+    return joyID >= 0 && joyID < _JOYSTICK_MAX && id >= 0 && id < _JOYSTICK_MAXAXES;
+  }
+
   bool button[_JOYSTICK_MAX][_JOYSTICK_MAXBUTTONS];
   float axes[_JOYSTICK_MAX][_JOYSTICK_MAXAXES];
 };
