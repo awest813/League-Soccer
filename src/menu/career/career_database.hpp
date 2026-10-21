@@ -50,7 +50,11 @@ public:
   bool HasPendingFixture() const;
   const CareerPendingFixture& GetPendingFixture() const;
   void ClearPendingFixture();
-  bool ConsumePlayedFixture(int matchGoals0, int matchGoals1);
+  // Applies a finished 3D match to the pending fixture. Scorer lists hold the
+  // database IDs of each team's goal scorers (MatchData team order).
+  bool ConsumePlayedFixture(int matchGoals0, int matchGoals1,
+                            const std::vector<int>& scorerIDs0 = {},
+                            const std::vector<int>& scorerIDs1 = {});
 
   bool Initialize(const std::string& saveDir);
   bool HasSaveFile() const;
@@ -59,8 +63,13 @@ public:
   bool LoadCareerSlot(int slotIndex);
   bool CreateNewCareer(const std::string& careerName, const std::string& mode,
                        const std::string& managerName);
+  // Saves to the active slot: the one the career was loaded from or last saved
+  // to. Lifecycle commits (matches, season rollover) write there too.
   bool SaveCareerData();
+  // Saves to the given slot, which becomes the active slot (0-3; -1 is the
+  // shared autosave and does not change the active slot).
   bool SaveCareerSlot(int slotIndex);
+  int GetActiveSlot() const { return m_activeSlot; }
   bool DeleteCareerSlot(int slotIndex);
   bool AutoSave();
   bool GetSlotSummary(int slotIndex, CareerPersistence::CareerSaveSummary& outSummary) const;
@@ -176,6 +185,7 @@ private:
   std::vector<TransferTarget> m_transferTargets;
   std::vector<TransferBid> m_activeBids;
   CareerPendingFixture m_pendingFixture;
+  int m_activeSlot = 0;
 };
 
 }  // namespace blunted

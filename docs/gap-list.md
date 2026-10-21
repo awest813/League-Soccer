@@ -5,7 +5,8 @@ Scope: the in-match game (`src/onthepitch`, `src/menu/ingame`) and Career mode
 (`src/menu/career`, `src/data/careerdata.*`). The standalone League mode was not
 audited. A second pass covering controls (input devices, remapping, menus and
 in-match handling) is in [section 4](#4-controls), and a third pass covering
-menu and in-match UI is in [section 5](#5-ui-and-in-match-ui).
+menu and in-match UI is in [section 5](#5-ui-and-in-match-ui). [Section 6](#6-career-second-pass)
+records a second career pass that fixed the career P0 defects.
 
 This document has three parts:
 
@@ -102,14 +103,7 @@ Linux Debug build with tests:
 
 | Pri | Location | Defect |
 | --- | --- | --- |
-| P0 | `career_persistence.cpp`, `CareerDatabase::LoadCareerSlot` | Bids are saved but their transfer targets are not, so an accepted bid can never complete after Continue/Load. |
-| P0 | `career_sim.cpp` `ApplyMatchResult`; `CareerDatabase::ConsumePlayedFixture` | `matchesPlayed` counts goals, not appearances. 3D-played fixtures pass no scorers, so they record no personal stats at all. |
-| P0 | `career_sim.cpp` `GenerateLeagueStandings` | AI records are regenerated from a new seed each week, so points can go down. The default database has 2 clubs per league, so the table shows 2 clubs. Rank, prize money and board evaluation use `EstimateLeaguePosition`, which can return only 9 values. The form guide is invented. |
-| P0 | `CareerDatabase::AdvanceSeason`, `career_board.cpp` | Board objectives are judged against targets recomputed from reputation *after* the season's changes, and regenerating objectives wipes the `completed` flags. |
-| P0 | `career_persistence.cpp` | `leagueSettings` and `customLeague` are not saved. The custom-league Reset control also skips the `CanManageClub` check. |
-| P0 | `CareerDatabase::CommitLifecycle` | Always writes slot 0, so loading slot 3 and playing overwrites the career in slot 0. |
 | P1 | `career_finance.cpp` `InitializeOwnerData` | Player wages are weekly but counted once per season, while staff salaries are annual. |
-| P1 | `career_sim.cpp` `UpdatePlayerValue` | Recalculating a player's value overwrites their negotiated or extended wage. |
 | P1 | `career_staff.cpp` `HireStaff` | The first salary is charged at hire and again at season end. |
 | P1 | `career_sim.cpp` `GetTopScorers` | The Golden Boot compares the user's all-time goals with other players' season goals. |
 | P1 | `career_training.cpp` `ScoutYouthPlayer`; `career_sim.cpp` | Results can't be reproduced: a separate `random_device` RNG, `std::hash` for opponent strength, and the implementation-defined `std::poisson_distribution`. Browsing staff or free-agent pages advances the career RNG. |
@@ -155,7 +149,7 @@ multipliers for the CPU.
 | P1 | Competitions | There are no cups or continental competitions ("Continental Cup" is only a message). Promotion and relegation are computed but never applied. |
 | P1 | Transfer market | Bids resolve instantly. There are no transfer windows or deadlines, no outgoing sales or loans, and no AI clubs; "Agent Patience" is display-only and contract length is fixed at 3 years. |
 | P1 | Contracts | No renewal negotiation, player refusals, release clauses or loans. Staff contracts expire silently. |
-| P1 | Squad selection | `squad.startingXI` and `bench` are unused. The simulation averages the whole squad, and every squad member can score. |
+| P1 | Squad selection | `squad.startingXI` and `bench` are unused. The automatic match squad (one keeper and the ten strongest outfielders) cannot be changed, and the simulation still averages the whole squad's strength. |
 | P1 | Injuries and assists | `InjuryStatus` is never set, and `careerAssists` is never incremented. |
 | P1 | Inbox | The inbox screen works, but nothing ever adds a message to it. |
 | P2 | Youth | 25 name combinations and lookups by name (duplicate names are likely). There is no intake schedule; `scoutingNetworkLevel` can't be raised, and `YouthAcademyState` and `ScoutingState` are unused. |
@@ -176,7 +170,7 @@ multipliers for the CPU.
 | Coach | P1 | No line-up, formation or bench selection that affects results. |
 | Coach | P2 | No resource or transfer requests to the front office, opponent scouting, or job market. |
 | Player | P0 | No locked single-player control in 3D matches (above). |
-| Player | P1 | Played matches record no personal goals or appearances, and there is no selection or bench status. A transfer request only sets a flag. |
+| Player | P1 | There is no selection or bench status: the user's footballer is always in the match squad. A transfer request only sets a flag. |
 | Player | P2 | No personal contract offers or renewals, and no personal objectives. |
 
 ### Localization
@@ -311,17 +305,36 @@ Audited by capturing frames of each menu route and of live matches under Xvfb
 
 ---
 
+## 6. Career, second pass
+
+The six P0 career defects from [section 2](#2-known-defects-not-yet-fixed), plus
+two related ones, are fixed. Each has a regression test in
+`tests/career/career_audit_regression_test.cpp`.
+
+| Area | Defect | Fix |
+| --- | --- | --- |
+| Transfers | Bids were saved without their transfer targets, so an accepted bid could never complete after Continue/Load, and the market was re-rolled on every load. | The market is saved with the bids (`target.N` lines) and restored on load. |
+| Save slots | Lifecycle commits (matches, season rollover) always wrote slot 0, so playing a career loaded from slot 3 overwrote slot 0. | The database tracks the active slot: the one loaded or last saved to. Commits and Save go there. A career restored from the shared autosave commits to slot 0. |
+| League settings | `leagueSettings` and `customLeague` were not saved, and custom-league Reset skipped the `CanManageClub` check. | Both are saved and loaded. Every expansion and custom-league action checks the permission and saves. |
+| Appearances | `matchesPlayed` counted goals, not appearances: only scorers gained one, once per goal. | Each fixture gives one appearance to the match squad: one keeper and the ten strongest outfielders, plus the user's footballer in Player mode. Only that squad can score in simulated matches. |
+| 3D match stats | Played 3D fixtures passed no scorers, so they recorded no personal stats. | `MatchData` records each goal's scorer by database ID; the career credits the user's scorers who are in its squad. |
+| Standings | AI records were regenerated from a new seed each week, so points could go down. The bundled database has two clubs per league, so the table showed two clubs. Rank, prize money, TV revenue and the board used `EstimateLeaguePosition`, and the form guide was invented. | Other clubs' records are stored in the save and advance one round per user fixture. Every round pairs them, and the club meeting the user gets the mirrored score. Results come from a local, platform-independent RNG, so the career RNG is untouched. Lists of fewer than ten clubs are replaced by a 20-club default league. Rank, prize money, TV revenue, the board and the season summary use the table position. Form guides show real results. |
+| Board | Objectives were judged against targets recomputed from reputation *after* the season's changes, and regenerating them wiped the outcome. | Targets are fixed and saved when objectives are set. They are judged before the rollover, and each outcome is recorded as a board event. |
+| Wages | Recalculating a player's value (after every appearance and at rollover) overwrote their negotiated or extended wage. | Value updates no longer touch the wage. |
+
+The long-run audit test now checks that each season's finish equals the club's
+place in the final table, instead of the old estimate.
+
+---
+
 ## Suggested order
 
-1. **Career data integrity (P0):** bid targets, appearances, cumulative standings
-   against a padded 20-club league, board-objective timing, saving league settings,
-   and active-slot commits.
-2. **Career squad in the 3D match, and Player-mode lock:** these two together make
+1. **Career squad in the 3D match, and Player-mode lock:** these two together make
    Player mode real and make transfers matter on the pitch.
-3. **Substitutions and injuries:** one feature, and a prerequisite for Coach-mode
+2. **Substitutions and injuries:** one feature, and a prerequisite for Coach-mode
    bench decisions.
-4. **Fixture generator and competitions:** a round-robin schedule, a knockout cup
+3. **Fixture generator and competitions:** a round-robin schedule, a knockout cup
    using `match_extra_time` plus a new penalty shootout, and applied promotion and
    relegation.
-5. **Localization backfill:** the 292 missing keys per language, and moving
+4. **Localization backfill:** the 292 missing keys per language, and moving
    hardcoded English into locale files.

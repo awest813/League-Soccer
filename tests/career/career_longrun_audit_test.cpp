@@ -270,6 +270,7 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
       }
 
       const int seasonNumberBeforeAdvance = save->season.currentSeason;
+      const int finalRank = blunted::CareerSim::LeaguePosition(*save);
       CloseSeasonLikeUi(db, persona);
       save = db.GetActiveSave();
       ASSERT_NE(save, nullptr);
@@ -283,9 +284,8 @@ TEST(CareerLongRunAudit, TwelveSeasonsFourPersonaTiers) {
       EXPECT_GE(rec.leaguePosition, 1);
       EXPECT_LE(rec.leaguePosition, 20);
       EXPECT_EQ(rec.wonTitle, rec.leaguePosition == 1);
-      EXPECT_EQ(rec.leaguePosition,
-                CareerDatabase::EstimateLeaguePosition(rec.wins, rec.draws, rec.losses))
-          << persona.name << " finish must be derived from W/D/L, not random";
+      EXPECT_EQ(rec.leaguePosition, finalRank)
+          << persona.name << " finish must be the club's place in the final table";
 
       // Season counters must reset after advance.
       EXPECT_EQ(save->seasonWins, 0);

@@ -3,6 +3,7 @@
 
 #include <array>
 #include <memory>
+#include <vector>
 
 #include "../gamedefines.hpp"
 #include "defines.hpp"
@@ -45,6 +46,13 @@ public:
   void AddFoul(int teamID) { foulsCommitted[teamID]++; }
   int GetFouls(int teamID) const { return foulsCommitted[teamID]; }
 
+  // Database IDs of the players who scored for a team, one entry per goal
+  // (own goals are not credited to anyone).
+  void AddGoalScorer(int teamID, int playerDatabaseID) {
+    goalScorers[teamID].push_back(playerDatabaseID);
+  }
+  const std::vector<int>& GetGoalScorers(int teamID) const { return goalScorers[teamID]; }
+
   // whether this match's result has already been written to match history
   bool IsHistorySaved() const { return historySaved; }
   void SetHistorySaved(bool value) { historySaved = value; }
@@ -64,6 +72,8 @@ protected:
   int pendingPassTeamID;
 
   int foulsCommitted[2];
+
+  std::array<std::vector<int>, 2> goalScorers;
 
   bool historySaved;
 };

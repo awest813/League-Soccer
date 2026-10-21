@@ -54,14 +54,29 @@ void CareerDatabase::ClearPendingFixture() {
   m_pendingFixture = CareerPendingFixture{};
 }
 
-bool CareerDatabase::ConsumePlayedFixture(int matchGoals0, int matchGoals1) {
+bool CareerDatabase::ConsumePlayedFixture(int matchGoals0, int matchGoals1,
+                                          const std::vector<int>& scorerIDs0,
+                                          const std::vector<int>& scorerIDs1) {
   if (!m_pendingFixture.hasFixture || !m_activeSave)
     return false;
   const auto fixture = m_pendingFixture;
+  // Credit the user's scorers who are in the career squad; others (database
+  // players the career has since sold, for example) are skipped.
+  std::vector<std::string> scorers;
+  for (int scorerID : fixture.isHome ? scorerIDs0 : scorerIDs1) {
+    if (scorerID <= 0)
+      continue;
+    for (const auto& player : m_activeSave->roster) {
+      if (player.databaseID == scorerID) {
+        scorers.push_back(player.name);
+        break;
+      }
+    }
+  }
   if (!CompleteFixture(fixture.season, fixture.week, fixture.isHome, fixture.userTeamDBID,
                        fixture.opponentTeamDBID, fixture.opponentName,
                        fixture.isHome ? matchGoals0 : matchGoals1,
-                       fixture.isHome ? matchGoals1 : matchGoals0))
+                       fixture.isHome ? matchGoals1 : matchGoals0, scorers))
     return false;
   ClearPendingFixture();
   return true;
@@ -80,7 +95,8 @@ bool CareerDatabase::CommitLifecycle(const std::function<void()>& mutate) {
     mutate();
     // The primary save is the commit point used by Continue. Events must never
     // flush partially applied season rewards or match development to disk.
-    saved = CareerPersistence::Save(*m_activeSave, m_activeBids, GetSlotPath(0));
+    saved = CareerPersistence::Save(*m_activeSave, m_activeBids, m_transferTargets,
+                                    GetSlotPath(m_activeSlot));
   } catch (...) {
     saved = false;
   }
@@ -192,25 +208,31 @@ bool CareerDatabase::LoadCareerSlot(int slotIndex) {
   std::string path = GetSlotPath(slotIndex);
   CareerSave loaded;
   std::vector<TransferBid> loadedBids;
-  if (!CareerPersistence::Load(loaded, loadedBids, path))
+  std::vector<TransferTarget> loadedTargets;
+  if (!CareerPersistence::Load(loaded, loadedBids, loadedTargets, path))
     return false;
   m_activeSave = std::make_unique<CareerSave>(loaded);
   m_activeBids = loadedBids;
   ClearPendingFixture();
-  m_transferTargets.clear();
+  m_transferTargets = loadedTargets;
+  // The autosave is shared by every slot; a career restored from it commits
+  // to the default slot.
+  m_activeSlot = slotIndex < 0 ? 0 : slotIndex;
   printf("[career] Loaded slot %d from %s\n", slotIndex, path.c_str());
   return true;
 }
 
 bool CareerDatabase::SaveCareerData() {
-  return m_inLifecycle || SaveCareerSlot(0);
+  return m_inLifecycle || SaveCareerSlot(m_activeSlot);
 }
 
 bool CareerDatabase::SaveCareerSlot(int slotIndex) {
   if (!m_activeSave || m_saveDirectory.empty())
     return false;
   std::string path = GetSlotPath(slotIndex);
-  bool success = CareerPersistence::Save(*m_activeSave, m_activeBids, path);
+  bool success = CareerPersistence::Save(*m_activeSave, m_activeBids, m_transferTargets, path);
+  if (success && slotIndex >= 0)
+    m_activeSlot = slotIndex;
   if (success)
     printf("[career] Saved slot %d to %s\n", slotIndex, path.c_str());
   return success;
@@ -257,6 +279,7 @@ bool CareerDatabase::CreateNewCareer(const std::string& careerName, const std::s
   m_activeSave->club.clubName = careerName;
   m_activeSave->mode = role;
   m_activeSave->handsOnManagement = handsOn;
+  m_activeSlot = 0;
   ClearPendingFixture();
   m_activeBids.clear();
   m_transferTargets.clear();
@@ -463,31 +486,14 @@ std::string CareerDatabase::GetConditionArrow(int form) const {
 }
 
 std::string CareerDatabase::GetFormGuideString(int count) const {
-  if (!m_activeSave)
+  if (!m_activeSave || m_activeSave->seasonForm.empty())
     return "[ - - - - - ]";
-  std::string guide = "";
-  int wins = m_activeSave->seasonWins;
-  int draws = m_activeSave->seasonDraws;
-  int losses = m_activeSave->seasonLosses;
-  int total = wins + draws + losses;
-  if (total == 0)
-    return "[ - - - - - ]";
-
-  // Build a realistic recent form sequence from the season record
-  std::vector<std::string> recent;
-  for (int i = 0; i < count; i++) {
-    int seed = (m_activeSave->season.currentWeek * 7 + i * 13) % 100;
-    if (wins > 0 && (seed < (wins * 100 / total))) {
-      recent.push_back("[W]");
-    } else if (draws > 0 && (seed < ((wins + draws) * 100 / total))) {
-      recent.push_back("[D]");
-    } else {
-      recent.push_back("[L]");
-    }
-  }
-  for (const auto& r : recent) {
-    guide += r + " ";
-  }
+  // The club's real recent league results, oldest first.
+  const std::string& form = m_activeSave->seasonForm;
+  const size_t shown = std::min(form.size(), static_cast<size_t>(std::max(0, count)));
+  std::string guide;
+  for (size_t i = form.size() - shown; i < form.size(); ++i)
+    guide += std::string("[") + form[i] + "] ";
   return guide;
 }
 
@@ -590,6 +596,8 @@ std::vector<CareerSim::CareerLeagueTableRow> CareerDatabase::GetLeagueStandings(
     const std::vector<std::pair<int, std::string>>& leagueClubs) const {
   if (!m_activeSave)
     return {};
+  // The first look at the table fixes the club list for the season.
+  CareerSim::EnsureLeagueTable(*m_activeSave, leagueClubs);
   return CareerSim::GenerateLeagueStandings(*m_activeSave, leagueClubs);
 }
 
@@ -650,8 +658,10 @@ bool CareerDatabase::AdvanceSeason(int expectedSeason) {
     return false;
   return CommitLifecycle([&] {
     CareerFinance::ProcessSeasonFinances(*m_activeSave);
-    CareerSim::AdvanceSeason(*m_activeSave, *this, m_activeBids, m_transferTargets);
+    // Judge the season before the rollover resets its record and applies
+    // prize-money and title reputation.
     CareerBoard::EvaluateBoardObjectives(*m_activeSave, *this);
+    CareerSim::AdvanceSeason(*m_activeSave, *this, m_activeBids, m_transferTargets);
     CareerSponsors::GenerateSponsorOffers(*m_activeSave);
     CareerBoard::GenerateBoardObjectives(*m_activeSave);
     m_activeSave->season.fixtures.clear();

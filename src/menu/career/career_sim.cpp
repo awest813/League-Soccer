@@ -1,10 +1,14 @@
 #include "career_sim.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <functional>
+#include <numeric>
 #include <random>
 
 #include "career_common.hpp"
+#include "career_hub_model.hpp"
 #include "career_training.hpp"
 
 namespace blunted {
@@ -14,7 +18,71 @@ namespace {
 using CareerCommon::ClampInt;
 using CareerCommon::RandomInt;
 using CareerCommon::SafeStoi;
+
+constexpr size_t kMatchSquadSize = 11;
+
+// One appearance, with the goals and assists scored in it.
+void RecordAppearance(PlayerCareerState& player, int goals, int assists) {
+  goals = std::max(0, goals);
+  assists = std::max(0, assists);
+  player.matchesPlayed++;
+  player.careerGoals += goals;
+  player.careerAssists += assists;
+  // Keep per-match form gains modest so a hot streak cannot snowball the whole
+  // squad's simulated strength across a 38-game season.
+  player.matchForm = ClampInt(player.matchForm + goals * 3 + assists * 2 + 1, 0, 100);
+  player.morale = ClampInt(player.morale + goals * 2 + assists + 1, 0, 100);
+  UpdatePlayerValue(player);
+}
 }  // namespace
+
+std::vector<int> SelectMatchSquad(const CareerSave& save) {
+  std::vector<int> order(save.roster.size());
+  std::iota(order.begin(), order.end(), 0);
+  std::sort(order.begin(), order.end(), [&save](int a, int b) {
+    const auto& pa = save.roster[a];
+    const auto& pb = save.roster[b];
+    if (pa.ovr != pb.ovr)
+      return pa.ovr > pb.ovr;
+    if (pa.fitness != pb.fitness)
+      return pa.fitness > pb.fitness;
+    return pa.name < pb.name;
+  });
+
+  std::vector<int> squad;
+  auto picked = [&squad](int index) {
+    return std::find(squad.begin(), squad.end(), index) != squad.end();
+  };
+  // A Player-mode career always fields the user's footballer.
+  if (const PlayerCareerState* controlled = ControlledCareerPlayer(save))
+    squad.push_back(static_cast<int>(controlled - save.roster.data()));
+  // One goalkeeper, then the strongest outfielders; extra keepers only if the
+  // squad is short of outfielders.
+  const bool hasKeeper = std::any_of(squad.begin(), squad.end(), [&save](int index) {
+    return save.roster[index].preferredPosition == "GK";
+  });
+  if (!hasKeeper) {
+    for (int index : order) {
+      if (save.roster[index].preferredPosition == "GK") {
+        squad.push_back(index);
+        break;
+      }
+    }
+  }
+  for (int index : order) {
+    if (squad.size() >= kMatchSquadSize)
+      break;
+    if (!picked(index) && save.roster[index].preferredPosition != "GK")
+      squad.push_back(index);
+  }
+  for (int index : order) {
+    if (squad.size() >= kMatchSquadSize)
+      break;
+    if (!picked(index))
+      squad.push_back(index);
+  }
+  return squad;
+}
 
 int EstimateLeaguePosition(int wins, int draws, int losses) {
   const int played = wins + draws + losses;
@@ -120,7 +188,8 @@ void UpdatePlayerValue(PlayerCareerState& player) {
   long long baseValue = static_cast<long long>(player.ovr) * player.ovr * 4000;
   player.value =
       std::max(50000LL, (baseValue * ageModifier * formModifier * potentialModifier) / 1200000LL);
-  player.wage = std::max(500LL, player.value / 1200LL);
+  // The wage is a contract term: it changes on signing, extension or renewal,
+  // not whenever the market value moves.
 }
 
 void RecordMatchStats(CareerSave& save, const std::string& playerName, int goals, int assists) {
@@ -130,14 +199,7 @@ void RecordMatchStats(CareerSave& save, const std::string& playerName, int goals
   if (it == save.roster.end())
     return;
 
-  it->matchesPlayed++;
-  it->careerGoals += std::max(0, goals);
-  it->careerAssists += std::max(0, assists);
-  // Keep per-match form gains modest so a hot streak cannot snowball the whole
-  // squad's simulated strength across a 38-game season.
-  it->matchForm = ClampInt(it->matchForm + goals * 3 + assists * 2 + 1, 0, 100);
-  it->morale = ClampInt(it->morale + goals * 2 + assists * 1 + 1, 0, 100);
-  UpdatePlayerValue(*it);
+  RecordAppearance(*it, goals, assists);
 }
 
 SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponentName,
@@ -244,10 +306,16 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
   if (rosterSize <= 0)
     return result;
 
-  // Calculate weights for goalscorers based on position
+  // Calculate weights for goalscorers based on position. Only the match squad
+  // can score.
+  const std::vector<int> squad = SelectMatchSquad(save);
   std::vector<int> weights(rosterSize, 1);
   int totalWeight = 0;
   for (int i = 0; i < rosterSize; i++) {
+    if (std::find(squad.begin(), squad.end(), i) == squad.end()) {
+      weights[i] = 0;
+      continue;
+    }
     const std::string& pos = save.roster[i].preferredPosition;
     if (pos == "ST" || pos == "CF")
       weights[i] = 25;
@@ -271,7 +339,7 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
 
   for (int g = 0; g < result.homeGoals; g++) {
     if (totalWeight <= 0) {
-      result.scorers.push_back(save.roster[0].name);  // fallback
+      result.scorers.push_back(save.roster[squad.empty() ? 0 : squad.front()].name);  // fallback
       continue;
     }
 
@@ -301,6 +369,10 @@ void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int 
   save.seasonLosses += (!isWin && !isDraw) ? 1 : 0;
   save.seasonGoalsFor += std::max(0, homeGoals);
   save.seasonGoalsAgainst += std::max(0, awayGoals);
+  save.seasonForm += isWin ? 'W' : (isDraw ? 'D' : 'L');
+  if (save.seasonForm.size() > 5)
+    save.seasonForm.erase(0, save.seasonForm.size() - 5);
+  PlayLeagueRound(save, std::max(0, homeGoals), std::max(0, awayGoals));
 
   std::string summary =
       save.name + " " + std::to_string(homeGoals) + " - " + std::to_string(awayGoals);
@@ -321,8 +393,24 @@ void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int 
 
   CareerTraining::DevelopAfterMatch(save, events);
 
+  // Everyone in the match squad makes an appearance. A scorer outside it (a 3D
+  // match fields its own line-up) makes one too.
+  std::vector<int> goals(save.roster.size(), 0);
+  std::vector<bool> appeared(save.roster.size(), false);
+  for (int index : SelectMatchSquad(save))
+    appeared[index] = true;
   for (const auto& scorerName : scorers) {
-    RecordMatchStats(save, scorerName, 1, 0);
+    for (size_t i = 0; i < save.roster.size(); i++) {
+      if (save.roster[i].name == scorerName) {
+        goals[i]++;
+        appeared[i] = true;
+        break;
+      }
+    }
+  }
+  for (size_t i = 0; i < save.roster.size(); i++) {
+    if (appeared[i])
+      RecordAppearance(save.roster[i], goals[i], 0);
   }
 }
 
@@ -473,141 +561,187 @@ static std::vector<std::pair<int, std::string>> GetDefaultLeagueClubs(
           {520, "FC Porto"}};
 }
 
+namespace {
+
+constexpr size_t kLeagueSize = 20;
+
+bool IsUserClub(const CareerSave& save, int teamID, const std::string& name) {
+  return (save.club.clubID > 0 && teamID == save.club.clubID) || name == save.name ||
+         (!save.club.clubName.empty() && name == save.club.clubName);
+}
+
+uint32_t NameSeed(const std::string& name) {
+  uint32_t seed = 0;
+  for (char ch : name)
+    seed = seed * 31 + static_cast<unsigned char>(ch);
+  return seed;
+}
+
+// Club strength, roughly 55-88, stable for a club within a season.
+int ClubRating(const std::string& name, int season) {
+  return 55 + static_cast<int>((NameSeed(name) + static_cast<uint32_t>(season) * 1009u) % 34u);
+}
+
+// Uniform [0, 1) from the engine's raw output: std distributions are
+// implementation-defined, and standings should match on every platform.
+double Uniform(std::mt19937& rng) {
+  return static_cast<double>(rng() >> 8) / 16777216.0;
+}
+
+int PoissonGoals(std::mt19937& rng, double expected) {
+  const double limit = std::exp(-expected);
+  double product = Uniform(rng);
+  int goals = 0;
+  while (product > limit && goals < 9) {
+    product *= Uniform(rng);
+    ++goals;
+  }
+  return goals;
+}
+
+void RecordResult(LeagueTableEntry& entry, int goalsFor, int goalsAgainst) {
+  entry.played++;
+  entry.goalsFor += goalsFor;
+  entry.goalsAgainst += goalsAgainst;
+  char result = 'D';
+  if (goalsFor > goalsAgainst) {
+    entry.wins++;
+    result = 'W';
+  } else if (goalsFor < goalsAgainst) {
+    entry.losses++;
+    result = 'L';
+  } else {
+    entry.draws++;
+  }
+  entry.form += result;
+  if (entry.form.size() > 5)
+    entry.form.erase(0, entry.form.size() - 5);
+}
+
+void PlayClubMatch(std::mt19937& rng, LeagueTableEntry& home, LeagueTableEntry& away, int season) {
+  const int gap = ClubRating(home.name, season) - ClubRating(away.name, season);
+  const double homeExpected = std::clamp(1.45 + 0.045 * gap, 0.25, 3.5);
+  const double awayExpected = std::clamp(1.15 - 0.045 * gap, 0.25, 3.5);
+  const int homeGoals = PoissonGoals(rng, homeExpected);
+  const int awayGoals = PoissonGoals(rng, awayExpected);
+  RecordResult(home, homeGoals, awayGoals);
+  RecordResult(away, awayGoals, homeGoals);
+}
+
+// Plays one league round for the other clubs. One of them meets the user;
+// when the user's score is known that club gets the mirrored result.
+void PlayRound(std::vector<LeagueTableEntry>& table, int season, int round, bool userResultKnown,
+               int userGoals, int opponentGoals) {
+  std::mt19937 rng(static_cast<uint32_t>(season) * 7919u + static_cast<uint32_t>(round) * 104729u);
+  std::vector<size_t> order(table.size());
+  std::iota(order.begin(), order.end(), size_t{0});
+  for (size_t i = order.size(); i > 1; --i)
+    std::swap(order[i - 1], order[rng() % i]);
+
+  size_t next = 0;
+  if (order.size() % 2 == 1) {
+    LeagueTableEntry& opponent = table[order[next++]];
+    if (userResultKnown) {
+      RecordResult(opponent, opponentGoals, userGoals);
+    } else {
+      const int gap = ClubRating(opponent.name, season) - 70;
+      RecordResult(opponent, PoissonGoals(rng, std::clamp(1.3 + 0.045 * gap, 0.25, 3.5)),
+                   PoissonGoals(rng, std::clamp(1.3 - 0.045 * gap, 0.25, 3.5)));
+    }
+  }
+  for (; next + 1 < order.size(); next += 2)
+    PlayClubMatch(rng, table[order[next]], table[order[next + 1]], season);
+}
+
+std::vector<LeagueTableEntry> BuildLeagueTable(
+    const CareerSave& save, const std::vector<std::pair<int, std::string>>& leagueClubs,
+    int roundsPlayed) {
+  // A real league has many clubs; the bundled database has two per league, so
+  // pad small lists with a full default league.
+  std::vector<std::pair<int, std::string>> clubs = leagueClubs;
+  if (clubs.size() < kLeagueSize / 2)
+    clubs = GetDefaultLeagueClubs(save.club.leagueName);
+
+  std::vector<LeagueTableEntry> table;
+  for (const auto& club : clubs) {
+    if (table.size() + 1 >= kLeagueSize)
+      break;
+    if (IsUserClub(save, club.first, club.second))
+      continue;
+    LeagueTableEntry entry;
+    entry.teamID = club.first;
+    entry.name = club.second;
+    table.push_back(entry);
+  }
+  // Catch up with rounds the user has already played (saves from before the
+  // table was stored).
+  for (int round = 1; round <= roundsPlayed; ++round)
+    PlayRound(table, save.season.currentSeason, round, false, 0, 0);
+  return table;
+}
+
+int UserMatchesPlayed(const CareerSave& save) {
+  return save.seasonWins + save.seasonDraws + save.seasonLosses;
+}
+
+CareerLeagueTableRow ToRow(const LeagueTableEntry& entry) {
+  CareerLeagueTableRow row;
+  row.teamID = entry.teamID;
+  row.name = entry.name;
+  row.played = entry.played;
+  row.wins = entry.wins;
+  row.draws = entry.draws;
+  row.losses = entry.losses;
+  row.goalsFor = entry.goalsFor;
+  row.goalsAgainst = entry.goalsAgainst;
+  row.goalDiff = entry.goalsFor - entry.goalsAgainst;
+  row.points = entry.wins * 3 + entry.draws;
+  row.form = entry.form.empty() ? "-" : entry.form;
+  return row;
+}
+
+}  // namespace
+
+void EnsureLeagueTable(CareerSave& save,
+                       const std::vector<std::pair<int, std::string>>& leagueClubs) {
+  if (save.leagueTable.empty())
+    save.leagueTable = BuildLeagueTable(save, leagueClubs, UserMatchesPlayed(save));
+}
+
+void PlayLeagueRound(CareerSave& save, int userGoals, int opponentGoals) {
+  // Called after the user's result is counted, so the round number is the
+  // number of matches the user has played.
+  const int round = UserMatchesPlayed(save);
+  if (save.leagueTable.empty())
+    save.leagueTable = BuildLeagueTable(save, {}, round - 1);
+  PlayRound(save.leagueTable, save.season.currentSeason, round, true, userGoals, opponentGoals);
+}
+
 std::vector<CareerLeagueTableRow> GenerateLeagueStandings(
     const CareerSave& save, const std::vector<std::pair<int, std::string>>& leagueClubs) {
-  std::vector<std::pair<int, std::string>> clubs = leagueClubs;
-  if (clubs.empty()) {
-    clubs = GetDefaultLeagueClubs(save.club.leagueName);
-  }
-
-  // Ensure user team is present in clubs list
-  bool userFound = false;
-  for (const auto& c : clubs) {
-    if (c.first == save.club.clubID || c.second == save.name || c.second == save.club.clubName) {
-      userFound = true;
-      break;
-    }
-  }
-  if (!userFound) {
-    if (!clubs.empty()) {
-      clubs.back() = {save.club.clubID > 0 ? save.club.clubID : 999, save.name};
-    } else {
-      clubs.push_back({save.club.clubID > 0 ? save.club.clubID : 999, save.name});
-    }
-  }
+  const std::vector<LeagueTableEntry> others =
+      save.leagueTable.empty() ? BuildLeagueTable(save, leagueClubs, UserMatchesPlayed(save))
+                               : save.leagueTable;
 
   std::vector<CareerLeagueTableRow> table;
-  table.reserve(clubs.size());
+  table.reserve(others.size() + 1);
+  for (const auto& entry : others)
+    table.push_back(ToRow(entry));
 
-  // Current games played across league
-  const int userPlayed = save.seasonWins + save.seasonDraws + save.seasonLosses;
-  const int leaguePlayed = std::min(38, std::max(userPlayed, save.season.currentWeek - 1));
-
-  for (const auto& c : clubs) {
-    const bool isUser =
-        (c.first == save.club.clubID || c.second == save.name || c.second == save.club.clubName);
-    CareerLeagueTableRow row;
-    row.teamID = c.first;
-    row.name = c.second;
-    row.isUserTeam = isUser;
-
-    if (isUser) {
-      row.played = userPlayed;
-      row.wins = save.seasonWins;
-      row.draws = save.seasonDraws;
-      row.losses = save.seasonLosses;
-      row.goalsFor = save.seasonGoalsFor;
-      row.goalsAgainst = save.seasonGoalsAgainst;
-      row.goalDiff = row.goalsFor - row.goalsAgainst;
-      row.points = row.wins * 3 + row.draws;
-
-      // Build form guide from recent win/draw/loss ratio
-      std::string formStr;
-      int remWins = row.wins;
-      int remDraws = row.draws;
-      int remLosses = row.losses;
-      for (int f = 0; f < std::min(5, row.played); ++f) {
-        if (remWins > 0) {
-          formStr += "W";
-          remWins--;
-        } else if (remDraws > 0) {
-          formStr += "D";
-          remDraws--;
-        } else if (remLosses > 0) {
-          formStr += "L";
-          remLosses--;
-        }
-      }
-      row.form = formStr.empty() ? "-" : formStr;
-    } else {
-      row.played = leaguePlayed;
-      if (leaguePlayed == 0) {
-        row.wins = 0;
-        row.draws = 0;
-        row.losses = 0;
-        row.goalsFor = 0;
-        row.goalsAgainst = 0;
-        row.goalDiff = 0;
-        row.points = 0;
-        row.form = "-";
-      } else {
-        // Deterministic rating based on club name and season
-        uint32_t seed = 0;
-        for (char ch : c.second)
-          seed = seed * 31 + static_cast<unsigned char>(ch);
-        seed += static_cast<uint32_t>(save.season.currentSeason * 1009);
-
-        // Rating roughly 55 to 88
-        int rating = 55 + (seed % 34);
-
-        // Win probability from rating: top ~62%, mid ~38%, weak ~20%
-        float winProb = 0.20f + (rating - 55) * (0.42f / 33.0f);
-        float drawProb = 0.26f - (rating - 55) * (0.06f / 33.0f);
-
-        int simWins = 0;
-        int simDraws = 0;
-        int simLosses = 0;
-        std::string formStr;
-
-        std::mt19937 rng(seed + static_cast<uint32_t>(leaguePlayed * 97));
-        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-
-        for (int m = 0; m < leaguePlayed; ++m) {
-          float roll = dist(rng);
-          char res = 'L';
-          if (roll < winProb) {
-            simWins++;
-            res = 'W';
-          } else if (roll < winProb + drawProb) {
-            simDraws++;
-            res = 'D';
-          } else {
-            simLosses++;
-            res = 'L';
-          }
-          if (m >= leaguePlayed - 5) {
-            formStr += res;
-          }
-        }
-
-        row.wins = simWins;
-        row.draws = simDraws;
-        row.losses = simLosses;
-        row.points = row.wins * 3 + row.draws;
-
-        // Goals estimation: top teams score ~1.8-2.3, concede ~0.8-1.1
-        float gfPerGame = 0.8f + (rating - 55) * (1.4f / 33.0f);
-        float gaPerGame = 1.9f - (rating - 55) * (1.1f / 33.0f);
-        row.goalsFor = std::max(
-            0, static_cast<int>(gfPerGame * leaguePlayed + (static_cast<int>(seed % 5) - 2)));
-        row.goalsAgainst = std::max(
-            0, static_cast<int>(gaPerGame * leaguePlayed + (static_cast<int>((seed / 7) % 5) - 2)));
-        row.goalDiff = row.goalsFor - row.goalsAgainst;
-        row.form = formStr.empty() ? "-" : formStr;
-      }
-    }
-    table.push_back(row);
-  }
+  CareerLeagueTableRow user;
+  user.teamID = save.club.clubID > 0 ? save.club.clubID : 999;
+  user.name = save.name;
+  user.isUserTeam = true;
+  user.played = save.seasonWins + save.seasonDraws + save.seasonLosses;
+  user.wins = save.seasonWins;
+  user.draws = save.seasonDraws;
+  user.losses = save.seasonLosses;
+  user.goalsFor = save.seasonGoalsFor;
+  user.goalsAgainst = save.seasonGoalsAgainst;
+  user.goalDiff = user.goalsFor - user.goalsAgainst;
+  user.points = user.wins * 3 + user.draws;
+  user.form = save.seasonForm.empty() ? "-" : save.seasonForm;
+  table.push_back(user);
 
   // Sort by Points DESC, GoalDiff DESC, GoalsFor DESC, Name ASC
   std::sort(table.begin(), table.end(),
@@ -622,6 +756,15 @@ std::vector<CareerLeagueTableRow> GenerateLeagueStandings(
             });
 
   return table;
+}
+
+int LeaguePosition(const CareerSave& save) {
+  const auto table = GenerateLeagueStandings(save);
+  for (size_t i = 0; i < table.size(); ++i) {
+    if (table[i].isUserTeam)
+      return static_cast<int>(i) + 1;
+  }
+  return static_cast<int>(table.size());
 }
 
 std::vector<CareerTopScorer> GetTopScorers(const CareerSave& save) {
@@ -670,7 +813,7 @@ std::vector<CareerTopScorer> GetTopScorers(const CareerSave& save) {
 
 void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
                    std::vector<TransferBid>& bids, std::vector<TransferTarget>& targets) {
-  int userPos = EstimateLeaguePosition(save.seasonWins, save.seasonDraws, save.seasonLosses);
+  const int userPos = LeaguePosition(save);
 
   SeasonRecord record;
   record.season = save.season.currentSeason;
@@ -799,6 +942,8 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
   save.seasonLosses = 0;
   save.seasonGoalsFor = 0;
   save.seasonGoalsAgainst = 0;
+  save.seasonForm.clear();
+  save.leagueTable.clear();
   events.AddEvent("season", "Advanced to season " + std::to_string(save.season.currentSeason), 1,
                   true);
 }

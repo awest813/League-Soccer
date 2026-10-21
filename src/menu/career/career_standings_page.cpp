@@ -34,12 +34,6 @@ CareerStandingsPage::CareerStandingsPage(Gui2WindowManager* windowManager,
 
   std::string sub = "Season " + std::to_string(seasonNum) + " | Matchday " +
                     std::to_string(currentWeek) + " of 38";
-  if (activeSave) {
-    int pos = CareerDatabase::EstimateLeaguePosition(
-        activeSave->seasonWins, activeSave->seasonDraws, activeSave->seasonLosses);
-    sub += " | Current Club: " + activeSave->name + " (Rank #" + std::to_string(pos) + ")";
-  }
-
   Gui2Caption* subtitle = new Gui2Caption(windowManager, "cap_standings_sub", 2, 4.5f, 90, 2, sub);
   frame->AddView(subtitle);
   subtitle->Show();
@@ -61,6 +55,11 @@ CareerStandingsPage::CareerStandingsPage(Gui2WindowManager* windowManager,
 
   PopulateStandingsGrid();
   PopulateScorersGrid();
+  if (activeSave) {
+    // The grid has fixed this season's table; rank the club from it.
+    subtitle->SetCaption(sub + " | Current Club: " + activeSave->name + " (Rank #" +
+                         std::to_string(CareerSim::LeaguePosition(*activeSave)) + ")");
+  }
 
   // Bottom action bar
   Gui2Button* btnMatchday = new Gui2Button(windowManager, "btn_st_matchday", 2, 91.5f, 28, 3.2f,

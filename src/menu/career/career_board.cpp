@@ -1,5 +1,6 @@
 #include "career_board.hpp"
 
+#include <algorithm>
 #include <string>
 
 #include "career_common.hpp"
@@ -30,14 +31,22 @@ int FanBaseTarget(int reputation) {
   return 55;
 }
 
-// Financial bar: high-reputation clubs must bank a real margin, low-tier clubs
-// merely need to avoid deep losses. Revenue is clamped for early saves where
-// totals may not be initialized yet.
-long long FinancialTarget(const CareerSave& save) {
-  if (save.reputation >= 70)
-    return save.finances.totalExpenses / 4;
-  if (save.reputation < 30)
-    return -(save.finances.totalRevenue / 10);
+// Financial bar as a percentage: high-reputation clubs must bank a profit of
+// 25% of expenses, mid-table clubs break even, low-tier clubs keep losses
+// under 10% of revenue.
+int FinancialTargetPercent(int reputation) {
+  if (reputation >= 70)
+    return 25;
+  if (reputation < 30)
+    return -10;
+  return 0;
+}
+
+long long FinancialTarget(const CareerSave& save, int percent) {
+  if (percent > 0)
+    return save.finances.totalExpenses * percent / 100;
+  if (percent < 0)
+    return -(save.finances.totalRevenue * -percent / 100);
   return 0;
 }
 
@@ -48,11 +57,29 @@ bool WantsTitle(int reputation) {
 int LeagueFinish(const CareerSave& save) {
   const int liveMatches = save.seasonWins + save.seasonDraws + save.seasonLosses;
   if (liveMatches > 0) {
-    return CareerSim::EstimateLeaguePosition(save.seasonWins, save.seasonDraws, save.seasonLosses);
+    return CareerSim::LeaguePosition(save);
   }
   if (!save.history.empty())
     return save.history.back().leaguePosition;
   return 20;
+}
+
+// The target an objective would get from this reputation (also used for
+// objectives loaded from saves that predate stored targets).
+int DefaultTarget(OwnerObjectiveType type, int reputation) {
+  switch (type) {
+    case OwnerObjectiveType::WIN_TITLE:
+      return 1;
+    case OwnerObjectiveType::PROMOTION:
+      return PromotionTarget(reputation);
+    case OwnerObjectiveType::AVOID_RELEGATION:
+      return 17;
+    case OwnerObjectiveType::GROW_FANBASE:
+      return FanBaseTarget(reputation);
+    case OwnerObjectiveType::FINANCIAL_STABILITY:
+      return FinancialTargetPercent(reputation);
+  }
+  return 0;
 }
 
 }  // namespace
@@ -83,37 +110,36 @@ void GenerateBoardObjectives(CareerSave& save) {
     save.boardObjectives.push_back({OwnerObjectiveType::FINANCIAL_STABILITY,
                                     "Keep losses below 10% of revenue", false, 2, -4});
   }
+  for (auto& objective : save.boardObjectives) {
+    objective.target = DefaultTarget(objective.type, reputation);
+    objective.hasTarget = true;
+  }
 }
 
 void EvaluateBoardObjectives(CareerSave& save, CareerCommon::CareerEvents& events) {
   const int finish = LeagueFinish(save);
-  const int promotionTarget = PromotionTarget(save.reputation);
-  const int fanBaseTarget = FanBaseTarget(save.reputation);
-  const long long financialTarget = FinancialTarget(save);
+  const long long profit = CareerFinance::GetSeasonProfit(save);
+  const int reputation = save.reputation;
 
   for (auto& objective : save.boardObjectives) {
+    const int target =
+        objective.hasTarget ? objective.target : DefaultTarget(objective.type, reputation);
     bool completed = false;
     bool nearMiss = false;
     switch (objective.type) {
       case OwnerObjectiveType::FINANCIAL_STABILITY:
-        completed = CareerFinance::GetSeasonProfit(save) >= financialTarget;
-        nearMiss = CareerFinance::GetSeasonProfit(save) >= 0;
+        completed = profit >= FinancialTarget(save, target);
+        nearMiss = profit >= 0;
         break;
       case OwnerObjectiveType::GROW_FANBASE:
-        completed = save.fanBase >= fanBaseTarget;
-        nearMiss = save.fanBase >= fanBaseTarget - 10;
+        completed = save.fanBase >= target;
+        nearMiss = save.fanBase >= target - 10;
         break;
       case OwnerObjectiveType::PROMOTION:
-        completed = finish <= promotionTarget;
-        nearMiss = finish <= promotionTarget + 1;
-        break;
       case OwnerObjectiveType::AVOID_RELEGATION:
-        completed = finish <= 17;
-        nearMiss = finish <= 18;
-        break;
       case OwnerObjectiveType::WIN_TITLE:
-        completed = finish == 1;
-        nearMiss = finish <= 3;
+        completed = finish <= target;
+        nearMiss = finish <= (objective.type == OwnerObjectiveType::WIN_TITLE ? 3 : target + 1);
         break;
     }
 
@@ -130,6 +156,10 @@ void EvaluateBoardObjectives(CareerSave& save, CareerCommon::CareerEvents& event
         penalty = std::max(-2, penalty / 2);
       events.ModifyBoardConfidence(penalty);
     }
+    // The next season's objectives replace these, so record the outcome.
+    events.AddEvent("board",
+                    (completed ? "Objective met: " : "Objective missed: ") + objective.description,
+                    0, false);
   }
 }
 

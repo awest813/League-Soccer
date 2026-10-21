@@ -41,6 +41,20 @@ struct SeasonRecord {
   bool wonTitle = false;
 };
 
+// One computer-controlled club's record in the current league season. The
+// user's club is not stored here; its row comes from the season counters.
+struct LeagueTableEntry {
+  int teamID = 0;
+  std::string name;
+  int played = 0;
+  int wins = 0;
+  int draws = 0;
+  int losses = 0;
+  int goalsFor = 0;
+  int goalsAgainst = 0;
+  std::string form;  // up to the last five results, oldest first ("WDL")
+};
+
 struct ContractInfo {
   int yearsRemaining = 0;
   long long wage = 0;
@@ -314,6 +328,13 @@ struct OwnerBoardObjective {
   bool completed = false;
   int reputationReward = 5;
   int confidencePenalty = -10;
+  // Fixed when the objective is set, so the season's own reputation changes
+  // cannot move the goalposts: the league position to reach (WIN_TITLE,
+  // PROMOTION, AVOID_RELEGATION), the fan base (GROW_FANBASE), or the profit as
+  // a percentage of expenses, or loss as a percentage of revenue when negative
+  // (FINANCIAL_STABILITY). Saves from before this field recompute it.
+  int target = 0;
+  bool hasTarget = false;
 };
 
 struct PressConferenceQuestion {
@@ -390,6 +411,10 @@ struct CareerSave {
   int seasonLosses = 0;
   int seasonGoalsFor = 0;
   int seasonGoalsAgainst = 0;
+  std::string seasonForm;  // the user's last five league results, oldest first
+  // Other clubs' records this season; built on the first fixture and advanced
+  // one round per user fixture, so standings only ever accumulate.
+  std::vector<LeagueTableEntry> leagueTable;
 
   LeagueExpansionSettings leagueSettings;
   CustomLeagueConfig customLeague;

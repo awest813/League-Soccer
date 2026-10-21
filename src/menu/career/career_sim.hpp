@@ -32,6 +32,20 @@ struct CareerTopScorer {
   bool isUserPlayer = false;
 };
 
+// Builds the other clubs' records for the current season if the save has
+// none yet, catching up with rounds already played. Lists of fewer than ten
+// clubs are replaced by a full default league.
+void EnsureLeagueTable(CareerSave& save,
+                       const std::vector<std::pair<int, std::string>>& leagueClubs = {});
+
+// Plays the other clubs' league round that goes with the user's latest
+// result (already added to the season counters). Deterministic per season and
+// round; does not draw from the career RNG.
+void PlayLeagueRound(CareerSave& save, int userGoals, int opponentGoals);
+
+// The user's place in the current standings (1 = top).
+int LeaguePosition(const CareerSave& save);
+
 // Generates the full sorted league standings table for the active career.
 std::vector<CareerLeagueTableRow> GenerateLeagueStandings(
     const CareerSave& save, const std::vector<std::pair<int, std::string>>& leagueClubs = {});
@@ -51,15 +65,21 @@ void ProcessPlayerGrowth(PlayerCareerState& player, const CareerSave* save = nul
 // Recomputes a player's market value / wage from current attributes.
 void UpdatePlayerValue(PlayerCareerState& player);
 
-// Applies goal/assist bookkeeping to a named roster player after a match.
+// Roster indices of the players who take part in a match: the controlled
+// footballer in Player mode, one goalkeeper and the strongest outfielders, up
+// to 11. Deterministic for a given roster.
+std::vector<int> SelectMatchSquad(const CareerSave& save);
+
+// Records one appearance, with goals and assists, for a named roster player.
 void RecordMatchStats(CareerSave& save, const std::string& playerName, int goals, int assists);
 
 // Simulates a fixture result (and scorer names) for the current roster.
 SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponentName,
                                    const std::string& opponentTeamDBID, bool isHome = true);
 
-// Applies a finished match to season W/D/L, goals, board confidence,
-// reputation, and optional scorer bookkeeping. Shared by sim and 3D paths.
+// Applies a finished match to season W/D/L, goals, board confidence and
+// reputation; records an appearance for the match squad and goals for the
+// named scorers. Shared by sim and 3D paths.
 void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int homeGoals,
                       int awayGoals, const std::string& opponentLabel,
                       const std::vector<std::string>& scorers = {});

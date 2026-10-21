@@ -1176,6 +1176,8 @@ void Match::Process() {
           lastGoalScorer = teams[GetLastGoalTeamID()]->GetLastTouchPlayer();
           std::string goalWord = Localization::GetInstance().Translate("ingame_goal");
           if (lastGoalScorer) {
+            matchData->AddGoalScorer(GetLastGoalTeamID(),
+                                     lastGoalScorer->GetPlayerData()->GetDatabaseID());
             SpamMessage(goalWord + "! " + matchData->GetTeamData(GetLastGoalTeamID())->GetName() +
                             " (" + lastGoalScorer->GetPlayerData()->GetLastName() + ")",
                         4000);

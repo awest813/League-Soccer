@@ -1340,13 +1340,16 @@ void CareerLeagueExpansionPage::EnableRelegation() {
       save->leagueSettings.divisions.push_back({"Premier Division", 20, 3, 3, 0});
       save->leagueSettings.divisions.push_back({"Second Division", 20, 3, 3, 0});
     }
+    CareerDatabase::GetInstance().SaveCareerData();
   }
   CreatePage(e_PageID_CareerLeagueExpansion);
 }
 void CareerLeagueExpansionPage::DisableRelegation() {
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
-  if (save && CanManageClub(*save))
+  if (save && CanManageClub(*save)) {
     save->leagueSettings.enabled = false;
+    CareerDatabase::GetInstance().SaveCareerData();
+  }
   CreatePage(e_PageID_CareerLeagueExpansion);
 }
 void CareerLeagueExpansionPage::AddDivision() {
@@ -1355,6 +1358,7 @@ void CareerLeagueExpansionPage::AddDivision() {
     int divNum = static_cast<int>(save->leagueSettings.divisions.size()) + 1;
     save->leagueSettings.divisions.push_back({"Division " + std::to_string(divNum), 20, 3, 3, 0});
     save->leagueSettings.enabled = true;
+    CareerDatabase::GetInstance().SaveCareerData();
   }
   CreatePage(e_PageID_CareerLeagueExpansion);
 }
@@ -1400,9 +1404,12 @@ CareerCustomLeaguePage::CareerCustomLeaguePage(Gui2WindowManager* windowManager,
   Gui2Button* btnReset = new Gui2Button(windowManager, "btn_customleague_reset", 0, 0, 34, 5,
                                         TR("career_customleague_reset"));
   btnCreate->sig_OnClick.connect([this](...) { CreateCustomLeague(); });
-  btnReset->sig_OnClick.connect([this, activeSave](...) {
-    if (activeSave)
-      activeSave->customLeague = CustomLeagueConfig();
+  btnReset->sig_OnClick.connect([this](...) {
+    CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+    if (save && CanManageClub(*save)) {
+      save->customLeague = CustomLeagueConfig();
+      CareerDatabase::GetInstance().SaveCareerData();
+    }
     CreatePage(e_PageID_CareerCustomLeague);
   });
   grid->AddView(btnCreate, 0, 0);
@@ -1428,6 +1435,7 @@ void CareerCustomLeaguePage::CreateCustomLeague() {
   if (save && CanManageClub(*save)) {
     save->customLeague.leagueName = TR("career_custom_league_name");
     save->customLeague.numDivisions = 2;
+    CareerDatabase::GetInstance().SaveCareerData();
   }
   CreatePage(e_PageID_CareerCustomLeague);
 }
@@ -2116,8 +2124,7 @@ CareerSeasonPage::CareerSeasonPage(Gui2WindowManager* windowManager, const Gui2P
                              FormatCareerMoney(CareerDatabase::GetInstance().GetSeasonProfit())});
     }
 
-    int estPos = CareerDatabase::EstimateLeaguePosition(
-        activeSave->seasonWins, activeSave->seasonDraws, activeSave->seasonLosses);
+    int estPos = CareerSim::LeaguePosition(*activeSave);
     long long prizeMoney = CareerSim::CalculateSeasonPrizeMoney(estPos);
     summary += "\n" + TRF("career_season_prize_money", {FormatCareerMoney(prizeMoney)});
     if (estPos == 1) {

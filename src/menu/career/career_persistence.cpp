@@ -13,10 +13,30 @@ namespace CareerPersistence {
 
 namespace {
 
-// Serializes the full career state (and transient bids) to the pipe-delimited,
-// line-based text payload. This is the durable format stored inside the SQLite
-// save file; keeping it also preserves the legacy plain-text interchange.
-std::string Serialize(const CareerSave& save, const std::vector<TransferBid>& bids) {
+std::string DivisionLine(const DivisionConfig& division) {
+  return CareerCommon::Sanitize(division.name) + "|" + std::to_string(division.numTeams) + "|" +
+         std::to_string(division.promotionSpots) + "|" + std::to_string(division.relegationSpots) +
+         "|" + std::to_string(division.playOffSpots);
+}
+
+bool ParseDivisionLine(const std::string& value, DivisionConfig& division) {
+  const std::vector<std::string> t = CareerCommon::SplitPipes(value);
+  if (t.size() < 5 || t[0].empty())
+    return false;
+  division.name = t[0];
+  division.numTeams = std::max(2, CareerCommon::SafeStoi(t[1], division.numTeams));
+  division.promotionSpots = std::max(0, CareerCommon::SafeStoi(t[2], division.promotionSpots));
+  division.relegationSpots = std::max(0, CareerCommon::SafeStoi(t[3], division.relegationSpots));
+  division.playOffSpots = std::max(0, CareerCommon::SafeStoi(t[4], division.playOffSpots));
+  return true;
+}
+
+// Serializes the full career state (and transfer bids and market) to the
+// pipe-delimited, line-based text payload. This is the durable format stored
+// inside the SQLite save file; keeping it also preserves the legacy plain-text
+// interchange.
+std::string Serialize(const CareerSave& save, const std::vector<TransferBid>& bids,
+                      const std::vector<TransferTarget>& targets) {
   std::ostringstream file;
   file << "# Career Save: " << save.name << "\n";
   file << "formatVersion=2\n";
@@ -42,6 +62,7 @@ std::string Serialize(const CareerSave& save, const std::vector<TransferBid>& bi
   file << "seasonLosses=" << save.seasonLosses << "\n";
   file << "seasonGoalsFor=" << save.seasonGoalsFor << "\n";
   file << "seasonGoalsAgainst=" << save.seasonGoalsAgainst << "\n";
+  file << "seasonForm=" << CareerCommon::Sanitize(save.seasonForm) << "\n";
   file << "netWorth=" << save.finances.netWorth << "\n";
   file << "ticketPrice=" << save.finances.ticketPrice << "\n";
   file << "stadiumCapacity=" << save.stadium.capacity << "\n";
@@ -124,7 +145,8 @@ std::string Serialize(const CareerSave& save, const std::vector<TransferBid>& bi
     const auto& o = save.boardObjectives[i];
     file << "boardObjective." << i << "=" << static_cast<int>(o.type) << "|"
          << (o.completed ? 1 : 0) << "|" << o.reputationReward << "|" << o.confidencePenalty << "|"
-         << CareerCommon::Sanitize(o.description) << "\n";
+         << CareerCommon::Sanitize(o.description) << "|" << (o.hasTarget ? 1 : 0) << "|" << o.target
+         << "\n";
   }
   for (const auto& kv : save.legacyStats)
     file << "legacy." << CareerCommon::Sanitize(kv.first) << "=" << kv.second << "\n";
@@ -140,18 +162,43 @@ std::string Serialize(const CareerSave& save, const std::vector<TransferBid>& bi
          << b.offeredWage << "|" << b.contractYears << "|" << b.agentFee << "|"
          << static_cast<int>(b.status) << "|" << b.negotiationRounds << "\n";
   }
+  for (size_t i = 0; i < save.leagueTable.size(); i++) {
+    const auto& e = save.leagueTable[i];
+    file << "leagueTable." << i << "=" << e.teamID << "|" << CareerCommon::Sanitize(e.name) << "|"
+         << e.played << "|" << e.wins << "|" << e.draws << "|" << e.losses << "|" << e.goalsFor
+         << "|" << e.goalsAgainst << "|" << CareerCommon::Sanitize(e.form) << "\n";
+  }
+  file << "leagueSettingsEnabled=" << (save.leagueSettings.enabled ? 1 : 0) << "\n";
+  for (size_t i = 0; i < save.leagueSettings.divisions.size(); i++)
+    file << "leagueDivision." << i << "=" << DivisionLine(save.leagueSettings.divisions[i]) << "\n";
+  file << "customLeague=" << CareerCommon::Sanitize(save.customLeague.leagueName) << "|"
+       << save.customLeague.numDivisions << "|" << (save.customLeague.cupCompetition ? 1 : 0) << "|"
+       << CareerCommon::Sanitize(save.customLeague.cupName) << "\n";
+  for (size_t i = 0; i < save.customLeague.divisions.size(); i++)
+    file << "customDivision." << i << "=" << DivisionLine(save.customLeague.divisions[i]) << "\n";
+  // The market is saved with the bids: an accepted bid completes against its
+  // target, so dropping the market made accepted bids uncompletable on load.
+  for (size_t i = 0; i < targets.size(); i++) {
+    const auto& t = targets[i];
+    file << "target." << i << "=" << CareerCommon::Sanitize(t.name) << "|"
+         << CareerCommon::Sanitize(t.preferredPosition) << "|" << t.overallRating << "|"
+         << t.potentialRating << "|" << t.age << "|" << t.value << "|" << t.wage << "|"
+         << t.askingPrice << "|" << t.teamID << "|" << (t.isListed ? 1 : 0) << "\n";
+  }
   return file.str();
 }
 
 // Parses the text payload back into a CareerSave, keeping mirrored/derived
 // fields consistent. Invalid role/version fields reject the save; other corrupt
 // individual fields fall back to defaults rather than aborting.
-bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferBid>& bids) {
+bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferBid>& bids,
+                 std::vector<TransferTarget>& targets) {
   std::istringstream file(text);
   if (!file)
     return false;
   CareerSave fresh;
   std::vector<TransferBid> loadedBids;
+  std::vector<TransferTarget> loadedTargets;
   std::string line;
   std::string roleValue = "1";  // Very old saves without a role were Manager careers.
   std::string formatVersion = "1";
@@ -213,6 +260,8 @@ bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferB
       fresh.seasonGoalsFor = CareerCommon::SafeStoi(val);
     else if (key == "seasonGoalsAgainst")
       fresh.seasonGoalsAgainst = CareerCommon::SafeStoi(val);
+    else if (key == "seasonForm")
+      fresh.seasonForm = val.substr(0, 5);
     else if (key == "netWorth")
       fresh.finances.netWorth = CareerCommon::SafeStoll(val);
     else if (key == "ticketPrice")
@@ -377,6 +426,10 @@ bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferB
         o.confidencePenalty = CareerCommon::SafeStoi(t[3], o.confidencePenalty);
       if (t.size() > 4)
         o.description = t[4];
+      if (t.size() > 6) {
+        o.hasTarget = t[5] == "1";
+        o.target = CareerCommon::SafeStoi(t[6]);
+      }
       fresh.boardObjectives.push_back(o);
     } else if (key.rfind("legacy.", 0) == 0) {
       fresh.legacyStats[key.substr(7)] = CareerCommon::SafeStoi(val);
@@ -416,6 +469,55 @@ bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferB
       if (t.size() > 6)
         b.negotiationRounds = CareerCommon::SafeStoi(t[6]);
       loadedBids.push_back(b);
+    } else if (key.rfind("leagueTable.", 0) == 0) {
+      const std::vector<std::string> t = CareerCommon::SplitPipes(val);
+      if (t.size() < 9 || t[1].empty())
+        continue;
+      LeagueTableEntry entry;
+      entry.teamID = CareerCommon::SafeStoi(t[0]);
+      entry.name = t[1];
+      entry.played = std::max(0, CareerCommon::SafeStoi(t[2]));
+      entry.wins = std::max(0, CareerCommon::SafeStoi(t[3]));
+      entry.draws = std::max(0, CareerCommon::SafeStoi(t[4]));
+      entry.losses = std::max(0, CareerCommon::SafeStoi(t[5]));
+      entry.goalsFor = std::max(0, CareerCommon::SafeStoi(t[6]));
+      entry.goalsAgainst = std::max(0, CareerCommon::SafeStoi(t[7]));
+      entry.form = t[8].substr(0, 5);
+      fresh.leagueTable.push_back(entry);
+    } else if (key == "leagueSettingsEnabled") {
+      fresh.leagueSettings.enabled = val != "0";
+    } else if (key.rfind("leagueDivision.", 0) == 0) {
+      DivisionConfig division;
+      if (ParseDivisionLine(val, division))
+        fresh.leagueSettings.divisions.push_back(division);
+    } else if (key == "customLeague") {
+      const std::vector<std::string> t = CareerCommon::SplitPipes(val);
+      if (t.size() >= 4) {
+        fresh.customLeague.leagueName = t[0];
+        fresh.customLeague.numDivisions = std::max(1, CareerCommon::SafeStoi(t[1], 1));
+        fresh.customLeague.cupCompetition = t[2] == "1";
+        fresh.customLeague.cupName = t[3];
+      }
+    } else if (key.rfind("customDivision.", 0) == 0) {
+      DivisionConfig division;
+      if (ParseDivisionLine(val, division))
+        fresh.customLeague.divisions.push_back(division);
+    } else if (key.rfind("target.", 0) == 0) {
+      std::vector<std::string> t = CareerCommon::SplitPipes(val);
+      if (t.size() < 10 || t[0].empty())
+        continue;
+      TransferTarget target;
+      target.name = t[0];
+      target.preferredPosition = t[1];
+      target.overallRating = CareerCommon::SafeStoi(t[2]);
+      target.potentialRating = CareerCommon::SafeStoi(t[3]);
+      target.age = CareerCommon::SafeStoi(t[4]);
+      target.value = CareerCommon::SafeStoll(t[5]);
+      target.wage = CareerCommon::SafeStoll(t[6]);
+      target.askingPrice = CareerCommon::SafeStoll(t[7]);
+      target.teamID = CareerCommon::SafeStoi(t[8], -1);
+      target.isListed = t[9] != "0";
+      loadedTargets.push_back(target);
     }
   }
 
@@ -449,19 +551,20 @@ bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferB
 
   out = fresh;
   bids = loadedBids;
+  targets = loadedTargets;
   return true;
 }
 
 // Legacy plain-text save fallback: reads the on-disk file as text and parses
 // it exactly as before the SQLite migration.
 bool DeserializeLegacyFile(const std::string& path, CareerSave& save,
-                           std::vector<TransferBid>& bids) {
+                           std::vector<TransferBid>& bids, std::vector<TransferTarget>& targets) {
   std::ifstream file(path);
   if (!file.is_open())
     return false;
   std::stringstream buffer;
   buffer << file.rdbuf();
-  return Deserialize(buffer.str(), save, bids);
+  return Deserialize(buffer.str(), save, bids, targets);
 }
 
 constexpr int kSchemaVersion = 2;
@@ -480,7 +583,8 @@ std::string SqliteText(sqlite3_stmt* stmt, int col) {
 
 }  // namespace
 
-bool Save(const CareerSave& save, const std::vector<TransferBid>& bids, const std::string& path) {
+bool Save(const CareerSave& save, const std::vector<TransferBid>& bids,
+          const std::vector<TransferTarget>& targets, const std::string& path) {
   if (std::string(CareerModeKey(save.mode)).empty())
     return false;
   namespace fs = std::filesystem;
@@ -498,7 +602,7 @@ bool Save(const CareerSave& save, const std::vector<TransferBid>& bids, const st
   std::error_code ec;
   fs::remove(tempPath, ec);
 
-  const std::string payload = Serialize(save, bids);
+  const std::string payload = Serialize(save, bids, targets);
 
   sqlite3* db = nullptr;
   if (sqlite3_open_v2(tempPath.c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr) !=
@@ -631,29 +735,30 @@ bool Save(const CareerSave& save, const std::vector<TransferBid>& bids, const st
   return !ec;
 }
 
-static bool LoadDirect(CareerSave& save, std::vector<TransferBid>& bids, const std::string& path) {
+static bool LoadDirect(CareerSave& save, std::vector<TransferBid>& bids,
+                       std::vector<TransferTarget>& targets, const std::string& path) {
   sqlite3* db = nullptr;
   if (sqlite3_open_v2(path.c_str(), &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
     if (db)
       sqlite3_close(db);
-    return DeserializeLegacyFile(path, save, bids);
+    return DeserializeLegacyFile(path, save, bids, targets);
   }
   if (!db) {
-    return DeserializeLegacyFile(path, save, bids);
+    return DeserializeLegacyFile(path, save, bids, targets);
   }
 
   sqlite3_stmt* stmt = nullptr;
   if (sqlite3_prepare_v2(db, "SELECT data FROM career_payload ORDER BY id LIMIT 1", -1, &stmt,
                          nullptr) != SQLITE_OK) {
     CloseDb(db);
-    return DeserializeLegacyFile(path, save, bids);
+    return DeserializeLegacyFile(path, save, bids, targets);
   }
 
   int rc = sqlite3_step(stmt);
   if (rc == SQLITE_NOTADB) {
     sqlite3_finalize(stmt);
     CloseDb(db);
-    return DeserializeLegacyFile(path, save, bids);
+    return DeserializeLegacyFile(path, save, bids, targets);
   }
   if (rc != SQLITE_ROW) {
     sqlite3_finalize(stmt);
@@ -678,11 +783,12 @@ static bool LoadDirect(CareerSave& save, std::vector<TransferBid>& bids, const s
 
   if (payload.empty())
     return false;
-  return Deserialize(payload, save, bids);
+  return Deserialize(payload, save, bids, targets);
 }
 
-bool Load(CareerSave& save, std::vector<TransferBid>& bids, const std::string& path) {
-  if (LoadDirect(save, bids, path)) {
+bool Load(CareerSave& save, std::vector<TransferBid>& bids, std::vector<TransferTarget>& targets,
+          const std::string& path) {
+  if (LoadDirect(save, bids, targets, path)) {
     return true;
   }
 
@@ -690,13 +796,13 @@ bool Load(CareerSave& save, std::vector<TransferBid>& bids, const std::string& p
   namespace fs = std::filesystem;
   std::string backupPath = path + ".bak";
   if (fs::exists(backupPath)) {
-    if (LoadDirect(save, bids, backupPath)) {
+    if (LoadDirect(save, bids, targets, backupPath)) {
       printf(
           "[career] Notice: Primary save '%s' corrupt or unreadable; successfully restored from "
           "backup '%s'\n",
           path.c_str(), backupPath.c_str());
       // Self-heal the primary save
-      Save(save, bids, path);
+      Save(save, bids, targets, path);
       return true;
     }
   }
@@ -704,10 +810,20 @@ bool Load(CareerSave& save, std::vector<TransferBid>& bids, const std::string& p
   return false;
 }
 
+bool Save(const CareerSave& save, const std::vector<TransferBid>& bids, const std::string& path) {
+  return Save(save, bids, {}, path);
+}
+
+bool Load(CareerSave& save, std::vector<TransferBid>& bids, const std::string& path) {
+  std::vector<TransferTarget> targets;
+  return Load(save, bids, targets, path);
+}
+
 static bool ReadLegacySummary(const std::string& path, CareerSaveSummary& summary) {
   CareerSave save;
   std::vector<TransferBid> bids;
-  if (!DeserializeLegacyFile(path, save, bids))
+  std::vector<TransferTarget> targets;
+  if (!DeserializeLegacyFile(path, save, bids, targets))
     return false;
   summary = CareerSaveSummary{};
   summary.name = save.name;

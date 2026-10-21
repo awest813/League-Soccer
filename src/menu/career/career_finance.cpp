@@ -140,8 +140,7 @@ void ProcessSeasonFinances(CareerSave& save) {
       static_cast<long long>(expectedAttendance) * save.finances.ticketPrice * 19LL;
 
   // TV Revenue based on estimated league position
-  int finishPos =
-      CareerSim::EstimateLeaguePosition(save.seasonWins, save.seasonDraws, save.seasonLosses);
+  int finishPos = CareerSim::LeaguePosition(save);
   // 1st place gets ~20M, 20th place gets ~5M
   long long tvRevenue = 5000000LL + std::max(0, 20 - finishPos) * 750000LL;
 
