@@ -232,7 +232,10 @@ void Referee::Process() {
           } else {
             // game over conditions
             if (match->GetMatchPhase() == e_MatchPhase_1stExtraTime) {
-              if (match->GetScore(0) != match->GetScore(1)) {
+              // Extra time is opt-in (knockout ties); league, career and
+              // friendly fixtures end level after 90 minutes.
+              if (match->GetScore(0) != match->GetScore(1) ||
+                  !GetConfiguration()->GetBool("match_extra_time", false)) {
                 match->GameOver();
                 return;
               }
@@ -379,6 +382,7 @@ void Referee::TripNotice(Player* tripee, Player* tripper, int tackleType) {
       foul.foulTime = match->GetActualTime_ms();
       foul.foulPosition = tripee->GetPosition();
       foul.hasBeenProcessed = false;
+      match->GetMatchData()->AddFoul(tripper->GetTeamID());
       if (!IsReleaseVersion())
         match->SpamMessage(Localization::GetInstance().Translate("ingame_advantage"), 2000);
     }
@@ -423,6 +427,7 @@ void Referee::TripNotice(Player* tripee, Player* tripper, int tackleType) {
         foul.foulTime = match->GetActualTime_ms();
         foul.foulPosition = tripee->GetPosition();
         foul.hasBeenProcessed = false;
+        match->GetMatchData()->AddFoul(tripper->GetTeamID());
         if (severity > 1.4) {
           foul.foulType = 2;
           // Avoid letting a player awaiting a second caution keep participating.

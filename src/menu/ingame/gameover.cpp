@@ -80,7 +80,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
 
   float totalPossession = possession1 + possession2;
   int possession1Pct = (totalPossession > 0) ? round(possession1 / totalPossession * 100) : 50;
-  int possession2Pct = (totalPossession > 0) ? round(possession2 / totalPossession * 100) : 50;
+  int possession2Pct = 100 - possession1Pct;
 
   grid->AddView(new Gui2Caption(windowManager, "caption_possession_t1", 0, 0, 25, 3,
                                 int_to_str(possession1Pct) + "%"),

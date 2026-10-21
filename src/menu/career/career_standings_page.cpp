@@ -94,12 +94,13 @@ void CareerStandingsPage::PopulateStandingsGrid() {
 
   std::vector<std::pair<int, std::string>> leagueClubs;
   try {
+    // Resolve the league through the club's integer ID rather than pasting the
+    // saved league name into SQL (an apostrophe would break the query).
     auto result = GetDB()->Query(
         "SELECT t.id, t.name FROM teams t "
-        "JOIN leagues l ON t.league_id = l.id "
-        "WHERE l.name = '" +
-        activeSave->club.leagueName +
-        "' "
+        "WHERE t.league_id = (SELECT league_id FROM teams WHERE id = " +
+        std::to_string(activeSave->club.clubID) +
+        ") "
         "ORDER BY t.id");
     if (result && !result->data.empty()) {
       for (unsigned int r = 0; r < result->data.size(); r++) {

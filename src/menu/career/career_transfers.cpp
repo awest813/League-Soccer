@@ -1,6 +1,7 @@
 #include "career_transfers.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 #include <sqlite3.h>
 #include "career_common.hpp"
@@ -11,6 +12,11 @@ namespace CareerTransfers {
 
 namespace {
 using CareerCommon::RandomInt;
+
+// players.base_stat is a 0-1 float (about 0.53-0.72 in the default database).
+int BaseStatToRating(double baseStat) {
+  return CareerCommon::ClampInt(static_cast<int>(std::lround(baseStat * 100.0)), 1, 99);
+}
 }  // namespace
 
 void RecruitFreeAgent(CareerSave& save, CareerCommon::CareerEvents& events,
@@ -27,7 +33,12 @@ void RecruitFreeAgent(CareerSave& save, CareerCommon::CareerEvents& events,
   }
   save.wageBudget -= it->wage;
   save.finance.wageBudget = save.wageBudget;
-  save.roster.push_back(*it);
+  PlayerCareerState signing = *it;
+  // A free agent has no contract; signing one must not leave them due to
+  // walk out again at the next season rollover.
+  signing.contract.yearsRemaining = std::max(2, signing.contract.yearsRemaining);
+  signing.contract.wage = signing.wage;
+  save.roster.push_back(signing);
   save.freeAgents.erase(it);
   events.AddEvent("recruitment", "Signed free agent " + playerName, 2, false);
   events.ModifyBoardConfidence(1);
@@ -67,7 +78,12 @@ void SeedFreeAgents(CareerSave& save) {
   sqlite3* db;
   if (sqlite3_open("databases/default/database.sqlite", &db) == SQLITE_OK) {
     sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(db, "SELECT firstname, lastname, role, age, base_stat FROM players WHERE base_stat <= 70 ORDER BY RANDOM() LIMIT 10", -1, &stmt, nullptr) == SQLITE_OK) {
+    // base_stat is stored on a 0-1 scale; never offer the user's own players.
+    if (sqlite3_prepare_v2(db,
+                           "SELECT firstname, lastname, role, age, base_stat FROM players "
+                           "WHERE base_stat <= 0.70 AND team_id != ? ORDER BY RANDOM() LIMIT 10",
+                           -1, &stmt, nullptr) == SQLITE_OK) {
+      sqlite3_bind_int(stmt, 1, save.club.clubID);
       while (sqlite3_step(stmt) == SQLITE_ROW) {
         PlayerCareerState fa;
         const char* firstRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
@@ -77,10 +93,10 @@ void SeedFreeAgents(CareerSave& save) {
         std::string first = firstRaw ? firstRaw : "";
         std::string last = lastRaw ? lastRaw : "";
         fa.name = first.empty() ? last : (first + " " + last);
-        fa.position = roleRaw ? roleRaw : "CM";
+        fa.position = CareerCommon::PositionFromDbRole(roleRaw ? roleRaw : "");
         fa.preferredPosition = fa.position;
         fa.age = sqlite3_column_int(stmt, 3);
-        fa.ovr = sqlite3_column_int(stmt, 4);
+        fa.ovr = BaseStatToRating(sqlite3_column_double(stmt, 4));
         
         fa.pot = std::min(90, fa.ovr + CareerCommon::RandomInt(2, 8));
         fa.value = ComputeMarketValue(fa.ovr, fa.pot, fa.age);
@@ -128,7 +144,7 @@ long long ComputeMarketValue(int overallRating, int potentialRating, int age) {
   return std::max(50000LL, (baseValue * ageModifier * potentialModifier) / 12000LL);
 }
 
-void PopulateTransferMarket(std::vector<TransferTarget>& targets) {
+void PopulateTransferMarket(std::vector<TransferTarget>& targets, int userClubID) {
   if (!targets.empty())
     return;
 
@@ -137,7 +153,11 @@ void PopulateTransferMarket(std::vector<TransferTarget>& targets) {
   sqlite3* db;
   if (sqlite3_open("databases/default/database.sqlite", &db) == SQLITE_OK) {
     sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(db, "SELECT firstname, lastname, role, age, base_stat, team_id FROM players ORDER BY RANDOM() LIMIT 20", -1, &stmt, nullptr) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(db,
+                           "SELECT firstname, lastname, role, age, base_stat, team_id FROM players "
+                           "WHERE team_id != ? ORDER BY RANDOM() LIMIT 20",
+                           -1, &stmt, nullptr) == SQLITE_OK) {
+      sqlite3_bind_int(stmt, 1, userClubID);
       while (sqlite3_step(stmt) == SQLITE_ROW) {
         TransferTarget target;
         const char* firstRaw = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
@@ -147,9 +167,9 @@ void PopulateTransferMarket(std::vector<TransferTarget>& targets) {
         std::string first = firstRaw ? firstRaw : "";
         std::string last = lastRaw ? lastRaw : "";
         target.name = first.empty() ? last : (first + " " + last);
-        target.preferredPosition = roleRaw ? roleRaw : "CM";
+        target.preferredPosition = CareerCommon::PositionFromDbRole(roleRaw ? roleRaw : "");
         target.age = sqlite3_column_int(stmt, 3);
-        target.overallRating = sqlite3_column_int(stmt, 4);
+        target.overallRating = BaseStatToRating(sqlite3_column_double(stmt, 4));
         target.teamID = sqlite3_column_int(stmt, 5);
         
         target.potentialRating = std::max(target.overallRating, target.overallRating + RandomInt(1, 10));

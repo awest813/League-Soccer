@@ -9,9 +9,17 @@ namespace CareerSponsors {
 
 void GenerateSponsorOffers(CareerSave& save) {
   save.availableSponsorOffers.clear();
-  save.availableSponsorOffers.push_back(SponsorDeal("Vertex", "Shirt Sponsor", 4500000, 2, 40));
-  save.availableSponsorOffers.push_back(SponsorDeal("Apex Air", "Sleeve Sponsor", 2500000, 3, 55));
-  save.availableSponsorOffers.push_back(SponsorDeal("Northbank", "Training Kit", 1800000, 2, 30));
+  const SponsorDeal offers[] = {SponsorDeal("Vertex", "Shirt Sponsor", 4500000, 2, 40),
+                                SponsorDeal("Apex Air", "Sleeve Sponsor", 2500000, 3, 55),
+                                SponsorDeal("Northbank", "Training Kit", 1800000, 2, 30)};
+  for (const SponsorDeal& offer : offers) {
+    // A sponsor already under contract does not offer a second, stacking deal.
+    const bool active = std::any_of(
+        save.activeSponsors.begin(), save.activeSponsors.end(),
+        [&offer](const SponsorDeal& sponsor) { return sponsor.sponsorName == offer.sponsorName; });
+    if (!active)
+      save.availableSponsorOffers.push_back(offer);
+  }
 }
 
 bool AcceptSponsorDeal(CareerSave& save, CareerCommon::CareerEvents& events, int dealIndex) {
@@ -22,9 +30,10 @@ bool AcceptSponsorDeal(CareerSave& save, CareerCommon::CareerEvents& events, int
   if (save.reputation < deal.reputationRequirement)
     return false;
 
+  // Revenue is paid once per season by ProcessSeasonFinances; paying it here
+  // as well would credit the first year twice.
   save.activeSponsors.push_back(deal);
   save.finances.sponsorIncome += deal.annualRevenue;
-  save.finances.netWorth += deal.annualRevenue;
   save.availableSponsorOffers.erase(save.availableSponsorOffers.begin() + dealIndex);
   events.AddEvent("commercial", "Signed sponsor deal with " + deal.sponsorName, 1, false);
   return true;

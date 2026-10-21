@@ -11,6 +11,7 @@
 
 #include "player.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 #include "../../main.hpp"
@@ -589,8 +590,13 @@ void Player::SendOff() {
   team->GetActivePlayers(activePlayers);
   int remainingPlayers = activePlayers.size();
   if (remainingPlayers <= 6) {
-    // too many red cards - forfeit
-    // todo: referee should do this. also, make sure the forfeiting team will actually lose :P
+    // Too many red cards: the match is abandoned and awarded to the opponent,
+    // 3-0 or the current margin if that is better for them (IFAB Law 3).
+    MatchData* matchData = match->GetMatchData();
+    const int forfeitingTeamID = team->GetID();
+    const int opponentTeamID = 1 - forfeitingTeamID;
+    matchData->SetGoalCount(opponentTeamID, std::max(3, matchData->GetGoalCount(opponentTeamID)));
+    matchData->SetGoalCount(forfeitingTeamID, 0);
     match->GameOver();
   }
 }

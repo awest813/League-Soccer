@@ -62,8 +62,12 @@ void InitializeOwnerData(CareerSave& save) {
 }
 
 void SetTicketPrice(CareerSave& save, int price) {
+  // Fans react to the change from the current price, not to the distance
+  // from a fixed baseline; otherwise toggling between two prices below the
+  // baseline would raise fan base and satisfaction on every click.
+  const int previousPrice = save.finances.ticketPrice;
   save.finances.ticketPrice = ClampInt(price, 10, 200);
-  int delta = save.finances.ticketPrice - 40;
+  int delta = save.finances.ticketPrice - previousPrice;
   save.fanBase = ClampInt(save.fanBase - (delta / 8), 10, 100);
   save.stadium.fanSatisfaction = ClampInt(save.stadium.fanSatisfaction - (delta / 4), 0, 100);
 }
@@ -159,6 +163,11 @@ void ProcessSeasonFinances(CareerSave& save) {
   save.finances.netWorth = std::max(0LL, save.finances.netWorth + profit);
   save.transferBudget = std::max(0LL, save.transferBudget + profit / 2);
   save.finance.transferBudget = save.transferBudget;
+
+  // Transfer fees are per-season figures; the closed season's report keeps
+  // them in totalRevenue/totalExpenses, but they must not be charged again.
+  save.finances.transferSpending = 0;
+  save.finances.transferIncome = 0;
 }
 
 long long GetSeasonProfit(const CareerSave& save) {

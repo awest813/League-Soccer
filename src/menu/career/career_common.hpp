@@ -24,6 +24,12 @@ long long SafeStoll(const std::string& s, long long fallback = 0);
 float SafeStof(const std::string& s, float fallback = 0.0f);
 std::string FormatCareerMoney(long long amount);
 
+// Maps a database role string in Football Manager notation ("D C",
+// "D/WB/AM L", "AM RLC, F C", "ST", ...) to the short position codes used by
+// career simulation and training ("CB", "LB", "AM", "CF", ...). Only the
+// first listed role is used; unknown input falls back to "CM".
+std::string PositionFromDbRole(const std::string& dbRole);
+
 // Splits a '|'-delimited record (empty fields preserved) and strips the field
 // separator / newlines from free-text so it cannot corrupt the text format.
 std::vector<std::string> SplitPipes(const std::string& s);

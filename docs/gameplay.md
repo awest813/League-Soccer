@@ -145,3 +145,11 @@ of teammate spacing, timing, and difficulty balance.
 The scripted human-controller match completed both halves and reached its results
 screen with no logged warnings/errors and empty standard error output. This checks
 general match flow with the updated AI, not comparative tactical effectiveness.
+
+## October 2026 audit
+
+Extra time is now opt-in: a match level after 90 minutes ends unless the
+`match_extra_time` config key is set. League, career and Quick Match fixtures
+therefore finish as draws. There is still no penalty shootout. The gameplay
+fixes, remaining defects and missing features are tracked in
+[gap-list.md](gap-list.md).

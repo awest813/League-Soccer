@@ -39,7 +39,7 @@ The audit below records the implementation before consolidation. The progress se
 
 Owner/GM is one mode. Delegation settings preserve the former Manager hands-on experience without introducing another career choice. Watch/tactical-only match control and personal contract workflows are proposed capabilities; their runtime support must be verified or implemented.
 
-Custom league and expansion settings belong to world setup/rules, not ordinary Player or Coach authority. Existing settings remain preserved in saves.
+Custom league and expansion settings belong to world setup/rules, not ordinary Player or Coach authority. Existing settings were intended to remain preserved in saves; as of 2026-10-21 `leagueSettings` and `customLeague` are not serialized (see [gap-list.md](gap-list.md)).
 
 ## Cohesive user journey
 

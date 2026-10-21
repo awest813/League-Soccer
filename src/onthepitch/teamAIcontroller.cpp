@@ -584,6 +584,7 @@ void TeamAIController::CalculateDynamicRoles() {
       players.erase(iter);
       break;
     }
+    ++iter;
   }
 
   unsigned int playerNum = players.size();

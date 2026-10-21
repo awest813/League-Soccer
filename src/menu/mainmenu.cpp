@@ -7,6 +7,7 @@
 #include "../main.hpp"
 #include "blunted.hpp"
 #include "career/career_database.hpp"
+#include "../league/leaguecode.hpp"
 #include "controllerselect.hpp"
 #include "credits.hpp"
 #include "layout_audit.hpp"
@@ -365,6 +366,10 @@ void MainMenuPage::Process() {
 }
 
 void MainMenuPage::GoControllerSelect() {
+  // Quick Match is an exhibition: drop any career/league fixture armed by a
+  // match that was backed out of, so its result cannot be credited there.
+  CareerDatabase::GetInstance().ClearPendingFixture();
+  LeagueClearPendingFixture();
   this->Exit();
 
   pageData.properties->Set("selectedButtonID", 0);

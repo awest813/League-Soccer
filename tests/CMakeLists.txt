@@ -108,6 +108,7 @@ add_executable(gameplayfootball_career_tests
   career/career_saveload_test.cpp
   career/career_fixture_test.cpp
   career/career_longrun_audit_test.cpp
+  career/career_audit_regression_test.cpp
   menu/slider_ux_test.cpp
   menu/grid_layout_test.cpp
   ${PROJECT_SOURCE_DIR}/src/data/careerdata.cpp

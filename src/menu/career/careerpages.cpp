@@ -435,18 +435,20 @@ void CareerNewGamePage::StartCareer() {
       int ovr = ComputePlayerOVR(pd.get());
       int pot = std::min(99, ovr + static_cast<int>(random(3, 20)));
       int age = 22;
+      const auto& roles = pd->GetRoles();
+      std::string pos = roles.empty() ? "CM" : RoleToCareerPos(roles[0]);
       try {
-        auto ageResult =
-            GetDB()->Query("SELECT age FROM players WHERE id = " + int_to_str(pd->GetDatabaseID()));
-        if (!ageResult->data.empty()) {
-          age = atoi(ageResult->data.at(0).at(0).c_str());
+        auto playerResult = GetDB()->Query("SELECT age, role FROM players WHERE id = " +
+                                           int_to_str(pd->GetDatabaseID()));
+        if (!playerResult->data.empty()) {
+          age = atoi(playerResult->data.at(0).at(0).c_str());
           pot = std::min(99, ovr + static_cast<int>((99 - age) * 0.5));
+          // The database stores Football Manager notation ("D C", "AM RLC");
+          // the 3D role parser only recognises GK/DM, so map it here.
+          pos = CareerCommon::PositionFromDbRole(playerResult->data.at(0).at(1));
         }
       } catch (...) {
       }
-
-      const auto& roles = pd->GetRoles();
-      std::string pos = roles.empty() ? "CM" : RoleToCareerPos(roles[0]);
 
       long long value = static_cast<long long>(ovr) * static_cast<long long>(ovr) * 5000;
       long long wage = (value / 1000) + static_cast<int>(random(500, 2000));
@@ -462,6 +464,7 @@ void CareerNewGamePage::StartCareer() {
       cp.wage = wage;
       cp.databaseID = pd->GetDatabaseID();
       cp.contract.yearsRemaining = static_cast<int>(random(2, 5));
+      cp.contract.wage = wage;
       save->roster.push_back(cp);
     }
 
@@ -495,6 +498,16 @@ void CareerNewGamePage::StartCareer() {
       save->roster.push_back(pro);
       save->controlledEntityID = pro.databaseID;
     }
+
+    // The free-agent pool was seeded before the club was known; reseed it so
+    // the user's own players are excluded.
+    save->freeAgents.clear();
+    CareerTransfers::SeedFreeAgents(*save);
+
+    // CreateNewCareer saved a club-less placeholder; persist the real club,
+    // roster and budgets so Continue does not load an unplayable career.
+    CareerDatabase::GetInstance().SaveCareerData();
+    CareerDatabase::GetInstance().AutoSave();
   }
 
   CreatePage(GetHubPageID());

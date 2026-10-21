@@ -714,6 +714,14 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
     events.ModifyBoardConfidence(-15);
   }
 
+  // Academy prospects and unattached players age with everyone else; without
+  // this a prospect keeps the under-21 development bonus forever. Squad
+  // players are aged in the loop below (before any of them leave).
+  for (auto& prospect : save.youthAcademy)
+    prospect.age++;
+  for (auto& freeAgent : save.freeAgents)
+    freeAgent.age++;
+
   // Contract expirations & renewals
   std::vector<std::string> departedPlayers;
   for (auto it = save.roster.begin(); it != save.roster.end();) {
@@ -727,6 +735,9 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
     if (it->contract.yearsRemaining <= 0) {
       if (save.roster.size() > 14) {
         departedPlayers.push_back(it->name);
+        // Free the departing player's wage, as ReleasePlayer does.
+        save.wageBudget += it->wage;
+        save.finance.wageBudget = save.wageBudget;
         PlayerCareerState fa = *it;
         fa.contract.yearsRemaining = 0;
         save.freeAgents.push_back(fa);

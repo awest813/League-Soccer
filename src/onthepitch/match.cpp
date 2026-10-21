@@ -779,7 +779,7 @@ void Match::SetMatchPhase(e_MatchPhase newMatchPhase) {
 
   matchTimeExact_ms = static_cast<double>(matchTime_ms);
 
-  if (matchPhase == e_MatchPhase_2ndHalf) {
+  if (matchPhase == e_MatchPhase_2ndHalf || matchPhase == e_MatchPhase_1stExtraTime) {
     teams[0]->RelaxFatigue(0.05f);
     teams[1]->RelaxFatigue(0.05f);
   }
@@ -2046,7 +2046,6 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
                          .GetNormalized(bounceVec),
                      tripType);
           referee->TripNotice(p1, p2, tripType);
-          matchData->AddFoul(p2->GetTeamID());
           p1->Injure(tripType * 0.04f);
           AddExcitementBoost(0.5f + tripType * 0.1f, 3000);
         }
@@ -2062,7 +2061,6 @@ void Match::CheckHumanoidCollision(Player* p1, Player* p2, std::vector<PlayerBou
                          .GetNormalized(-bounceVec),
                      tripType);
           referee->TripNotice(p2, p1, tripType);
-          matchData->AddFoul(p1->GetTeamID());
           p2->Injure(tripType * 0.04f);
           AddExcitementBoost(0.5f + tripType * 0.1f, 3000);
         }

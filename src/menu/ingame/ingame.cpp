@@ -7,6 +7,7 @@
 #include "../pagefactory.hpp"
 #include "../settings.hpp"
 #include "../../league/leaguecode.hpp"
+#include "../career/career_database.hpp"
 #include "main.hpp"
 #include "replaymenu.hpp"
 #include "utils/localization.hpp"
@@ -28,12 +29,30 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
 
   unsigned long matchTime_ms = match->GetMatchTime_ms();
   int matchMinute = static_cast<int>(matchTime_ms / 60000);
-  if (matchMinute > 90)
-    matchMinute = 90;
+  // Show stoppage time as "45+2'" rather than clamping or overrunning the period.
+  int periodEndMinute = 90;
+  switch (match->GetMatchPhase()) {
+    case e_MatchPhase_1stHalf:
+      periodEndMinute = 45;
+      break;
+    case e_MatchPhase_1stExtraTime:
+      periodEndMinute = 105;
+      break;
+    case e_MatchPhase_2ndExtraTime:
+    case e_MatchPhase_Penalties:
+      periodEndMinute = 120;
+      break;
+    default:
+      break;
+  }
+  std::string minuteText = std::to_string(matchMinute);
+  if (matchMinute >= periodEndMinute)
+    minuteText = std::to_string(periodEndMinute) + "+" +
+                 std::to_string(matchMinute - periodEndMinute + 1);
 
   char scoreBuf[256];
-  snprintf(scoreBuf, sizeof(scoreBuf), "%s  %d - %d  %s  (%d')", team0Name.c_str(), score0, score1,
-           team1Name.c_str(), matchMinute);
+  snprintf(scoreBuf, sizeof(scoreBuf), "%s  %d - %d  %s  (%s')", team0Name.c_str(), score0, score1,
+           team1Name.c_str(), minuteText.c_str());
 
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_ingame", 10, 8, 80, 84, true);
   this->AddView(frame);
@@ -267,6 +286,7 @@ void PreQuitPage::GoMenu() {
   // Forfeiting a league match must not leave a stale fixture armed for the
   // next 3D game's result flow-back.
   LeagueClearPendingFixture();
+  CareerDatabase::GetInstance().ClearPendingFixture();
   this->Exit();
   GetMenuTask()->SetMenuAction(e_MenuAction_Menu);
   delete this;

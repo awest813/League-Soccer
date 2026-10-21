@@ -24,7 +24,7 @@ void ReleasePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
                    const std::string& playerName);
 
 // Generates the transfer-market targets (no-op if already populated).
-void PopulateTransferMarket(std::vector<TransferTarget>& targets);
+void PopulateTransferMarket(std::vector<TransferTarget>& targets, int userClubID = 0);
 
 // Seeds the free-agent pool for a fresh career so the Free Agency screen is
 // not a dead end before the player ever releases a squad member.

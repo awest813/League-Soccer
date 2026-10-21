@@ -418,6 +418,9 @@ find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i   # all C++
 Every roadmap phase is tracked in **[ROADMAP.md](ROADMAP.md)** — modernization,
 testing infrastructure, gameplay, platform & UX, developer experience, and the
 advanced career modes are all marked done, with new ideas welcome.
+Known defects and missing features in match play and Career mode are listed by
+priority in **[docs/gap-list.md](docs/gap-list.md)**; it is the best place to
+pick up work.
 
 > **Note on GitHub Issues:** the Issues tab on GitHub is **not active** for
 > this project, so bug reports and feature requests cannot be filed there.

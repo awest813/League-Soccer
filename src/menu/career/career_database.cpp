@@ -8,6 +8,7 @@
 
 #include "career_board.hpp"
 #include "career_finance.hpp"
+#include "career_hub_model.hpp"
 #include "career_persistence.hpp"
 #include "career_sim.hpp"
 #include "career_sponsors.hpp"
@@ -368,10 +369,13 @@ bool CareerDatabase::SetTrainingPlan(CareerTrainingPlan plan, CareerActionSource
 bool CareerDatabase::TrainFocus(const std::string& focusArea) {
   if (!m_activeSave)
     return false;
-  if (m_activeSave->mode == CareerMode::PLAYER) {
-    if (focusArea != "Individual")
+  if (focusArea == "Individual") {
+    // Individual sessions target exactly one identified footballer. Without
+    // this check a save with no (or an ambiguous) controlled identity would
+    // train every player whose database ID matches, e.g. all signings at 0.
+    if (!ControlledCareerPlayer(*m_activeSave))
       return false;
-  } else if (!CanManageTeam(*m_activeSave)) {
+  } else if (m_activeSave->mode == CareerMode::PLAYER || !CanManageTeam(*m_activeSave)) {
     return false;
   }
   return CareerTraining::TrainFocus(*m_activeSave, *this, focusArea);
@@ -660,7 +664,7 @@ void CareerDatabase::RecordMatchStats(const std::string& playerName, int goals, 
 
 void CareerDatabase::PopulateTransferMarket() {
   if (m_activeSave)
-    CareerTransfers::PopulateTransferMarket(m_transferTargets);
+    CareerTransfers::PopulateTransferMarket(m_transferTargets, m_activeSave->club.clubID);
 }
 
 std::vector<TransferTarget> CareerDatabase::GetTransferTargets() const {
