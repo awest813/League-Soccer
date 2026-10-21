@@ -225,6 +225,12 @@ Regression tests: `tests/onthepitch/controls_audit_test.cpp` covers sprint-tap
 pairing, the switch decision, zero aim, axis-binding encoding, trigger rest,
 the radial deadzone and menu repeat timing.
 
+Verification (Linux Debug, Xvfb): all 280 unit tests pass. The Quick Match,
+Full Match and scripted-gamepad match smoke tests pass; the gamepad smoke
+drives a human player through `HumanController` for a full match. Not done:
+physical controllers (stick feel, trigger defaults on Windows/macOS, menu
+repeat timing) and hands-on match play.
+
 ### Known defects not yet fixed
 
 | Pri | Location | Defect | Why it was deferred |
