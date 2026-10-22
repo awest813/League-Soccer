@@ -5,6 +5,7 @@
 #ifndef _HPP_FOOTBALL_ONTHEPITCH_MATCHCLOCK
 #define _HPP_FOOTBALL_ONTHEPITCH_MATCHCLOCK
 
+#include <algorithm>
 #include <limits>
 #include <string>
 
@@ -16,6 +17,16 @@ inline std::string MatchMinuteText(unsigned long matchTime_ms, int periodEndMinu
   if (minute > periodEndMinute)
     return std::to_string(periodEndMinute) + "+" + std::to_string(minute - periodEndMinute) + "'";
   return std::to_string(minute) + "'";
+}
+
+// Added time announced as a period reaches its end (45, 90, 105 or 120): a
+// minute as a base, a minute per goal and one per two cards in the period,
+// and one more at the end of normal time for substitutions and time wasting.
+// Halves get 1 to 5 minutes, extra-time periods 1 or 2.
+inline int StoppageMinutes(int goals, int cards, int periodEndMinute) {
+  const bool extraTime = periodEndMinute > 90;
+  const int minutes = 1 + goals + (cards + 1) / 2 + (periodEndMinute == 90 ? 1 : 0);
+  return std::clamp(minutes, 1, extraTime ? 2 : 5);
 }
 
 // Match phases (mirrors e_MatchPhase in gamedefines.hpp)

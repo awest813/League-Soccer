@@ -130,6 +130,21 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   teams[1] = nullptr;
   teams[0] = std::make_unique<Team>(0, this, matchData->GetTeamData(0));
   teams[1] = std::make_unique<Team>(1, this, matchData->GetTeamData(1));
+  // Home wears the chosen kit; away switches kits if its own would clash.
+  const int homeKit = GetMenuTask()->GetTeamKitNum(0);
+  int awayKit = GetMenuTask()->GetTeamKitNum(1);
+  kitclash::Colour homeShirt, away1, away2;
+  if (teams[0]->GetShirtColour(homeKit, homeShirt)) {
+    const bool hasAway1 = teams[1]->GetShirtColour(1, away1);
+    const bool hasAway2 = teams[1]->GetShirtColour(2, away2);
+    const int chosen = kitclash::ChooseAwayKit(homeShirt, hasAway1 ? &away1 : nullptr,
+                                               hasAway2 ? &away2 : nullptr, awayKit);
+    if (chosen != awayKit)
+      Log(e_Notice, "Match", "Match", "Away kit clashes with the home shirt; switching kits");
+    awayKit = chosen;
+  }
+  teams[0]->SetInitialKitNumber(homeKit);
+  teams[1]->SetInitialKitNumber(awayKit);
   teams[0]->InitPlayers(fullbodyNode, colorCoords);
   teams[1]->InitPlayers(fullbodyNode, colorCoords);
 
@@ -400,6 +415,7 @@ Match::Match(MatchData* matchData, const std::vector<IHIDevice*>& controllers)
   lastBodyBallCollisionTime_ms = 0;
 
   gameOver = false;
+  gameOverSignalled = false;
 
   possessionSideHistory = std::make_unique<ValueHistory<float>>(6000);
 
@@ -797,8 +813,26 @@ int Match::PeriodEndMinute() const {
   }
 }
 
+int Match::TotalCards() const {
+  int cards = 0;
+  for (int t = 0; t < 2; t++) {
+    if (!teams[t])
+      continue;
+    for (const auto& player : teams[t]->GetAllPlayers())
+      cards += player->GetCards();
+  }
+  return cards;
+}
+
+unsigned long Match::GetPeriodEndTime_ms() const {
+  return static_cast<unsigned long>(PeriodEndMinute() + std::max(0, addedMinutes)) * 60000UL;
+}
+
 void Match::SetMatchPhase(e_MatchPhase newMatchPhase) {
   matchPhase = newMatchPhase;
+  periodGoals = 0;
+  periodStartCards = TotalCards();
+  addedMinutes = -1;
   if (matchPhase == e_MatchPhase_1stHalf)
     matchTime_ms = 0;
   else if (matchPhase == e_MatchPhase_2ndHalf)
@@ -1072,8 +1106,11 @@ void Match::Process() {
     UserEventManager::GetInstance().SetKeyboardState(SDLK_F1, false);
   }
 
-  if (gameOver) {
-    // todonow: just once ^
+  // Tell the game page once; the full-time screen used to be re-created
+  // every frame. Wait while no page listens (an overlay is up), so the end of
+  // the match is never missed.
+  if (gameOver && !gameOverSignalled && !sig_OnGameOver.empty()) {
+    gameOverSignalled = true;
     sig_OnGameOver(this);
   }
 
@@ -1144,6 +1181,17 @@ void Match::Process() {
       matchTimeExact_ms +=
           MatchDurationGameTimeFromRealMilliseconds(10.0, matchDurationMinutes, matchTimeScale);
       matchTime_ms = static_cast<unsigned long>(matchTimeExact_ms);
+
+      // The fourth official's board goes up as the period reaches its end.
+      const bool timedPeriod =
+          matchPhase == e_MatchPhase_1stHalf || matchPhase == e_MatchPhase_2ndHalf ||
+          matchPhase == e_MatchPhase_1stExtraTime || matchPhase == e_MatchPhase_2ndExtraTime;
+      if (timedPeriod && addedMinutes < 0 &&
+          matchTime_ms >= static_cast<unsigned long>(PeriodEndMinute()) * 60000UL) {
+        addedMinutes =
+            StoppageMinutes(periodGoals, TotalCards() - periodStartCards, PeriodEndMinute());
+        SpamMessage(TRF("ingame_added_time", {std::to_string(addedMinutes)}), 3000);
+      }
     }
     actualTime_ms += 10;
     if (IsGoalScored())
@@ -1178,6 +1226,7 @@ void Match::Process() {
         teams[0]->GetController()->UpdateTactics();
       }
       if (t1goal || t2goal) {
+        periodGoals++;
         AddExcitementBoost(1.0f, 5000);
 
         RumblePlayingPads(0.8f, 0.8f, 1000);
@@ -1498,6 +1547,9 @@ void Match::Put() {
     if (seconds < 10)
       timeStr += "0";
     timeStr += int_to_str(seconds);
+    const int added = addedMinutes;
+    if (added > 0)
+      timeStr += " +" + int_to_str(added);
     scoreboard->SetTimeStr(timeStr);
     //}
 

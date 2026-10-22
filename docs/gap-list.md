@@ -89,6 +89,7 @@ Linux Debug build with tests:
 | Pri | Location | Defect | Why it was deferred |
 | --- | --- | --- | --- |
 | P0 | `playerbase.cpp` `PlayerBase::ResetSituation` | `injuryLevel = 0` runs on every restart, so collision injuries (up to a 40% stat penalty) last only until the next throw-in. | Keeping injuries for the whole match is a balance change. It needs a design for decay and forced substitutions, plus a playtest. |
+| P1 | Live match (unknown) | One career-match smoke run in nine aborted with `free(): invalid pointer` during play in the second half, while a pass was being played. It did not reproduce in the other eight runs. | It needs an AddressSanitizer build of repeated match runs to find where it comes from; nothing in the career or full-time code runs at that point. |
 | P1 | `matchdata.hpp` `AddPassAttempt`/`RecordBallTouch`; `humanoid.cpp` touch callers | Pass completion is only checked on trap and ball-control touches. Slides, headers and keeper interceptions leave a pass pending, and one-touch passes are undercounted. | The fix is to record every touch through `Team::SetLastTouchPlayer`, which needs a scripted-match regression. |
 | P1 | `humanoid.cpp` shot-on-target projection | "On target" uses a straight-line projection with no gravity or bounce. Dipping or bouncing shots are miscounted. | Should sample `Ball::Predict` at the goal plane. |
 | P1 | `team.cpp` `Team::ResetSituation` | After a goalkeeper red card, the restart can pick the deactivated keeper (`players.at(0)`), and the human can be attached to him. | Needs an in-engine red-card scenario to verify the fix. |
@@ -122,7 +123,6 @@ Linux Debug build with tests:
 | Pri | Feature | State |
 | --- | --- | --- |
 | P1 | Substitutions | **Absent.** Benches are loaded but never used: no substitution menu, limits or AI subs. Blocks real injuries and fatigue management. |
-| P1 | Stoppage time | **Absent.** A half ends the first time the ball is near the halfway line after 45'/90'; no added time is calculated or shown. |
 | P1 | Knockout rules | Extra time is now opt-in (`match_extra_time`), but no menu exposes it and no competition sets it. **Penalty shootout absent:** the `Penalties` phase immediately ends the match. `onthepitch/matchclock.hpp` has the right model but only tests use it. |
 | P1 | Set pieces | The taker is the nearest player. There are no designated takers, no aiming, power or curl control for free kicks, corners or penalties, and the kick-off is a forced short pass. |
 | P1 | Injuries | **Stub** (see §2): no stretcher, no forced substitution, no carry-over into Career. |
@@ -130,7 +130,6 @@ Linux Debug build with tests:
 | P2 | Skill moves | Only the fake shot and knock-on exist; the sidestep dribble is disabled (`playercontroller.cpp`, "not implemented yet"). |
 | P2 | Handball / VAR | Absent. |
 | P2 | Weather | Physics only, driven by hidden config keys (`match_wind_x/y`, `match_wetness`). There is no menu option and no rain or wind visuals. |
-| P2 | Kit clash | Home is always kit 1 and away kit 2, with no clash detection. |
 | P2 | Statistics | No cards, corners, offsides or saves. Goal scorers and minutes now show on the full-time screen, and goals count towards Man of the Match. |
 | P2 | Replays | `sig_OnShortReplayMoment` is never emitted; there is no highlights reel. |
 | P2 | Commentary | Absent; only crowd audio and on-screen messages. |
@@ -293,6 +292,9 @@ Audited by capturing frames of each menu route and of live matches under Xvfb
 | Gamepads page | With a pad connected, the Back button was added after the list was shown and never appeared. | Shown explicitly. |
 | Version watermark | The version text sat under the second player's HUD panel, bottom right. | Moved to the top-right corner. |
 | Key names | The keyboard page showed SDL's English key names ("Left Shift", "Up") in every language. | Arrows, Space, Enter, modifiers, navigation keys and keypad keys are translated (23 keys); letters and digits keep SDL's layout-aware name. |
+| Kit clash | Home always wore kit 1 and away kit 2, whatever the colours. | The match samples each shirt's colour from its kit texture; when the away shirt is too close to the home one and its other kit stands out clearly better, the away side changes kit (`onthepitch/kitclash.hpp`). The kit options page now shows the kits actually worn. |
+| Stoppage time | A half ended the first time the ball was near the halfway line after 45'/90'; no added time was calculated or shown. | As each period reaches its end the added time is set from its goals and cards (1–5 minutes, 1–2 in extra time; `StoppageMinutes` in `matchclock.hpp`), announced on screen and shown on the scoreboard as "+3". The referee ends the period once it has been played, with the ball near halfway or at most two minutes later. |
+| Full-time screen | `Match` emitted `sig_OnGameOver` every frame once the match ended, re-creating the full-time page. It also had no scorers, and Man of the Match ignored goals. | Emitted once, when the game page is listening. Scorers and minutes (`45+2'` for stoppage time) are listed under the score, and goals raise a player's rating. |
 | Smoke tooling | Layout-audit routes quit before slower pages had drawn, so captures showed the previous page. | `menu_smoke_quit_delay_ms` keeps the route open for a set time. |
 
 ### Known gaps

@@ -131,6 +131,10 @@ public:
   e_MatchPhase GetMatchPhase() const { return matchPhase; }
   // The minute the current period ends at: 45, 90, 105 or 120.
   int PeriodEndMinute() const;
+  // Added minutes announced for this period, or -1 before its end.
+  int GetAddedMinutes() const { return addedMinutes; }
+  // When the referee may end the period: its end plus the added time.
+  unsigned long GetPeriodEndTime_ms() const;
 
   void StartPlay() { inPlay = true; }
   void StopPlay() { inPlay = false; }
@@ -361,6 +365,13 @@ protected:
   Player* ballRetainer;
 
   bool gameOver;
+  // Stoppage time for the current period: goals and cards so far, and the
+  // added minutes once announced (-1 until the period reaches its end).
+  int periodGoals = 0;
+  int periodStartCards = 0;
+  int addedMinutes = -1;
+  int TotalCards() const;
+  bool gameOverSignalled = false;
 
   boost::intrusive_ptr<Node> fullbodyNode;
   std::map<Vector3, Vector3> colorCoords;

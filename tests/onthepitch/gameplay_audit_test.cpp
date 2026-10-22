@@ -491,3 +491,57 @@ TEST(MatchClockTest, StoppageTimeIsShownAfterThePeriod) {
 }
 
 }  // namespace
+
+#include "onthepitch/kitclash.hpp"
+
+namespace {
+
+// ============================================================
+// Kit clash — the away side changes kit when the shirts look alike
+// ============================================================
+
+TEST(KitClashTest, KeepsTheAwayKitWhenItStandsOut) {
+  const kitclash::Colour home{16, 78, 195}, away1{13, 58, 155}, away2{204, 212, 202};
+  EXPECT_EQ(kitclash::ChooseAwayKit(home, &away1, &away2, 2), 2);
+}
+
+TEST(KitClashTest, SwitchesWhenTheAwayKitClashes) {
+  // Two dark blues: the white first kit is the one to wear.
+  const kitclash::Colour home{16, 78, 195}, away1{204, 212, 202}, away2{20, 70, 180};
+  EXPECT_EQ(kitclash::ChooseAwayKit(home, &away1, &away2, 2), 1);
+}
+
+TEST(KitClashTest, StaysWhenTheOtherKitIsNoBetter) {
+  const kitclash::Colour home{35, 54, 44}, away1{45, 25, 45}, away2{60, 55, 51};
+  EXPECT_EQ(kitclash::ChooseAwayKit(home, &away1, &away2, 2), 2);
+}
+
+TEST(KitClashTest, NeverSwitchesToAMissingKit) {
+  const kitclash::Colour home{16, 78, 195}, away2{20, 70, 180};
+  EXPECT_EQ(kitclash::ChooseAwayKit(home, nullptr, &away2, 2), 2);
+}
+
+}  // namespace
+
+namespace {
+
+// ============================================================
+// Stoppage time — the minutes added at the end of each period
+// ============================================================
+
+TEST(StoppageTimeTest, QuietFirstHalfGetsAMinute) {
+  EXPECT_EQ(StoppageMinutes(0, 0, 45), 1);
+}
+
+TEST(StoppageTimeTest, GoalsAndCardsAddTime) {
+  EXPECT_EQ(StoppageMinutes(2, 3, 45), 5);
+  EXPECT_EQ(StoppageMinutes(1, 0, 90), 3);
+}
+
+TEST(StoppageTimeTest, IsCappedPerPeriod) {
+  EXPECT_EQ(StoppageMinutes(6, 6, 90), 5);
+  EXPECT_EQ(StoppageMinutes(3, 2, 105), 2);
+  EXPECT_EQ(StoppageMinutes(0, 0, 120), 1);
+}
+
+}  // namespace

@@ -35,7 +35,8 @@ VisualOptionsPage::VisualOptionsPage(Gui2WindowManager* windowManager, const Gui
   kitSelectionPulldown[0]->AddEntry(TR("visualoptions_kit02"), "team1kit02");
   kitSelectionPulldown[1]->AddEntry(TR("visualoptions_kit01"), "team2kit01");
   kitSelectionPulldown[1]->AddEntry(TR("visualoptions_kit02"), "team2kit02");
-  kitSelectionPulldown[1]->SetSelected(1);
+  kitSelectionPulldown[0]->SetSelected(GetGameTask()->GetMatch()->GetTeam(0)->GetKitNumber() - 1);
+  kitSelectionPulldown[1]->SetSelected(GetGameTask()->GetMatch()->GetTeam(1)->GetKitNumber() - 1);
   kitSelectionPulldown[0]->sig_OnChange.connect(
       std::bind(&VisualOptionsPage::OnChangeKit, this, kitSelectionPulldown[0]));
   kitSelectionPulldown[1]->sig_OnChange.connect(

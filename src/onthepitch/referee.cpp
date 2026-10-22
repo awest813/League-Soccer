@@ -80,13 +80,17 @@ void Referee::Process() {
 
     // some phase is over :[
 
-    if (((match->GetMatchPhase() == e_MatchPhase_1stHalf && match->GetMatchTime_ms() > 2700000) ||
-         (match->GetMatchPhase() == e_MatchPhase_2ndHalf && match->GetMatchTime_ms() > 5400000) ||
-         (match->GetMatchPhase() == e_MatchPhase_1stExtraTime &&
-          match->GetMatchTime_ms() > 6300000) ||
-         (match->GetMatchPhase() == e_MatchPhase_2ndExtraTime &&
-          match->GetMatchTime_ms() > 7200000)) &&
-        ballPos.coords[0] < 10 && ballPos.coords[0] > -10) {
+    // The period ends once its added time is played: with the ball near the
+    // halfway line, or at most two minutes later wherever it is (waiting for
+    // the ball alone could run a half 30 minutes over).
+    const e_MatchPhase phase = match->GetMatchPhase();
+    const bool timedPeriod = phase == e_MatchPhase_1stHalf || phase == e_MatchPhase_2ndHalf ||
+                             phase == e_MatchPhase_1stExtraTime ||
+                             phase == e_MatchPhase_2ndExtraTime;
+    const unsigned long periodEnd_ms = match->GetPeriodEndTime_ms();
+    const bool ballNearHalfway = ballPos.coords[0] < 10 && ballPos.coords[0] > -10;
+    if (timedPeriod && match->GetAddedMinutes() >= 0 && match->GetMatchTime_ms() > periodEnd_ms &&
+        (ballNearHalfway || match->GetMatchTime_ms() > periodEnd_ms + 120000)) {
       foul.advantage = false;
       if (!CheckFoul()) {
         match->StopPlay();

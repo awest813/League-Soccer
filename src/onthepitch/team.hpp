@@ -5,6 +5,7 @@
 
 #include "../data/teamdata.hpp"
 #include "humangamer.hpp"
+#include "kitclash.hpp"
 #include "player/player.hpp"
 #include "teamAIcontroller.hpp"
 
@@ -91,6 +92,12 @@ public:
   Player* GetGoalie();
 
   void SetKitNumber(int num);
+  int GetKitNumber() const { return kitNumber; }
+  // The kit worn from kick-off; call before InitPlayers.
+  void SetInitialKitNumber(int num) { kitNumber = num; }
+  // The average shirt colour of one of this team's kits; false if it has no
+  // such kit texture.
+  bool GetShirtColour(int num, kitclash::Colour& colour) const;
 
 protected:
   int id;
@@ -123,6 +130,7 @@ protected:
   e_TouchType lastTouchType;
 
   boost::intrusive_ptr<Resource<Surface>> kit;
+  int kitNumber = 1;
 };
 
 #endif

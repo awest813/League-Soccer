@@ -1,5 +1,9 @@
 #include "team.hpp"
 
+#include <algorithm>
+
+#include <SDL2/SDL_image.h>
+
 #include "../gamedefines.hpp"
 #include "../main.hpp"
 #include "../utils.hpp"
@@ -83,8 +87,7 @@ void Team::InitPlayers(boost::intrusive_ptr<Node> fullbodyNode,
       std::string kitFilename;
       // printf("%i player id\n", player->GetID());
       if (teamData->GetFormationEntry(i).role != e_PlayerRole_GK) {
-        kitFilename = GetTeamData()->GetKitUrl() + "_kit_0" +
-                      int_to_str(GetMenuTask()->GetTeamKitNum(GetID())) + ".png";
+        kitFilename = GetTeamData()->GetKitUrl() + "_kit_0" + int_to_str(kitNumber) + ".png";
         if (!std::filesystem::exists(kitFilename))
           kitFilename = (GetID() == 0) ? "media/textures/almost_white.png"
                                        : "media/textures/almost_black.png";
@@ -607,7 +610,46 @@ Player* Team::GetGoalie() {
   return nullptr;
 }
 
+bool Team::GetShirtColour(int num, kitclash::Colour& colour) const {
+  const std::string filename = teamData->GetKitUrl() + "_kit_0" + int_to_str(num) + ".png";
+  if (!std::filesystem::exists(filename))
+    return false;
+  SDL_Surface* loaded = IMG_Load(filename.c_str());
+  if (!loaded)
+    return false;
+  SDL_Surface* image = SDL_ConvertSurfaceFormat(loaded, SDL_PIXELFORMAT_RGBA32, 0);
+  SDL_FreeSurface(loaded);
+  if (!image)
+    return false;
+
+  // The front of the shirt fills the upper left of the kit texture; average
+  // the opaque pixels in the middle of it.
+  double sum[3] = {0, 0, 0};
+  int count = 0;
+  SDL_LockSurface(image);
+  const int step = std::max(1, image->w / 128);
+  for (int y = image->h * 15 / 100; y < image->h / 2; y += step) {
+    const Uint8* row = static_cast<const Uint8*>(image->pixels) + y * image->pitch;
+    for (int x = image->w / 10; x < image->w * 4 / 10; x += step) {
+      const Uint8* pixel = row + x * 4;
+      if (pixel[3] < 128)
+        continue;
+      for (int c = 0; c < 3; c++)
+        sum[c] += pixel[c];
+      count++;
+    }
+  }
+  SDL_UnlockSurface(image);
+  SDL_FreeSurface(image);
+  if (count == 0)
+    return false;
+  colour = {static_cast<float>(sum[0] / count), static_cast<float>(sum[1] / count),
+            static_cast<float>(sum[2] / count)};
+  return true;
+}
+
 void Team::SetKitNumber(int num) {
+  kitNumber = num;
   std::string kitNumberString = int_to_str(num);
   if (kitNumberString.size() < 2)
     kitNumberString = "0" + kitNumberString;
