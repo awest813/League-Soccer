@@ -129,6 +129,8 @@ public:
   bool GetPause() { return pause; }
   void SetMatchPhase(e_MatchPhase newMatchPhase);
   e_MatchPhase GetMatchPhase() const { return matchPhase; }
+  // The minute the current period ends at: 45, 90, 105 or 120.
+  int PeriodEndMinute() const;
 
   void StartPlay() { inPlay = true; }
   void StopPlay() { inPlay = false; }

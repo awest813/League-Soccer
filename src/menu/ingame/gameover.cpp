@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <map>
 
 #include "../../data/matchhistory.hpp"
 #include "../../data/teamdata.hpp"
@@ -59,6 +60,42 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   header->SetPosition(40 - header->GetTextWidthPercent() * 0.5f, 8);
   frame->AddView(header);
   header->Show();
+
+  // Goal scorers under each side of the score: "Kagawa 23', 67'".
+  std::map<int, int> goalsByPlayer;  // database ID -> goals, for the ratings below
+  for (int t = 0; t < 2; t++) {
+    const auto& scorerIDs = match->GetMatchData()->GetGoalScorers(t);
+    const auto& minutes = match->GetMatchData()->GetGoalMinutes(t);
+    std::vector<std::pair<int, std::string>> scorers;  // database ID, minutes
+    for (size_t g = 0; g < scorerIDs.size(); g++) {
+      goalsByPlayer[scorerIDs[g]]++;
+      const std::string minute = g < minutes.size() ? minutes[g] : "";
+      auto existing = std::find_if(scorers.begin(), scorers.end(),
+                                   [&](const auto& entry) { return entry.first == scorerIDs[g]; });
+      if (existing == scorers.end())
+        scorers.emplace_back(scorerIDs[g], minute);
+      else
+        existing->second += ", " + minute;
+    }
+    std::string line;
+    for (const auto& scorer : scorers) {
+      std::string name;
+      for (const auto& player : match->GetTeam(t)->GetTeamData()->GetPlayerData()) {
+        if (player->GetDatabaseID() == scorer.first)
+          name = player->GetLastName();
+      }
+      line += (line.empty() ? "" : "  ") + name + " " + scorer.second;
+    }
+    if (line.empty())
+      continue;
+    Gui2Caption* scorerCaption =
+        new Gui2Caption(windowManager, "caption_gameover_scorers_t" + int_to_str(t),
+                        t == 0 ? 4 : 42, 12.5f, 34, 2.5f, line);
+    if (t == 0)
+      scorerCaption->SetPosition(38 - scorerCaption->GetTextWidthPercent(), 12.5f);
+    frame->AddView(scorerCaption);
+    scorerCaption->Show();
+  }
 
   buttonOkay = new Gui2Button(windowManager, "button_gameover_ok", 42, 54, 24, 4,
                               Localization::GetInstance().Translate("gameover_continue"));
@@ -176,6 +213,11 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
       // Condition modifier
       int cond = pd->GetCondition();
       rating += (cond - 3) * 0.2f;
+
+      // Goals decide matches; before this the award ignored them.
+      auto scored = goalsByPlayer.find(pd->GetDatabaseID());
+      if (scored != goalsByPlayer.end())
+        rating += 1.2f * scored->second;
 
       // Ensure rating is between 4.0 and 9.0 (unless MOM, which we can push to 9.5)
       rating = std::clamp(rating, 4.0f, 9.0f);

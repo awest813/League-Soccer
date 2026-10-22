@@ -8,6 +8,7 @@
 #include "base/geometry/triangle.hpp"
 #include "base/log.hpp"
 #include "managers/resourcemanagerpool.hpp"
+#include "matchclock.hpp"
 #include "matchduration.hpp"
 #include "menu/pagefactory.hpp"
 #include "menu/startmatch/loadingmatch.hpp"
@@ -781,6 +782,21 @@ void Match::ResetSituation(const Vector3& focusPos) {
   */
 }
 
+int Match::PeriodEndMinute() const {
+  switch (matchPhase) {
+    case e_MatchPhase_PreMatch:
+    case e_MatchPhase_1stHalf:
+      return 45;
+    case e_MatchPhase_1stExtraTime:
+      return 105;
+    case e_MatchPhase_2ndExtraTime:
+    case e_MatchPhase_Penalties:
+      return 120;
+    default:
+      return 90;
+  }
+}
+
 void Match::SetMatchPhase(e_MatchPhase newMatchPhase) {
   matchPhase = newMatchPhase;
   if (matchPhase == e_MatchPhase_1stHalf)
@@ -1177,7 +1193,8 @@ void Match::Process() {
           std::string goalWord = Localization::GetInstance().Translate("ingame_goal");
           if (lastGoalScorer) {
             matchData->AddGoalScorer(GetLastGoalTeamID(),
-                                     lastGoalScorer->GetPlayerData()->GetDatabaseID());
+                                     lastGoalScorer->GetPlayerData()->GetDatabaseID(),
+                                     MatchMinuteText(GetMatchTime_ms(), PeriodEndMinute()));
             SpamMessage(goalWord + "! " + matchData->GetTeamData(GetLastGoalTeamID())->GetName() +
                             " (" + lastGoalScorer->GetPlayerData()->GetLastName() + ")",
                         4000);

@@ -131,7 +131,7 @@ Linux Debug build with tests:
 | P2 | Handball / VAR | Absent. |
 | P2 | Weather | Physics only, driven by hidden config keys (`match_wind_x/y`, `match_wetness`). There is no menu option and no rain or wind visuals. |
 | P2 | Kit clash | Home is always kit 1 and away kit 2, with no clash detection. |
-| P2 | Statistics | No cards, corners, offsides, saves, scorer list or player ratings. The goal scorer is not stored after the match. |
+| P2 | Statistics | No cards, corners, offsides or saves. Goal scorers and minutes now show on the full-time screen, and goals count towards Man of the Match. |
 | P2 | Replays | `sig_OnShortReplayMoment` is never emitted; there is no highlights reel. |
 | P2 | Commentary | Absent; only crowd audio and on-screen messages. |
 

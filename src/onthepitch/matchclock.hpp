@@ -6,6 +6,17 @@
 #define _HPP_FOOTBALL_ONTHEPITCH_MATCHCLOCK
 
 #include <limits>
+#include <string>
+
+// A match minute as shown to players: minutes count from 1 ("23'" for 22:10)
+// and time past the end of the period is stoppage time ("45+2'"). The period
+// ends at 45, 90, 105 or 120.
+inline std::string MatchMinuteText(unsigned long matchTime_ms, int periodEndMinute) {
+  const int minute = static_cast<int>(matchTime_ms / 60000UL) + 1;
+  if (minute > periodEndMinute)
+    return std::to_string(periodEndMinute) + "+" + std::to_string(minute - periodEndMinute) + "'";
+  return std::to_string(minute) + "'";
+}
 
 // Match phases (mirrors e_MatchPhase in gamedefines.hpp)
 enum e_MatchPhaseSimple {

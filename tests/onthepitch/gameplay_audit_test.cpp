@@ -7,6 +7,7 @@
 
 #include "onthepitch/aitactics.hpp"
 #include "onthepitch/gameplaytuning.hpp"
+#include "onthepitch/matchclock.hpp"
 #include "onthepitch/pendingcautions.hpp"
 #include "onthepitch/setpiecerules.hpp"
 #include "onthepitch/shotaim.hpp"
@@ -469,4 +470,24 @@ TEST(TeammatePressureTest, ClearlyBetterDefenderTakesOver) {
   EXPECT_FALSE(AITactics::ShouldKeepPressurePlayer(7.0f, 5.4f));
   EXPECT_FALSE(AITactics::ShouldKeepPressurePlayer(20.0f, 5.0f));
 }
+}  // namespace
+
+namespace {
+
+// ============================================================
+// Match clock — the minute shown for goals and in the pause menu
+// ============================================================
+
+TEST(MatchClockTest, MinuteCountsFromOne) {
+  EXPECT_EQ(MatchMinuteText(0, 45), "1'");
+  EXPECT_EQ(MatchMinuteText(22 * 60000UL + 5000, 45), "23'");
+  EXPECT_EQ(MatchMinuteText(44 * 60000UL, 45), "45'");
+}
+
+TEST(MatchClockTest, StoppageTimeIsShownAfterThePeriod) {
+  EXPECT_EQ(MatchMinuteText(45 * 60000UL, 45), "45+1'");
+  EXPECT_EQ(MatchMinuteText(92 * 60000UL, 90), "90+3'");
+  EXPECT_EQ(MatchMinuteText(100 * 60000UL, 105), "101'");
+}
+
 }  // namespace

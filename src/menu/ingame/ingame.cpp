@@ -10,6 +10,7 @@
 #include "../settings.hpp"
 #include "main.hpp"
 #include "onthepitch/match.hpp"
+#include "onthepitch/matchclock.hpp"
 #include "replaymenu.hpp"
 #include "utils/localization.hpp"
 
@@ -27,31 +28,12 @@ IngamePage::IngamePage(Gui2WindowManager* windowManager, const Gui2PageData& pag
   std::string team0Name = match->GetTeam(0)->GetTeamData()->GetName();
   std::string team1Name = match->GetTeam(1)->GetTeamData()->GetName();
 
-  unsigned long matchTime_ms = match->GetMatchTime_ms();
-  int matchMinute = static_cast<int>(matchTime_ms / 60000);
-  // Show stoppage time as "45+2'" rather than clamping or overrunning the period.
-  int periodEndMinute = 90;
-  switch (match->GetMatchPhase()) {
-    case e_MatchPhase_1stHalf:
-      periodEndMinute = 45;
-      break;
-    case e_MatchPhase_1stExtraTime:
-      periodEndMinute = 105;
-      break;
-    case e_MatchPhase_2ndExtraTime:
-    case e_MatchPhase_Penalties:
-      periodEndMinute = 120;
-      break;
-    default:
-      break;
-  }
-  std::string minuteText = std::to_string(matchMinute);
-  if (matchMinute >= periodEndMinute)
-    minuteText =
-        std::to_string(periodEndMinute) + "+" + std::to_string(matchMinute - periodEndMinute + 1);
+  // Stoppage time shows as "45+2'" rather than clamping or overrunning the period.
+  const std::string minuteText =
+      MatchMinuteText(match->GetMatchTime_ms(), match->PeriodEndMinute());
 
   char scoreBuf[256];
-  snprintf(scoreBuf, sizeof(scoreBuf), "%s  %d - %d  %s  (%s')", team0Name.c_str(), score0, score1,
+  snprintf(scoreBuf, sizeof(scoreBuf), "%s  %d - %d  %s  (%s)", team0Name.c_str(), score0, score1,
            team1Name.c_str(), minuteText.c_str());
 
   Gui2Frame* frame = new Gui2Frame(windowManager, "frame_ingame", 10, 8, 80, 84, true);
