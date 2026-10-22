@@ -12,4 +12,6 @@ dist/
 .zcode/
 tools/*_bin
 *.save
+# Test fixture for the career_match smoke test.
+!data/menu_smoke_career_match/career.save
 
