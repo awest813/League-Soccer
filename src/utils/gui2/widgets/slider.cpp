@@ -118,13 +118,6 @@ void Gui2Slider::Redraw() {
     image->DrawRectangle(0, h - 2, w, 2, brightColor, 255);
   }
 
-  // Dark text on the gold focus fill, white otherwise (as for buttons).
-  const Vector3 textColor = IsFocussed() ? darkColor : accentColor;
-  if (titleCaption)
-    titleCaption->SetColor(textColor);
-  if (valueCaption)
-    valueCaption->SetColor(textColor);
-
   // Groove / Track geometry
   int trackMarginX = int(round(x_ratio * 0.8f));
   int trackX = trackMarginX;

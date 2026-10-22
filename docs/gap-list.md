@@ -279,7 +279,7 @@ Audited by capturing frames of each menu route and of live matches under Xvfb
 
 | Area | Defect | Fix |
 | --- | --- | --- |
-| Focus colours | Buttons, icon selectors and sliders drew white text on the gold focus highlight, which was hard to read. | Focused text is now dark navy on gold (`Gui2Button`, `Gui2IconSelector`, `Gui2Slider`); unfocused text keeps its own colour. |
+| Focus colours | Focused buttons, icon selectors and sliders were briefly switched to dark navy text on the gold fill. | Reverted at the user's request: focused text is white with its dark outline again. |
 | In-match HUD | The radar and player panels kept drawing over the pause menu, game-over screen and replay menu. | `Match::SetHUDVisible`; the in-match page shows the HUD and hides it when an overlay replaces it. |
 | Game over | The OK button overlapped the man-of-the-match caption, and the stats grid left a large empty gap. | Tighter frame, stats grid, caption and button positions. |
 | Replay menu | The replay banner covered the scoreboard, and the timer read "-0s" at the end. | Banner moved below the scoreboard; timer reads `elapsed / total (percent)`. |

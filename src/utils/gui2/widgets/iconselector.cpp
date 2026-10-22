@@ -92,12 +92,6 @@ void Gui2IconSelector::Redraw() {
                        alpha);
   image->OnChange();
 
-  // Dark text on the gold focus fill, white otherwise (as for buttons).
-  const Vector3 textColor = windowManager->GetStyle()->GetColor(
-      IsFocussed() ? e_DecorationType_Dark1 : e_DecorationType_Bright1);
-  titleCaption->SetColor(textColor);
-  selectedCaption->SetColor(textColor);
-
   // calculate sizes and positions for each entry
   for (int i = 0; i < (signed int)entries.size(); i++) {
     float position = i - visibleSelectedEntry;
