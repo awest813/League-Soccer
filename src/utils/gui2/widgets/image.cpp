@@ -21,24 +21,6 @@
 
 namespace blunted {
 
-namespace {
-
-bool HasRenderableSurface(const boost::intrusive_ptr<Image2D>& imageSource, SDL_Surface*& surface) {
-  if (!imageSource) {
-    return false;
-  }
-
-  boost::intrusive_ptr<Resource<Surface>> surfaceRes = imageSource->GetImage();
-  if (!surfaceRes) {
-    return false;
-  }
-
-  surface = surfaceRes->GetResource()->GetData();
-  return surface != nullptr && surface->w > 0 && surface->h > 0;
-}
-
-}  // namespace
-
 Gui2Image::Gui2Image(Gui2WindowManager* windowManager, const std::string& name, float x_percent,
                      float y_percent, float width_percent, float height_percent)
     : Gui2View(windowManager, name, x_percent, y_percent, width_percent, height_percent) {
@@ -80,8 +62,11 @@ void Gui2Image::Redraw() {
   }
   sourceSurfaceRes->resourceMutex.lock();
 
-  SDL_Surface* imageSurfTmp = nullptr;
-  const bool hasRenderableSurface = HasRenderableSurface(imageSource, imageSurfTmp);
+  // Use the surface already fetched: asking imageSource again would take its
+  // lock while holding the surface's, the reverse of Image2D::SetImage.
+  SDL_Surface* imageSurfTmp = sourceSurfaceRes->GetResource()->GetData();
+  const bool hasRenderableSurface =
+      imageSurfTmp != nullptr && imageSurfTmp->w > 0 && imageSurfTmp->h > 0;
 
   int x, y, w, h;
   windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);
@@ -142,8 +127,11 @@ void Gui2Image::SetZoom(float zoomx, float zoomy) {
   }
   sourceSurfaceRes->resourceMutex.lock();
 
-  SDL_Surface* imageSurfTmp = nullptr;
-  const bool hasRenderableSurface = HasRenderableSurface(imageSource, imageSurfTmp);
+  // Use the surface already fetched: asking imageSource again would take its
+  // lock while holding the surface's, the reverse of Image2D::SetImage.
+  SDL_Surface* imageSurfTmp = sourceSurfaceRes->GetResource()->GetData();
+  const bool hasRenderableSurface =
+      imageSurfTmp != nullptr && imageSurfTmp->w > 0 && imageSurfTmp->h > 0;
 
   int x, y, w, h;
   windowManager->GetCoordinates(x_percent, y_percent, width_percent, height_percent, x, y, w, h);

@@ -189,7 +189,8 @@ void ScoutYouthPlayer(CareerSave& save, CareerCommon::CareerEvents& events) {
   static const std::vector<std::string> lastNames = {"Martinez", "Tanaka", "Okafor", "Silva",
                                                      "Kim"};
   static const std::vector<std::string> positions = {"CF", "CM", "CB", "AM", "GK"};
-  static std::mt19937 rng(std::random_device{}());
+  // The shared career RNG, so seeded runs (tests, audits) are repeatable.
+  std::mt19937& rng = CareerCommon::Rng();
   std::uniform_int_distribution<int> fd(0, static_cast<int>(firstNames.size()) - 1);
   std::uniform_int_distribution<int> ld(0, static_cast<int>(lastNames.size()) - 1);
   std::uniform_int_distribution<int> pd(0, static_cast<int>(positions.size()) - 1);
