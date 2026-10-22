@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <mutex>
 
 #include "../data/matchdata.hpp"
 #include "../menu/ingame/playerhud.hpp"
@@ -337,6 +338,15 @@ protected:
   std::unique_ptr<Gui2Caption> messageCaption;
   std::unique_ptr<Gui2StatsOverlay> statsOverlay;
   unsigned long messageCaptionRemoveTime_ms;
+
+  // HUD changes asked for on the game thread (Process, menu events) and
+  // applied in Put on the graphics thread, so each widget is only drawn from
+  // one thread. Drawing the same caption from both corrupted the heap.
+  std::mutex hudRequestMutex;
+  std::string pendingMessage;
+  int pendingMessageTime_ms = 0;
+  bool hasPendingMessage = false;
+  bool pendingStatsToggle = false;
 
   mutable Lockable<unsigned long> iterations;
   TaskSequenceInfo gameSequenceInfo;

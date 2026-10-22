@@ -716,11 +716,10 @@ void Match::RumblePlayingPads(float lowFrequency, float highFrequency, unsigned 
 }
 
 void Match::SpamMessage(const std::string& msg, int time_ms) {
-  messageCaption->SetCaption(msg);
-  float w = messageCaption->GetTextWidthPercent();
-  messageCaption->SetPosition(50.0f - w * 0.5f, 7.2f);
-  messageCaption->Show();
-  messageCaptionRemoveTime_ms = actualTime_ms + time_ms;
+  std::lock_guard<std::mutex> lock(hudRequestMutex);
+  pendingMessage = msg;
+  pendingMessageTime_ms = time_ms;
+  hasPendingMessage = true;
 }
 
 Player* Match::GetPlayer(int playerID) {
@@ -928,12 +927,8 @@ void Match::UpdateCrowdAudio() {
 }
 
 void Match::ToggleStatsOverlay() {
-  if (statsOverlay->IsVisible()) {
-    statsOverlay->Hide();
-  } else {
-    statsOverlay->UpdateStats();
-    statsOverlay->Show();
-  }
+  std::lock_guard<std::mutex> lock(hudRequestMutex);
+  pendingStatsToggle = !pendingStatsToggle;
 }
 
 void Match::GetCameraParams(float& zoom, float& height, float& fov, float& angleFactor) {
@@ -1213,14 +1208,12 @@ void Match::Process() {
     if (IsInPlay()) {
       if (t1goal) {
         matchData->SetGoalCount(teams[1]->GetID(), matchData->GetGoalCount(1) + 1);
-        scoreboard->SetGoalCount(1, matchData->GetGoalCount(1));
         goalScored = true;
         lastGoalTeamID = teams[1]->GetID();
         teams[1]->GetController()->UpdateTactics();
       }
       if (t2goal) {
         matchData->SetGoalCount(teams[0]->GetID(), matchData->GetGoalCount(0) + 1);
-        scoreboard->SetGoalCount(0, matchData->GetGoalCount(0));
         goalScored = true;
         lastGoalTeamID = teams[0]->GetID();
         teams[0]->GetController()->UpdateTactics();
@@ -1552,6 +1545,31 @@ void Match::Put() {
       timeStr += " +" + int_to_str(added);
     scoreboard->SetTimeStr(timeStr);
     //}
+    scoreboard->SetGoalCount(0, matchData->GetGoalCount(0));
+    scoreboard->SetGoalCount(1, matchData->GetGoalCount(1));
+
+    bool toggleStats = false;
+    {
+      std::lock_guard<std::mutex> lock(hudRequestMutex);
+      if (hasPendingMessage) {
+        messageCaption->SetCaption(pendingMessage);
+        const float w = messageCaption->GetTextWidthPercent();
+        messageCaption->SetPosition(50.0f - w * 0.5f, 7.2f);
+        messageCaption->Show();
+        messageCaptionRemoveTime_ms = fetchedbuf_actualTime_ms + pendingMessageTime_ms;
+        hasPendingMessage = false;
+      }
+      toggleStats = pendingStatsToggle;
+      pendingStatsToggle = false;
+    }
+    if (toggleStats) {
+      if (statsOverlay->IsVisible()) {
+        statsOverlay->Hide();
+      } else {
+        statsOverlay->UpdateStats();
+        statsOverlay->Show();
+      }
+    }
 
     if (statsOverlay->IsVisible())
       statsOverlay->UpdateStats();

@@ -7,6 +7,7 @@
 #include "managers/systemmanager.hpp"
 #include "scene/iscene.hpp"
 #include "scene/objectfactory.hpp"
+#include "utils/textrenderlock.hpp"
 
 namespace blunted {
 
@@ -118,6 +119,7 @@ SDL_Surface* Text2D::RenderTextSurface(const std::string& text, const Vector3& c
                         (unsigned char)(floor(color.coords[2] * 255.0)), 0};
   SDL_Color sdlBackColor = {0, 0, 0, 0};
 
+  std::lock_guard<std::recursive_mutex> textLock(TextRenderMutex());
   SDL_Surface* sdlText = TTF_RenderUTF8_Blended(font, text.c_str(), sdlColor);
   // printf("Oh My Goodness, an error : %s\n", TTF_GetError());
   // SDL_Surface *sdlText = TTF_RenderText_Solid(font, text.c_str(), sdlColor);

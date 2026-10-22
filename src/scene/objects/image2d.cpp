@@ -2,6 +2,7 @@
 
 #include "base/log.hpp"
 #include "systems/isystemobject.hpp"
+#include "utils/textrenderlock.hpp"
 
 namespace blunted {
 
@@ -294,7 +295,11 @@ void Image2D::DrawSimpleText(const std::string& caption, int x, int y, TTF_Font*
 
   SDL_Color sdlColor = {(unsigned char)(color.coords[0]), (unsigned char)(color.coords[1]),
                         (unsigned char)(color.coords[2]), 0};
-  SDL_Surface* sdlText = TTF_RenderUTF8_Blended(font, caption.c_str(), sdlColor);
+  SDL_Surface* sdlText = nullptr;
+  {
+    std::lock_guard<std::recursive_mutex> textLock(TextRenderMutex());
+    sdlText = TTF_RenderUTF8_Blended(font, caption.c_str(), sdlColor);
+  }
   if (alpha != 255)
     sdl_setsurfacealpha(sdlText, alpha);
 
