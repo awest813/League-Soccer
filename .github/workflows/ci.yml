@@ -233,6 +233,13 @@ jobs:
             "[menu-smoke] System page opening settings" \
             "[menu-smoke] League system settings reached successfully"
 
+      - name: Smoke test League damaged save
+        run: |
+          cd build
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_league_damaged_save.config" 90 \
+            "[menu-smoke] League start reached, opening saved leagues" \
+            "[menu-smoke] League damaged save rejected"
+
       - name: Smoke test Settings
         run: |
           cd build

@@ -52,6 +52,7 @@ class LeagueStartLoadPage : public Gui2Page {
 public:
   LeagueStartLoadPage(Gui2WindowManager* windowManager, const Gui2PageData& pageData);
   virtual ~LeagueStartLoadPage();
+  virtual void Process();
 
 protected:
   void GoLoadSave();
@@ -59,6 +60,9 @@ protected:
   void LoadSaveDir(const std::string& saveName);
 
   Gui2FileBrowser* browser;
+  unsigned long smokeStartedAt_ms = 0;  // load_damaged_save smoke route
+  bool smokeLoadTriggered = false;
+  bool saveRejected = false;  // the last LoadSaveDir found the save unreadable
 };
 
 class LeagueStartNewPage : public Gui2Page {

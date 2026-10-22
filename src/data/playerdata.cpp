@@ -7,9 +7,10 @@
 #include "dbroles.hpp"
 #include "utils/database.hpp"
 
-PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
-  // std::string test = "select * from players where id = " + int_to_str(databaseID) + " limit 1";
-  // printf("test: %s\n", test.c_str());
+PlayerData::PlayerData(int playerDatabaseID) : PlayerData() {
+  // The default constructor provides every stat, so a profile missing some
+  // (or a missing row) cannot trip GetStat's assert.
+  databaseID = playerDatabaseID;
 
   auto result = GetDB()->Query(
       "select firstname, lastname, role, base_stat, profile_xml, age, skincolor, hairstyle, "
@@ -21,10 +22,13 @@ PlayerData::PlayerData(int playerDatabaseID) : databaseID(playerDatabaseID) {
   float baseStat = 0.0f;
   int age = 15;
 
-  skinColor = int(round(random(1, 4)));
-  hairStyle = "short01";
-  hairColor = "darkblonde";
-  height = 1.8f;
+  if (result->data.empty()) {
+    Log(e_Error, "PlayerData", "PlayerData",
+        "Player " + int_to_str(databaseID) + " is not in the database");
+    lastName = "Player " + int_to_str(databaseID);
+    roles.push_back(e_PlayerRole_CM);
+    return;
+  }
 
   for (unsigned int c = 0; c < result->data.at(0).size(); c++) {
     if (result->header.at(c).compare("firstname") == 0)

@@ -30,9 +30,11 @@ bool Database::Load(const std::string& filename) {
 std::unique_ptr<DatabaseResult> Database::Query(const std::string& query) {
   auto dbresult = std::make_unique<DatabaseResult>();
   if (!db) {
+    lastError = "no database is open";
     Log(e_Error, "Database", "Query", "No database is open for query: '" + query + "'");
     return dbresult;
   }
+  lastError.clear();
 
   int rows = 0;
   int columns = 0;
@@ -45,7 +47,10 @@ std::unique_ptr<DatabaseResult> Database::Query(const std::string& query) {
     if (errorMsg)
       sqlite3_free(errorMsg);
     sqlite3_free_table(result);
-    Log(e_FatalError, "Database", "Query",
+    // Not fatal: callers check for an empty result, and a damaged or foreign
+    // database (a League save, an import) should not quit the game.
+    lastError = errorMsgStr;
+    Log(e_Error, "Database", "Query",
         "SQLite error message: '" + errorMsgStr + "' for query: '" + query + "'");
     return dbresult;
   }

@@ -20,6 +20,10 @@ bool PrepareDatabaseForLeague();
 bool SaveAutosaveToDatabase();
 bool SaveDatabaseToAutosave();
 bool LoadLeague();
+// Whether the open database is a League save the menus can use: it has a
+// settings row, clubs and players. A save that fails this is damaged or not a
+// League save at all.
+bool LeagueDatabaseIsUsable();
 void GenerateSeasonCalendars();
 bool StepLeagueTime();
 

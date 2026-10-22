@@ -348,6 +348,9 @@ loading, League mode, Career mode and the Football Manager importer.
 | `Database` | `Query` used uninitialised row/column counts and a null table if the call failed or no database was open. `Load` kept SQLite's half-open handle after a failed open. | Both are initialised and checked; a failed open leaves no handle and `Query` refuses to run. |
 | Player roles | `PlayerData` split Football Manager notation ("D C, DM") on spaces, so nearly every outfielder was labelled CM in the match HUD and line-up screens (e.g. "[CM] Ramos"). | The career parser moved to `data/dbroles.hpp` and both use it; a player gets each listed position, natural one first. |
 | One-name players | Isco, Jesé, Marcelo, Pedro, Pepe and Rafinha had an empty surname. The HUD and goal messages show surnames, so they appeared blank. Four other one-name players already stored the name as the surname. | The data now stores all ten the same way, and `PlayerData` moves a lone first name into the surname for other databases. |
+| Fatal errors | Any failed query quit the game, so a damaged League save took it down on the first read. | `Query` logs the error, keeps it in `GetLastError()` and returns no rows; callers already check for empty results. Loading a League save checks it opened and has settings, clubs and players. If not, the bundled database is reopened and a "This save could not be read" dialog is shown (all five languages). The `load_damaged_save` League smoke route, run in CI, tests this with a non-SQLite file. |
+| Missing rows | `TeamData` and `PlayerData` read the first row without checking, so a missing player ID threw and ended the game. Formation slots the XML left out, or slots without a `position`/`role` field, read uninitialised or end-iterator values. | A missing player gets default stats and a placeholder name, with an error logged. A missing club ends with a message naming it, since no match can be built around it. Formations start from a 4-4-2 and only take the fields that are present. |
+| League save files | Replacing `database.sqlite`/`autosave.sqlite` used the throwing `filesystem::remove`. | The error-code overload; a failure is reported by the copy that follows. |
 | League generator | `SetupFourLeagues` (currently unused) gave players hairstyle "short" and skin colour 0, neither of which has an asset. | `short01` and skin 1-4. |
 
 `tests/career/database_integrity_test.cpp` now checks the bundled file:
@@ -359,8 +362,6 @@ ranges, profile stats, and that every logo and kit image exists.
 
 | Pri | Gap |
 | --- | --- |
-| P1 | **Fatal errors.** Any failed query still quits the game. With text quoted this needs a corrupt or foreign database, but a damaged League save takes the game down instead of showing an error. |
-| P1 | **Unchecked rows.** `TeamData` and `PlayerData` read `data.at(0)` without checking, so a club or player ID missing from the database throws and ends the game. |
 | P2 | **Size.** Two clubs per league; Career mode pads its tables with a default league. `tournaments` and `tournamentdata` are empty and unused. |
 | P2 | **No schema version.** Saves and imports create tables with ad-hoc `CREATE TABLE` strings in several places; there is no version number or migration step. |
 | P2 | **No indexes.** Lookups by `players.team_id` scan the table. That is fine at 144 players but not for an imported database with tens of thousands. |

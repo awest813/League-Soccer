@@ -269,7 +269,7 @@ bool SaveAutosaveToDatabase() {
 
   // remove previous database
   if (fs::exists(dest / "database.sqlite"))
-    fs::remove(dest / "database.sqlite");
+    fs::remove(dest / "database.sqlite", error);
 
   // copy autosave to database
   fs::copy_file(dest / "autosave.sqlite", dest / "database.sqlite", error);
@@ -289,7 +289,7 @@ bool SaveDatabaseToAutosave() {
 
   // remove previous autosave
   if (fs::exists(dest / "autosave.sqlite"))
-    fs::remove(dest / "autosave.sqlite");
+    fs::remove(dest / "autosave.sqlite", error);
 
   // copy database to autosave
   fs::copy_file(dest / "database.sqlite", dest / "autosave.sqlite", error);
@@ -301,6 +301,15 @@ bool SaveDatabaseToAutosave() {
 }
 
 bool LoadLeague() {
+  return true;
+}
+
+bool LeagueDatabaseIsUsable() {
+  for (const char* query : {"SELECT team_id FROM settings LIMIT 1", "SELECT id FROM teams LIMIT 1",
+                            "SELECT id FROM players LIMIT 1"}) {
+    if (GetDB()->Query(query)->data.empty())
+      return false;
+  }
   return true;
 }
 

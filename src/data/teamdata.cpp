@@ -131,6 +131,13 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
 
   bool national = false;
 
+  if (result->data.empty()) {
+    // A match cannot be built around a club that does not exist; say which.
+    Log(e_FatalError, "TeamData", "TeamData",
+        "Team " + int_to_str(databaseID) + " is not in the database");
+    return;
+  }
+
   for (unsigned int c = 0; c < result->data.at(0).size(); c++) {
     if (result->header.at(c).compare("national") == 0)
       national = (atoi(result->data.at(0).at(c).c_str()) == 0) ? false : true;
@@ -199,6 +206,18 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
 
   // team formation
 
+  // Start from a 4-4-2 so slots the formation XML leaves out still have a
+  // role and position instead of uninitialised values.
+  static const e_PlayerRole kDefaultRoles[playerNum] = {
+      e_PlayerRole_GK, e_PlayerRole_LB, e_PlayerRole_CB, e_PlayerRole_CB,
+      e_PlayerRole_RB, e_PlayerRole_LM, e_PlayerRole_CM, e_PlayerRole_CM,
+      e_PlayerRole_RM, e_PlayerRole_CF, e_PlayerRole_CF};
+  for (int num = 0; num < playerNum; num++) {
+    formation[num].role = kDefaultRoles[num];
+    formation[num].databasePosition = GetDefaultRolePosition(kDefaultRoles[num]);
+    formation[num].position = formation[num].databasePosition;
+  }
+
   XMLLoader loader;
   XMLTree tree = loader.Load(formationString);
 
@@ -208,9 +227,13 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
   while (iter != tree.children.end()) {
     for (int num = 0; num < playerNum; num++) {
       if ((*iter).first == "p" + int_to_str(num + 1)) {
-        formation[num].databasePosition =
-            GetVectorFromString((*iter).second.children.find("position")->second.value);
-        formation[num].role = GetRoleFromString((*iter).second.children.find("role")->second.value);
+        const auto& fields = (*iter).second.children;
+        const auto positionField = fields.find("position");
+        const auto roleField = fields.find("role");
+        if (positionField != fields.end())
+          formation[num].databasePosition = GetVectorFromString(positionField->second.value);
+        if (roleField != fields.end())
+          formation[num].role = GetRoleFromString(roleField->second.value);
 
         // combine custom positions with hardcoded formation positions belonging to certain roles.
         // this way, more extreme user formation settings are 'normalized' somewhat.

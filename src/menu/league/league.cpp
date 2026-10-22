@@ -3,6 +3,8 @@
 #include <cctype>
 #include <chrono>
 #include <ctime>
+#include <filesystem>
+#include <fstream>
 
 #include "../../league/leaguecode.hpp"
 #include "../../main.hpp"
@@ -247,6 +249,11 @@ void LeagueStartPage::Process() {
   if (!autoAdvanceTriggered && league_menu_smoke::AnyEnabled() &&
       league_menu_smoke::Now_ms() >= pageCreatedTime_ms + league_menu_smoke::kAdvanceDelay_ms) {
     autoAdvanceTriggered = true;
+    if (league_menu_smoke::RouteEnabled("load_damaged_save")) {
+      printf("[menu-smoke] League start reached, opening saved leagues\n");
+      GoLoad();
+      return;
+    }
     printf("[menu-smoke] League start reached, creating a new league\n");
     GoNew();
   }
@@ -295,6 +302,30 @@ LeagueStartLoadPage::LeagueStartLoadPage(Gui2WindowManager* windowManager,
 }
 
 LeagueStartLoadPage::~LeagueStartLoadPage() {}
+
+void LeagueStartLoadPage::Process() {
+  Gui2Page::Process();
+  if (!league_menu_smoke::RouteEnabled("load_damaged_save"))
+    return;
+  const unsigned long now_ms = league_menu_smoke::Now_ms();
+  if (smokeStartedAt_ms == 0) {
+    smokeStartedAt_ms = now_ms;
+  } else if (!smokeLoadTriggered &&
+             now_ms >= smokeStartedAt_ms + league_menu_smoke::kAdvanceDelay_ms) {
+    // A save whose database is not SQLite at all.
+    smokeLoadTriggered = true;
+    namespace fs = std::filesystem;
+    const fs::path dir = fs::path("saves") / "smoke_damaged_save";
+    std::error_code error;
+    fs::create_directories(dir, error);
+    std::ofstream(dir / "database.sqlite") << "not a database";
+    LoadSaveDir("smoke_damaged_save");
+    fs::remove_all(dir, error);
+    printf(saveRejected ? "[menu-smoke] League damaged save rejected\n"
+                        : "[menu-smoke] League damaged save was NOT rejected\n");
+    GetMenuTask()->QuitGame();
+  }
+}
 
 void LeagueStartLoadPage::GoLoadSave() {
   std::string saveName = browser->GetClickedEntry().name;
@@ -364,7 +395,29 @@ void LeagueStartLoadPage::LoadSaveDir(const std::string& saveName) {
 
   SaveDatabaseToAutosave();
 
-  GetDB()->Load(saveLoc.string() + "/autosave.sqlite");
+  // A damaged save must not open as an empty league: go back to the bundled
+  // database and say so.
+  if (!GetDB()->Load(saveLoc.string() + "/autosave.sqlite") || !LeagueDatabaseIsUsable()) {
+    Log(e_Error, "LeagueStartLoadPage", "LoadSaveDir", "League save is unreadable: " + saveName);
+    saveRejected = true;
+    GetDB()->Load("databases/default/database.sqlite");
+    SetActiveSaveDirectory("");
+    auto& loc = Localization::GetInstance();
+    Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_league_save_unreadable", 25, 30, 50, 25,
+                                     loc.Translate("league_save_unreadable"));
+    dlg->AddSingleButton(loc.Translate("action_back"))->SetFocus();
+    dlg->sig_OnPositive.connect([dlg](...) {
+      dlg->Exit();
+      delete dlg;
+    });
+    dlg->sig_OnCancel.connect([dlg](...) {
+      dlg->Exit();
+      delete dlg;
+    });
+    this->AddView(dlg);
+    dlg->Show();
+    return;
+  }
 
   auto checkResult = GetDB()->Query(
       "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'match_results' LIMIT 1");
