@@ -2635,6 +2635,15 @@ void CareerMatchdayPage::PlayMatchFixture(int fixtureIndex) {
   // side -1 controls team 0, side 1 controls team 1.
   std::vector<SideSelection> sides(1);
   sides[0].controllerID = 0;
+  // The career_match smoke test plays with the scripted gamepad: an idle
+  // keyboard would leave the user's set pieces waiting for input.
+  if (GetConfiguration()->GetBool("menu_smoke_test_gamepad_match", false)) {
+    const std::vector<IHIDevice*>& controllers = GetControllers();
+    for (int i = 0; i < static_cast<int>(controllers.size()); i++) {
+      if (controllers.at(i)->IsScriptedInput())
+        sides[0].controllerID = i;
+    }
+  }
   if (isHome) {
     sides[0].side = -1;  // user controls Home
     GetMenuTask()->SetTeamIDs(std::to_string(teamDBID), std::to_string(opponentDBID));

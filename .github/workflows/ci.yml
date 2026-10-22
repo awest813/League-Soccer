@@ -170,7 +170,7 @@ jobs:
           save_dir="$(mktemp -d)"
           cp "${GITHUB_WORKSPACE}/data/menu_smoke_career_match/career.save" "$save_dir/"
           config="$save_dir/career_match.config"
-          printf '"debug" "true"\n"quick_start" "false"\n"menu_smoke_test_page" "career_match"\n"menu_smoke_career_save_directory" "%s"\n"menu_smoke_test_full_match" "true"\n"match_duration_minutes" "5.000000"\n"menu_smoke_match_time_scale" "6.0"\n' "$save_dir" > "$config"
+          printf '"debug" "true"\n"quick_start" "false"\n"menu_smoke_test_page" "career_match"\n"menu_smoke_career_save_directory" "%s"\n"menu_smoke_test_full_match" "true"\n"menu_smoke_test_gamepad_match" "true"\n"match_duration_minutes" "5.000000"\n"menu_smoke_match_time_scale" "12.0"\n' "$save_dir" > "$config"
           ../tests/run_menu_smoke.sh ./gameplayfootball "$config" 420 \
             "[career-squad] Ajax fields 16 career players, controller locked to 99999" \
             "[career-squad] Controller locked to Smoke Pro" \

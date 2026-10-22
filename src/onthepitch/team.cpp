@@ -315,8 +315,10 @@ void Team::HumanGamersSelectAnyone() {
 
 void Team::SelectPlayer(Player* player) {
   // printf("trying to switch to %s\n", player->GetPlayerData()->GetLastName().c_str());
+  // A gamer locked to one player (Player-mode careers) is never switched.
   if (AllowsAutomaticPlayerSelection(ReadConfiguredPlayerSwitchMode(*GetConfiguration())) &&
-      !IsHumanControlled(player->GetID()) && humanGamers.size() != 0) {  // already selected
+      !IsHumanControlled(player->GetID()) && humanGamers.size() != 0 &&
+      humanGamers.at(*switchPriority.begin())->GetLockedPlayerID() == -1) {  // already selected
     humanGamers.at(*switchPriority.begin())->SetSelectedPlayerID(player->GetID());
     switchPriority.push_back(*switchPriority.begin());
     switchPriority.pop_front();
