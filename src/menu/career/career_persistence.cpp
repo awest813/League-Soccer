@@ -376,8 +376,11 @@ bool Deserialize(const std::string& text, CareerSave& out, std::vector<TransferB
       InboxItem m;
       if (t.size() > 0)
         m.id = CareerCommon::SafeStoi(t[0]);
-      if (t.size() > 1)
-        m.type = static_cast<InboxItemType>(CareerCommon::SafeStoi(t[1]));
+      if (t.size() > 1) {
+        const int type = CareerCommon::SafeStoi(t[1]);
+        if (type >= 0 && type <= static_cast<int>(InboxItemType::DERBY_HYPE))
+          m.type = static_cast<InboxItemType>(type);
+      }
       if (t.size() > 2)
         m.weekCreated = CareerCommon::SafeStoi(t[2]);
       if (t.size() > 3)

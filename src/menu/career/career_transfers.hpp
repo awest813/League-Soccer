@@ -54,6 +54,16 @@ bool CompleteTransfer(CareerSave& save, CareerCommon::CareerEvents& events,
                       std::vector<TransferTarget>& targets, std::vector<TransferBid>& bids,
                       const std::string& playerName);
 
+// The AI front office for careers where the user does not run the club
+// (Coach and Player mode). Before the season rollover it renews expiring
+// contracts worth keeping (the user's own footballer always); after it, it
+// signs affordable free agents until the squad has kMinFrontOfficeSquad
+// players. Decisions are reported to the inbox. No-op when the user manages
+// the club.
+constexpr size_t kMinFrontOfficeSquad = 18;
+void FrontOfficeBeforeRollover(CareerSave& save);
+void FrontOfficeAfterRollover(CareerSave& save, CareerCommon::CareerEvents& events);
+
 }  // namespace CareerTransfers
 }  // namespace blunted
 

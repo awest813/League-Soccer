@@ -108,7 +108,8 @@ public:
   bool AdvanceSeason(int expectedSeason = -1);
   bool CompleteFixture(int season, int week, bool isHome, int userTeamID, int opponentTeamID,
                        const std::string& opponentName, int userGoals, int opponentGoals,
-                       const std::vector<std::string>& scorers = {});
+                       const std::vector<std::string>& scorers = {},
+                       const std::vector<std::string>& assisters = {});
   void ProcessPlayerGrowth(PlayerCareerState& player);
   void UpdatePlayerValue(PlayerCareerState& player);
   void ReleasePlayer(const std::string& playerName,

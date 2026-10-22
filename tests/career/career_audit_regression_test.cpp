@@ -423,4 +423,76 @@ TEST(CareerAuditRegression, RosterIdentitiesAreUniqueAndStable) {
   EXPECT_NE(std::find(squad.begin(), squad.end(), 3), squad.end());
 }
 
+// Coach and Player careers had nobody running the club: contracts expired
+// and the squad shrank. The AI front office renews keepers and fills gaps.
+TEST(CareerAuditRegression, FrontOfficeRenewsAndSignsForCoachCareers) {
+  NullEvents events;
+  CareerSave save;
+  save.mode = CareerMode::COACH;
+  save.wageBudget = 10000000;
+  for (int i = 0; i < 15; ++i)
+    save.roster.push_back(MakePlayer("Squad " + std::to_string(i), 26, 3));
+  save.roster.push_back(MakePlayer("Expiring Star", 27, 1));
+  save.roster.back().ovr = 80;
+  save.roster.push_back(MakePlayer("Expiring Reserve", 31, 1));
+  save.roster.back().ovr = 50;
+  for (int i = 0; i < 5; ++i)
+    save.freeAgents.push_back(MakePlayer("Agent " + std::to_string(i), 24, 0));
+
+  blunted::CareerTransfers::FrontOfficeBeforeRollover(save);
+  std::vector<TransferBid> bids;
+  std::vector<TransferTarget> targets;
+  blunted::CareerSim::AdvanceSeason(save, events, bids, targets);
+  blunted::CareerTransfers::FrontOfficeAfterRollover(save, events);
+
+  auto find = [&save](const std::string& name) {
+    return std::find_if(save.roster.begin(), save.roster.end(),
+                        [&name](const PlayerCareerState& p) { return p.name == name; });
+  };
+  ASSERT_NE(find("Expiring Star"), save.roster.end());
+  EXPECT_EQ(find("Expiring Star")->contract.yearsRemaining, 2);
+  EXPECT_EQ(find("Expiring Reserve"), save.roster.end());
+  EXPECT_GE(save.roster.size(), blunted::CareerTransfers::kMinFrontOfficeSquad);
+  EXPECT_FALSE(save.inbox.empty());
+
+  // The user's club decisions stay the user's.
+  CareerSave owner;
+  owner.mode = CareerMode::OWNER_GM;
+  owner.roster.push_back(MakePlayer("Expiring Star", 27, 1));
+  owner.roster.back().ovr = 80;
+  blunted::CareerTransfers::FrontOfficeBeforeRollover(owner);
+  EXPECT_EQ(owner.roster.front().contract.yearsRemaining, 1);
+}
+
+TEST(CareerAuditRegression, InboxKeepsTheNewestMessages) {
+  CareerSave save;
+  for (int i = 0; i < 50; ++i)
+    blunted::CareerInbox::Post(save, InboxItemType::PRESS_SNIPPET, "Message " + std::to_string(i),
+                               "Body | with a pipe\nand a newline");
+  ASSERT_EQ(save.inbox.size(), blunted::CareerInbox::kMaxMessages);
+  EXPECT_EQ(save.inbox.back().subject, "Message 49");
+  EXPECT_EQ(save.inbox.back().id, 50);
+  EXPECT_EQ(save.inbox.back().body.find('|'), std::string::npos);
+}
+
+// Assists were never recorded; a played fixture now also posts a report.
+TEST(CareerAuditRegression, FixturesCreditAssistsAndPostAReport) {
+  const auto dir = FreshDir("assists_report");
+  blunted::CareerDatabase& db = blunted::CareerDatabase::GetInstance();
+  db.Initialize(dir.string());
+  ASSERT_TRUE(db.CreateNewCareer("Providers", "manager", "Boss"));
+  CareerSave* save = db.GetActiveSave();
+  save->roster.clear();
+  for (int i = 0; i < 12; ++i)
+    save->roster.push_back(MakePlayer("Player " + std::to_string(i), 25, 3));
+  save->inbox.clear();
+  ASSERT_TRUE(db.CompleteFixture(1, 1, true, 1, 2, "Rivals", 1, 0, {"Player 3"}, {"Player 4"}));
+  save = db.GetActiveSave();
+  EXPECT_EQ(save->roster[3].careerGoals, 1);
+  EXPECT_EQ(save->roster[4].careerAssists, 1);
+  ASSERT_FALSE(save->inbox.empty());
+  EXPECT_EQ(save->inbox.back().type, InboxItemType::PRESS_SNIPPET);
+  std::filesystem::remove_all(dir);
+}
+
 }  // namespace

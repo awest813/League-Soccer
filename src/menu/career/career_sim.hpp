@@ -88,7 +88,8 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
 // named scorers. Shared by sim and 3D paths.
 void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int homeGoals,
                       int awayGoals, const std::string& opponentLabel,
-                      const std::vector<std::string>& scorers = {});
+                      const std::vector<std::string>& scorers = {},
+                      const std::vector<std::string>& assisters = {});
 
 void Process3DMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int homeGoals,
                           int awayGoals);

@@ -184,4 +184,26 @@ std::string PositionFromDbRole(const std::string& dbRole) {
 }
 
 }  // namespace CareerCommon
+
+namespace CareerInbox {
+
+void Post(CareerSave& save, InboxItemType type, const std::string& subject,
+          const std::string& body) {
+  InboxItem item;
+  item.id = 1;
+  for (const auto& existing : save.inbox)
+    item.id = std::max(item.id, existing.id + 1);
+  item.type = type;
+  item.subject = CareerCommon::Sanitize(subject);
+  item.body = CareerCommon::Sanitize(body);
+  item.weekCreated = save.season.currentWeek;
+  save.inbox.push_back(item);
+  while (save.inbox.size() > kMaxMessages) {
+    auto oldest = std::find_if(save.inbox.begin(), save.inbox.end(),
+                               [](const InboxItem& message) { return message.read; });
+    save.inbox.erase(oldest != save.inbox.end() ? oldest : save.inbox.begin());
+  }
+}
+
+}  // namespace CareerInbox
 }  // namespace blunted

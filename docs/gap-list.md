@@ -147,13 +147,13 @@ multipliers for the CPU.
 | P1 | Fixture list | No round-robin schedule: the opponent is `(week*3) % N` over every database team in every league, so opponents repeat about 5 times a season. Opponent strength is a hash of the club name. |
 | P1 | Competitions | There are no cups or continental competitions ("Continental Cup" is only a message). Promotion and relegation are computed but never applied. |
 | P1 | Transfer market | Bids resolve instantly. There are no transfer windows or deadlines, no outgoing sales or loans, and no AI clubs; "Agent Patience" is display-only and contract length is fixed at 3 years. |
-| P1 | Contracts | No renewal negotiation, player refusals, release clauses or loans. Staff contracts expire silently. |
+| P1 | Contracts | No renewal negotiation, player refusals, release clauses or loans. Staff contracts expire silently. In Coach and Player careers the AI front office renews by a simple rule (rating near the squad average, or young with potential). |
 | P1 | Squad selection | `squad.startingXI` and `bench` are unused. The automatic match squad (one keeper and the ten strongest outfielders) cannot be changed, and the simulation still averages the whole squad's strength. |
-| P1 | Injuries and assists | `InjuryStatus` is never set, and `careerAssists` is never incremented. |
-| P1 | Inbox | The inbox screen works, but nothing ever adds a message to it. |
+| P1 | Injuries | `InjuryStatus` is never set. Assists are credited in simulated matches but not yet in 3D matches. |
 | P2 | Youth | 25 name combinations and lookups by name (duplicate names are likely). There is no intake schedule; `scoutingNetworkLevel` can't be raised, and `YouthAcademyState` and `ScoutingState` are unused. |
 | P2 | Staff | Only Assistant Coach and Youth Coach have any effect. Clicking a staff row fires them without confirmation, and there is no hiring cap. |
 | P2 | Finances | Processed only at season end. Stadium condition, fan satisfaction, season tickets and debt are decorative. The upgrade revenue bonus is ignored, and the stadium rename is fixed. |
+| P2 | Balance | Squads grow to about 80 overall within a few seasons, so a mid-table Coach club wins 9 of 12 titles in the long-run audit. Starters-only team strength would make this worse until the opponent pool is recalibrated. |
 | P2 | Board | Low confidence has no consequence, objectives are owner-focused for every role, and there is no in-season progress display. |
 | P2 | Morale and press | Morale comes only from goals, press, training and motivation. The press conference is one fixed question. |
 | P2 | History and achievements | `seasonSummaries` is never written, so past seasons always show empty. `achievementdata` is unreferenced, and event timestamps are 0. |
@@ -327,6 +327,14 @@ A new smoke test (`career_match` route, run in CI) plays a Player-mode fixture
 in 3D from the fixture in `data/menu_smoke_career_match`. It checks that the
 career squad is fielded, the controller is locked to the user's footballer, and
 the result and appearances are recorded.
+
+A further pass added:
+
+| Area | Before | Now |
+| --- | --- | --- |
+| Inbox | The screen worked, but nothing posted to it. | Each fixture posts a match report (score, scorers, league position). The rollover posts a board review (each objective met or missed), a season review (finish, points, record, prize money) and contract news. Completed transfers also post. Newest messages are listed first; the inbox keeps 40, dropping read ones first. Text is translated in all five languages. |
+| Front office | In Coach and Player careers nobody ran the club, so contracts expired and the squad shrank. | Before the rollover the AI front office renews expiring players worth keeping (always the user's own footballer). After it, it signs affordable free agents until the squad has 18 players. Each decision is reported in the inbox. Owner/GM careers are untouched. |
+| Assists | `careerAssists` was never incremented. | About seven simulated goals in ten have an assist, weighted towards creative midfielders and wingers; the assister gets an appearance. |
 
 The long-run audit test now checks that each season's finish equals the club's
 place in the final table, instead of the old estimate.

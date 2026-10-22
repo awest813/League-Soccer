@@ -319,6 +319,8 @@ struct SimulatedMatch {
   int awayShots = 0;
   int homePossession = 50;
   std::vector<std::string> scorers;
+  // Parallel to scorers: who set each goal up ("" when unassisted).
+  std::vector<std::string> assisters;
   bool played = false;
 };
 

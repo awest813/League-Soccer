@@ -115,7 +115,8 @@ bool CareerDatabase::CommitLifecycle(const std::function<void()>& mutate) {
 bool CareerDatabase::CompleteFixture(int season, int week, bool isHome, int userTeamID,
                                      int opponentTeamID, const std::string& opponentName,
                                      int userGoals, int opponentGoals,
-                                     const std::vector<std::string>& scorers) {
+                                     const std::vector<std::string>& scorers,
+                                     const std::vector<std::string>& assisters) {
   if (!m_activeSave || userGoals < 0 || opponentGoals < 0 ||
       season != m_activeSave->season.currentSeason || week != m_activeSave->season.currentWeek ||
       week < 1 || week > m_activeSave->season.maxWeeks || userTeamID == opponentTeamID ||
@@ -151,7 +152,18 @@ bool CareerDatabase::CompleteFixture(int season, int week, bool isHome, int user
                             : CareerTrainingPlan::BALANCED;
       SetTrainingPlan(plan, CareerActionSource::AI);
     }
-    CareerSim::ApplyMatchResult(save, *this, userGoals, opponentGoals, opponentName, scorers);
+    CareerSim::ApplyMatchResult(save, *this, userGoals, opponentGoals, opponentName, scorers,
+                                assisters);
+    std::string scorerList;
+    for (const auto& scorer : scorers)
+      scorerList += (scorerList.empty() ? "" : ", ") + scorer;
+    CareerInbox::Post(save, InboxItemType::PRESS_SNIPPET,
+                      TRF("career_inbox_result_subject",
+                          {std::to_string(week), save.name, std::to_string(userGoals),
+                           std::to_string(opponentGoals), opponentName}),
+                      TRF("career_inbox_result_body",
+                          {scorerList.empty() ? TR("career_inbox_no_scorers") : scorerList,
+                           std::to_string(CareerSim::LeaguePosition(save))}));
     ++save.season.currentWeek;
     save.season.inPreseason = false;
   });
@@ -657,11 +669,35 @@ bool CareerDatabase::AdvanceSeason(int expectedSeason) {
       (expectedSeason >= 0 && expectedSeason != m_activeSave->season.currentSeason))
     return false;
   return CommitLifecycle([&] {
-    CareerFinance::ProcessSeasonFinances(*m_activeSave);
+    auto& save = *m_activeSave;
+    CareerFinance::ProcessSeasonFinances(save);
     // Judge the season before the rollover resets its record and applies
     // prize-money and title reputation.
-    CareerBoard::EvaluateBoardObjectives(*m_activeSave, *this);
-    CareerSim::AdvanceSeason(*m_activeSave, *this, m_activeBids, m_transferTargets);
+    CareerBoard::EvaluateBoardObjectives(save, *this);
+    std::string boardReport;
+    for (const auto& objective : save.boardObjectives) {
+      boardReport +=
+          TRF(objective.completed ? "career_inbox_board_met" : "career_inbox_board_missed",
+              {objective.description}) +
+          " ";
+    }
+    const int season = save.season.currentSeason;
+    const int position = CareerSim::LeaguePosition(save);
+    const int clubs = static_cast<int>(CareerSim::GenerateLeagueStandings(save).size());
+    const int wins = save.seasonWins, draws = save.seasonDraws, losses = save.seasonLosses;
+    CareerTransfers::FrontOfficeBeforeRollover(save);
+    CareerSim::AdvanceSeason(save, *this, m_activeBids, m_transferTargets);
+    CareerTransfers::FrontOfficeAfterRollover(save, *this);
+    if (!boardReport.empty())
+      CareerInbox::Post(save, InboxItemType::BOARD_OBJECTIVE,
+                        TRF("career_inbox_board_subject", {std::to_string(season)}), boardReport);
+    CareerInbox::Post(
+        save, InboxItemType::FINANCE_UPDATE,
+        TRF("career_inbox_season_subject", {std::to_string(season)}),
+        TRF("career_inbox_season_body",
+            {std::to_string(position), std::to_string(clubs), std::to_string(wins * 3 + draws),
+             std::to_string(wins), std::to_string(draws), std::to_string(losses),
+             FormatCareerMoney(CareerSim::CalculateSeasonPrizeMoney(position))}));
     CareerSponsors::GenerateSponsorOffers(*m_activeSave);
     CareerBoard::GenerateBoardObjectives(*m_activeSave);
     m_activeSave->season.fixtures.clear();

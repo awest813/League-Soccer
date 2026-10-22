@@ -357,6 +357,9 @@ bool CompleteTransfer(CareerSave& save, CareerCommon::CareerEvents& events,
   save.finance.wageBudget = save.wageBudget;
   save.finances.transferSpending += bidIt->bidAmount;
   save.roster.push_back(player);
+  CareerInbox::Post(
+      save, InboxItemType::TRANSFER_OFFER, TRF("career_inbox_transfer_subject", {playerName}),
+      TRF("career_inbox_transfer_body", {playerName, FormatCareerMoney(bidIt->bidAmount)}));
 
   targets.erase(targetIt);
   bids.erase(std::remove_if(
@@ -367,6 +370,62 @@ bool CompleteTransfer(CareerSave& save, CareerCommon::CareerEvents& events,
   events.AddEvent("transfer", "Completed transfer for " + playerName, 2, true);
   events.ModifyBoardConfidence(1);
   return true;
+}
+
+void FrontOfficeBeforeRollover(CareerSave& save) {
+  if (CanManageClub(save) || save.roster.empty())
+    return;
+  int totalOvr = 0;
+  for (const auto& player : save.roster)
+    totalOvr += player.ovr;
+  const int averageOvr = totalOvr / static_cast<int>(save.roster.size());
+
+  std::string report;
+  for (auto& player : save.roster) {
+    if (player.contract.yearsRemaining > 1)
+      continue;
+    const bool ownFootballer =
+        save.mode == CareerMode::PLAYER && player.databaseID == save.controlledEntityID;
+    const bool worthKeeping = ownFootballer || player.ovr >= averageOvr - 2 ||
+                              (player.age <= 23 && player.pot >= player.ovr + 5);
+    const long long raise = player.wage / 10;
+    if (!worthKeeping || (!ownFootballer && raise > save.wageBudget))
+      continue;
+    // Two more years after this season's decrement at the rollover.
+    player.contract.yearsRemaining += 2;
+    player.wage += raise;
+    player.contract.wage = player.wage;
+    save.wageBudget = std::max(0LL, save.wageBudget - raise);
+    save.finance.wageBudget = save.wageBudget;
+    report += TRF("career_inbox_renewed", {player.name}) + " ";
+  }
+  if (!report.empty())
+    CareerInbox::Post(save, InboxItemType::TRANSFER_OFFER, TR("career_inbox_contracts_subject"),
+                      report);
+}
+
+void FrontOfficeAfterRollover(CareerSave& save, CareerCommon::CareerEvents& events) {
+  if (CanManageClub(save))
+    return;
+  std::string report;
+  while (save.roster.size() < kMinFrontOfficeSquad) {
+    const PlayerCareerState* best = nullptr;
+    for (const auto& agent : save.freeAgents) {
+      if (agent.wage <= save.wageBudget && (!best || agent.ovr > best->ovr))
+        best = &agent;
+    }
+    if (!best)
+      break;
+    const std::string name = best->name;
+    const size_t before = save.roster.size();
+    RecruitFreeAgent(save, events, name);
+    if (save.roster.size() == before)
+      break;
+    report += TRF("career_inbox_signed", {name}) + " ";
+  }
+  if (!report.empty())
+    CareerInbox::Post(save, InboxItemType::TRANSFER_OFFER, TR("career_inbox_squad_subject"),
+                      report);
 }
 
 }  // namespace CareerTransfers

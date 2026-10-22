@@ -653,13 +653,15 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
     auto* messages = new Gui2Grid(windowManager, "hub_messages", 2, 18, 56, 52);
     m_messages = messages;
     content->AddView(messages);
-    int index = 0;
-    for (const auto& item : save->inbox) {
+    // Newest first; the index still refers to the save's (oldest-first) list.
+    int row = 0;
+    for (int index = static_cast<int>(save->inbox.size()) - 1; index >= 0; --index) {
+      const auto& item = save->inbox[index];
       auto* button = new Gui2Button(windowManager, "hub_message_" + std::to_string(index), 0, 0, 54,
                                     6, (item.read ? "" : "* ") + item.subject);
       button->sig_OnClick.connect(
           [this, index](...) { OpenInboxItem(static_cast<size_t>(index)); });
-      messages->AddView(button, index++, 0);
+      messages->AddView(button, row++, 0);
     }
     if (save->inbox.empty())
       text(content, "hub_inbox_empty", 2, 20, 56, 16, TR("career_hub_inbox_empty"));
@@ -795,15 +797,17 @@ void CareerHubPage::OpenInboxItem(size_t index) {
   if (!save || index >= save->inbox.size())
     return;
   const auto item = save->inbox[index];
+  // The list shows the newest message first.
+  const int row = static_cast<int>(save->inbox.size() - 1 - index);
   auto* dialog = new Gui2Dialog(windowManager, "hub_inbox_dialog", 16, 20, 68, 60, item.subject);
   auto* body = new Gui2Text(windowManager, "hub_message_body", 0, 0, 60, 35, 2.2f, 60, item.body);
   dialog->AddContent(body);
   auto* close = dialog->AddSingleButton(TR("career_close"));
-  auto dismiss = [this, dialog, index](...) {
+  auto dismiss = [this, dialog, row](...) {
     dialog->Exit();
     delete dialog;
     if (m_messages)
-      if (auto* message = m_messages->FindView(static_cast<int>(index), 0))
+      if (auto* message = m_messages->FindView(row, 0))
         message->SetFocus();
   };
   dialog->sig_OnPositive.connect(dismiss);
@@ -819,8 +823,7 @@ void CareerHubPage::OpenInboxItem(size_t index) {
     } else {
       m_feedback->SetCaption("");
       if (m_messages)
-        if (auto* message =
-                dynamic_cast<Gui2Button*>(m_messages->FindView(static_cast<int>(index), 0)))
+        if (auto* message = dynamic_cast<Gui2Button*>(m_messages->FindView(row, 0)))
           message->SetCaption(item.subject);
       if (m_unreadSummary) {
         const auto unread = std::count_if(save->inbox.begin(), save->inbox.end(),
@@ -2539,9 +2542,10 @@ void CareerMatchdayPage::SimulateMatch(int fixtureIndex) {
       (fixtureIndex < static_cast<int>(m_isHome.size())) ? m_isHome[fixtureIndex] : true;
   SimulatedMatch res = CareerDatabase::GetInstance().SimulateMatchResult(
       m_opponents[fixtureIndex], std::to_string(m_opponentDBIDs[fixtureIndex]), isHome);
-  if (!save || !CareerDatabase::GetInstance().CompleteFixture(
-                   m_season, m_week, isHome, save->club.clubID, m_opponentDBIDs[fixtureIndex],
-                   m_opponents[fixtureIndex], res.homeGoals, res.awayGoals, res.scorers))
+  if (!save ||
+      !CareerDatabase::GetInstance().CompleteFixture(
+          m_season, m_week, isHome, save->club.clubID, m_opponentDBIDs[fixtureIndex],
+          m_opponents[fixtureIndex], res.homeGoals, res.awayGoals, res.scorers, res.assisters))
     return;
   m_results[fixtureIndex] = res;
 

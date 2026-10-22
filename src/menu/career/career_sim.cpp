@@ -10,6 +10,7 @@
 #include "career_common.hpp"
 #include "career_hub_model.hpp"
 #include "career_training.hpp"
+#include "utils/localization.hpp"
 
 namespace blunted {
 namespace CareerSim {
@@ -232,6 +233,9 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
   int formSum = 0;
   int fitnessSum = 0;
   int count = 0;
+  // Strength still averages the whole squad: the opponent pool is calibrated
+  // against it (starters-only strength made every tier markedly stronger).
+  const std::vector<int> squad = SelectMatchSquad(save);
   for (const auto& p : save.roster) {
     ovrSum += p.ovr;
     moraleSum += p.morale;
@@ -322,7 +326,6 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
 
   // Calculate weights for goalscorers based on position. Only the match squad
   // can score.
-  const std::vector<int> squad = SelectMatchSquad(save);
   std::vector<int> weights(rosterSize, 1);
   int totalWeight = 0;
   for (int i = 0; i < rosterSize; i++) {
@@ -368,6 +371,41 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
       }
     }
     result.scorers.push_back(save.roster[selectedIdx].name);
+
+    // About seven goals in ten are set up by a teammate, most often a
+    // creative midfielder or winger.
+    std::string assister;
+    if (RandomInt(1, 100) <= 70) {
+      std::vector<int> assistWeights;
+      int assistTotal = 0;
+      for (int index : squad) {
+        const std::string& pos = save.roster[index].preferredPosition;
+        int weight = 2;
+        if (index == selectedIdx || pos == "GK")
+          weight = 0;
+        else if (pos == "AM" || pos == "LW" || pos == "RW" || pos == "LM" || pos == "RM")
+          weight = 10;
+        else if (pos == "CM")
+          weight = 7;
+        else if (pos == "ST" || pos == "CF")
+          weight = 6;
+        else if (pos == "LB" || pos == "RB")
+          weight = 3;
+        assistWeights.push_back(weight);
+        assistTotal += weight;
+      }
+      if (assistTotal > 0) {
+        int pick = RandomInt(0, assistTotal - 1);
+        for (size_t i = 0; i < squad.size(); ++i) {
+          pick -= assistWeights[i];
+          if (pick < 0) {
+            assister = save.roster[squad[i]].name;
+            break;
+          }
+        }
+      }
+    }
+    result.assisters.push_back(assister);
   }
 
   return result;
@@ -375,7 +413,8 @@ SimulatedMatch SimulateMatchResult(CareerSave& save, const std::string& opponent
 
 void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int homeGoals,
                       int awayGoals, const std::string& opponentLabel,
-                      const std::vector<std::string>& scorers) {
+                      const std::vector<std::string>& scorers,
+                      const std::vector<std::string>& assisters) {
   const bool isWin = homeGoals > awayGoals;
   const bool isDraw = homeGoals == awayGoals;
   save.seasonWins += isWin ? 1 : 0;
@@ -410,6 +449,7 @@ void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int 
   // Everyone in the match squad makes an appearance. A scorer outside it (a 3D
   // match fields its own line-up) makes one too.
   std::vector<int> goals(save.roster.size(), 0);
+  std::vector<int> assists(save.roster.size(), 0);
   std::vector<bool> appeared(save.roster.size(), false);
   for (int index : SelectMatchSquad(save))
     appeared[index] = true;
@@ -422,9 +462,20 @@ void ApplyMatchResult(CareerSave& save, CareerCommon::CareerEvents& events, int 
       }
     }
   }
+  for (const auto& assisterName : assisters) {
+    if (assisterName.empty())
+      continue;
+    for (size_t i = 0; i < save.roster.size(); i++) {
+      if (save.roster[i].name == assisterName) {
+        assists[i]++;
+        appeared[i] = true;
+        break;
+      }
+    }
+  }
   for (size_t i = 0; i < save.roster.size(); i++) {
     if (appeared[i])
-      RecordAppearance(save.roster[i], goals[i], 0);
+      RecordAppearance(save.roster[i], goals[i], assists[i]);
   }
 }
 
@@ -908,10 +959,15 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
     }
     ++it;
   }
+  std::string departures;
   for (const auto& name : departedPlayers) {
     events.AddEvent("contract", "Contract expired: " + name + " departed on free transfer.", -1,
                     false);
+    departures += TRF("career_inbox_departed", {name}) + " ";
   }
+  if (!departures.empty())
+    CareerInbox::Post(save, InboxItemType::TRANSFER_OFFER, TR("career_inbox_contracts_subject"),
+                      departures);
 
   for (auto& member : save.staff) {
     if (member.contractYearsRemaining > 0)

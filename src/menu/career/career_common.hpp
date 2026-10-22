@@ -52,6 +52,16 @@ public:
 };
 
 }  // namespace CareerCommon
+
+namespace CareerInbox {
+// The inbox keeps this many messages; the oldest read ones go first.
+constexpr size_t kMaxMessages = 40;
+
+// Adds a message for the current week, newest last.
+void Post(CareerSave& save, InboxItemType type, const std::string& subject,
+          const std::string& body);
+}  // namespace CareerInbox
+
 using CareerCommon::FormatCareerMoney;
 }  // namespace blunted
 
