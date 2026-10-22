@@ -35,9 +35,6 @@ public:
   virtual bool IsScriptedInput() const override { return true; }
 
 protected:
-  // Advances the press schedule by one input read.
-  void Tick();
-
   unsigned long queryCount = 0;
   int actionTimer = 0;  // input reads remaining in the current action window
   int idleTimer = 0;    // input reads remaining in the idle gap in between

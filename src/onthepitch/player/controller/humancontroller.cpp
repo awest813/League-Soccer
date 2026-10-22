@@ -426,7 +426,13 @@ void HumanController::Process() {
 
     // what is the context: do we want defend buttons or pass/shot buttons?
     float possessionContext = possessionAmount - 1.0f;
-    if (match->GetDesignatedPossessionPlayer() == player) {
+    const bool takingSetPiece =
+        match->IsInSetPiece() && team->GetController()->GetPieceTaker() == player;
+    if (takingSetPiece || match->GetDesignatedPossessionPlayer() == player) {
+      // The set piece taker always gets the pass/shot buttons: in the defensive
+      // context every action is disabled during set pieces, so a taker who was
+      // not the designated possession player could never take it and the match
+      // waited forever (seen with a Player-mode footballer taking a corner).
       possessionContext = 1.0f;  // new (keeper was allowed doing slidings before free kick
                                  // sometimes lol, sign something was wrong)
     } else {

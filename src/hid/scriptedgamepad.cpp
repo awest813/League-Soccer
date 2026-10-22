@@ -38,14 +38,6 @@ Vector3 ScriptedGamepad::GetDirection() {
         "[menu-smoke] scripted gamepad: input sampled, driving a human player in a live match\n");
   }
 
-  Tick();
-
-  // Keep moving along the pitch length (X axis, never toward touchline Y) so
-  // the human-selected player stays in play for the duration of the simulated match.
-  return Vector3(1.0, 0.0, 0.0);
-}
-
-void ScriptedGamepad::Tick() {
   // Coarse action scheduler: hold a pass for a few reads, then rest. Only a
   // short pass is ever issued; shots are deliberately avoided because a human
   // player shooting at every opportunity blasts the ball out of play (goal
@@ -59,6 +51,10 @@ void ScriptedGamepad::Tick() {
     actionTimer = kActionHoldReads;
     idleTimer = kIdleGapReads;
   }
+
+  // Keep moving along the pitch length (X axis, never toward touchline Y) so
+  // the human-selected player stays in play for the duration of the simulated match.
+  return Vector3(1.0, 0.0, 0.0);
 }
 
 bool ScriptedGamepad::GetButton(e_ButtonFunction buttonFunction) {
@@ -68,13 +64,8 @@ bool ScriptedGamepad::GetButton(e_ButtonFunction buttonFunction) {
 float ScriptedGamepad::GetButtonValue(e_ButtonFunction buttonFunction) {
   // Short passes only (see GetDirection). Shot stays 0 so the driver never
   // whacks the ball toward the stands, which would stall the match clock.
-  // A player waiting to take a set piece reads only the pass button, so the
-  // schedule must advance here too or the pass is never pressed and the
-  // restart (and the match clock) waits forever.
-  if (buttonFunction == e_ButtonFunction_ShortPass) {
-    Tick();
+  if (buttonFunction == e_ButtonFunction_ShortPass)
     return (actionTimer > 0) ? 1.0f : 0.0f;
-  }
   return 0.0f;
 }
 
