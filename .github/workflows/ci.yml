@@ -174,6 +174,7 @@ jobs:
           ../tests/run_menu_smoke.sh ./gameplayfootball "$config" 420 \
             "[career-squad] Ajax fields 16 career players, controller locked to 99999" \
             "[career-squad] Controller locked to Smoke Pro" \
+            "[menu-smoke] Career match: lock checked, CPU plays on for the user's side" \
             "[menu-smoke] Career match recorded: week now 2, 11 appearances" \
             "[menu-smoke] Full-match verification succeeded, quitting test run"
 

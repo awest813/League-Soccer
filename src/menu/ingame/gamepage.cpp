@@ -119,6 +119,29 @@ void GamePage::Process() {
                                        : "[menu-smoke] No virtual gamepad to unplug\n");
   }
 
+  // career_match smoke: once the match is live the Player-mode lock has been
+  // set up and checked, so hand the user's side to the CPU. The scripted pad
+  // only pushes one way, and a locked footballer who never goes to a loose
+  // ball nearest him can keep the ball out of midfield, where the referee ends
+  // the half, for the rest of the run.
+  if (match && matchReadyTime_ms != 0 &&
+      GetConfiguration()->Get("menu_smoke_test_page", "") == "career_match" &&
+      EnvironmentManager::GetInstance().GetTime_ms() >= matchReadyTime_ms + 3000) {
+    std::vector<SideSelection> sides = GetMenuTask()->GetControllerSetup();
+    bool humanSide = false;
+    for (auto& side : sides) {
+      humanSide = humanSide || side.side != 0;
+      side.side = 0;
+    }
+    if (humanSide) {
+      GetMenuTask()->SetControllerSetup(sides);
+      match->Pause(true);
+      match->UpdateControllerSetup();
+      match->Pause(false);
+      printf("[menu-smoke] Career match: lock checked, CPU plays on for the user's side\n");
+    }
+  }
+
   if (match && !autoQuitTriggered && MenuSmokeQuickMatchEnabled() && !MenuSmokeFullMatchEnabled() &&
       matchReadyTime_ms != 0 &&
       EnvironmentManager::GetInstance().GetTime_ms() >=
