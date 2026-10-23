@@ -342,6 +342,7 @@ set(UTILS_GUI2_WIDGETS_HEADERS
         src/utils/gui2/widgets/menu.hpp
         src/utils/gui2/widgets/root.hpp
         src/utils/gui2/widgets/button.hpp
+        src/utils/gui2/widgets/table.hpp
         )
 
 set(UTILS_GUI2_SOURCES
@@ -362,6 +363,7 @@ set(UTILS_GUI2_SOURCES
         src/utils/gui2/widgets/slider.cpp
         src/utils/gui2/widgets/dialog.cpp
         src/utils/gui2/widgets/pulldown.cpp
+        src/utils/gui2/widgets/table.cpp
         src/utils/gui2/events.cpp
         src/utils/gui2/view.cpp
         src/utils/gui2/windowmanager.cpp

@@ -866,39 +866,51 @@ CareerTransferMarketPage::CareerTransferMarketPage(Gui2WindowManager* windowMana
   bgPanel->AddView(marketHint);
   marketHint->Show();
 
-  Gui2Caption* header =
-      new Gui2Caption(windowManager, "caption_tm_header", 3, 12, 94, 2, TR("career_tm_header"));
-  bgPanel->AddView(header);
-  header->Show();
-
+  // A scouting list: one column per attribute; Activate opens the bid page.
   auto targets = CareerDatabase::GetInstance().GetTransferTargets();
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_tm", 3, 15, 94, 58);
-  int row = 0;
-  Gui2Button* firstTargetButton = nullptr;
+  using Align = Gui2Table::Align;
+  auto* table = new Gui2Table(windowManager, "table_tm", 6, 12.5f,
+                              {{TR("career_col_name"), 30, Align::Left},
+                               {TR("career_col_pos"), 7, Align::Center},
+                               {TR("career_col_age"), 7, Align::Center},
+                               {TR("career_col_ovr"), 7, Align::Center},
+                               {TR("career_col_pot"), 7, Align::Center},
+                               {TR("career_col_value"), 15, Align::Right},
+                               {TR("career_col_asking"), 15, Align::Right}},
+                              3.6f, 16);
   for (const auto& t : targets) {
-    if (row >= 18)
-      break;
-    const std::string rowLabel =
-        TRF("career_tm_row", {t.name, t.preferredPosition, std::to_string(t.overallRating),
-                              std::to_string(t.potentialRating), std::to_string(t.age),
-                              FormatCareerMoney(t.value), FormatCareerMoney(t.askingPrice)});
-    Gui2Button* btn =
-        new Gui2Button(windowManager, "btn_tm_" + std::to_string(row), 0, 0, 90, 2.5, rowLabel);
-    if (!firstTargetButton)
-      firstTargetButton = btn;
-    btn->sig_OnClick.connect([this, t](...) {
-      Properties props;
-      props.Set("playerName", t.name);
-      props.Set("askingPrice", std::to_string(t.askingPrice));
-      props.Set("playerWage", std::to_string(t.wage));
-      CreatePage(e_PageID_CareerTransferBidDetail, props);
-    });
-    grid->AddView(btn, row++, 0);
+    Gui2Table::Row row;
+    row.cells = {t.name,
+                 t.preferredPosition,
+                 std::to_string(t.age),
+                 std::to_string(t.overallRating),
+                 std::to_string(t.potentialRating),
+                 FormatCareerMoney(t.value),
+                 FormatCareerMoney(t.askingPrice)};
+    // Within budget at the asking price plus the agent's fee.
+    if (save &&
+        t.askingPrice + CareerTransfers::AgentFeeFor(t.askingPrice) <= save->transferBudget) {
+      row.hasZone = true;
+      row.zoneColor = Vector3(80, 200, 110);
+    }
+    table->AddRow(row);
   }
-  grid->SetMaxVisibleRows(15);
-  grid->UpdateLayout(0.5);
-  bgPanel->AddView(grid);
-  grid->Show();
+  table->SetSelectable(true);
+  table->sig_OnActivate.connect([this, targets](int index) {
+    if (index < 0 || index >= static_cast<int>(targets.size()))
+      return;
+    const auto& t = targets[index];
+    Properties props;
+    props.Set("playerName", t.name);
+    props.Set("askingPrice", std::to_string(t.askingPrice));
+    props.Set("playerWage", std::to_string(t.wage));
+    CreatePage(e_PageID_CareerTransferBidDetail, props);
+  });
+  if (!targets.empty()) {
+    table->Build();
+    bgPanel->AddView(table);
+    table->Show();
+  }
 
   if (targets.empty()) {
     Gui2Caption* empty =
@@ -908,13 +920,13 @@ CareerTransferMarketPage::CareerTransferMarketPage(Gui2WindowManager* windowMana
   }
 
   Gui2Button* btnBids =
-      new Gui2Button(windowManager, "btn_tm_mybids", 5, 80, 40, 3, TR("career_tm_mybids"));
+      new Gui2Button(windowManager, "btn_tm_mybids", 6, 88, 28, 3.6f, TR("career_tm_mybids"));
   btnBids->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerTransferBids); });
   bgPanel->AddView(btnBids);
   btnBids->Show();
 
   Gui2Button* btnProcess =
-      new Gui2Button(windowManager, "btn_tm_process", 50, 80, 40, 3, TR("career_tm_process"));
+      new Gui2Button(windowManager, "btn_tm_process", 36, 88, 28, 3.6f, TR("career_tm_process"));
   btnProcess->sig_OnClick.connect([this](...) {
     CareerDatabase::GetInstance().ProcessPendingBids();
     CreatePage(e_PageID_CareerTransferBids);
@@ -923,12 +935,12 @@ CareerTransferMarketPage::CareerTransferMarketPage(Gui2WindowManager* windowMana
   btnProcess->Show();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_tm_back", 30, 90, 40, 3, TR("career_back_hub"));
+      new Gui2Button(windowManager, "btn_tm_back", 66, 88, 28, 3.6f, TR("career_back_hub"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
   bgPanel->AddView(btnBack);
   btnBack->Show();
-  if (firstTargetButton)
-    firstTargetButton->SetFocus();
+  if (!targets.empty())
+    table->SetFocus();
   else
     btnBids->SetFocus();
 
@@ -953,73 +965,68 @@ CareerTransferBidsPage::CareerTransferBidsPage(Gui2WindowManager* windowManager,
   title->Show();
 
   auto& bids = CareerDatabase::GetInstance().GetActiveBids();
-  Gui2Button* firstActionButton = nullptr;
+  Gui2Table* firstActionTable = nullptr;
   if (bids.empty()) {
     Gui2Caption* info = new Gui2Caption(windowManager, "caption_bids_empty", 10, 20, 80, 4,
                                         TR("career_bids_empty"));
     bgPanel->AddView(info);
     info->Show();
   } else {
-    Gui2Caption* header = new Gui2Caption(windowManager, "caption_bids_header", 5, 10, 90, 2,
-                                          TR("career_bids_header"));
-    bgPanel->AddView(header);
-    header->Show();
-
-    Gui2Grid* grid = new Gui2Grid(windowManager, "grid_bids", 5, 13, 90, 62);
-    int row = 0;
+    using Align = Gui2Table::Align;
+    auto* table = new Gui2Table(windowManager, "table_bids", 6, 10.5f,
+                                {{TR("career_col_name"), 30, Align::Left},
+                                 {TR("career_col_bid"), 16, Align::Right},
+                                 {TR("career_col_wage"), 13, Align::Right},
+                                 {TR("career_col_contract"), 11, Align::Center},
+                                 {TR("career_col_status"), 18, Align::Center}},
+                                3.6f, 16);
+    std::vector<std::string> names;
+    std::vector<BidStatus> statuses;
     for (const auto& b : bids) {
-      if (row >= 18)
-        break;
-      const std::string rowLabel =
-          TRF("career_bids_row", {b.playerName, FormatCareerMoney(b.bidAmount),
-                                  FormatCareerMoney(b.offeredWage), std::to_string(b.contractYears),
-                                  CareerDatabase::GetInstance().GetBidStatusString(b.status)});
-      Gui2Button* btn =
-          new Gui2Button(windowManager, "btn_bid_" + std::to_string(row), 0, 0, 86, 2.5, rowLabel);
-      if (b.status == BidStatus::ACCEPTED) {
-        std::string pName = b.playerName;
-        btn->sig_OnClick.connect([this, pName](...) {
-          CareerDatabase::GetInstance().CompleteTransfer(pName);
-          CreatePage(e_PageID_CareerTransferBids);
-        });
-        if (!firstActionButton)
-          firstActionButton = btn;
-      } else if (b.status == BidStatus::PENDING) {
-        std::string pName = b.playerName;
-        btn->sig_OnClick.connect([this, pName](...) { NegotiateBid(pName); });
-        if (!firstActionButton)
-          firstActionButton = btn;
-      } else {
-        btn->SetActive(false);
+      Gui2Table::Row row;
+      row.cells = {b.playerName, FormatCareerMoney(b.bidAmount), FormatCareerMoney(b.offeredWage),
+                   TRF("career_col_years", {std::to_string(b.contractYears)}),
+                   CareerDatabase::GetInstance().GetBidStatusString(b.status)};
+      row.hasZone = true;
+      row.zoneColor = b.status == BidStatus::ACCEPTED  ? Vector3(80, 200, 110)
+                      : b.status == BidStatus::PENDING ? Vector3(230, 190, 40)
+                                                       : Vector3(225, 70, 70);
+      table->AddRow(row);
+      names.push_back(b.playerName);
+      statuses.push_back(b.status);
+      if (!firstActionTable && (b.status == BidStatus::ACCEPTED || b.status == BidStatus::PENDING))
+        firstActionTable = table;
+    }
+    // Accepted bids complete the transfer; pending ones are raised.
+    table->SetSelectable(true);
+    table->sig_OnActivate.connect([this, names, statuses](int index) {
+      if (index < 0 || index >= static_cast<int>(names.size()))
+        return;
+      if (statuses[index] == BidStatus::ACCEPTED) {
+        CareerDatabase::GetInstance().CompleteTransfer(names[index]);
+        CreatePage(e_PageID_CareerTransferBids);
+      } else if (statuses[index] == BidStatus::PENDING) {
+        NegotiateBid(names[index]);
       }
-      grid->AddView(btn, row++, 0);
-    }
-    grid->UpdateLayout(0.5);
-    bgPanel->AddView(grid);
-    grid->Show();
-
-    if (bids.size() > 18) {
-      Gui2Caption* more =
-          new Gui2Caption(windowManager, "caption_bids_more", 5, 77, 90, 2,
-                          TRF("career_bids_showmore", {std::to_string(bids.size() - 18)}));
-      bgPanel->AddView(more);
-      more->Show();
-    }
+    });
+    table->Build();
+    bgPanel->AddView(table);
+    table->Show();
   }
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_bids_back", 5, 82, 40, 3, TR("career_back_market"));
+      new Gui2Button(windowManager, "btn_bids_back", 21, 88, 28, 3.6f, TR("career_back_market"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerTransferMarket); });
   bgPanel->AddView(btnBack);
   btnBack->Show();
 
   Gui2Button* btnHub =
-      new Gui2Button(windowManager, "btn_bids_hub", 50, 82, 40, 3, TR("career_back_hub"));
+      new Gui2Button(windowManager, "btn_bids_hub", 51, 88, 28, 3.6f, TR("career_back_hub"));
   btnHub->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
   bgPanel->AddView(btnHub);
   btnHub->Show();
-  if (firstActionButton)
-    firstActionButton->SetFocus();
+  if (firstActionTable)
+    firstActionTable->SetFocus();
   else
     btnBack->SetFocus();
 
@@ -1868,7 +1875,6 @@ CareerSquadRosterPage::CareerSquadRosterPage(Gui2WindowManager* windowManager,
   this->AddView(title);
   title->Show();
 
-  Gui2Button* firstPlayerButton = nullptr;
   if (activeSave) {
     long long totalWage = 0;
     for (const auto& p : activeSave->roster) {
@@ -1879,25 +1885,49 @@ CareerSquadRosterPage::CareerSquadRosterPage(Gui2WindowManager* windowManager,
                                       TR("career_roster_hint"));
     AddView(squadHint);
     squadHint->Show();
-    Gui2Grid* grid = new Gui2Grid(windowManager, "squad_grid", 3, 11, 92, 70);
-    m_rosterGrid = grid;
-    int row = 0;
-    grid->SetMaxVisibleRows(12);
+    // A squad list in the style of FM/FIFA: one column per attribute,
+    // selectable rows; Activate opens the player.
+    using Align = Gui2Table::Align;
+    auto* table = new Gui2Table(windowManager, "squad_table", 4, 11.5f,
+                                {{TR("career_col_name"), 28, Align::Left},
+                                 {TR("career_col_pos"), 7, Align::Center},
+                                 {TR("career_col_age"), 7, Align::Center},
+                                 {TR("career_col_ovr"), 7, Align::Center},
+                                 {TR("career_col_pot"), 7, Align::Center},
+                                 {TR("career_col_fitness"), 9, Align::Center},
+                                 {TR("career_col_goals"), 7, Align::Center},
+                                 {TR("career_col_wage"), 10, Align::Right},
+                                 {TR("career_col_contract"), 9, Align::Center}},
+                                3.9f, 17);
+    m_rosterTable = table;
+    const PlayerCareerState* own = ControlledCareerPlayer(*activeSave);
     for (const auto& player : activeSave->roster) {
-      const std::string rowLabel =
-          TRF("career_roster_row", {player.name, player.position, std::to_string(player.ovr),
-                                    std::to_string(player.pot), std::to_string(player.fitness)});
-      auto* btn = new Gui2Button(windowManager, "btn_player_" + std::to_string(row), 0, 0, 88, 4.5f,
-                                 rowLabel);
-      if (!firstPlayerButton)
-        firstPlayerButton = btn;
-
-      btn->sig_OnClick.connect([this, player](...) { InspectPlayer(player); });
-      grid->AddView(btn, row++, 0);
+      Gui2Table::Row row;
+      row.cells = {player.name,
+                   player.position,
+                   std::to_string(player.age),
+                   std::to_string(player.ovr),
+                   std::to_string(player.pot),
+                   std::to_string(player.fitness) + "%",
+                   std::to_string(player.careerGoals),
+                   FormatCareerMoney(player.wage),
+                   TRF("career_col_years", {std::to_string(player.contract.yearsRemaining)})};
+      row.highlight = own && own->databaseID == player.databaseID;
+      if (player.fitness < 60) {
+        row.hasZone = true;
+        row.zoneColor = Vector3(225, 70, 70);  // tired or injured
+      }
+      table->AddRow(row);
     }
-    grid->UpdateLayout(0.5f, 0.5f, 0.2f, 0.2f);
-    this->AddView(grid);
-    grid->Show();
+    table->SetSelectable(true);
+    table->Build();
+    table->sig_OnActivate.connect([this](int index) {
+      const CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+      if (save && index >= 0 && index < static_cast<int>(save->roster.size()))
+        InspectPlayer(save->roster[index]);
+    });
+    this->AddView(table);
+    table->Show();
 
     std::string footerText =
         TRF("career_roster_totals",
@@ -1915,8 +1945,8 @@ CareerSquadRosterPage::CareerSquadRosterPage(Gui2WindowManager* windowManager,
   this->AddView(btnBack);
   btnBack->Show();
 
-  if (firstPlayerButton)
-    firstPlayerButton->SetFocus();
+  if (m_rosterTable && m_rosterTable->GetRowCount() > 0)
+    m_rosterTable->SetFocus();
   else
     btnBack->SetFocus();
 
@@ -2058,8 +2088,8 @@ void CareerSquadRosterPage::ReleasePlayer(const std::string& playerName) {
   dialog->sig_OnNegative.connect([this, dialog](...) {
     dialog->Exit();
     delete dialog;
-    if (m_rosterGrid && m_rosterGrid->GetSelectedView())
-      m_rosterGrid->GetSelectedView()->SetFocus();
+    if (m_rosterTable)
+      m_rosterTable->SetFocus();
   });
   this->AddView(dialog);
   dialog->Show();

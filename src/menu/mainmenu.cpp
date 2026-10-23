@@ -321,7 +321,8 @@ void MainMenuPage::Process() {
         auditRoute == "career_coach" || auditRoute == "career_player" ||
         auditRoute == "career_season" || auditRoute == "career_matchday" ||
         auditRoute == "career_match" || auditRoute == "career_bid_detail" ||
-        auditRoute == "career_standings") {
+        auditRoute == "career_standings" || auditRoute == "career_market" ||
+        auditRoute == "career_bids") {
       const std::string directory = GetConfiguration()->Get("menu_smoke_career_save_directory", "");
       if (directory.empty() || !CareerDatabase::GetInstance().Initialize(directory) ||
           !CareerDatabase::GetInstance().LoadCareerSave("Training Audit")) {

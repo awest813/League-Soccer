@@ -11,6 +11,7 @@
 #include "utils/gui2/widgets/editline.hpp"
 #include "utils/gui2/widgets/pulldown.hpp"
 #include "utils/gui2/widgets/slider.hpp"
+#include "utils/gui2/widgets/table.hpp"
 #include "utils/gui2/widgets/text.hpp"
 
 // Opt-in diagnostics for smoke tests; normal menu behavior is unchanged.
@@ -78,6 +79,8 @@ inline int StandaloneMenuSmokePage(const std::string& route) {
                                  {"career_match", e_PageID_CareerMatchday},
                                  {"career_bid_detail", e_PageID_CareerTransferBidDetail},
                                  {"career_standings", e_PageID_CareerStandings},
+                                 {"career_market", e_PageID_CareerTransferMarket},
+                                 {"career_bids", e_PageID_CareerTransferBids},
                                  {"career_save", e_PageID_CareerSave}};
   for (const auto& entry : routes)
     if (route == entry.name)
@@ -180,21 +183,18 @@ inline bool SmokeCareerHub(blunted::Gui2WindowManager* manager, blunted::Gui2Vie
 
 inline bool SmokeCareerRoster(blunted::Gui2WindowManager* manager, blunted::Gui2View* page) {
   using namespace blunted;
-  auto* roster = dynamic_cast<Gui2Grid*>(FindCareerHubView(page, "squad_grid"));
-  if (!roster || roster->GetChildren().size() != 24)
+  auto* roster = dynamic_cast<Gui2Table*>(FindCareerHubView(page, "squad_table"));
+  if (!roster || roster->GetRowCount() != 24)
     return false;
   roster->SetFocus();
   for (int i = 0; i < 24; ++i) {
-    auto* row = roster->FindView(i, 0);
-    if (!row || manager->GetFocus() != row || !row->IsVisible())
+    if (manager->GetFocus() != roster || roster->GetSelectedRow() != i || !roster->IsVisible())
       return false;
     AuditMenuLayout(page);
-    for (int tick = 0; tick < 50; ++tick)
-      roster->Process();
     if (i < 23) {
       WindowingEvent down;
       down.SetDirection(Vector3(0, 1, 0));
-      row->ProcessEvent(&down);
+      roster->ProcessEvent(&down);
     }
   }
   auto* previous = manager->GetFocus();

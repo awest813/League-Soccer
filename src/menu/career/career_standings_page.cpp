@@ -13,8 +13,8 @@ CareerStandingsPage::CareerStandingsPage(Gui2WindowManager* windowManager,
                                          const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
       frame(nullptr),
-      standingsGrid(nullptr),
-      scorersGrid(nullptr),
+      standingsTable(nullptr),
+      scorersTable(nullptr),
       m_fromMenu(false) {
   CareerSave* activeSave = CareerDatabase::GetInstance().GetActiveSave();
 
@@ -39,7 +39,7 @@ CareerStandingsPage::CareerStandingsPage(Gui2WindowManager* windowManager,
   subtitle->Show();
 
   // Top scorers header
-  Gui2Caption* scHdr = new Gui2Caption(windowManager, "cap_sc_hdr", 66, 7.5f, 26, 2.2f,
+  Gui2Caption* scHdr = new Gui2Caption(windowManager, "cap_sc_hdr", 64.5f, 7.5f, 27, 2.4f,
                                        TR("career_top_scorers_title"));
   scHdr->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   frame->AddView(scHdr);
@@ -105,90 +105,80 @@ void CareerStandingsPage::PopulateStandingsGrid() {
 
   auto table = CareerDatabase::GetInstance().GetLeagueStandings(leagueClubs);
 
-  // One caption per column, header row included, so the figures line up (a
-  // space-padded string does not in a proportional font).
-  standingsGrid = new Gui2Grid(windowManager, "grid_standings", 2, 7.5f, 62, 84);
-
-  const Vector3 colorUser(250, 215, 60);        // Gold/accent for user
-  const Vector3 colorLeader(110, 230, 110);     // Green for title leader
-  const Vector3 colorEuro(100, 185, 245);       // Blue for top 4
-  const Vector3 colorRelegated(240, 110, 110);  // Red for relegation
-  const float widths[] = {3.5f, 20, 3.2f, 3.2f, 3.2f, 3.2f, 3.8f, 3.8f, 3.8f, 3.8f, 6.5f};
-  auto addRow = [&](int row, const std::vector<std::string>& cells, const Vector3& color) {
-    for (size_t c = 0; c < cells.size(); c++) {
-      auto* cell =
-          new Gui2Caption(windowManager, "cap_st_" + std::to_string(row) + "_" + std::to_string(c),
-                          0, 0, widths[c], 2.3f, cells[c]);
-      cell->SetColor(color);
-      standingsGrid->AddView(cell, row, static_cast<int>(c));
-    }
-  };
-  addRow(0,
-         {TR("career_standings_pos"), TR("career_standings_club"), TR("career_standings_p"),
-          TR("career_standings_w"), TR("career_standings_d"), TR("career_standings_l"),
-          TR("career_standings_gf"), TR("career_standings_ga"), TR("career_standings_gd"),
-          TR("career_standings_pts"), TR("career_standings_form")},
-         windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
-
+  // Broadcast-style table: banded rows, zone strips (title, Europe,
+  // relegation) and the user's club highlighted, as in FIFA/PES tables.
+  using Column = Gui2Table::Column;
+  using Align = Gui2Table::Align;
+  standingsTable = new Gui2Table(windowManager, "table_standings", 2, 7.5f,
+                                 {{TR("career_standings_pos"), 3.5f, Align::Center},
+                                  {TR("career_standings_club"), 19.5f, Align::Left},
+                                  {TR("career_standings_p"), 3.4f, Align::Center},
+                                  {TR("career_standings_w"), 3.4f, Align::Center},
+                                  {TR("career_standings_d"), 3.4f, Align::Center},
+                                  {TR("career_standings_l"), 3.4f, Align::Center},
+                                  {TR("career_standings_gf"), 3.8f, Align::Center},
+                                  {TR("career_standings_ga"), 3.8f, Align::Center},
+                                  {TR("career_standings_gd"), 3.8f, Align::Center},
+                                  {TR("career_standings_pts"), 4.2f, Align::Center},
+                                  {TR("career_standings_form"), 7.0f, Align::Center}},
+                                 3.6f, 22);
+  const Vector3 colorLeader(80, 200, 110);
+  const Vector3 colorEuro(70, 150, 235);
+  const Vector3 colorRelegated(225, 70, 70);
   const int relegationFrom = static_cast<int>(table.size()) - 2;
   for (size_t i = 0; i < table.size(); i++) {
     const auto& tr = table[i];
     const int pos = static_cast<int>(i + 1);
-    Vector3 color = windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
-    if (tr.isUserTeam)
-      color = colorUser;
-    else if (pos == 1)
-      color = colorLeader;
-    else if (pos <= 4)
-      color = colorEuro;
-    else if (pos >= relegationFrom)
-      color = colorRelegated;
-    const std::string goalDiff = (tr.goalDiff > 0 ? "+" : "") + std::to_string(tr.goalDiff);
-    addRow(pos,
-           {std::to_string(pos) + ".", tr.name, std::to_string(tr.played), std::to_string(tr.wins),
-            std::to_string(tr.draws), std::to_string(tr.losses), std::to_string(tr.goalsFor),
-            std::to_string(tr.goalsAgainst), goalDiff, std::to_string(tr.points), tr.form},
-           color);
+    Gui2Table::Row row;
+    row.cells = {std::to_string(pos),
+                 tr.name,
+                 std::to_string(tr.played),
+                 std::to_string(tr.wins),
+                 std::to_string(tr.draws),
+                 std::to_string(tr.losses),
+                 std::to_string(tr.goalsFor),
+                 std::to_string(tr.goalsAgainst),
+                 (tr.goalDiff > 0 ? "+" : "") + std::to_string(tr.goalDiff),
+                 std::to_string(tr.points),
+                 tr.form};
+    row.highlight = tr.isUserTeam;
+    if (pos == 1) {
+      row.hasZone = true;
+      row.zoneColor = colorLeader;
+    } else if (pos <= 4) {
+      row.hasZone = true;
+      row.zoneColor = colorEuro;
+    } else if (pos >= relegationFrom) {
+      row.hasZone = true;
+      row.zoneColor = colorRelegated;
+    }
+    standingsTable->AddRow(row);
   }
-
-  standingsGrid->SetReadOnlyScrolling(true);
-  standingsGrid->SetMaxVisibleRows(28);
-  standingsGrid->UpdateLayout(0.2f, 0.2f, 0.1f, 0.1f);
-  frame->AddView(standingsGrid);
-  standingsGrid->Show();
+  standingsTable->Build();
+  frame->AddView(standingsTable);
+  standingsTable->Show();
 }
 
 void CareerStandingsPage::PopulateScorersGrid() {
   auto scorers = CareerDatabase::GetInstance().GetTopScorers();
 
-  scorersGrid = new Gui2Grid(windowManager, "grid_scorers", 66, 10, 26, 80);
-
-  const Vector3 colorUserPlayer(250, 215, 60);
-
-  // Two lines per scorer: rank and name, then club and goals.
-  int row = 0;
+  using Align = Gui2Table::Align;
+  scorersTable = new Gui2Table(windowManager, "table_scorers", 64.5f, 10.5f,
+                               {{"#", 2.6f, Align::Center},
+                                {TR("career_top_scorers_player"), 10.8f, Align::Left},
+                                {TR("career_top_scorers_team"), 9.0f, Align::Left},
+                                {TR("career_top_scorers_goals"), 4.6f, Align::Center}},
+                               3.6f, 10);
   for (size_t i = 0; i < scorers.size(); i++) {
     const auto& s = scorers[i];
-    const Vector3 color = s.isUserPlayer
-                              ? colorUserPlayer
-                              : windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
-    const std::string goals = s.goals == 1 ? TR("career_scorer_goal_one")
-                                           : TRF("career_scorer_goals", {std::to_string(s.goals)});
-    auto* name = new Gui2Caption(windowManager, "cap_sc_name_" + std::to_string(i), 0, 0, 26, 2.3f,
-                                 std::to_string(i + 1) + ". " + s.playerName);
-    name->SetColor(color);
-    scorersGrid->AddView(name, row++, 0);
-    auto* club = new Gui2Caption(windowManager, "cap_sc_club_" + std::to_string(i), 0, 0, 26, 1.9f,
-                                 "    " + s.teamName + " — " + goals);
-    club->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
-    scorersGrid->AddView(club, row++, 0);
+    Gui2Table::Row row;
+    row.cells = {std::to_string(i + 1), s.playerName, s.teamName, std::to_string(s.goals)};
+    row.highlight = s.isUserPlayer;
+    scorersTable->AddRow(row);
   }
-
-  scorersGrid->SetReadOnlyScrolling(true);
-  scorersGrid->SetMaxVisibleRows(20);
-  scorersGrid->UpdateLayout(0.2f, 0.2f, 0.2f, 0.2f);
-  frame->AddView(scorersGrid);
-  scorersGrid->Show();
+  scorersTable->Build();
+  frame->AddView(scorersTable);
+  scorersTable->Show();
 }
 
 void CareerStandingsPage::GoBack() {

@@ -12,6 +12,7 @@
 #include "utils/gui2/widgets/frame.hpp"
 #include "utils/gui2/widgets/grid.hpp"
 #include "utils/gui2/widgets/pulldown.hpp"
+#include "utils/gui2/widgets/table.hpp"
 #include "utils/gui2/widgets/text.hpp"
 #include "utils/gui2/windowmanager.hpp"
 
@@ -190,7 +191,7 @@ protected:
   void ReleasePlayer(const std::string& playerName);
   void MotivatePlayer(const std::string& playerName);
   void DrillPlayer(const std::string& playerName);
-  Gui2Grid* m_rosterGrid = nullptr;
+  Gui2Table* m_rosterTable = nullptr;
 };
 
 // Season End / Advance

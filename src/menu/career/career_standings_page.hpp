@@ -8,6 +8,7 @@
 #include "utils/gui2/widgets/caption.hpp"
 #include "utils/gui2/widgets/frame.hpp"
 #include "utils/gui2/widgets/grid.hpp"
+#include "utils/gui2/widgets/table.hpp"
 #include "utils/gui2/windowmanager.hpp"
 
 namespace blunted {
@@ -25,8 +26,8 @@ private:
   void GoSeason();
 
   Gui2Frame* frame;
-  Gui2Grid* standingsGrid;
-  Gui2Grid* scorersGrid;
+  Gui2Table* standingsTable;
+  Gui2Table* scorersTable;
   bool m_fromMenu;
 };
 

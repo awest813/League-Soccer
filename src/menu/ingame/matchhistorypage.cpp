@@ -7,6 +7,7 @@
 #include "utils/gui2/widgets/caption.hpp"
 #include "utils/gui2/widgets/grid.hpp"
 #include "utils/gui2/widgets/image.hpp"
+#include "utils/gui2/widgets/table.hpp"
 #include "utils/localization.hpp"
 
 using namespace blunted;
@@ -25,56 +26,39 @@ MatchHistoryPage::MatchHistoryPage(Gui2WindowManager* windowManager, const Gui2P
 
   std::vector<MatchHistoryEntry> entries = MatchHistory::LoadRecent(10);
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_matchhistory", 8, 16, 84, 72);
-
-  // Header row
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_date", 0, 0, 16, 3,
-                                Localization::GetInstance().Translate("matchhistory_date")),
-                0, 0);
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_match", 0, 0, 36, 3,
-                                Localization::GetInstance().Translate("matchhistory_match")),
-                0, 1);
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_score", 0, 0, 10, 3,
-                                Localization::GetInstance().Translate("matchhistory_score")),
-                0, 2);
-  grid->AddView(new Gui2Caption(windowManager, "mh_hdr_poss", 0, 0, 18, 3,
-                                Localization::GetInstance().Translate("matchhistory_possession")),
-                0, 3);
-
-  for (int i = 0; i < (int)entries.size(); i++) {
-    const MatchHistoryEntry& e = entries[i];
-    int row = i + 1;
-    std::string rowSfx = std::to_string(i);
-
-    grid->AddView(
-        new Gui2Caption(windowManager, "mh_date_" + rowSfx, 0, 0, 16, 3, e.timestamp.substr(0, 10)),
-        row, 0);
-    grid->AddView(new Gui2Caption(windowManager, "mh_match_" + rowSfx, 0, 0, 36, 3,
-                                  e.team1_name + " vs " + e.team2_name),
-                  row, 1);
-    grid->AddView(new Gui2Caption(windowManager, "mh_score_" + rowSfx, 0, 0, 10, 3,
-                                  int_to_str(e.score1) + " - " + int_to_str(e.score2)),
-                  row, 2);
-    grid->AddView(new Gui2Caption(windowManager, "mh_poss_" + rowSfx, 0, 0, 18, 3,
-                                  int_to_str((int)round(e.possession1_pct)) + "% / " +
-                                      int_to_str((int)round(e.possession2_pct)) + "%"),
-                  row, 3);
+  // A results list as football games show them: home team right-aligned
+  // against the score, away team left-aligned.
+  using Align = Gui2Table::Align;
+  auto& loc = Localization::GetInstance();
+  Gui2Table* table = new Gui2Table(windowManager, "table_matchhistory", 9, 15,
+                                   {{loc.Translate("matchhistory_date"), 13, Align::Left},
+                                    {"", 24, Align::Right},
+                                    {loc.Translate("matchhistory_score"), 9, Align::Center},
+                                    {"", 24, Align::Left},
+                                    {loc.Translate("matchhistory_possession"), 12, Align::Center}},
+                                   5, 10);
+  for (const MatchHistoryEntry& e : entries) {
+    Gui2Table::Row row;
+    row.cells = {e.timestamp.substr(0, 10), e.team1_name,
+                 int_to_str(e.score1) + " - " + int_to_str(e.score2), e.team2_name,
+                 int_to_str((int)round(e.possession1_pct)) + "% - " +
+                     int_to_str((int)round(e.possession2_pct)) + "%"};
+    table->AddRow(row);
   }
 
   if (entries.empty()) {
-    Gui2Caption* emptyCaption =
-        new Gui2Caption(windowManager, "mh_empty", 8, 22, 84, 3,
-                        Localization::GetInstance().Translate("matchhistory_empty"));
+    Gui2Caption* emptyCaption = new Gui2Caption(windowManager, "mh_empty", 8, 22, 84, 3,
+                                                loc.Translate("matchhistory_empty"));
     this->AddView(emptyCaption);
     emptyCaption->Show();
+  } else {
+    table->Build();
+    this->AddView(table);
+    table->Show();
   }
 
-  grid->UpdateLayout(0.5);
-  this->AddView(grid);
-  grid->Show();
-
-  Gui2Button* buttonBack = new Gui2Button(windowManager, "button_matchhistory_back", 40, 90, 20, 3,
-                                          Localization::GetInstance().Translate("action_back"));
+  Gui2Button* buttonBack = new Gui2Button(windowManager, "button_matchhistory_back", 40, 88.5f, 20,
+                                          4, Localization::GetInstance().Translate("action_back"));
   this->AddView(buttonBack);
   buttonBack->Show();
   buttonBack->sig_OnClick.connect([this](...) { GoBack(); });
