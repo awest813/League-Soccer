@@ -311,12 +311,18 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Install dependencies
+        # OpenAL comes from the system OpenAL.framework (found by FindOpenAL).
+        # Homebrew's openal-soft now pulls in llvm and z3, and installing them
+        # failed inside Homebrew after ~40 minutes on every run.
+        env:
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
         run: |
           brew update
           brew install \
             cmake \
             sdl2 sdl2_image sdl2_ttf sdl2_gfx \
-            boost openal-soft sqlite
+            boost sqlite
 
       - name: Configure (Debug)
         run: |
