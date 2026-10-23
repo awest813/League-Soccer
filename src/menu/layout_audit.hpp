@@ -81,6 +81,9 @@ inline int StandaloneMenuSmokePage(const std::string& route) {
                                  {"career_standings", e_PageID_CareerStandings},
                                  {"career_market", e_PageID_CareerTransferMarket},
                                  {"career_bids", e_PageID_CareerTransferBids},
+                                 {"career_staff", e_PageID_OwnerStaff},
+                                 {"career_hire", e_PageID_OwnerStaffHire},
+                                 {"career_sponsors", e_PageID_OwnerSponsors},
                                  {"career_save", e_PageID_CareerSave}};
   for (const auto& entry : routes)
     if (route == entry.name)

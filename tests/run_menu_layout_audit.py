@@ -12,7 +12,7 @@ import subprocess
 import sqlite3
 import tempfile
 
-ROUTES = "widgets settings gameplay controller keyboard gamepads gamepad_setup gamepad_setup_virtual gamepad_calibration gamepad_mapping gamepad_function graphics audio language credits match_options forfeit history career career_new career_save career_training career_owner_gm career_owner_legacy career_owner_delegated career_coach career_player career_player_missing career_player_training career_season career_season_pending career_matchday career_bid_detail career_standings career_market career_bids career_tactics career_tactics_delegated career_press career_roster career_roster_player".split()
+ROUTES = "widgets settings gameplay controller keyboard gamepads gamepad_setup gamepad_setup_virtual gamepad_calibration gamepad_mapping gamepad_function graphics audio language credits match_options forfeit history career career_new career_save career_training career_owner_gm career_owner_legacy career_owner_delegated career_coach career_player career_player_missing career_player_training career_season career_season_pending career_matchday career_bid_detail career_standings career_market career_bids career_staff career_hire career_sponsors career_tactics career_tactics_delegated career_press career_roster career_roster_player".split()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -44,10 +44,10 @@ def main():
                 (fixture / "career.save").write_text("name=Training Audit\ntrainingPlan=1\n" + "\n".join(players) + "\n", encoding="utf-8")
                 with config.open("a", encoding="utf-8") as stream:
                     stream.write(f'"menu_smoke_career_save_directory" "{fixture.as_posix()}"\n')
-            if route in ("career_bid_detail", "career_standings", "career_market", "career_bids", "career_season_pending", "career_tactics", "career_tactics_delegated", "career_press", "career_roster", "career_roster_player", "career_owner_gm", "career_owner_legacy", "career_owner_delegated", "career_coach", "career_player", "career_player_missing", "career_player_training", "career_season", "career_matchday"):
+            if route in ("career_bid_detail", "career_standings", "career_market", "career_bids", "career_staff", "career_hire", "career_sponsors", "career_season_pending", "career_tactics", "career_tactics_delegated", "career_press", "career_roster", "career_roster_player", "career_owner_gm", "career_owner_legacy", "career_owner_delegated", "career_coach", "career_player", "career_player_missing", "career_player_training", "career_season", "career_matchday"):
                 fixture = Path(temp) / "career"
                 fixture.mkdir()
-                role = {"career_bid_detail": 4, "career_standings": 3, "career_market": 4, "career_bids": 4, "career_season_pending": 4, "career_tactics": 3, "career_tactics_delegated": 2, "career_press": 3, "career_roster": 4, "career_roster_player": 0, "career_owner_legacy": 4, "career_owner_delegated": 2, "career_player_missing": 0, "career_player_training": 0, "career_owner_gm": 4, "career_coach": 3, "career_player": 0, "career_season": 4, "career_matchday": 3}[route]
+                role = {"career_bid_detail": 4, "career_staff": 4, "career_hire": 4, "career_sponsors": 4, "career_standings": 3, "career_market": 4, "career_bids": 4, "career_season_pending": 4, "career_tactics": 3, "career_tactics_delegated": 2, "career_press": 3, "career_roster": 4, "career_roster_player": 0, "career_owner_legacy": 4, "career_owner_delegated": 2, "career_player_missing": 0, "career_player_training": 0, "career_owner_gm": 4, "career_coach": 3, "career_player": 0, "career_season": 4, "career_matchday": 3}[route]
                 (fixture / "career.save").write_text(
                     f"name=Career Audit with a long club and career name\nmanagerName=Alex with a long manager name\nmode={role}\nseason=2\nweek={38 if route == 'career_season_pending' else 5}\nmaxWeeks=38\n"
                     + f"controlledEntityID={999 if route == 'career_player_missing' else 100}\n"
@@ -55,6 +55,9 @@ def main():
                     + ("".join(f"player.{i}=Footballer {i} with a long name|CM|20|65|85|100000|500|70|60|85|0|0|0|0|0|{100+i}\n" for i in range(1,24)) if route.startswith("career_roster") else "")
                     + ("target.0=Transfer Target with a long display name|CM|78|86|24|12000000|45000|15000000|2|1\n" if route in ("career_bid_detail", "career_bids") else "")
                     + ("".join(f"bid.{i}=Transfer Target with a long display name|{12000000 + i * 500000}|45000|3|600000|{i % 4}|{i % 3}\n" for i in range(5)) if route == "career_bids" else "")
+                    + ("".join(f"staff.{i}=Staff member {i} with a long display name|Assistant Coach of Set Pieces|{60 + i * 4}|{450000 + i * 25000}|{1 + i % 3}|{min(100, 25 + i * 9)}\n" for i in range(9)) if route == "career_staff" else "")
+                    + ("".join(f"sponsor.{i}=Sponsor {i} with a long brand name|Shirt|{2000000 + i * 750000}|{1 + i}|20\n" for i in range(3)) if route == "career_sponsors" else "")
+                    + ("".join(f"sponsorOffer.{i}=Offer {i} with a long brand name|Stadium|{1500000 + i * 400000}|{2 + i % 3}|{30 + i * 10}\n" for i in range(6)) if route == "career_sponsors" else "")
                     + "".join(f"inbox.{i}={i}|0|5|0|0|0|Career message {i} with a long subject to exercise text fitting|Your season update and training report with a long body for message display.\n" for i in range(12)),
                     encoding="utf-8")
                 with config.open("a", encoding="utf-8") as stream:

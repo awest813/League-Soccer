@@ -1032,7 +1032,7 @@ CareerTransferBidsPage::CareerTransferBidsPage(Gui2WindowManager* windowManager,
     for (const auto& b : bids) {
       Gui2Table::Row row;
       row.cells = {b.playerName, FormatCareerMoney(b.bidAmount), FormatCareerMoney(b.offeredWage),
-                   TRF("career_col_years", {std::to_string(b.contractYears)}),
+                   CareerCommon::FormatYears(b.contractYears),
                    CareerDatabase::GetInstance().GetBidStatusString(b.status)};
       row.hasZone = true;
       row.zoneColor = b.status == BidStatus::ACCEPTED  ? Vector3(80, 200, 110)
@@ -1960,7 +1960,7 @@ CareerSquadRosterPage::CareerSquadRosterPage(Gui2WindowManager* windowManager,
                    std::to_string(player.fitness) + "%",
                    std::to_string(player.careerGoals),
                    FormatCareerMoney(player.wage),
-                   TRF("career_col_years", {std::to_string(player.contract.yearsRemaining)})};
+                   CareerCommon::FormatYears(player.contract.yearsRemaining)};
       row.highlight = own && own->databaseID == player.databaseID;
       if (player.fitness < 60) {
         row.hasZone = true;

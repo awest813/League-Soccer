@@ -23,6 +23,8 @@ int SafeStoi(const std::string& s, int fallback = 0);
 long long SafeStoll(const std::string& s, long long fallback = 0);
 float SafeStof(const std::string& s, float fallback = 0.0f);
 std::string FormatCareerMoney(long long amount);
+// "1 yr" / "3 yrs" for contract and deal lengths in tables.
+std::string FormatYears(int years);
 
 // Maps a database role string in Football Manager notation ("D C",
 // "D/WB/AM L", "AM RLC, F C", "ST", ...) to the short position codes used by

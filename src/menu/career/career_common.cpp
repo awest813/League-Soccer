@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "../../data/dbroles.hpp"
+#include "utils/localization.hpp"
 
 namespace blunted {
 namespace CareerCommon {
@@ -160,6 +161,10 @@ PlayerCareerState PlayerFromRecord(const std::string& val) {
   if (t.size() > 27)
     p.transferStatus = static_cast<TransferStatus>(ClampInt(SafeStoi(t[27]), 0, 4));
   return p;
+}
+
+std::string FormatYears(int years) {
+  return years == 1 ? TR("career_col_year_one") : TRF("career_col_years", {std::to_string(years)});
 }
 
 std::string FormatCareerMoney(long long amount) {

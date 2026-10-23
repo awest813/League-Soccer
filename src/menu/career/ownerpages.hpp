@@ -10,6 +10,7 @@
 #include "../../utils/gui2/widgets/editline.hpp"
 #include "../../utils/gui2/widgets/grid.hpp"
 #include "../../utils/gui2/widgets/pulldown.hpp"
+#include "../../utils/gui2/widgets/table.hpp"
 #include "../../utils/gui2/windowmanager.hpp"
 #include "career_database.hpp"
 
@@ -52,6 +53,7 @@ public:
 protected:
   void FireStaff(const std::string& name);
   void GoHirePage();
+  blunted::Gui2Table* m_staffTable = nullptr;
 };
 
 // Staff hiring candidates page
@@ -74,6 +76,7 @@ public:
 protected:
   void AcceptDeal(int index);
   void TerminateDeal(const std::string& sponsorName);
+  blunted::Gui2Table* m_firstTable = nullptr;  // focused on entry
 };
 
 // Board room / objectives

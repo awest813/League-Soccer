@@ -5,6 +5,7 @@
 #include "../../data/careerdata.hpp"
 #include "../../main.hpp"
 #include "../../utils/gui2/widgets/frame.hpp"  // For card layout
+#include "../../utils/gui2/widgets/table.hpp"
 #include "../pagefactory.hpp"
 #include "career_navigation.hpp"
 #include "careerpages.hpp"  // For PageIDs
@@ -388,26 +389,46 @@ OwnerStaffPage::OwnerStaffPage(Gui2WindowManager* windowManager, const Gui2PageD
 
     Gui2Frame* staffFrame = new Gui2Frame(windowManager, "frame_staff", 4, 24, 84, 48, true);
 
-    Gui2Caption* header =
-        new Gui2Caption(windowManager, "caption_staff_hdr", 2, 2, 80, 2, TR("career_staff_header"));
-    staffFrame->AddView(header);
-    header->Show();
+    using Align = Gui2Table::Align;
+    Gui2Caption* hint =
+        new Gui2Caption(windowManager, "caption_staff_hdr", 2, 1, 80, 2.4, TR("career_staff_hint"));
+    staffFrame->AddView(hint);
+    hint->Show();
 
-    Gui2Grid* grid = new Gui2Grid(windowManager, "staff_grid", 2, 5, 80, 40);
-    int row = 0;
+    auto* table = new Gui2Table(windowManager, "table_staff", 2, 4.5f,
+                                {{TR("career_col_name"), 24, Align::Left},
+                                 {TR("career_col_role"), 18, Align::Left},
+                                 {TR("career_col_skill"), 8, Align::Center},
+                                 {TR("career_col_salary"), 14, Align::Right},
+                                 {TR("career_col_contract"), 8, Align::Center},
+                                 {TR("career_col_morale"), 8, Align::Center}},
+                                3.4f, 11);
+    std::vector<std::string> staffNames;
     for (const auto& s : save->staff) {
-      const std::string rowLabel = TRF(
-          "career_staff_row", {s.name, s.role, std::to_string(s.skill), FormatOwnerMoney(s.salary),
-                               std::to_string(s.contractYearsRemaining), std::to_string(s.morale)});
-      Gui2Button* btn = new Gui2Button(windowManager, "btn_staff_" + std::to_string(row), 0, 0, 79,
-                                       2.5, "[" + TR("career_fire") + "] " + rowLabel);
-      std::string staffName = s.name;
-      btn->sig_OnClick.connect([this, staffName](...) { FireStaff(staffName); });
-      grid->AddView(btn, row++, 0);
+      Gui2Table::Row row;
+      row.cells = {s.name,
+                   s.role,
+                   std::to_string(s.skill),
+                   FormatOwnerMoney(s.salary),
+                   CareerCommon::FormatYears(s.contractYearsRemaining),
+                   std::to_string(s.morale) + "%"};
+      // Unhappy staff stand out: they are the first candidates to replace.
+      if (s.morale < 40) {
+        row.hasZone = true;
+        row.zoneColor = Vector3(220, 70, 60);
+      }
+      table->AddRow(row);
+      staffNames.push_back(s.name);
     }
-    grid->UpdateLayout(0.5);
-    staffFrame->AddView(grid);
-    grid->Show();
+    table->SetSelectable(!staffNames.empty());
+    table->sig_OnActivate.connect([this, staffNames](int index) {
+      if (index >= 0 && index < static_cast<int>(staffNames.size()))
+        FireStaff(staffNames[index]);
+    });
+    table->Build();
+    staffFrame->AddView(table);
+    table->Show();
+    m_staffTable = table;
 
     root->AddView(staffFrame);
     staffFrame->Show();
@@ -425,8 +446,8 @@ OwnerStaffPage::OwnerStaffPage(Gui2WindowManager* windowManager, const Gui2PageD
     notesFrame->Show();
   }
 
-  Gui2Button* btnHire =
-      new Gui2Button(windowManager, "btn_staff_hire", 8, 87, 34, 3, TR("career_browse_candidates"));
+  Gui2Button* btnHire = new Gui2Button(windowManager, "btn_staff_hire", 8, 87, 34, 3.6f,
+                                       TR("career_browse_candidates"));
   btnHire->sig_OnClick.connect([this](...) { GoHirePage(); });
   root->AddView(btnHire);
   btnHire->Show();
@@ -437,7 +458,10 @@ OwnerStaffPage::OwnerStaffPage(Gui2WindowManager* windowManager, const Gui2PageD
   root->AddView(btnBack);
   btnBack->Show();
 
-  btnHire->SetFocus();
+  if (m_staffTable && m_staffTable->GetRowCount() > 0)
+    m_staffTable->SetFocus();
+  else
+    btnHire->SetFocus();
   this->Show();
 }
 
@@ -486,26 +510,34 @@ OwnerStaffHirePage::OwnerStaffHirePage(Gui2WindowManager* windowManager,
 
   Gui2Frame* hireFrame = new Gui2Frame(windowManager, "frame_hire", 4, 24, 84, 58, true);
 
-  Gui2Caption* header =
-      new Gui2Caption(windowManager, "caption_hire_hdr", 2, 2, 80, 2, TR("career_hire_header"));
-  hireFrame->AddView(header);
-  header->Show();
+  using Align = Gui2Table::Align;
+  Gui2Caption* hint =
+      new Gui2Caption(windowManager, "caption_hire_hdr", 2, 1, 80, 2.4, TR("career_hire_hint"));
+  hireFrame->AddView(hint);
+  hint->Show();
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "hire_grid", 2, 5, 80, 50);
-  int row = 0;
-  for (int i = 0; i < static_cast<int>(m_candidates.size()); i++) {
-    const auto& c = m_candidates[i];
-    const std::string rowLabel =
-        TRF("career_hire_row", {c.name, c.role, std::to_string(c.skill), FormatOwnerMoney(c.salary),
-                                std::to_string(c.contractYearsRemaining)});
-    Gui2Button* btn = new Gui2Button(windowManager, "btn_hire_" + std::to_string(i), 0, 0, 79, 2.5,
-                                     "[" + TR("career_hire") + "] " + rowLabel);
-    btn->sig_OnClick.connect([this, i](...) { HireCandidate(i); });
-    grid->AddView(btn, row++, 0);
+  auto* table = new Gui2Table(windowManager, "table_hire", 2, 4.5f,
+                              {{TR("career_col_name"), 26, Align::Left},
+                               {TR("career_col_role"), 20, Align::Left},
+                               {TR("career_col_skill"), 10, Align::Center},
+                               {TR("career_col_salary"), 14, Align::Right},
+                               {TR("career_col_contract"), 10, Align::Center}},
+                              3.4f, 14);
+  for (const auto& c : m_candidates) {
+    Gui2Table::Row row;
+    row.cells = {c.name, c.role, std::to_string(c.skill), FormatOwnerMoney(c.salary),
+                 CareerCommon::FormatYears(c.contractYearsRemaining)};
+    if (c.skill >= 75) {
+      row.hasZone = true;
+      row.zoneColor = Vector3(80, 200, 110);
+    }
+    table->AddRow(row);
   }
-  grid->UpdateLayout(0.5);
-  hireFrame->AddView(grid);
-  grid->Show();
+  table->SetSelectable(!m_candidates.empty());
+  table->sig_OnActivate.connect([this](int index) { HireCandidate(index); });
+  table->Build();
+  hireFrame->AddView(table);
+  table->Show();
 
   root->AddView(hireFrame);
   hireFrame->Show();
@@ -516,7 +548,10 @@ OwnerStaffHirePage::OwnerStaffHirePage(Gui2WindowManager* windowManager,
   root->AddView(btnBack);
   btnBack->Show();
 
-  btnBack->SetFocus();
+  if (table->GetRowCount() > 0)
+    table->SetFocus();
+  else
+    btnBack->SetFocus();
   this->Show();
 }
 
@@ -566,31 +601,48 @@ OwnerSponsorsPage::OwnerSponsorsPage(Gui2WindowManager* windowManager, const Gui
 
     int nextY = 24;
 
+    using Align = Gui2Table::Align;
+    const std::vector<Gui2Table::Column> columns = {
+        {TR("career_col_sponsor"), 30, Align::Left},
+        {TR("career_col_type"), 18, Align::Left},
+        {TR("career_col_revenue"), 16, Align::Right},
+        {TR("career_col_years_left"), 16, Align::Center}};
+
     if (!save->activeSponsors.empty()) {
-      int sHeight = 4 + save->activeSponsors.size() * 3;
+      const int visible = std::min(4, static_cast<int>(save->activeSponsors.size()));
+      const int sHeight = static_cast<int>(8 + (visible + 1) * 3.2f);
       Gui2Frame* activeFrame =
           new Gui2Frame(windowManager, "frame_sp_active", 4, nextY, 84, sHeight, true);
 
-      Gui2Caption* activeTitle = new Gui2Caption(windowManager, "caption_sp_active", 2, 1, 80, 2,
-                                                 TR("career_sponsors_active"));
+      Gui2Caption* activeTitle = new Gui2Caption(windowManager, "caption_sp_active", 2, 1, 80, 2.4,
+                                                 TR("career_sponsors_active_hint"));
       activeFrame->AddView(activeTitle);
       activeTitle->Show();
 
-      Gui2Grid* activeGrid = new Gui2Grid(windowManager, "sp_active_grid", 2, 4, 80, sHeight - 4);
-      int row = 0;
+      auto* table = new Gui2Table(windowManager, "table_sp_active", 2, 4.5f, columns, 3.2f, 4);
+      std::vector<std::string> sponsorNames;
       for (const auto& sp : save->activeSponsors) {
-        std::string label =
-            TRF("career_sponsor_row", {sp.sponsorName, sp.type, std::to_string(sp.annualRevenue),
-                                       std::to_string(sp.yearsRemaining)});
-        Gui2Button* btn = new Gui2Button(windowManager, "btn_sp_term_" + std::to_string(row), 0, 0,
-                                         79, 2.5, "[" + TR("career_terminate") + "] " + label);
-        std::string spName = sp.sponsorName;
-        btn->sig_OnClick.connect([this, spName](...) { TerminateDeal(spName); });
-        activeGrid->AddView(btn, row++, 0);
+        Gui2Table::Row row;
+        row.cells = {sp.sponsorName, sp.type, FormatOwnerMoney(sp.annualRevenue),
+                     CareerCommon::FormatYears(sp.yearsRemaining)};
+        // Deals in their final year need renewing or replacing.
+        if (sp.yearsRemaining <= 1) {
+          row.hasZone = true;
+          row.zoneColor = Vector3(230, 170, 50);
+        }
+        table->AddRow(row);
+        sponsorNames.push_back(sp.sponsorName);
       }
-      activeGrid->UpdateLayout(0.5);
-      activeFrame->AddView(activeGrid);
-      activeGrid->Show();
+      table->SetSelectable(true);
+      table->sig_OnActivate.connect([this, sponsorNames](int index) {
+        if (index >= 0 && index < static_cast<int>(sponsorNames.size()))
+          TerminateDeal(sponsorNames[index]);
+      });
+      table->Build();
+      activeFrame->AddView(table);
+      table->Show();
+      if (!m_firstTable)
+        m_firstTable = table;
 
       root->AddView(activeFrame);
       activeFrame->Show();
@@ -599,36 +651,50 @@ OwnerSponsorsPage::OwnerSponsorsPage(Gui2WindowManager* windowManager, const Gui
     }
 
     Gui2Frame* offersFrame =
-        new Gui2Frame(windowManager, "frame_sp_offers", 4, nextY, 84, 88 - nextY, true);
+        new Gui2Frame(windowManager, "frame_sp_offers", 4, nextY, 84, 86 - nextY, true);
 
-    Gui2Caption* offersTitle = new Gui2Caption(windowManager, "caption_sp_offers", 2, 1, 80, 2,
-                                               TR("career_sponsors_offers"));
+    Gui2Caption* offersTitle = new Gui2Caption(windowManager, "caption_sp_offers", 2, 1, 80, 2.4,
+                                               TR("career_sponsors_offers_hint"));
     offersFrame->AddView(offersTitle);
     offersTitle->Show();
 
     if (save->availableSponsorOffers.empty()) {
-      Gui2Caption* noOffers = new Gui2Caption(windowManager, "caption_sp_none", 2, 4, 80, 2,
+      Gui2Caption* noOffers = new Gui2Caption(windowManager, "caption_sp_none", 2, 4.5, 80, 2.4,
                                               TR("career_sponsors_none"));
       offersFrame->AddView(noOffers);
       noOffers->Show();
     } else {
-      Gui2Grid* offersGrid =
-          new Gui2Grid(windowManager, "sp_offers_grid", 2, 4, 80, 88 - nextY - 4);
-      int row = 0;
-      for (int i = 0; i < static_cast<int>(save->availableSponsorOffers.size()); i++) {
-        const auto& sp = save->availableSponsorOffers[i];
-        std::string label =
-            TRF("career_sponsor_offer_row",
-                {sp.sponsorName, sp.type, std::to_string(sp.annualRevenue),
-                 std::to_string(sp.yearsRemaining), std::to_string(sp.reputationRequirement)});
-        Gui2Button* btn = new Gui2Button(windowManager, "btn_sp_acc_" + std::to_string(i), 0, 0, 79,
-                                         2.5, "[" + TR("career_accept") + "] " + label);
-        btn->sig_OnClick.connect([this, i](...) { AcceptDeal(i); });
-        offersGrid->AddView(btn, row++, 0);
+      std::vector<Gui2Table::Column> offerColumns = columns;
+      offerColumns[0].width_percent = 26;
+      offerColumns[1].width_percent = 16;
+      offerColumns[2].width_percent = 14;
+      offerColumns[3].width_percent = 12;
+      offerColumns.push_back({TR("career_col_rep"), 12, Align::Center});
+      const int rows = std::max(1, static_cast<int>((86 - nextY - 6) / 3.2f) - 1);
+      auto* table =
+          new Gui2Table(windowManager, "table_sp_offers", 2, 4.5f, offerColumns, 3.2f, rows);
+      for (const auto& sp : save->availableSponsorOffers) {
+        Gui2Table::Row row;
+        row.cells = {sp.sponsorName, sp.type, FormatOwnerMoney(sp.annualRevenue),
+                     CareerCommon::FormatYears(sp.yearsRemaining),
+                     std::to_string(sp.reputationRequirement)};
+        // Grey out offers the club's reputation cannot yet unlock.
+        if (sp.reputationRequirement > save->reputation) {
+          row.hasTextColor = true;
+          row.textColor = Vector3(140, 140, 150);
+        } else {
+          row.hasZone = true;
+          row.zoneColor = Vector3(80, 200, 110);
+        }
+        table->AddRow(row);
       }
-      offersGrid->UpdateLayout(0.5);
-      offersFrame->AddView(offersGrid);
-      offersGrid->Show();
+      table->SetSelectable(true);
+      table->sig_OnActivate.connect([this](int index) { AcceptDeal(index); });
+      table->Build();
+      offersFrame->AddView(table);
+      table->Show();
+      if (!m_firstTable)
+        m_firstTable = table;
     }
 
     root->AddView(offersFrame);
@@ -641,7 +707,10 @@ OwnerSponsorsPage::OwnerSponsorsPage(Gui2WindowManager* windowManager, const Gui
   root->AddView(btnBack);
   btnBack->Show();
 
-  btnBack->SetFocus();
+  if (m_firstTable)
+    m_firstTable->SetFocus();
+  else
+    btnBack->SetFocus();
   this->Show();
 }
 
