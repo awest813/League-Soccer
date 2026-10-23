@@ -368,17 +368,25 @@ jobs:
         # library and set up its data folder, which is what this checks:
         # every library must come from the bundle or the system, and the
         # data must be reached through ~/Library/Application Support.
-        # /usr/bin/perl stops the game after 60 s (macOS has no `timeout`);
-        # it sets DYLD_PRINT_LIBRARIES itself because macOS strips DYLD_*
-        # variables when starting a system binary.
+        # The game is stopped after 20 s; if it is still running, `sample`
+        # shows where it waits.
         timeout-minutes: 5
         run: |
           app="dist/macos/Gameplay Football.app"
           config="$(mktemp -d)/quick_match.config"
           cp data/menu_smoke_quick_match.config "$config"
           log="$(mktemp)"
-          /usr/bin/perl -e '$ENV{DYLD_PRINT_LIBRARIES} = 1; alarm 60; exec @ARGV' \
-            "$app/Contents/MacOS/gameplayfootball" "$config" >"$log" 2>&1 || true
+          ls "$app/Contents/Resources"
+          DYLD_PRINT_LIBRARIES=1 "$app/Contents/MacOS/gameplayfootball" "$config" >"$log" 2>&1 &
+          pid=$!
+          sleep 20
+          if kill -0 "$pid" 2>/dev/null; then
+            # Still running (waiting for a window): show where.
+            sample "$pid" 2 -file sample.txt >/dev/null 2>&1 || true
+            sed -n '/Call graph:/,/Total number in stack/p' sample.txt | head -n 80
+            kill "$pid" || true
+          fi
+          wait "$pid" || true
           grep "dyld" "$log" | sed 's/^dyld\[[0-9]*\]: <[^>]*> //' | sort -u
           grep -q "Contents/Frameworks/libSDL2-" "$log"
           if grep "dyld" "$log" | grep -E "/opt/homebrew|/usr/local"; then
