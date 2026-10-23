@@ -303,8 +303,11 @@ jobs:
           if-no-files-found: error
 
   build-macos:
-    name: Build (macOS 14)
-    runs-on: macos-14
+    name: Build (macOS 15)
+    # Homebrew treats macOS 14 as a Tier 3 platform without bottles, so the
+    # dependencies (down to Python, for sdl2_ttf) were built from source and
+    # the step failed after ~40 minutes on every run.
+    runs-on: macos-15
 
     steps:
       - name: Checkout repository

@@ -129,7 +129,7 @@ contracts, and watch team morale and chemistry shape on-pitch performance.
 | Platform | Builds | Runs | Notes |
 |----------|:------:|:----:|-------|
 | **Linux** | ✅ | ✅ | Debian/Ubuntu/Mint, Fedora/RHEL, Arch/Manjaro, openSUSE, Void, Alpine, Gentoo, NixOS + Docker — one-command `./build.sh` |
-| **macOS** | ✅ | ✅ | Homebrew deps; rendered & released by CI on macOS 14 |
+| **macOS** | ✅ | ✅ | Homebrew deps (system OpenAL); built by CI on macOS 15 |
 | **Windows** | ✅ | ✅ | MSVC + vcpkg, with a runnable release artifact from CI |
 
 CI builds and tests all three platforms on every push and pull request.
