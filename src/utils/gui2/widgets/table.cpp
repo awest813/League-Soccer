@@ -148,6 +148,8 @@ void Gui2Table::Redraw() {
     // Alternating bands; the user's row tinted gold; the selection solid.
     if (selected)
       image->DrawRectangle(0, top, w, height, gold, 255);
+    else if (row.section)
+      image->DrawRectangle(0, top, w, height, Vector3(28, 44, 82), 235);
     else if (row.highlight)
       image->DrawRectangle(0, top, w, height, Vector3(120, 100, 30), 200);
     else
@@ -156,8 +158,9 @@ void Gui2Table::Redraw() {
     if (row.hasZone)
       image->DrawRectangle(0, top, stripPixels, height, row.zoneColor, 255);
 
-    const Vector3 textColor =
-        row.hasTextColor ? row.textColor : style->GetColor(e_DecorationType_Bright1);
+    const Vector3 textColor = row.hasTextColor ? row.textColor
+                              : row.section    ? gold
+                                               : style->GetColor(e_DecorationType_Bright1);
     for (size_t c = 0; c < columns.size(); c++) {
       Gui2Caption* caption = cellCaptions[v][c];
       caption->SetCaption(c < row.cells.size() && !row.cells[c].empty()

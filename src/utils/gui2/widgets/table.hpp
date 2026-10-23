@@ -28,6 +28,7 @@ public:
   struct Row {
     std::vector<std::string> cells;
     bool highlight = false;     // the user's club or player
+    bool section = false;       // a group heading (e.g. a league name)
     bool hasZone = false;       // draw a coloured strip at the left edge
     Vector3 zoneColor;          // when hasZone
     bool hasTextColor = false;  // otherwise the style's bright colour

@@ -10,6 +10,7 @@
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
 #include "menu_smoke.hpp"
+#include "utils/gui2/widgets/table.hpp"
 #include "utils/localization.hpp"
 
 LeagueStandingsPage::LeagueStandingsPage(Gui2WindowManager* windowManager,
@@ -88,12 +89,6 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
                       Localization::GetInstance().Translate("league_table_title"));
   frame->AddView(title);
   title->Show();
-
-  Gui2Caption* header =
-      new Gui2Caption(windowManager, "caption_table_header", 2, 6, 86, 2,
-                      Localization::GetInstance().Translate("league_table_header"));
-  frame->AddView(header);
-  header->Show();
 
   auto result = GetDB()->Query(
       "SELECT t.id, t.name, l.name FROM teams t JOIN leagues l ON t.league_id = l.id "
@@ -200,18 +195,29 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
     return a.gdVal > b.gdVal;
   });
 
-  Gui2Grid* grid = new Gui2Grid(windowManager, "grid_league_table", 2, 9, 86, 78);
-  int row = 0;
+  // One table, a heading row per league; zone strips for the leader and the
+  // bottom club, the user's club highlighted (FIFA/PES style).
+  auto& loc = Localization::GetInstance();
+  using Align = Gui2Table::Align;
+  auto* table = new Gui2Table(windowManager, "table_league", 7, 11,
+                              {{loc.Translate("career_standings_pos"), 4.5f, Align::Center},
+                               {loc.Translate("career_standings_club"), 26, Align::Left},
+                               {loc.Translate("career_standings_p"), 4.5f, Align::Center},
+                               {loc.Translate("career_standings_w"), 4.5f, Align::Center},
+                               {loc.Translate("career_standings_d"), 4.5f, Align::Center},
+                               {loc.Translate("career_standings_l"), 4.5f, Align::Center},
+                               {loc.Translate("career_standings_gf"), 5, Align::Center},
+                               {loc.Translate("career_standings_ga"), 5, Align::Center},
+                               {loc.Translate("career_standings_gd"), 5, Align::Center},
+                               {loc.Translate("career_standings_pts"), 5.5f, Align::Center},
+                               {loc.Translate("career_standings_form"), 10, Align::Center}},
+                              3.6f, 19);
   std::string currentLeague;
   int leaguePos = 0;
   int leagueSize = 0;
   int userTeamID = 0;
   LeagueGetUserTeamID(userTeamID);
-
-  const Vector3 colorUser(250, 210, 60);
-  const Vector3 colorLeader(110, 220, 110);
-  const Vector3 colorBottom(235, 105, 105);
-
+  int userRow = 0;
   for (const auto& tr : allTeams) {
     if (tr.league != currentLeague) {
       currentLeague = tr.league;
@@ -220,32 +226,45 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
           static_cast<int>(std::count_if(allTeams.begin(), allTeams.end(), [&tr](const TeamRow& t) {
             return t.league == tr.league;
           }));
-      Gui2Caption* sep = new Gui2Caption(windowManager, "caption_league_sep_" + int_to_str(row), 0,
-                                         0, 85, 2.5, "--- " + currentLeague + " ---");
-      grid->AddView(sep, row++, 0);
+      Gui2Table::Row heading;
+      heading.cells = {"", currentLeague};
+      heading.section = true;
+      table->AddRow(heading);
     }
     leaguePos++;
-
     const bool isUserTeam = (atoi(tr.id.c_str()) == userTeamID);
-    char buf[256];
-    snprintf(buf, sizeof(buf), "%-2s%-27s | %2s | %2s | %2s | %2s | %2s | %2s | %2s | %3s | %-5s",
-             isUserTeam ? "> " : "", tr.name.c_str(), tr.p.c_str(), tr.w.c_str(), tr.d.c_str(),
-             tr.l.c_str(), tr.gf.c_str(), tr.ga.c_str(), tr.gd.c_str(), tr.pts.c_str(),
-             tr.form.c_str());
-    Gui2Button* btn = new Gui2Button(windowManager, "btn_table_" + tr.id, 0, 0, 85, 2.5, buf);
-    if (isUserTeam) {
-      btn->SetColor(colorUser);
-    } else if (leaguePos == 1 && leagueSize > 1) {
-      btn->SetColor(colorLeader);
+    Gui2Table::Row row;
+    row.cells = {std::to_string(leaguePos),
+                 tr.name,
+                 tr.p,
+                 tr.w,
+                 tr.d,
+                 tr.l,
+                 tr.gf,
+                 tr.ga,
+                 (tr.gdVal > 0 ? "+" : "") + tr.gd,
+                 tr.pts,
+                 tr.form.empty() ? "-" : tr.form};
+    row.highlight = isUserTeam;
+    if (leaguePos == 1 && leagueSize > 1) {
+      row.hasZone = true;
+      row.zoneColor = Vector3(80, 200, 110);
     } else if (leaguePos == leagueSize && leagueSize > 2) {
-      btn->SetColor(colorBottom);
+      row.hasZone = true;
+      row.zoneColor = Vector3(225, 70, 70);
     }
-    grid->AddView(btn, row++, 0);
+    if (isUserTeam)
+      userRow = table->GetRowCount();
+    table->AddRow(row);
   }
+  table->SetSelectable(true);
+  table->Build();
+  table->SetSelectedRow(userRow);
+  frame->AddView(table);
+  table->Show();
 
-  // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_table_back", 0, 0, 85, 2.5,
-                                       Localization::GetInstance().Translate("action_back"));
+  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_table_back", 32, 84, 26, 3.6f,
+                                       loc.Translate("action_back"));
   btnBack->sig_OnClick.connect([this, windowManager](...) {
     this->Exit();
     Properties properties;
@@ -253,16 +272,13 @@ LeagueStandingsLeagueTablePage::LeagueStandingsLeagueTablePage(Gui2WindowManager
                                                 properties, 0);
     delete this;
   });
-  grid->AddView(btnBack, row, 0);
+  frame->AddView(btnBack);
+  btnBack->Show();
 
-  grid->SetMaxVisibleRows(20);
-  grid->UpdateLayout(0.5);
-  frame->AddView(grid);
-  grid->Show();
-
-  if (grid->IsSelectable()) {
-    grid->SetFocus();
-  }
+  if (table->GetRowCount() > 0)
+    table->SetFocus();
+  else
+    btnBack->SetFocus();
 
   this->Show();
 }

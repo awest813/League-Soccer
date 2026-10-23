@@ -9,6 +9,7 @@
 #include "utils/gui2/widgets/frame.hpp"
 #include "utils/gui2/widgets/grid.hpp"
 #include "utils/gui2/widgets/pulldown.hpp"
+#include "utils/gui2/widgets/table.hpp"
 #include "utils/gui2/widgets/text.hpp"
 #include "utils/gui2/windowmanager.hpp"
 
@@ -26,8 +27,8 @@ protected:
 
   Gui2Pulldown* leagueFilterPulldown;
   Gui2Frame* frame;
-  Gui2Caption* fixturesHeader;
-  Gui2Grid* fixturesGrid;
+  Gui2Table* fixturesTable;
+  Gui2Button* backButton;
   std::string m_selectedLeagueID;
   unsigned long pageCreatedTime_ms;
   bool autoAdvanceTriggered;

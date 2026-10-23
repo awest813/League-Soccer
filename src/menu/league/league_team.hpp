@@ -75,6 +75,7 @@ public:
 protected:
   unsigned long pageCreatedTime_ms;
   bool autoAdvanceTriggered;
+  Gui2View* overviewTable = nullptr;  // focus returns here from a player
 };
 
 class LeagueTeamPlayerDevelopmentPage : public Gui2Page {

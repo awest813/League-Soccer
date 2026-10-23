@@ -16,8 +16,8 @@
 LeagueCalendarPage::LeagueCalendarPage(Gui2WindowManager* windowManager,
                                        const Gui2PageData& pageData)
     : Gui2Page(windowManager, pageData),
-      fixturesHeader(nullptr),
-      fixturesGrid(nullptr),
+      fixturesTable(nullptr),
+      backButton(nullptr),
       pageCreatedTime_ms(league_menu_smoke::Now_ms()),
       autoAdvanceTriggered(false) {
   auto& loc = Localization::GetInstance();
@@ -37,7 +37,7 @@ LeagueCalendarPage::LeagueCalendarPage(Gui2WindowManager* windowManager,
   filterLabel->Show();
 
   leagueFilterPulldown = new Gui2Pulldown(windowManager, "pulldown_cal_league", 22, 6, 30, 3);
-  leagueFilterPulldown->AddEntry("All Leagues", "all");
+  leagueFilterPulldown->AddEntry(loc.Translate("league_all_leagues"), "all");
 
   auto leaguesResult = GetDB()->Query("SELECT id, name FROM leagues ORDER BY name");
   for (const auto& row : leaguesResult->data) {
@@ -72,15 +72,15 @@ void LeagueCalendarPage::Process() {
 }
 
 void LeagueCalendarPage::RefreshFixtures() {
-  if (fixturesHeader) {
-    fixturesHeader->Exit();
-    delete fixturesHeader;
-    fixturesHeader = nullptr;
+  if (fixturesTable) {
+    fixturesTable->Exit();
+    delete fixturesTable;
+    fixturesTable = nullptr;
   }
-  if (fixturesGrid) {
-    fixturesGrid->Exit();
-    delete fixturesGrid;
-    fixturesGrid = nullptr;
+  if (backButton) {
+    backButton->Exit();
+    delete backButton;
+    backButton = nullptr;
   }
 
   std::string query =
@@ -95,70 +95,73 @@ void LeagueCalendarPage::RefreshFixtures() {
     query += "WHERE c.competition_id = " + m_selectedLeagueID + " ";
   }
   query += "ORDER BY c.timestamp LIMIT 40";
-
   auto result = GetDB()->Query(query);
-  fixturesHeader = new Gui2Caption(windowManager, "caption_cal_header", 2, 10, 66, 2,
-                                   Localization::GetInstance().Translate("league_calendar_header"));
-  frame->AddView(fixturesHeader);
-  fixturesHeader->Show();
 
-  fixturesGrid = new Gui2Grid(windowManager, "grid_cal", 2, 13, 66, 75);
-  int row = 0;
+  // Fixture list, home team right-aligned against "v"; the user's fixtures
+  // highlighted. Activate offers to simulate one.
+  auto& loc = Localization::GetInstance();
+  using Align = Gui2Table::Align;
+  fixturesTable = new Gui2Table(windowManager, "table_cal", 2, 10.5f,
+                                {{loc.Translate("matchhistory_date"), 11, Align::Left},
+                                 {"", 20, Align::Right},
+                                 {"", 4, Align::Center},
+                                 {"", 20, Align::Left},
+                                 {loc.Translate("career_col_league"), 11, Align::Left}},
+                                3.6f, 18);
+  std::vector<std::string> ids, homes, aways;
   for (const auto& r : result->data) {
-    std::string calID = r.at(0);
-    char buf[256];
-    snprintf(buf, sizeof(buf), "%-17s | %-19s | %-19s | %s", r.at(1).c_str(), r.at(2).c_str(),
-             r.at(3).c_str(), r.at(4).c_str());
-    std::string homeTeam = r.at(2);
-    std::string awayTeam = r.at(3);
-    const bool isUserFixture = (r.size() > 5 && r.at(5) == "1");
-    Gui2Button* btn =
-        new Gui2Button(windowManager, "btn_fixture_" + std::to_string(row), 0, 0, 65, 2.5, buf);
-    if (isUserFixture) {
-      btn->SetColor(Vector3(250, 210, 60));
-    }
-    btn->sig_OnClick.connect([this, calID, homeTeam, awayTeam](...) {
-      Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_fixture", 25, 25, 50, 50,
-                                       homeTeam + " vs " + awayTeam);
-      Gui2Text* txt = new Gui2Text(windowManager, "text_fixture", 5, 5, 90, 70, 2.5, 40, "");
-      txt->AddText(homeTeam + " vs " + awayTeam);
-      txt->AddEmptyLine();
-      txt->AddText(Localization::GetInstance().Translate("league_simulate_prompt"));
-      dlg->AddContent(txt);
-
-      (dlg->AddSingleButton(Localization::GetInstance().Translate("league_simulate")))->SetFocus();
-      dlg->sig_OnPositive.connect([this, dlg, calID](...) {
-        LeagueFixtureInfo fixture;
-        if (LeagueGetFixtureByCalendarID(atoi(calID.c_str()), fixture)) {
-          int goals1 = 0;
-          int goals2 = 0;
-          LeagueSimulateFixture(fixture, goals1, goals2);
-          LeagueRecordResult(fixture, goals1, goals2);
-        }
-        dlg->Exit();
-        delete dlg;
-        RefreshFixtures();
-      });
-      this->AddView(dlg);
-      dlg->Show();
+    Gui2Table::Row row;
+    row.cells = {r.at(1).substr(0, 10), r.at(2), "v", r.at(3), r.at(4)};
+    row.highlight = r.size() > 5 && r.at(5) == "1";
+    fixturesTable->AddRow(row);
+    ids.push_back(r.at(0));
+    homes.push_back(r.at(2));
+    aways.push_back(r.at(3));
+  }
+  fixturesTable->SetSelectable(true);
+  fixturesTable->sig_OnActivate.connect([this, ids, homes, aways](int index) {
+    if (index < 0 || index >= static_cast<int>(ids.size()))
+      return;
+    const std::string calID = ids[index];
+    const std::string title = homes[index] + " v " + aways[index];
+    Gui2Dialog* dlg = new Gui2Dialog(windowManager, "dialog_fixture", 25, 25, 50, 50, title);
+    Gui2Text* txt = new Gui2Text(windowManager, "text_fixture", 5, 5, 90, 70, 2.5, 40, "");
+    txt->AddText(title);
+    txt->AddEmptyLine();
+    txt->AddText(Localization::GetInstance().Translate("league_simulate_prompt"));
+    dlg->AddContent(txt);
+    (dlg->AddSingleButton(Localization::GetInstance().Translate("league_simulate")))->SetFocus();
+    dlg->sig_OnPositive.connect([this, dlg, calID](...) {
+      LeagueFixtureInfo fixture;
+      if (LeagueGetFixtureByCalendarID(atoi(calID.c_str()), fixture)) {
+        int goals1 = 0;
+        int goals2 = 0;
+        LeagueSimulateFixture(fixture, goals1, goals2);
+        LeagueRecordResult(fixture, goals1, goals2);
+      }
+      dlg->Exit();
+      delete dlg;
+      RefreshFixtures();
     });
-    fixturesGrid->AddView(btn, row++, 0);
+    this->AddView(dlg);
+    dlg->Show();
+  });
+  if (fixturesTable->GetRowCount() > 0) {
+    fixturesTable->Build();
+    frame->AddView(fixturesTable);
+    fixturesTable->Show();
   }
-  // Back lives in the same grid so keyboard/gamepad can reach it too.
-  Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_cal_back", 0, 0, 65, 2.5,
-                     Localization::GetInstance().Translate("league_back_dashboard"));
-  btnBack->sig_OnClick.connect([this](...) { GoBack(); });
-  fixturesGrid->AddView(btnBack, row, 0);
 
-  fixturesGrid->SetMaxVisibleRows(16);
-  fixturesGrid->UpdateLayout(0.5);
-  frame->AddView(fixturesGrid);
-  fixturesGrid->Show();
+  backButton = new Gui2Button(windowManager, "btn_cal_back", 20, 84, 30, 3.6f,
+                              loc.Translate("league_back_dashboard"));
+  backButton->sig_OnClick.connect([this](...) { GoBack(); });
+  frame->AddView(backButton);
+  backButton->Show();
 
-  if (fixturesGrid->IsSelectable()) {
-    fixturesGrid->SetFocus();
-  }
+  if (fixturesTable->GetRowCount() > 0)
+    fixturesTable->SetFocus();
+  else
+    backButton->SetFocus();
 }
 
 void LeagueCalendarPage::GoBack() {

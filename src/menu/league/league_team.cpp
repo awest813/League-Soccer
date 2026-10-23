@@ -1,13 +1,17 @@
 #include "league_team.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <string>
 
 #include "../../league/leaguecode.hpp"
 #include "../../main.hpp"
+#include "../career/career_common.hpp"
 #include "../pagefactory.hpp"
 #include "base/utils.hpp"
 #include "menu_smoke.hpp"
 #include "utils/gui2/widgets/dialog.hpp"
+#include "utils/gui2/widgets/table.hpp"
 #include "utils/gui2/widgets/text.hpp"
 #include "utils/localization.hpp"
 #include "utils/xmlloader.hpp"
@@ -665,60 +669,72 @@ LeagueTeamPlayerOverviewPage::LeagueTeamPlayerOverviewPage(Gui2WindowManager* wi
   frame->AddView(title);
   title->Show();
 
-  Gui2Caption* header =
-      new Gui2Caption(windowManager, "caption_playerovr_header", 2, 6, 66, 2,
-                      "Name                  | Role                | Age | Base Stat");
-  frame->AddView(header);
-  header->Show();
-
+  // The squad as a table: short position codes and ratings out of 99 (the
+  // page used to print the raw 0-1 base stat).
+  auto& loc = Localization::GetInstance();
+  auto rating = [](const std::string& baseStat) {
+    const int value = static_cast<int>(std::lround(atof(baseStat.c_str()) * 100.0));
+    return std::to_string(std::clamp(value, 1, 99));
+  };
   auto result = GetDB()->Query(
       "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat FROM players p "
       "JOIN teams t ON p.team_id = t.id JOIN settings s ON t.id = s.team_id "
       "ORDER BY p.formationorder");
+  overviewTable = nullptr;
   if (!result->data.empty()) {
-    Gui2Grid* grid = new Gui2Grid(windowManager, "grid_playerovr", 2, 10, 66, 75);
-    int row = 0;
+    using Align = Gui2Table::Align;
+    auto* table = new Gui2Table(windowManager, "table_playerovr", 3, 7,
+                                {{loc.Translate("career_col_name"), 36, Align::Left},
+                                 {loc.Translate("career_col_pos"), 10, Align::Center},
+                                 {loc.Translate("career_col_age"), 9, Align::Center},
+                                 {loc.Translate("career_col_ovr"), 9, Align::Center}},
+                                3.6f, 20);
+    std::vector<std::string> names;
     for (const auto& r : result->data) {
-      std::string fullName = r.at(0) + " " + r.at(1);
-      char buf[256];
-      snprintf(buf, sizeof(buf), "%-20s | %-19s | %2s  | %s", fullName.c_str(), r.at(2).c_str(),
-               r.at(3).c_str(), r.at(4).c_str());
-      std::string btnLabel(buf);
-      Gui2Button* btn =
-          new Gui2Button(windowManager, "btn_povr_" + std::to_string(row), 0, 0, 65, 2.5, btnLabel);
-      btn->sig_OnClick.connect([this, windowManager, fullName](...) {
-        auto detail = GetDB()->Query(
-            "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
-            "FROM players p JOIN teams t ON p.team_id = t.id "
-            "WHERE p.firstname || ' ' || p.lastname = " +
-            SqlString(fullName) + " LIMIT 1");
-        Gui2Dialog* dlg =
-            new Gui2Dialog(windowManager, "dialog_povr_detail", 25, 20, 50, 60, fullName);
-        if (!detail->data.empty()) {
-          Gui2Text* txt =
-              new Gui2Text(windowManager, "text_povr_detail", 5, 5, 90, 80, 2.5, 40, "");
-          const auto& d = detail->data.at(0);
-          txt->AddText("Name: " + d.at(0) + " " + d.at(1));
-          txt->AddText("Role: " + d.at(2));
-          txt->AddText("Age: " + d.at(3));
-          txt->AddText("Base Stat: " + d.at(4));
-          txt->AddText("Team: " + d.at(5));
-          dlg->AddContent(txt);
-        }
-        (dlg->AddSingleButton("Close"))->SetFocus();
-        dlg->sig_OnPositive.connect([this, dlg](...) {
-          dlg->Exit();
-          delete dlg;
-        });
-        this->AddView(dlg);
-        dlg->Show();
-      });
-      grid->AddView(btn, row++, 0);
+      Gui2Table::Row row;
+      row.cells = {r.at(0) + " " + r.at(1), CareerCommon::PositionFromDbRole(r.at(2)), r.at(3),
+                   rating(r.at(4))};
+      table->AddRow(row);
+      names.push_back(r.at(0) + " " + r.at(1));
     }
-    grid->SetMaxVisibleRows(18);
-    grid->UpdateLayout(0.5);
-    frame->AddView(grid);
-    grid->Show();
+    table->SetSelectable(true);
+    table->sig_OnActivate.connect([this, windowManager, names, rating](int index) {
+      if (index < 0 || index >= static_cast<int>(names.size()))
+        return;
+      const std::string& fullName = names[index];
+      auto& loc = Localization::GetInstance();
+      auto detail = GetDB()->Query(
+          "SELECT p.firstname, p.lastname, p.role, p.age, p.base_stat, t.name "
+          "FROM players p JOIN teams t ON p.team_id = t.id "
+          "WHERE p.firstname || ' ' || p.lastname = " +
+          SqlString(fullName) + " LIMIT 1");
+      Gui2Dialog* dlg =
+          new Gui2Dialog(windowManager, "dialog_povr_detail", 25, 20, 50, 60, fullName);
+      if (!detail->data.empty()) {
+        Gui2Text* txt = new Gui2Text(windowManager, "text_povr_detail", 5, 5, 90, 80, 2.5, 40, "");
+        const auto& d = detail->data.at(0);
+        txt->AddText(loc.Translate("career_col_pos") + ": " +
+                     CareerCommon::PositionFromDbRole(d.at(2)) + " (" + d.at(2) + ")");
+        txt->AddText(loc.Translate("career_col_age") + ": " + d.at(3));
+        txt->AddText(loc.Translate("career_col_ovr") + ": " + rating(d.at(4)));
+        txt->AddText(loc.Translate("career_standings_club") + ": " + d.at(5));
+        dlg->AddContent(txt);
+      }
+      Gui2View* previous = overviewTable;
+      (dlg->AddSingleButton(loc.Translate("career_close")))->SetFocus();
+      dlg->sig_OnPositive.connect([dlg, previous](...) {
+        dlg->Exit();
+        delete dlg;
+        if (previous)
+          previous->SetFocus();
+      });
+      this->AddView(dlg);
+      dlg->Show();
+    });
+    table->Build();
+    frame->AddView(table);
+    table->Show();
+    overviewTable = table;
   }
 
   Gui2Button* btnBack = new Gui2Button(windowManager, "btn_playerovr_back", 15, 86, 40, 3,
@@ -732,7 +748,10 @@ LeagueTeamPlayerOverviewPage::LeagueTeamPlayerOverviewPage(Gui2WindowManager* wi
   });
   frame->AddView(btnBack);
   btnBack->Show();
-  btnBack->SetFocus();
+  if (overviewTable)
+    overviewTable->SetFocus();
+  else
+    btnBack->SetFocus();
   this->Show();
 }
 
