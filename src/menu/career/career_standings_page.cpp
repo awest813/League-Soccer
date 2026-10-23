@@ -56,20 +56,20 @@ CareerStandingsPage::CareerStandingsPage(Gui2WindowManager* windowManager,
   }
 
   // Bottom action bar
-  Gui2Button* btnMatchday = new Gui2Button(windowManager, "btn_st_matchday", 2, 91.5f, 28, 3.2f,
+  Gui2Button* btnMatchday = new Gui2Button(windowManager, "btn_st_matchday", 2, 88, 28, 3.6f,
                                            TR("career_play_matchday"));
   btnMatchday->sig_OnClick.connect([this](...) { GoMatchday(); });
   frame->AddView(btnMatchday);
   btnMatchday->Show();
 
-  Gui2Button* btnSeason = new Gui2Button(windowManager, "btn_st_season", 33, 91.5f, 28, 3.2f,
+  Gui2Button* btnSeason = new Gui2Button(windowManager, "btn_st_season", 33, 88, 28, 3.6f,
                                          TR("career_season_review_title"));
   btnSeason->sig_OnClick.connect([this](...) { GoSeason(); });
   frame->AddView(btnSeason);
   btnSeason->Show();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_st_back", 64, 91.5f, 28, 3.2f, TR("career_back_hub"));
+      new Gui2Button(windowManager, "btn_st_back", 64, 88, 28, 3.6f, TR("career_back_hub"));
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   frame->AddView(btnBack);
   btnBack->Show();

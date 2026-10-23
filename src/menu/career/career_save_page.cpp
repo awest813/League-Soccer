@@ -93,7 +93,7 @@ CareerSavePage::CareerSavePage(Gui2WindowManager* windowManager, const Gui2PageD
   RefreshSlots();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_career_save_back", 27, 87, 30, 3, TR("action_back"));
+      new Gui2Button(windowManager, "btn_career_save_back", 27, 87, 30, 3.6f, TR("action_back"));
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   frame->AddView(btnBack);
   btnBack->Show();

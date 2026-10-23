@@ -228,6 +228,8 @@ protected:
   Gui2Frame* frame;
   Gui2Grid* fixtureGrid;
   Gui2Caption* summaryCaption;
+  Gui2Frame* m_card = nullptr;  // the fixture preview / result
+  Gui2Button* m_back = nullptr;
   std::vector<Gui2Caption*> fixtureScoreCaps;
   std::vector<std::string> m_opponents;
   std::vector<int> m_opponentDBIDs;

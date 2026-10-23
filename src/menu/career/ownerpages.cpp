@@ -166,7 +166,7 @@ OwnerStadiumPage::OwnerStadiumPage(Gui2WindowManager* windowManager, const Gui2P
   }
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_stad_back", 26, 89, 40, 3, TR("career_back_owner_hub"));
+      new Gui2Button(windowManager, "btn_stad_back", 26, 88, 40, 3.6f, TR("career_back_owner_hub"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerHub); });
   root->AddView(btnBack);
   btnBack->Show();
@@ -325,7 +325,7 @@ OwnerFinancesPage::OwnerFinancesPage(Gui2WindowManager* windowManager, const Gui
   }
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_fin_back", 26, 89, 40, 3, TR("career_back_owner_hub"));
+      new Gui2Button(windowManager, "btn_fin_back", 26, 88, 40, 3.6f, TR("career_back_owner_hub"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerHub); });
   root->AddView(btnBack);
   btnBack->Show();
@@ -432,7 +432,7 @@ OwnerStaffPage::OwnerStaffPage(Gui2WindowManager* windowManager, const Gui2PageD
   btnHire->Show();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_staff_back", 50, 87, 34, 3, TR("career_back_hub"));
+      new Gui2Button(windowManager, "btn_staff_back", 50, 87, 34, 3.6f, TR("career_back_hub"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(GetHubPageID()); });
   root->AddView(btnBack);
   btnBack->Show();
@@ -511,7 +511,7 @@ OwnerStaffHirePage::OwnerStaffHirePage(Gui2WindowManager* windowManager,
   hireFrame->Show();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_hire_back", 30, 86, 32, 3, TR("career_back_staff"));
+      new Gui2Button(windowManager, "btn_hire_back", 30, 86, 32, 3.6f, TR("career_back_staff"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerStaff); });
   root->AddView(btnBack);
   btnBack->Show();
@@ -636,7 +636,7 @@ OwnerSponsorsPage::OwnerSponsorsPage(Gui2WindowManager* windowManager, const Gui
   }
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_sp_back", 30, 90, 32, 3, TR("career_back_owner_hub"));
+      new Gui2Button(windowManager, "btn_sp_back", 30, 88, 32, 3.6f, TR("career_back_owner_hub"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerHub); });
   root->AddView(btnBack);
   btnBack->Show();
@@ -750,7 +750,7 @@ OwnerBoardRoomPage::OwnerBoardRoomPage(Gui2WindowManager* windowManager,
   }
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_br_back", 30, 90, 32, 3, TR("career_back_owner_hub"));
+      new Gui2Button(windowManager, "btn_br_back", 30, 88, 32, 3.6f, TR("career_back_owner_hub"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_OwnerHub); });
   root->AddView(btnBack);
   btnBack->Show();
