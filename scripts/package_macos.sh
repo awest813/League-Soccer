@@ -238,6 +238,11 @@ if [[ -e "${FRAMEWORKS_DIR}/libSDL2-2.0.0.dylib" ]] &&
   fi
   bundle_library "libSDL3.0.dylib" "${sdl3}"
   process_queue
+  # sdl2-compat asks for the unversioned name; Homebrew provides it as a
+  # symlink, and so does the bundle.
+  ln -sf libSDL3.0.dylib "${FRAMEWORKS_DIR}/libSDL3.dylib"
+  echo "    sdl2-compat looks for: $(strings "${FRAMEWORKS_DIR}/libSDL2-2.0.0.dylib" |
+    grep -E 'SDL3\.(dylib|framework)|libSDL3' | sort -u | tr '\n' ' ')"
 fi
 
 # Bundled libraries find each other beside themselves; the game looks in
@@ -268,7 +273,7 @@ done
 [[ "${leaks}" -eq 0 ]] || exit 1
 
 for lib in "${FRAMEWORKS_DIR}"/*.dylib; do
-  [[ -e "${lib}" ]] && codesign --force --sign - "${lib}"
+  [[ -f "${lib}" && ! -L "${lib}" ]] && codesign --force --sign - "${lib}"
 done
 codesign --force --sign - "${APP}"
 codesign --verify --strict "${APP}"
