@@ -537,13 +537,14 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
   };
   text(root, "hub_identity", 2, 1, 88, 5,
        save ? TR(CareerModeLabelKey(save->mode)) + " | " + save->name : TR("career_hub_title"),
-       2.8f);
+       3.4f);
   text(root, "hub_calendar", 2, 7, 88, 5,
        save ? TRF("career_hub_identity",
                   {save->managerName, std::to_string(save->season.currentSeason),
                    std::to_string(std::min(save->season.currentWeek, save->season.maxWeeks)),
                    std::to_string(save->season.maxWeeks)})
-            : TR("career_nosave"));
+            : TR("career_nosave"),
+       2.5f);
   auto* nav = new Gui2Grid(windowManager, "hub_navigation", 2, 15, 28, 74);
   root->AddView(nav);
   int row = 0;
@@ -638,10 +639,45 @@ CareerHubPage::CareerHubPage(Gui2WindowManager* windowManager, const Gui2PageDat
             ? TR("career_hub_season_ready")
             : TRF("career_hub_next_week", {std::to_string(save->season.currentWeek),
                                            std::to_string(save->season.maxWeeks)});
-    text(content, "hub_next_step", 2, 10, 56, 10, progress);
-    text(content, "hub_role_snapshot", 2, 22, 56, 32, roleBody);
-    text(content, "hub_inbox_summary", 2, 58, 56, 8,
-         TRF("career_hub_unread", {std::to_string(unread)}));
+    // Stat cards across the top, as in the FIFA/FM career hubs.
+    struct Card {
+      std::string label, value;
+    };
+    std::vector<Card> cards = {
+        {TR("career_card_position"),
+         std::to_string(CareerSim::LeaguePosition(*save)) + " / " +
+             std::to_string(CareerSim::GenerateLeagueStandings(*save).size())},
+        {TR("career_card_record"), std::to_string(save->seasonWins) + "-" +
+                                       std::to_string(save->seasonDraws) + "-" +
+                                       std::to_string(save->seasonLosses)},
+        {TR("career_card_form"), save->seasonForm.empty() ? "-" : save->seasonForm}};
+    if (CanManageClub(*save))
+      cards.push_back({TR("career_card_budget"), FormatCareerMoney(save->transferBudget)});
+    else if (pro)
+      cards.push_back({TR("career_card_rating"), std::to_string(pro->ovr)});
+    else
+      cards.push_back({TR("career_card_board"), std::to_string(save->boardConfidence) + "%"});
+    const float cardGap = 1.4f;
+    const float cardWidth = (56 - cardGap * (cards.size() - 1)) / cards.size();
+    for (size_t i = 0; i < cards.size(); i++) {
+      auto* card = new Gui2Frame(windowManager, "hub_card_" + std::to_string(i),
+                                 2 + i * (cardWidth + cardGap), 9, cardWidth, 11, true);
+      auto* label = new Gui2Caption(windowManager, "hub_card_label_" + std::to_string(i), 1, 1.2f,
+                                    cardWidth - 2, 2.2f, cards[i].label);
+      label->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+      card->AddView(label);
+      label->Show();
+      auto* value = new Gui2Caption(windowManager, "hub_card_value_" + std::to_string(i), 1, 4.4f,
+                                    cardWidth - 2, 5, cards[i].value);
+      card->AddView(value);
+      value->Show();
+      content->AddView(card);
+      card->Show();
+    }
+    text(content, "hub_next_step", 2, 23, 56, 7, progress, 2.6f);
+    text(content, "hub_role_snapshot", 2, 31, 56, 30, roleBody, 2.4f);
+    text(content, "hub_inbox_summary", 2, 63, 56, 6,
+         TRF("career_hub_unread", {std::to_string(unread)}), 2.4f);
   } else if (m_section == CareerHubSection::INBOX) {
     m_unreadSummary = text(content, "hub_inbox_summary", 2, 9, 56, 6,
                            TRF("career_hub_unread", {std::to_string(unread)}));
