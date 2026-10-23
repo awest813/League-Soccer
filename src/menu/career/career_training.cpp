@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "career_common.hpp"
+#include "utils/localization.hpp"
 
 namespace blunted {
 namespace CareerTraining {
@@ -53,7 +54,7 @@ void DevelopAfterMatch(CareerSave& save, CareerCommon::CareerEvents& events) {
       if (player.ovr >= ceiling)
         player.developmentPoints = 0;
       events.AddEvent("development",
-                      player.name + " developed to " + std::to_string(player.ovr) + " OVR.", 0,
+                      TRF("career_event_developed", {player.name, std::to_string(player.ovr)}), 0,
                       false);
     }
   };
@@ -75,9 +76,7 @@ bool TrainSquad(CareerSave& save, CareerCommon::CareerEvents& events) {
     player.matchForm = std::min(100, player.matchForm + formDelta);
     player.morale = std::min(100, player.morale + moraleDelta);
   }
-  events.AddEvent("training",
-                  isCoach ? "Head Coach conducted masterclass squad tactical drills."
-                          : "Conducted squad training session.",
+  events.AddEvent("training", TR(isCoach ? "career_event_training_coach" : "career_event_training"),
                   1, false);
   return true;
 }
@@ -99,8 +98,7 @@ bool TrainFocus(CareerSave& save, CareerCommon::CareerEvents& events,
         player.ovr = std::min(99, player.ovr + 1);
         player.matchForm = std::min(100, player.matchForm + 10);
         player.morale = std::min(100, player.morale + 10);
-        events.AddEvent("training", "Completed intense individual training. Attributes improved.",
-                        1, false);
+        events.AddEvent("training", TR("career_event_individual_training"), 1, false);
       }
       continue;
     }
@@ -130,10 +128,11 @@ bool TrainFocus(CareerSave& save, CareerCommon::CareerEvents& events,
   }
 
   if (focusArea != "Individual") {
-    events.AddEvent("training",
-                    "Focused training on " + focusArea + " (" + std::to_string(playersImproved) +
-                        " players improved" + (isCoach ? " - Coach Boost Active" : "") + ")",
-                    1, false);
+    events.AddEvent(
+        "training",
+        TRF(isCoach ? "career_event_focus_training_coach" : "career_event_focus_training",
+            {focusArea, std::to_string(playersImproved)}),
+        1, false);
   }
   return true;
 }
@@ -141,7 +140,7 @@ bool TrainFocus(CareerSave& save, CareerCommon::CareerEvents& events,
 void SetStrategy(CareerSave& save, CareerCommon::CareerEvents& events,
                  const std::string& strategy) {
   save.activeStrategy = strategy;
-  events.AddEvent("strategy", "Changed team strategy to " + strategy, 0, false);
+  events.AddEvent("strategy", TRF("career_event_strategy", {strategy}), 0, false);
 }
 
 bool MotivatePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
@@ -150,9 +149,7 @@ bool MotivatePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
     if (p.name == playerName) {
       p.morale = std::min(100, p.morale + 15);
       p.matchForm = std::min(100, p.matchForm + 6);
-      events.AddEvent("talk",
-                      "Head Coach conducted motivational 1-on-1 talk with " + playerName + ".", 1,
-                      false);
+      events.AddEvent("talk", TRF("career_event_talk", {playerName}), 1, false);
       return true;
     }
   }
@@ -168,10 +165,7 @@ bool DrillPlayer(CareerSave& save, CareerCommon::CareerEvents& events,
       save.trainingPoints--;
       p.ovr = std::min(99, p.ovr + 1);
       p.matchForm = std::min(100, p.matchForm + 10);
-      events.AddEvent(
-          "training",
-          "Conducted intensive individual tactical drill with " + playerName + " (+1 OVR).", 1,
-          false);
+      events.AddEvent("training", TRF("career_event_drill", {playerName}), 1, false);
       return true;
     }
   }
@@ -207,9 +201,7 @@ void ScoutYouthPlayer(CareerSave& save, CareerCommon::CareerEvents& events) {
   youth.value = 100000;
   youth.isYouth = true;
   save.youthAcademy.push_back(youth);
-  events.AddEvent("scouting",
-                  "Scout returned with prospect: " + youth.name + " (" + youth.position + ")", 0,
-                  false);
+  events.AddEvent("scouting", TRF("career_event_scouted", {youth.name, youth.position}), 0, false);
 }
 
 void PromoteYouthPlayer(CareerSave& save, CareerCommon::CareerEvents& events,
@@ -226,8 +218,7 @@ void PromoteYouthPlayer(CareerSave& save, CareerCommon::CareerEvents& events,
   promoted.matchForm = 55;
   save.roster.push_back(promoted);
   save.youthAcademy.erase(it);
-  events.AddEvent("academy", "Promoted academy player " + playerName + " to senior squad.", 1,
-                  false);
+  events.AddEvent("academy", TRF("career_event_promoted", {playerName}), 1, false);
 }
 
 }  // namespace CareerTraining

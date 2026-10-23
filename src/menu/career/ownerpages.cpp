@@ -738,9 +738,8 @@ OwnerBoardRoomPage::OwnerBoardRoomPage(Gui2WindowManager* windowManager,
           evt.reputationImpact > 0   ? " (+" + std::to_string(evt.reputationImpact) + ")"
           : evt.reputationImpact < 0 ? " (" + std::to_string(evt.reputationImpact) + ")"
                                      : "";
-      Gui2Caption* evtLine =
-          new Gui2Caption(windowManager, "caption_br_evt_" + std::to_string(i), 2, subY, 78, 2,
-                          prefix + "[" + evt.type + "] " + evt.description + repStr);
+      Gui2Caption* evtLine = new Gui2Caption(windowManager, "caption_br_evt_" + std::to_string(i),
+                                             2, subY, 78, 2, prefix + evt.description + repStr);
       evtFrame->AddView(evtLine);
       evtLine->Show();
       subY += 2;

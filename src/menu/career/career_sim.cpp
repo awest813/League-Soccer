@@ -896,30 +896,27 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
   // Prize money award
   long long prizeMoney = CalculateSeasonPrizeMoney(userPos);
   save.transferBudget += prizeMoney;
-  events.AddEvent("finance",
-                  "Season " + std::to_string(save.season.currentSeason) +
-                      " prize money awarded: EUR " + std::to_string(prizeMoney) +
-                      " for finishing #" + std::to_string(userPos),
-                  2, true);
+  events.AddEvent(
+      "finance",
+      TRF("career_event_prize_money", {std::to_string(save.season.currentSeason),
+                                       FormatCareerMoney(prizeMoney), std::to_string(userPos)}),
+      2, true);
 
   // Title achievement and board feedback
   if (userPos == 1) {
     save.legacyStats["titles"]++;
-    events.AddEvent("trophy",
-                    "🏆 LEAGUE CHAMPIONS: " + save.name + " won the title in Season " +
-                        std::to_string(save.season.currentSeason) + "!",
-                    5, true);
+    events.AddEvent(
+        "trophy",
+        TRF("career_event_champions", {save.name, std::to_string(save.season.currentSeason)}), 5,
+        true);
     events.ModifyBoardConfidence(15);
   } else if (userPos <= 4) {
-    events.AddEvent("champions",
-                    "Qualified for Continental Cup with a #" + std::to_string(userPos) + " finish!",
-                    3, true);
+    events.AddEvent("champions", TRF("career_event_continental", {std::to_string(userPos)}), 3,
+                    true);
     events.ModifyBoardConfidence(8);
   } else if (userPos >= 18) {
-    events.AddEvent("warning",
-                    "Finished in relegation danger zone (#" + std::to_string(userPos) +
-                        "). Board pressure is mounting!",
-                    -3, true);
+    events.AddEvent("warning", TRF("career_event_relegation_zone", {std::to_string(userPos)}), -3,
+                    true);
     events.ModifyBoardConfidence(-15);
   }
 
@@ -962,8 +959,7 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
   }
   std::string departures;
   for (const auto& name : departedPlayers) {
-    events.AddEvent("contract", "Contract expired: " + name + " departed on free transfer.", -1,
-                    false);
+    events.AddEvent("contract", TRF("career_event_contract_expired", {name}), -1, false);
     departures += TRF("career_inbox_departed", {name}) + " ";
   }
   if (!departures.empty())
@@ -994,7 +990,7 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
       if (upgrade.seasonsRemaining == 0) {
         save.stadium.capacity += upgrade.capacityIncrease;
         save.stadium.matchDayRevenue += upgrade.revenueBonus;
-        events.AddEvent("stadium", "Completed stadium upgrade: " + upgrade.name, 1, false);
+        events.AddEvent("stadium", TRF("career_event_stadium_completed", {upgrade.name}), 1, false);
       }
     }
   }
@@ -1015,7 +1011,8 @@ void AdvanceSeason(CareerSave& save, CareerCommon::CareerEvents& events,
   save.seasonGoalsAgainst = 0;
   save.seasonForm.clear();
   save.leagueTable.clear();
-  events.AddEvent("season", "Advanced to season " + std::to_string(save.season.currentSeason), 1,
+  events.AddEvent("season",
+                  TRF("career_event_new_season", {std::to_string(save.season.currentSeason)}), 1,
                   true);
 }
 

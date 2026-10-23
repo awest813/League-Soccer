@@ -28,8 +28,7 @@ void RecruitFreeAgent(CareerSave& save, CareerCommon::CareerEvents& events,
   if (it == save.freeAgents.end())
     return;
   if (save.wageBudget < it->wage) {
-    events.AddEvent("financial", "Failed to sign " + playerName + " due to wage budget limits", -1,
-                    false);
+    events.AddEvent("financial", TRF("career_event_wage_limit", {playerName}), -1, false);
     return;
   }
   save.wageBudget -= it->wage;
@@ -41,7 +40,7 @@ void RecruitFreeAgent(CareerSave& save, CareerCommon::CareerEvents& events,
   signing.contract.wage = signing.wage;
   save.roster.push_back(signing);
   save.freeAgents.erase(it);
-  events.AddEvent("recruitment", "Signed free agent " + playerName, 2, false);
+  events.AddEvent("recruitment", TRF("career_event_free_agent", {playerName}), 2, false);
   events.ModifyBoardConfidence(1);
 }
 
@@ -56,10 +55,9 @@ void ReleasePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
   // Severance pay: ~25 weeks of wages
   long long severance = it->wage * 25;
   if (save.finances.netWorth < severance) {
-    events.AddEvent(
-        "financial",
-        "Cannot afford severance pay (" + std::to_string(severance) + ") to release " + playerName,
-        0, false);
+    events.AddEvent("financial",
+                    TRF("career_event_no_severance", {FormatCareerMoney(severance), playerName}), 0,
+                    false);
     return;
   }
 
@@ -70,9 +68,8 @@ void ReleasePlayer(CareerSave& save, CareerCommon::CareerEvents& events,
   released.transferStatus = TransferStatus::NONE;
   save.freeAgents.push_back(released);
   save.roster.erase(it);
-  events.AddEvent(
-      "squad", "Released player " + playerName + " (Severance: " + std::to_string(severance) + ")",
-      -1, false);
+  events.AddEvent("squad", TRF("career_event_released", {playerName, FormatCareerMoney(severance)}),
+                  -1, false);
   events.ModifyBoardConfidence(-1);
 }
 
@@ -235,14 +232,13 @@ TransferBid PlaceBid(CareerSave& save, CareerCommon::CareerEvents& events,
 
   long long totalCost = bidAmount + bid.agentFee;
   if (totalCost > save.transferBudget || offeredWage > save.wageBudget) {
-    events.AddEvent("transfer", "Bid rejected for " + playerName + " due to budget limits", -1,
-                    false);
+    events.AddEvent("transfer", TRF("career_event_bid_budget", {playerName}), -1, false);
     return bid;
   }
 
   bid.status = BidStatus::PENDING;
   bids.push_back(bid);
-  events.AddEvent("transfer", "Placed bid for " + playerName, 0, false);
+  events.AddEvent("transfer", TRF("career_event_bid_placed", {playerName}), 0, false);
   return bid;
 }
 
@@ -295,10 +291,10 @@ void ProcessPendingBids(CareerSave& save, CareerCommon::CareerEvents& events,
 
     if (bid.bidAmount >= requiredPrice && bid.offeredWage >= targetIt->wage * 9 / 10) {
       bid.status = BidStatus::ACCEPTED;
-      events.AddEvent("transfer", "Bid accepted for " + bid.playerName, 1, false);
+      events.AddEvent("transfer", TRF("career_event_bid_accepted", {bid.playerName}), 1, false);
     } else {
       bid.status = BidStatus::REJECTED;
-      events.AddEvent("transfer", "Bid rejected for " + bid.playerName, -1, false);
+      events.AddEvent("transfer", TRF("career_event_bid_rejected", {bid.playerName}), -1, false);
     }
   }
 }
@@ -367,7 +363,7 @@ bool CompleteTransfer(CareerSave& save, CareerCommon::CareerEvents& events,
                  [&playerName](const TransferBid& bid) { return bid.playerName == playerName; }),
              bids.end());
 
-  events.AddEvent("transfer", "Completed transfer for " + playerName, 2, true);
+  events.AddEvent("transfer", TRF("career_event_transfer_done", {playerName}), 2, true);
   events.ModifyBoardConfidence(1);
   return true;
 }

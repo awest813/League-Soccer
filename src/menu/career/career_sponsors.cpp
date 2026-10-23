@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "career_common.hpp"
+#include "utils/localization.hpp"
 
 namespace blunted {
 namespace CareerSponsors {
@@ -35,7 +36,7 @@ bool AcceptSponsorDeal(CareerSave& save, CareerCommon::CareerEvents& events, int
   save.activeSponsors.push_back(deal);
   save.finances.sponsorIncome += deal.annualRevenue;
   save.availableSponsorOffers.erase(save.availableSponsorOffers.begin() + dealIndex);
-  events.AddEvent("commercial", "Signed sponsor deal with " + deal.sponsorName, 1, false);
+  events.AddEvent("commercial", TRF("career_event_sponsor", {deal.sponsorName}), 1, false);
   return true;
 }
 

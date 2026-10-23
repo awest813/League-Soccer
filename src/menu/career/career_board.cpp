@@ -6,6 +6,7 @@
 #include "career_common.hpp"
 #include "career_finance.hpp"
 #include "career_sim.hpp"
+#include "utils/localization.hpp"
 
 namespace blunted {
 namespace CareerBoard {
@@ -89,26 +90,25 @@ void GenerateBoardObjectives(CareerSave& save) {
   const int reputation = save.reputation;
   if (WantsTitle(reputation)) {
     save.boardObjectives.push_back(
-        {OwnerObjectiveType::WIN_TITLE, "Win the league title", false, 6, -12});
-    save.boardObjectives.push_back({OwnerObjectiveType::FINANCIAL_STABILITY,
-                                    "Finish with a net profit above 25% of expenses", false, 4,
-                                    -8});
+        {OwnerObjectiveType::WIN_TITLE, TR("career_objective_title"), false, 6, -12});
     save.boardObjectives.push_back(
-        {OwnerObjectiveType::GROW_FANBASE, "Grow the fan base to at least 80k", false, 4, -8});
+        {OwnerObjectiveType::FINANCIAL_STABILITY, TR("career_objective_profit_25"), false, 4, -8});
+    save.boardObjectives.push_back(
+        {OwnerObjectiveType::GROW_FANBASE, TR("career_objective_fans_80"), false, 4, -8});
   } else if (reputation >= 30) {
     save.boardObjectives.push_back(
-        {OwnerObjectiveType::PROMOTION, "Reach a top-half finish in the league", false, 5, -10});
-    save.boardObjectives.push_back({OwnerObjectiveType::FINANCIAL_STABILITY,
-                                    "Finish the season with positive net profit", false, 4, -8});
+        {OwnerObjectiveType::PROMOTION, TR("career_objective_top_half"), false, 5, -10});
     save.boardObjectives.push_back(
-        {OwnerObjectiveType::GROW_FANBASE, "Grow the fan base to at least 60k", false, 3, -6});
+        {OwnerObjectiveType::FINANCIAL_STABILITY, TR("career_objective_profit"), false, 4, -8});
+    save.boardObjectives.push_back(
+        {OwnerObjectiveType::GROW_FANBASE, TR("career_objective_fans_60"), false, 3, -6});
   } else {
+    save.boardObjectives.push_back({OwnerObjectiveType::AVOID_RELEGATION,
+                                    TR("career_objective_avoid_relegation"), false, 4, -8});
     save.boardObjectives.push_back(
-        {OwnerObjectiveType::AVOID_RELEGATION, "Avoid relegation this season", false, 4, -8});
+        {OwnerObjectiveType::PROMOTION, TR("career_objective_push_top_half"), false, 3, -6});
     save.boardObjectives.push_back(
-        {OwnerObjectiveType::PROMOTION, "Push for a top-half finish", false, 3, -6});
-    save.boardObjectives.push_back({OwnerObjectiveType::FINANCIAL_STABILITY,
-                                    "Keep losses below 10% of revenue", false, 2, -4});
+        {OwnerObjectiveType::FINANCIAL_STABILITY, TR("career_objective_losses_10"), false, 2, -4});
   }
   for (auto& objective : save.boardObjectives) {
     objective.target = DefaultTarget(objective.type, reputation);
@@ -158,7 +158,8 @@ void EvaluateBoardObjectives(CareerSave& save, CareerCommon::CareerEvents& event
     }
     // The next season's objectives replace these, so record the outcome.
     events.AddEvent("board",
-                    (completed ? "Objective met: " : "Objective missed: ") + objective.description,
+                    TRF(completed ? "career_event_objective_met" : "career_event_objective_missed",
+                        {objective.description}),
                     0, false);
   }
 }

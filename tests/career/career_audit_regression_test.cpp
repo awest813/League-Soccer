@@ -18,6 +18,7 @@
 #include "menu/career/career_sim.hpp"
 #include "menu/career/career_sponsors.hpp"
 #include "menu/career/career_transfers.hpp"
+#include "utils/localization.hpp"
 
 namespace {
 
@@ -368,6 +369,8 @@ TEST(CareerAuditRegression, StandingsAccumulateAcrossRounds) {
 // Objectives were judged against targets recomputed from the reputation after
 // the season's changes, and regenerating them wiped the outcome.
 TEST(CareerAuditRegression, BoardObjectivesKeepTheirTargetAndReportTheOutcome) {
+  // Event text is translated when it is recorded.
+  ASSERT_TRUE(Localization::GetInstance().Load("en"));
   CareerSave save;
   save.reputation = 50;
   blunted::CareerBoard::GenerateBoardObjectives(save);

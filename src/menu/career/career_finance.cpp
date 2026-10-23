@@ -95,7 +95,7 @@ void UpgradeStadium(CareerSave& save, CareerCommon::CareerEvents& events, int up
   save.finances.stadiumCosts += upgrade.cost / std::max(1, upgrade.buildTimeSeasons);
   save.stadium.upgrades.push_back(upgrade);
   save.stadium.availableUpgrades.erase(save.stadium.availableUpgrades.begin() + upgradeIndex);
-  events.AddEvent("stadium", "Started stadium upgrade: " + upgrade.name, 1, false);
+  events.AddEvent("stadium", TRF("career_event_stadium_started", {upgrade.name}), 1, false);
 }
 
 void RenameStadium(CareerSave& save, const std::string& newName) {

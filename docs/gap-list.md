@@ -101,6 +101,12 @@ name is the stable anchor.
   line; they are translated, with the details on a second line, and Back is no
   longer a full-width bar.
 - New layout-audit routes `career_bid_detail` and `career_standings`.
+- Career events (the board room's log) and board objectives were English;
+  they are translated when recorded, in all five languages. The board room
+  printed each event's type twice ("[transfer] transfer: ..."). Three unused
+  helpers that produced invented English news and opponent previews
+  (`GetNewsHeadlines`, `GetNextOpponentPreview`, `GetConditionArrow`) were
+  removed.
 
 ### Verification
 
@@ -206,7 +212,7 @@ multipliers for the CPU.
 
 | Pri | Gap |
 | --- | --- |
-| P2 | Hardcoded English text: form guide/news/opponent preview helpers, and every career event and board-objective string. Event and objective text is also stored in saves, so translating it needs a key-plus-arguments format. |
+| P2 | Career events are now translated when recorded, but two arguments inside them stay English: the training focus area and the strategy name ("Focused training on Attacking"). Events recorded before this change keep their English text. |
 
 ---
 
