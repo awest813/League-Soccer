@@ -56,8 +56,8 @@ CareerStandingsPage::CareerStandingsPage(Gui2WindowManager* windowManager,
   }
 
   // Bottom action bar
-  Gui2Button* btnMatchday = new Gui2Button(windowManager, "btn_st_matchday", 2, 88, 28, 3.6f,
-                                           TR("career_play_matchday"));
+  Gui2Button* btnMatchday =
+      new Gui2Button(windowManager, "btn_st_matchday", 2, 88, 28, 3.6f, TR("career_play_matchday"));
   btnMatchday->sig_OnClick.connect([this](...) { GoMatchday(); });
   frame->AddView(btnMatchday);
   btnMatchday->Show();
