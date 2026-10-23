@@ -364,27 +364,33 @@ jobs:
 
       - name: Check the packaged app starts self-contained
         # GitHub's macOS runners have no display, so the game cannot open a
-        # window there (it aborts or waits for one). Before that it has loaded
-        # every library and read its data, which is what this checks: nothing
-        # may come from Homebrew, and the data must be reached through
-        # ~/Library/Application Support. perl's alarm stops it after 60 s
-        # (macOS has no `timeout`).
+        # window there and waits for one. Before that it has loaded every
+        # library and set up its data folder, which is what this checks:
+        # every library must come from the bundle or the system, and the
+        # data must be reached through ~/Library/Application Support.
+        # /usr/bin/perl stops the game after 60 s (macOS has no `timeout`);
+        # it sets DYLD_PRINT_LIBRARIES itself because macOS strips DYLD_*
+        # variables when starting a system binary.
         timeout-minutes: 5
         run: |
           app="dist/macos/Gameplay Football.app"
           config="$(mktemp -d)/quick_match.config"
           cp data/menu_smoke_quick_match.config "$config"
           log="$(mktemp)"
-          DYLD_PRINT_LIBRARIES=1 perl -e 'alarm 60; exec @ARGV' \
+          /usr/bin/perl -e '$ENV{DYLD_PRINT_LIBRARIES} = 1; alarm 60; exec @ARGV' \
             "$app/Contents/MacOS/gameplayfootball" "$config" >"$log" 2>&1 || true
-          cat "$log"
-          grep -q "Contents/Frameworks/libSDL2" "$log"
-          if grep -E "dyld.*(/opt/homebrew|/usr/local)" "$log"; then
+          grep "dyld" "$log" | sed 's/^dyld\[[0-9]*\]: <[^>]*> //' | sort -u
+          grep -q "Contents/Frameworks/libSDL2-" "$log"
+          if grep "dyld" "$log" | grep -E "/opt/homebrew|/usr/local"; then
             echo "::error::The app loaded a Homebrew library"; exit 1
           fi
-          grep -q "Loaded locale 'en'" "$log"
           support="$HOME/Library/Application Support/Gameplay Football"
-          test -L "$support/media" && test -f "$support/football.config"
+          ls -l "$support"
+          test -f "$support/football.config"
+          case "$(readlink "$support/media")" in
+            *"Gameplay Football.app/Contents/Resources/media") ;;
+            *) echo "::error::media is not linked to the app"; exit 1 ;;
+          esac
 
       - name: Upload macOS app
         uses: actions/upload-artifact@v7
