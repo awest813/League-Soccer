@@ -436,7 +436,7 @@ ranges, profile stats, and that every logo and kit image exists.
 
 ### Known gaps
 
-- No Void or macOS hardware run by hand yet; CI covers both under a virtual display or a headless runner.
+- No Void or macOS machine has run the game by hand yet. CI plays matches on Void under Xvfb, but GitHub's macOS runners have no display, so on macOS it only checks that the app starts self-contained.
 - The macOS app is not notarised (needs an Apple Developer ID) and has no icon.
 - League saves still tell the user to look in `<game directory>/saves`; in the macOS app that is the Application Support folder.
 

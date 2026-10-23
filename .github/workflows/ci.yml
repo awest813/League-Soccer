@@ -363,18 +363,20 @@ jobs:
         run: ./scripts/package_macos.sh --build-dir build-macos-release --out-dir dist/macos --strip --zip
 
       - name: Check the packaged app starts self-contained
-        # GitHub's macOS runners have no display ("No available video
-        # device"), so the game stops at window creation. Up to there it has
-        # loaded every library and read its data, which is what this checks:
-        # nothing may come from Homebrew, and the data must be reached
-        # through ~/Library/Application Support.
+        # GitHub's macOS runners have no display, so the game cannot open a
+        # window there (it aborts or waits for one). Before that it has loaded
+        # every library and read its data, which is what this checks: nothing
+        # may come from Homebrew, and the data must be reached through
+        # ~/Library/Application Support. perl's alarm stops it after 60 s
+        # (macOS has no `timeout`).
         timeout-minutes: 5
         run: |
           app="dist/macos/Gameplay Football.app"
           config="$(mktemp -d)/quick_match.config"
           cp data/menu_smoke_quick_match.config "$config"
           log="$(mktemp)"
-          DYLD_PRINT_LIBRARIES=1 "$app/Contents/MacOS/gameplayfootball" "$config" >"$log" 2>&1 || true
+          DYLD_PRINT_LIBRARIES=1 perl -e 'alarm 60; exec @ARGV' \
+            "$app/Contents/MacOS/gameplayfootball" "$config" >"$log" 2>&1 || true
           cat "$log"
           grep -q "Contents/Frameworks/libSDL2" "$log"
           if grep -E "dyld.*(/opt/homebrew|/usr/local)" "$log"; then
