@@ -174,37 +174,71 @@ source_of() {
   return 1
 }
 
-QUEUE=("${EXE}")
-while [[ ${#QUEUE[@]} -gt 0 ]]; do
-  file="${QUEUE[0]}"
-  QUEUE=("${QUEUE[@]:1}")
-  origin="${file}"
-  if [[ "${file}" != "${EXE}" ]]; then
-    origin="$(source_of "$(basename "${file}")")"
-  fi
-  while IFS= read -r ref; do
-    [[ -z "${ref}" ]] && continue
-    is_system_library "${ref}" && continue
-    name="$(basename "${ref}")"
-    # A library's first entry is its own install name.
-    [[ "${file}" != "${EXE}" && "${name}" == "$(basename "${file}")" ]] && continue
-    if ! source_of "${name}" >/dev/null; then
-      if ! resolved="$(resolve_reference "${ref}" "${origin}")"; then
-        echo "Error: cannot find ${ref} (needed by ${file})" >&2
-        exit 1
-      fi
-      cp -L "${resolved}" "${FRAMEWORKS_DIR}/${name}"
-      chmod 644 "${FRAMEWORKS_DIR}/${name}"
-      install_name_tool -id "@rpath/${name}" "${FRAMEWORKS_DIR}/${name}"
-      BUNDLED_NAMES+=("${name}")
-      BUNDLED_SOURCES+=("${resolved}")
-      QUEUE+=("${FRAMEWORKS_DIR}/${name}")
-      echo "    bundled ${name}"
+bundle_library() {  # bundle_library <name> <resolved path>
+  cp -L "$2" "${FRAMEWORKS_DIR}/$1"
+  chmod 644 "${FRAMEWORKS_DIR}/$1"
+  install_name_tool -id "@rpath/$1" "${FRAMEWORKS_DIR}/$1"
+  BUNDLED_NAMES+=("$1")
+  BUNDLED_SOURCES+=("$2")
+  QUEUE+=("${FRAMEWORKS_DIR}/$1")
+  echo "    bundled $1"
+}
+
+process_queue() {
+  local file origin ref name resolved
+  while [[ ${#QUEUE[@]} -gt 0 ]]; do
+    file="${QUEUE[0]}"
+    QUEUE=("${QUEUE[@]:1}")
+    origin="${file}"
+    if [[ "${file}" != "${EXE}" ]]; then
+      origin="$(source_of "$(basename "${file}")")"
     fi
-    [[ "${ref}" == "@rpath/${name}" ]] ||
-      install_name_tool -change "${ref}" "@rpath/${name}" "${file}"
-  done < <(dependencies "${file}")
-done
+    while IFS= read -r ref; do
+      [[ -z "${ref}" ]] && continue
+      is_system_library "${ref}" && continue
+      name="$(basename "${ref}")"
+      # A library's first entry is its own install name.
+      [[ "${file}" != "${EXE}" && "${name}" == "$(basename "${file}")" ]] && continue
+      if ! source_of "${name}" >/dev/null; then
+        if ! resolved="$(resolve_reference "${ref}" "${origin}")"; then
+          echo "Error: cannot find ${ref} (needed by ${file})" >&2
+          exit 1
+        fi
+        bundle_library "${name}" "${resolved}"
+      fi
+      [[ "${ref}" == "@rpath/${name}" ]] ||
+        install_name_tool -change "${ref}" "@rpath/${name}" "${file}"
+    done < <(dependencies "${file}")
+  done
+}
+
+QUEUE=("${EXE}")
+process_queue
+
+# Homebrew's sdl2 is sdl2-compat, which loads libSDL3 with dlopen when it
+# starts, so otool does not list it. It looks beside itself first
+# (@loader_path), so put libSDL3 in Frameworks too. Without it the app
+# shows a "cannot load SDL3" dialog before the game starts.
+if [[ -e "${FRAMEWORKS_DIR}/libSDL2-2.0.0.dylib" ]] &&
+    grep -q "libSDL3" "${FRAMEWORKS_DIR}/libSDL2-2.0.0.dylib" &&
+    ! source_of "libSDL3.0.dylib" >/dev/null; then
+  sdl3=""
+  for candidate in \
+      "$(brew --prefix sdl3 2>/dev/null)/lib/libSDL3.0.dylib" \
+      "${HOMEBREW_PREFIX:-/opt/homebrew}/lib/libSDL3.0.dylib" \
+      "/usr/local/lib/libSDL3.0.dylib"; do
+    if [[ -f "${candidate}" ]]; then
+      sdl3="${candidate}"
+      break
+    fi
+  done
+  if [[ -z "${sdl3}" ]]; then
+    echo "Error: libSDL2 is sdl2-compat, but libSDL3.0.dylib was not found (brew install sdl3)" >&2
+    exit 1
+  fi
+  bundle_library "libSDL3.0.dylib" "${sdl3}"
+  process_queue
+fi
 
 # Bundled libraries find each other beside themselves; the game looks in
 # ../Frameworks. Drop build-tree and Homebrew rpaths.

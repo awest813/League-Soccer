@@ -389,6 +389,8 @@ jobs:
           wait "$pid" || true
           grep "dyld" "$log" | sed 's/^dyld\[[0-9]*\]: <[^>]*> //' | sort -u
           grep -q "Contents/Frameworks/libSDL2-" "$log"
+          # sdl2-compat loads SDL3 at run time; it must come from the bundle.
+          grep -q "Contents/Frameworks/libSDL3" "$log"
           if grep "dyld" "$log" | grep -E "/opt/homebrew|/usr/local"; then
             echo "::error::The app loaded a Homebrew library"; exit 1
           fi
