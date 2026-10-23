@@ -54,6 +54,7 @@ else
     "${SCRIPT_DIR}/build/Release/gameplayfootball"
     "${SCRIPT_DIR}/build-release/gameplayfootball"
     "${SCRIPT_DIR}/dist/linux-x64/gameplayfootball"
+    "${SCRIPT_DIR}/dist/macos/Gameplay Football.app/Contents/MacOS/gameplayfootball"
     "${SCRIPT_DIR}/build/Debug/gameplayfootball"
     "${SCRIPT_DIR}/build-debug/gameplayfootball"
   )
@@ -75,4 +76,5 @@ RUN_DIR="$(dirname "${BIN}")"
 
 echo "Launching ${BIN} from ${RUN_DIR}"
 cd "${RUN_DIR}"
-exec ./gameplayfootball "${EXTRA_ARGS[@]}"
+# "${array[@]+...}": an empty array trips `set -u` in macOS's bash 3.2.
+exec ./gameplayfootball ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}

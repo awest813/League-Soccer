@@ -63,6 +63,8 @@ default_jobs() {
   local cpus=4 mem_kb=0 jobs
   if command -v nproc >/dev/null 2>&1; then
     cpus="$(nproc)"
+  elif command -v sysctl >/dev/null 2>&1; then
+    cpus="$(sysctl -n hw.ncpu 2>/dev/null || echo 4)"   # macOS has no nproc
   fi
   if [[ -r /proc/meminfo ]]; then
     mem_kb="$(awk '/^MemTotal:/ {print $2}' /proc/meminfo 2>/dev/null || echo 0)"
@@ -123,7 +125,9 @@ if [[ "${OS_NAME}" == "Darwin" ]]; then
   fi
 fi
 
-cmake -S . -B build -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" "${EXTRA_CMAKE_ARGS[@]}"
+# "${array[@]+...}" keeps an empty array from tripping `set -u` in the
+# bash 3.2 that macOS ships.
+cmake -S . -B build -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" ${EXTRA_CMAKE_ARGS[@]+"${EXTRA_CMAKE_ARGS[@]}"}
 
 # Symlink compile_commands.json for IDEs
 if [[ -f build/compile_commands.json ]]; then
@@ -142,8 +146,13 @@ fi
 
 # ── 6. Package (Optional) ────────────────────────────────────────────────────
 if [[ "${PACKAGE}" == true ]]; then
-  echo "==> Packaging release into dist/linux-x64…"
-  bash scripts/package_linux.sh --build-dir build --out-dir dist/linux-x64 --strip
+  if [[ "${OS_NAME}" == "Darwin" ]]; then
+    echo "==> Packaging the app into dist/macos…"
+    bash scripts/package_macos.sh --build-dir build --out-dir dist/macos --strip --zip
+  else
+    echo "==> Packaging release into dist/linux-x64…"
+    bash scripts/package_linux.sh --build-dir build --out-dir dist/linux-x64 --strip
+  fi
 fi
 
 echo

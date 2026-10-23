@@ -161,7 +161,10 @@ install() {
       "${SUDO[@]}" zypper --non-interactive install "$@"
       ;;
     xbps)
-      # -S refreshes the repository index, -y answers yes to prompts.
+      # -S refreshes the repository index, -y answers yes to prompts. xbps
+      # refuses to install anything while xbps itself is out of date, which
+      # is common on a fresh install or container, so update it first.
+      "${SUDO[@]}" xbps-install -Syu xbps
       "${SUDO[@]}" xbps-install -Sy "$@"
       ;;
     apk)
@@ -209,8 +212,10 @@ case "${PM}" in
     ;;
   xbps)
     CORE_PKGS=(cmake base-devel boost-devel sqlite-devel pkg-config)
+    # mesa-dri holds the GL drivers (including llvmpipe for Xvfb); a desktop
+    # install has it already, a minimal or container install does not.
     GAME_PKGS=(SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_gfx-devel \
-               MesaLib-devel libopenal-devel xorg-server-xvfb)
+               MesaLib-devel mesa-dri libopenal-devel xorg-server-xvfb)
     TOOLS_PKGS=(ninja clang clang-tools-extra doxygen graphviz)
     ;;
   apk)

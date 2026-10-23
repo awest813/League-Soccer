@@ -285,6 +285,7 @@ set(UTILS_HEADERS
         src/utils/animation.hpp
         src/utils/objectloader.hpp
         src/utils/database.hpp
+        src/utils/userdata.hpp
         src/utils/xmlloader.hpp
         src/utils/splitgeometry.hpp
         src/utils/orbitcamera.hpp

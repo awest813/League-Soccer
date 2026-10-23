@@ -388,6 +388,11 @@ if(GAMEPLAYFOOTBALL_BUILD_GAME)
       BUILD_WITH_INSTALL_RPATH TRUE
       INSTALL_RPATH "$ORIGIN;$ORIGIN/lib"
     )
+    # musl (Void Linux musl, Alpine) gives new threads a 128 KiB stack
+    # unless the executable asks for more; glibc uses 8 MiB. The game, AI and
+    # pitch threads need well over 16 KiB, so ask for glibc's size everywhere.
+    # glibc ignores this note.
+    target_link_options(gameplayfootball PRIVATE "LINKER:-z,stack-size=8388608")
   endif()
   add_custom_command(TARGET gameplayfootball POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:gameplayfootball>/data

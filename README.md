@@ -128,11 +128,12 @@ contracts, and watch team morale and chemistry shape on-pitch performance.
 
 | Platform | Builds | Runs | Notes |
 |----------|:------:|:----:|-------|
-| **Linux** | ✅ | ✅ | Debian/Ubuntu/Mint, Fedora/RHEL, Arch/Manjaro, openSUSE, Void, Alpine, Gentoo, NixOS + Docker — one-command `./build.sh` |
-| **macOS** | ✅ | ✅ | Homebrew deps (system OpenAL); built by CI on macOS 15 |
+| **Linux** | ✅ | ✅ | Debian/Ubuntu/Mint, Fedora/RHEL, Arch/Manjaro, openSUSE, Void (glibc and musl), Alpine, Gentoo, NixOS + Docker — one-command `./build.sh` |
+| **macOS** | ✅ | ✅ | Homebrew deps (system OpenAL); CI builds, tests and packages a self-contained `.app` on macOS 15 |
 | **Windows** | ✅ | ✅ | MSVC + vcpkg, with a runnable release artifact from CI |
 
-CI builds and tests all three platforms on every push and pull request.
+CI builds and tests all three platforms on every push and pull request,
+including Void Linux glibc and musl containers.
 
 ---
 
@@ -164,6 +165,13 @@ Dependencies are detected automatically (via `/etc/os-release`) for
 **Void**, **Alpine**, and **Gentoo**; on other distros see the
 [manual steps](#proving-manual-build) below.
 
+**Void Linux** (glibc or musl) works the same way: `./build.sh` installs the
+packages with `xbps-install` (updating xbps itself first, which a fresh
+install needs) and builds. Void has no `xvfb-run`; the smoke tests start
+`Xvfb` themselves. On musl the game asks for glibc-sized thread stacks, so
+it behaves the same on both. CI builds both variants with
+`scripts/ci_void_linux.sh`.
+
 **NixOS** is declarative — use the ready-made dev-shell instead of installing
 system packages:
 
@@ -194,18 +202,29 @@ cmake --build build --parallel
 
 ### macOS
 
-The Linux helper scripts now seamlessly support macOS using Homebrew! 
-Install [Homebrew](https://brew.sh/), then:
+Install [Homebrew](https://brew.sh/), then use the same scripts as on Linux
+(they work with the bash 3.2 that macOS ships):
 
 ```bash
-./build.sh          # auto-installs dependencies via Homebrew and builds
+./build.sh          # installs SDL2, Boost, SQLite and CMake via Homebrew, then builds
 ./run.sh            # launches the game
 ```
 
-To assemble a distributable standalone Mac bundle/folder:
+OpenAL comes with macOS, so Homebrew's `openal-soft` is not needed.
+
+To build **Gameplay Football.app**, which runs on a Mac without Homebrew:
+
 ```bash
-./scripts/package_macos.sh --build-dir build --out-dir dist/macos-x64
+./build.sh --package                  # dist/macos/Gameplay Football.app + a .zip
+# or, from an existing build:
+./scripts/package_macos.sh --build-dir build --out-dir dist/macos --zip
 ```
+
+The app carries its libraries in `Contents/Frameworks` and is signed ad hoc.
+It keeps settings and saves in `~/Library/Application Support/Gameplay Football`,
+so they survive updates. The app is not notarised: the first time, open it with
+right-click → Open, or clear the download flag with
+`xattr -dr com.apple.quarantine "Gameplay Football.app"`.
 
 ### Windows
 

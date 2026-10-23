@@ -7,7 +7,7 @@
 #
 #   --minimal      Boost + SQLite only (headless unit tests, no game binary)
 #   --with-tools   Also ninja, clang-format, doxygen, graphviz
-#   (default)      Full game build dependencies including SDL2/OpenAL
+#   (default)      Full game build dependencies (SDL2; OpenAL is built in)
 
 set -euo pipefail
 
@@ -50,7 +50,9 @@ echo "Detected Homebrew at: ${BREW_CMD}"
 
 # Package definitions
 CORE_PKGS=(cmake ninja boost sqlite)
-GAME_PKGS=(sdl2 sdl2_image sdl2_ttf sdl2_gfx openal-soft)
+# OpenAL comes with macOS (OpenAL.framework). Homebrew's openal-soft is not
+# needed and pulls in llvm and z3, which take a long time to install.
+GAME_PKGS=(sdl2 sdl2_image sdl2_ttf sdl2_gfx)
 TOOLS_PKGS=(clang-format doxygen graphviz)
 
 PKGS=("${CORE_PKGS[@]}")
@@ -64,6 +66,8 @@ if [[ "${WITH_TOOLS}" == true ]]; then
 fi
 
 echo "Installing packages: ${PKGS[*]}"
+# Skip Homebrew's slow post-install housekeeping; it is not needed here.
+export HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
 "${BREW_CMD}" update
 "${BREW_CMD}" install "${PKGS[@]}"
 

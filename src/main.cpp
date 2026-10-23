@@ -94,6 +94,7 @@ static LONG WINAPI CustomCrashHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 }
 #endif
 
+#include <cstdlib>
 #include <filesystem>
 #include <mutex>
 
@@ -119,6 +120,7 @@ static LONG WINAPI CustomCrashHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 #include "utils/objectloader.hpp"
 #include "utils/orbitcamera.hpp"
 #include "utils/threadhud.hpp"
+#include "utils/userdata.hpp"
 
 #if defined(WIN32) && defined(__MINGW32__)
 #undef main
@@ -515,6 +517,24 @@ int main(int argc, const char** argv) {
       if (!exeDir.empty()) {
         std::filesystem::current_path(exeDir);
       }
+#ifdef __APPLE__
+      // Inside "Gameplay Football.app" the assets are in Contents/Resources,
+      // which may be read-only; run from a per-user directory instead.
+      const std::filesystem::path resources = exeDir.parent_path() / "Resources";
+      const char* home = getenv("HOME");
+      if (home && std::filesystem::exists(resources / "football.config")) {
+        const std::filesystem::path userDirectory =
+            std::filesystem::path(home) / "Library" / "Application Support" / "Gameplay Football";
+        std::string error;
+        if (PrepareUserDataDirectory(resources, userDirectory, &error)) {
+          std::filesystem::current_path(userDirectory);
+        } else {
+          fprintf(stderr, "Cannot use %s (%s); settings and saves will not be kept\n",
+                  userDirectory.c_str(), error.c_str());
+          std::filesystem::current_path(resources);
+        }
+      }
+#endif
     } catch (...) {
     }
   }

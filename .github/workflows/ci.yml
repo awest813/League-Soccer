@@ -302,6 +302,26 @@ jobs:
           path: dist/linux-x64/
           if-no-files-found: error
 
+  build-void:
+    name: Build (Void Linux ${{ matrix.libc }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        libc: [glibc, musl]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # Run the container by hand rather than with `container:`: the runner's
+      # Node-based actions cannot start inside a musl image other than Alpine.
+      - name: Build and test in Void Linux (${{ matrix.libc }})
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src \
+            ghcr.io/void-linux/void-${{ matrix.libc }}-full:latest \
+            sh scripts/ci_void_linux.sh
+
   build-macos:
     name: Build (macOS 15)
     # Homebrew treats macOS 14 as a Tier 3 platform without bottles, so the
@@ -315,21 +335,13 @@ jobs:
 
       - name: Install dependencies
         # OpenAL comes from the system OpenAL.framework (found by FindOpenAL).
-        # Homebrew's openal-soft now pulls in llvm and z3, and installing them
+        # Homebrew's openal-soft pulls in llvm and z3, and installing them
         # failed inside Homebrew after ~40 minutes on every run.
-        env:
-          HOMEBREW_NO_INSTALL_CLEANUP: 1
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
-        run: |
-          brew update
-          brew install \
-            cmake \
-            sdl2 sdl2_image sdl2_ttf sdl2_gfx \
-            boost sqlite
+        run: bash scripts/setup_macos_deps.sh
 
       - name: Configure (Debug)
         run: |
-          cmake -S . -B build-macos \
+          cmake -S . -B build-macos -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
@@ -339,13 +351,45 @@ jobs:
       - name: Test (Debug)
         run: ctest --test-dir build-macos --output-on-failure
 
+      - name: Smoke test Quick Match
+        timeout-minutes: 10
+        run: |
+          cd build-macos
+          ../tests/run_menu_smoke.sh ./gameplayfootball "${GITHUB_WORKSPACE}/data/menu_smoke_quick_match.config" 120 \
+            "[menu-smoke] Main menu ready, opening Quick Match" \
+            "[menu-smoke] Gameplay page reached and live match is active" \
+            "[menu-smoke] Quick Match verification succeeded, quitting test run"
+
       - name: Configure (Release)
         run: |
-          cmake -S . -B build-macos-release \
+          cmake -S . -B build-macos-release -G Ninja \
             -DCMAKE_BUILD_TYPE=Release
 
       - name: Build (Release)
         run: cmake --build build-macos-release --parallel 3
+
+      - name: Package the app
+        run: ./scripts/package_macos.sh --build-dir build-macos-release --out-dir dist/macos --strip --zip
+
+      - name: Smoke test the packaged app
+        # Runs the bundled binary: it must find its libraries in
+        # Contents/Frameworks and its data through Application Support.
+        timeout-minutes: 10
+        run: |
+          app="dist/macos/Gameplay Football.app"
+          otool -L "$app/Contents/MacOS/gameplayfootball"
+          config="$(mktemp -d)/quick_match.config"
+          cp data/menu_smoke_quick_match.config "$config"
+          tests/run_menu_smoke.sh "$app/Contents/MacOS/gameplayfootball" "$config" 120 \
+            "[menu-smoke] Quick Match verification succeeded, quitting test run"
+          test -d "$HOME/Library/Application Support/Gameplay Football"
+
+      - name: Upload macOS app
+        uses: actions/upload-artifact@v7
+        with:
+          name: gameplayfootball-macos-arm64
+          path: dist/macos/*.zip
+          if-no-files-found: error
 
   build-windows:
     name: Build (Windows 2022 + MSVC + vcpkg)

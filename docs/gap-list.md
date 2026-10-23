@@ -420,6 +420,26 @@ ranges, profile stats, and that every logo and kit image exists.
 
 ---
 
+## 8. Platforms
+
+### Fixed
+
+| Area | Problem | Fix |
+|---|---|---|
+| Void Linux | Never built: the package list was unverified, and a fresh install or container refuses `xbps-install` until xbps itself is updated. | `setup_linux_deps.sh` updates xbps first and installs `mesa-dri` (the GL drivers a minimal install lacks). CI builds and tests Void glibc and Void musl containers (`scripts/ci_void_linux.sh`): unit tests plus quick match, league, career menu and full-match smokes. |
+| musl thread stacks | musl gives new threads 128 KiB of stack (glibc 8 MiB). Emulated on glibc, the game survives 64 KiB but crashes at 16 KiB, so the margin was small. | The executable asks for 8 MiB (`-z stack-size`), which musl honours and glibc ignores. All 214 game sources also compile against musl headers (checked with zig's musl target). |
+| Smoke tests without xvfb-run | Void and Alpine ship `Xvfb` but not Debian's `xvfb-run`, so the smokes had no display. | `run_menu_smoke.sh` starts `Xvfb -displayfd` itself when needed. |
+| macOS bash 3.2 | `./run.sh` with no arguments failed on stock macOS (`EXTRA_ARGS[@]: unbound variable`); `build.sh` and the smoke script had the same pattern. | Empty arrays expand with `${a[@]+"${a[@]}"}`; checked in a bash 3.2 container. |
+| macOS dependencies | `setup_macos_deps.sh` installed `openal-soft`, whose llvm/z3 dependencies made CI fail after ~40 minutes. | Uses the system OpenAL.framework; CI now runs the same script. |
+| macOS package | `package_macos.sh` copied the binary and assets but none of the Homebrew libraries, so the "standalone" folder needed Homebrew; `build.sh --package` ran the Linux packager on macOS. | Builds `Gameplay Football.app`: libraries bundled in `Contents/Frameworks` and relinked to `@rpath` (checked with `otool`), Info.plist, ad-hoc signature, optional zip. CI smoke-tests the packaged app and uploads it. |
+| macOS saves | Inside an app the working directory (assets, config, saves) is read-only under App Translocation, and writing there breaks the signature. | The app runs from `~/Library/Application Support/Gameplay Football`, with the data linked from the bundle and the config copied once (unit-tested). |
+
+### Known gaps
+
+- No Void or macOS hardware run by hand yet; CI covers both under a virtual display or a headless runner.
+- The macOS app is not notarised (needs an Apple Developer ID) and has no icon.
+- League saves still tell the user to look in `<game directory>/saves`; in the macOS app that is the Application Support folder.
+
 ## Suggested order
 
 1. **Substitutions and injuries:** one feature, and a prerequisite for Coach-mode
