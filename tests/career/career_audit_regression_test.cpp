@@ -488,6 +488,32 @@ TEST(CareerAuditRegression, FrontOfficeDoesNotResignReleasedPlayers) {
   }));
 }
 
+// The Golden Boot listed ten world stars from other leagues on a formula. Its
+// rivals now come from the user's own league table, with goals.
+TEST(CareerAuditRegression, TopScorersComeFromTheUsersLeague) {
+  NullEvents events;
+  CareerSave save;
+  save.name = "Home Club";
+  save.club.leagueName = "Eredivisie";
+  for (int i = 0; i < 12; ++i)
+    save.roster.push_back(MakePlayer("Player " + std::to_string(i), 25, 3));
+  save.roster[0].careerGoals = 2;
+  for (int round = 0; round < 6; ++round)
+    blunted::CareerSim::ApplyMatchResult(save, events, 2, 1, "Rivals", {}, {});
+
+  const auto table = blunted::CareerSim::GenerateLeagueStandings(save);
+  const auto scorers = blunted::CareerSim::GetTopScorers(save);
+  ASSERT_FALSE(scorers.empty());
+  for (const auto& scorer : scorers) {
+    EXPECT_GT(scorer.goals, 0) << scorer.playerName;
+    if (scorer.isUserPlayer)
+      continue;
+    EXPECT_TRUE(std::any_of(table.begin(), table.end(), [&](const auto& row) {
+      return !row.isUserTeam && row.name == scorer.teamName;
+    })) << scorer.teamName;
+  }
+}
+
 TEST(CareerAuditRegression, InboxKeepsTheNewestMessages) {
   CareerSave save;
   for (int i = 0; i < 50; ++i)

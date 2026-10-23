@@ -1070,60 +1070,54 @@ CareerTransferBidDetailPage::CareerTransferBidDetailPage(Gui2WindowManager* wind
   }
 
   Gui2Caption* title = new Gui2Caption(windowManager, "caption_detail_title", 4, 2, 84, 3,
-                                       "TRANSFER NEGOTIATIONS: " + m_playerName);
+                                       TRF("career_detail_title", {m_playerName}));
   title->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright1));
   bgPanel->AddView(title);
   title->Show();
 
   if (found) {
-    // Scouting Report & Agent Card
-    Gui2Frame* profileFrame = new Gui2Frame(windowManager, "frame_bid_prof", 4, 6, 84, 15, true);
-    Gui2Caption* profTitle = new Gui2Caption(windowManager, "cap_bid_proftitle", 2, 1, 80, 2,
-                                             "SCOUTING PROFILE & AGENT INTELLIGENCE");
-    profTitle->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
-    profileFrame->AddView(profTitle);
-    profTitle->Show();
+    // What the scouts know. (The page used to add an invented "agent
+    // patience" and "interest" readout here.)
+    Gui2Caption* info1 =
+        new Gui2Caption(windowManager, "cap_bid_info1", 4, 8, 84, 2.4f,
+                        TRF("career_detail_info1",
+                            {target.preferredPosition, std::to_string(target.overallRating),
+                             std::to_string(target.potentialRating), std::to_string(target.age)}));
+    bgPanel->AddView(info1);
+    info1->Show();
+    Gui2Caption* info2 =
+        new Gui2Caption(windowManager, "cap_bid_info2", 4, 12, 84, 2.4f,
+                        TRF("career_detail_info2",
+                            {FormatCareerMoney(target.value), FormatCareerMoney(target.askingPrice),
+                             FormatCareerMoney(target.wage)}));
+    bgPanel->AddView(info2);
+    info2->Show();
 
-    char profBuf[512];
-    snprintf(
-        profBuf, sizeof(profBuf),
-        "Position: %s | Overall: %d | Potential: %d | Age: %d\n"
-        "Market Valuation: %s | Asking Price: %s | Desired Wage: %s/wk\n"
-        "Agent Patience: [||||||||  ] 80%% | Target Interest: HIGH | Contract Desired: 3 Years",
-        target.preferredPosition.c_str(), target.overallRating, target.potentialRating, target.age,
-        FormatCareerMoney(target.value).c_str(), FormatCareerMoney(target.askingPrice).c_str(),
-        FormatCareerMoney(target.wage).c_str());
-    Gui2Caption* profBody =
-        new Gui2Caption(windowManager, "cap_bid_profbody", 2, 4, 80, 10, std::string(profBuf));
-    profileFrame->AddView(profBody);
-    profBody->Show();
-    bgPanel->AddView(profileFrame);
-    profileFrame->Show();
-
-    // Offers Grid
-    Gui2Grid* grid = new Gui2Grid(windowManager, "grid_detail", 6, 23, 80, 36);
+    // The selling club accepts the asking price; anything less is rejected
+    // when bids are processed unless it is raised from My Bids, where each
+    // round also softens their price (CareerTransfers::ProcessPendingBids).
+    Gui2Grid* grid = new Gui2Grid(windowManager, "grid_detail", 6, 20, 80, 30);
 
     long long askPrice = target.askingPrice;
     Gui2Button* bidFull = new Gui2Button(windowManager, "btn_bid_full", 0, 0, 76, 3.2f,
-                                         "Meet Asking Price (" + FormatCareerMoney(askPrice) +
-                                             ") -- Guaranteed Acceptance [Key Player]");
+                                         TRF("career_bid_full", {FormatCareerMoney(askPrice)}));
     bidFull->sig_OnClick.connect([this, askPrice](...) { PlaceBidForPlayer(askPrice); });
     preferredBidButton = bidFull;
     grid->AddView(bidFull, 0, 0);
 
-    long long bid85 = target.askingPrice * 85 / 100;
-    Gui2Button* bid85Button = new Gui2Button(
-        windowManager, "btn_bid_85", 0, 0, 76, 3.2f,
-        "Negotiated Offer (" + FormatCareerMoney(bid85) + ") -- 85% Price [First Team Role]");
-    bid85Button->sig_OnClick.connect([this, bid85](...) { PlaceBidForPlayer(bid85); });
-    grid->AddView(bid85Button, 1, 0);
+    long long bid80 = target.askingPrice * 80 / 100;
+    Gui2Button* bid80Button = new Gui2Button(
+        windowManager, "btn_bid_80", 0, 0, 76, 3.2f,
+        TRF("career_bid_80", {FormatCareerMoney(bid80), TR("career_bid_needs_raise")}));
+    bid80Button->sig_OnClick.connect([this, bid80](...) { PlaceBidForPlayer(bid80); });
+    grid->AddView(bid80Button, 1, 0);
 
-    long long bid70 = target.askingPrice * 70 / 100;
-    Gui2Button* bid70Button = new Gui2Button(
-        windowManager, "btn_bid_70", 0, 0, 76, 3.2f,
-        "Lowball Counter (" + FormatCareerMoney(bid70) + ") -- 70% Price [High Risk of Rejection]");
-    bid70Button->sig_OnClick.connect([this, bid70](...) { PlaceBidForPlayer(bid70); });
-    grid->AddView(bid70Button, 2, 0);
+    long long bid60 = target.askingPrice * 60 / 100;
+    Gui2Button* bid60Button = new Gui2Button(
+        windowManager, "btn_bid_60", 0, 0, 76, 3.2f,
+        TRF("career_bid_60", {FormatCareerMoney(bid60), TR("career_bid_needs_raise")}));
+    bid60Button->sig_OnClick.connect([this, bid60](...) { PlaceBidForPlayer(bid60); });
+    grid->AddView(bid60Button, 2, 0);
 
     grid->UpdateLayout(0.5f, 0.5f, 0.25f, 0.25f);
     bgPanel->AddView(grid);
@@ -1131,27 +1125,25 @@ CareerTransferBidDetailPage::CareerTransferBidDetailPage(Gui2WindowManager* wind
 
     CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
     if (save) {
-      long long agentFee = target.askingPrice / 20;
-      long long totalWithFee = target.askingPrice + agentFee;
+      const long long agentFee = CareerTransfers::AgentFeeFor(askPrice);
+      const long long totalWithFee = askPrice + agentFee;
+      const bool overBudget = totalWithFee > save->transferBudget;
       std::string budgetStr =
-          "Financial Breakdown: +5% Agent Fee (" + FormatCareerMoney(agentFee) + ") = Total " +
-          FormatCareerMoney(totalWithFee) +
-          " | Club Budget Remaining: " + FormatCareerMoney(save->transferBudget);
-      if (totalWithFee > save->transferBudget) {
-        budgetStr += "\nWARNING: Proposed offer exceeds current club transfer funds!";
-      }
+          TRF("career_detail_fee", {FormatCareerMoney(agentFee), FormatCareerMoney(totalWithFee)}) +
+          " | " + TRF("career_tm_budget", {FormatCareerMoney(save->transferBudget)});
+      if (overBudget)
+        budgetStr += " | " + TR("career_warn_exceeds_budget");
       Gui2Caption* fee =
-          new Gui2Caption(windowManager, "caption_detail_fee", 4, 62, 84, 5, budgetStr);
-      fee->SetColor(totalWithFee > save->transferBudget
-                        ? windowManager->GetStyle()->GetColor(e_DecorationType_Dark1)
-                        : windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+          new Gui2Caption(windowManager, "caption_detail_fee", 4, 32, 84, 2.4f, budgetStr);
+      fee->SetColor(windowManager->GetStyle()->GetColor(overBudget ? e_DecorationType_Toggled
+                                                                   : e_DecorationType_Bright2));
       bgPanel->AddView(fee);
       fee->Show();
     }
   }
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_detail_back", 26, 85, 40, 3, "Return to Transfer Market");
+      new Gui2Button(windowManager, "btn_detail_back", 26, 85, 40, 3, TR("career_back_market"));
   btnBack->sig_OnClick.connect([this](...) { CreatePage(e_PageID_CareerTransferMarket); });
   bgPanel->AddView(btnBack);
   btnBack->Show();
@@ -1169,9 +1161,9 @@ void CareerTransferBidDetailPage::PlaceBidForPlayer(long long amount) {
   TransferBid bid = CareerDatabase::GetInstance().PlaceBid(m_playerName, amount,
                                                            static_cast<int>(m_playerWage), 3);
   if (bid.status == BidStatus::REJECTED) {
-    Gui2Caption* warn =
-        new Gui2Caption(windowManager, "caption_bid_warn", 10, 78, 80, 3,
-                        "The selling club and agent have immediately rejected this valuation!");
+    // PlaceBid only refuses a bid the budget cannot cover.
+    Gui2Caption* warn = new Gui2Caption(windowManager, "caption_bid_warn", 10, 78, 80, 3,
+                                        TR("career_bid_rejected"));
     this->AddView(warn);
     warn->Show();
   } else {

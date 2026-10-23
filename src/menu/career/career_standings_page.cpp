@@ -22,33 +22,25 @@ CareerStandingsPage::CareerStandingsPage(Gui2WindowManager* windowManager,
   this->AddView(frame);
   frame->Show();
 
-  std::string leagueName = activeSave ? activeSave->club.leagueName : "League";
+  std::string leagueName = activeSave ? activeSave->club.leagueName : "";
   int seasonNum = activeSave ? activeSave->season.currentSeason : 1;
   int currentWeek = activeSave ? activeSave->season.currentWeek : 1;
 
-  Gui2Caption* title = new Gui2Caption(windowManager, "cap_standings_title", 2, 1.5f, 90, 3,
-                                       "🏆 " + leagueName + " — " + TR("career_standings_title"));
+  Gui2Caption* title =
+      new Gui2Caption(windowManager, "cap_standings_title", 2, 1.5f, 90, 3,
+                      leagueName.empty() ? TR("career_standings_title")
+                                         : leagueName + " — " + TR("career_standings_title"));
   title->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   frame->AddView(title);
   title->Show();
 
-  std::string sub = "Season " + std::to_string(seasonNum) + " | Matchday " +
-                    std::to_string(currentWeek) + " of 38";
-  Gui2Caption* subtitle = new Gui2Caption(windowManager, "cap_standings_sub", 2, 4.5f, 90, 2, sub);
+  Gui2Caption* subtitle = new Gui2Caption(windowManager, "cap_standings_sub", 2, 4.5f, 90, 2, "");
   frame->AddView(subtitle);
   subtitle->Show();
 
-  // Standings table header
-  Gui2Caption* tblHdr =
-      new Gui2Caption(windowManager, "cap_tbl_hdr", 2, 7.5f, 62, 2.2f,
-                      "Pos  Club                        P   W   D   L   GF   GA   GD  Pts  Form");
-  tblHdr->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
-  frame->AddView(tblHdr);
-  tblHdr->Show();
-
   // Top scorers header
   Gui2Caption* scHdr = new Gui2Caption(windowManager, "cap_sc_hdr", 66, 7.5f, 26, 2.2f,
-                                       "⚽ " + TR("career_top_scorers_title"));
+                                       TR("career_top_scorers_title"));
   scHdr->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
   frame->AddView(scHdr);
   scHdr->Show();
@@ -57,25 +49,27 @@ CareerStandingsPage::CareerStandingsPage(Gui2WindowManager* windowManager,
   PopulateScorersGrid();
   if (activeSave) {
     // The grid has fixed this season's table; rank the club from it.
-    subtitle->SetCaption(sub + " | Current Club: " + activeSave->name + " (Rank #" +
-                         std::to_string(CareerSim::LeaguePosition(*activeSave)) + ")");
+    subtitle->SetCaption(
+        TRF("career_standings_sub", {std::to_string(seasonNum), std::to_string(currentWeek),
+                                     std::to_string(activeSave->season.maxWeeks), activeSave->name,
+                                     std::to_string(CareerSim::LeaguePosition(*activeSave))}));
   }
 
   // Bottom action bar
   Gui2Button* btnMatchday = new Gui2Button(windowManager, "btn_st_matchday", 2, 91.5f, 28, 3.2f,
-                                           "⚽ " + TR("career_play_matchday"));
+                                           TR("career_play_matchday"));
   btnMatchday->sig_OnClick.connect([this](...) { GoMatchday(); });
   frame->AddView(btnMatchday);
   btnMatchday->Show();
 
   Gui2Button* btnSeason = new Gui2Button(windowManager, "btn_st_season", 33, 91.5f, 28, 3.2f,
-                                         "📅 " + TR("career_season_review_title"));
+                                         TR("career_season_review_title"));
   btnSeason->sig_OnClick.connect([this](...) { GoSeason(); });
   frame->AddView(btnSeason);
   btnSeason->Show();
 
-  Gui2Button* btnBack = new Gui2Button(windowManager, "btn_st_back", 64, 91.5f, 28, 3.2f,
-                                       "🔙 " + TR("career_back_hub"));
+  Gui2Button* btnBack =
+      new Gui2Button(windowManager, "btn_st_back", 64, 91.5f, 28, 3.2f, TR("career_back_hub"));
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   frame->AddView(btnBack);
   btnBack->Show();
@@ -111,39 +105,50 @@ void CareerStandingsPage::PopulateStandingsGrid() {
 
   auto table = CareerDatabase::GetInstance().GetLeagueStandings(leagueClubs);
 
-  standingsGrid = new Gui2Grid(windowManager, "grid_standings", 2, 10, 62, 80);
+  // One caption per column, header row included, so the figures line up (a
+  // space-padded string does not in a proportional font).
+  standingsGrid = new Gui2Grid(windowManager, "grid_standings", 2, 7.5f, 62, 84);
 
   const Vector3 colorUser(250, 215, 60);        // Gold/accent for user
   const Vector3 colorLeader(110, 230, 110);     // Green for title leader
   const Vector3 colorEuro(100, 185, 245);       // Blue for top 4
   const Vector3 colorRelegated(240, 110, 110);  // Red for relegation
+  const float widths[] = {3.5f, 20, 3.2f, 3.2f, 3.2f, 3.2f, 3.8f, 3.8f, 3.8f, 3.8f, 6.5f};
+  auto addRow = [&](int row, const std::vector<std::string>& cells, const Vector3& color) {
+    for (size_t c = 0; c < cells.size(); c++) {
+      auto* cell =
+          new Gui2Caption(windowManager, "cap_st_" + std::to_string(row) + "_" + std::to_string(c),
+                          0, 0, widths[c], 2.3f, cells[c]);
+      cell->SetColor(color);
+      standingsGrid->AddView(cell, row, static_cast<int>(c));
+    }
+  };
+  addRow(0,
+         {TR("career_standings_pos"), TR("career_standings_club"), TR("career_standings_p"),
+          TR("career_standings_w"), TR("career_standings_d"), TR("career_standings_l"),
+          TR("career_standings_gf"), TR("career_standings_ga"), TR("career_standings_gd"),
+          TR("career_standings_pts"), TR("career_standings_form")},
+         windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
 
-  int row = 0;
+  const int relegationFrom = static_cast<int>(table.size()) - 2;
   for (size_t i = 0; i < table.size(); i++) {
     const auto& tr = table[i];
-    int pos = static_cast<int>(i + 1);
-
-    char lineBuf[256];
-    snprintf(lineBuf, sizeof(lineBuf), "%2d. %-24s %2d  %2d  %2d  %2d  %3d  %3d %+3d  %3d  %-5s",
-             pos, tr.name.c_str(), tr.played, tr.wins, tr.draws, tr.losses, tr.goalsFor,
-             tr.goalsAgainst, tr.goalDiff, tr.points, tr.form.c_str());
-
-    Gui2Caption* rowCap =
-        new Gui2Caption(windowManager, "cap_st_row_" + std::to_string(i), 0, 0, 62, 2.3f, lineBuf);
-
-    if (tr.isUserTeam) {
-      rowCap->SetColor(colorUser);
-    } else if (pos == 1) {
-      rowCap->SetColor(colorLeader);
-    } else if (pos <= 4) {
-      rowCap->SetColor(colorEuro);
-    } else if (pos >= 18) {
-      rowCap->SetColor(colorRelegated);
-    } else {
-      rowCap->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright1));
-    }
-
-    standingsGrid->AddView(rowCap, row++, 0);
+    const int pos = static_cast<int>(i + 1);
+    Vector3 color = windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
+    if (tr.isUserTeam)
+      color = colorUser;
+    else if (pos == 1)
+      color = colorLeader;
+    else if (pos <= 4)
+      color = colorEuro;
+    else if (pos >= relegationFrom)
+      color = colorRelegated;
+    const std::string goalDiff = (tr.goalDiff > 0 ? "+" : "") + std::to_string(tr.goalDiff);
+    addRow(pos,
+           {std::to_string(pos) + ".", tr.name, std::to_string(tr.played), std::to_string(tr.wins),
+            std::to_string(tr.draws), std::to_string(tr.losses), std::to_string(tr.goalsFor),
+            std::to_string(tr.goalsAgainst), goalDiff, std::to_string(tr.points), tr.form},
+           color);
   }
 
   standingsGrid->SetReadOnlyScrolling(true);
@@ -160,28 +165,27 @@ void CareerStandingsPage::PopulateScorersGrid() {
 
   const Vector3 colorUserPlayer(250, 215, 60);
 
+  // Two lines per scorer: rank and name, then club and goals.
   int row = 0;
   for (size_t i = 0; i < scorers.size(); i++) {
     const auto& s = scorers[i];
-    int rank = static_cast<int>(i + 1);
-
-    std::string line = std::to_string(rank) + ". " + s.playerName + "\n   " + s.teamName + " — " +
-                       std::to_string(s.goals) + " goals";
-
-    Gui2Caption* cap =
-        new Gui2Caption(windowManager, "cap_sc_row_" + std::to_string(i), 0, 0, 26, 4.2f, line);
-
-    if (s.isUserPlayer) {
-      cap->SetColor(colorUserPlayer);
-    } else {
-      cap->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright1));
-    }
-
-    scorersGrid->AddView(cap, row++, 0);
+    const Vector3 color = s.isUserPlayer
+                              ? colorUserPlayer
+                              : windowManager->GetStyle()->GetColor(e_DecorationType_Bright1);
+    const std::string goals = s.goals == 1 ? TR("career_scorer_goal_one")
+                                           : TRF("career_scorer_goals", {std::to_string(s.goals)});
+    auto* name = new Gui2Caption(windowManager, "cap_sc_name_" + std::to_string(i), 0, 0, 26, 2.3f,
+                                 std::to_string(i + 1) + ". " + s.playerName);
+    name->SetColor(color);
+    scorersGrid->AddView(name, row++, 0);
+    auto* club = new Gui2Caption(windowManager, "cap_sc_club_" + std::to_string(i), 0, 0, 26, 1.9f,
+                                 "    " + s.teamName + " — " + goals);
+    club->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+    scorersGrid->AddView(club, row++, 0);
   }
 
   scorersGrid->SetReadOnlyScrolling(true);
-  scorersGrid->SetMaxVisibleRows(16);
+  scorersGrid->SetMaxVisibleRows(20);
   scorersGrid->UpdateLayout(0.2f, 0.2f, 0.2f, 0.2f);
   frame->AddView(scorersGrid);
   scorersGrid->Show();

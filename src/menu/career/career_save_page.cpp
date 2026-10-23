@@ -93,7 +93,7 @@ CareerSavePage::CareerSavePage(Gui2WindowManager* windowManager, const Gui2PageD
   RefreshSlots();
 
   Gui2Button* btnBack =
-      new Gui2Button(windowManager, "btn_career_save_back", 2, 87, 80, 3, TR("action_back"));
+      new Gui2Button(windowManager, "btn_career_save_back", 27, 87, 30, 3, TR("action_back"));
   btnBack->sig_OnClick.connect([this](...) { GoBack(); });
   frame->AddView(btnBack);
   btnBack->Show();
@@ -125,25 +125,33 @@ void CareerSavePage::RefreshSlots() {
     CareerPersistence::CareerSaveSummary summary;
     bool hasSave = CareerDatabase::GetInstance().GetSlotSummary(slot, summary) && summary.isValid;
 
-    std::string slotLabel;
-    if (hasSave) {
-      slotLabel = "SLOT " + std::to_string(slot) + ": " + summary.clubName + " (" +
-                  ModeToString(summary.mode) + ")\n" + "Season " + std::to_string(summary.season) +
-                  " (Week " + std::to_string(summary.week) +
-                  ") | Trust: " + std::to_string(summary.boardConfidence) +
-                  "% | Budget: " + FormatCareerMoney(summary.transferBudget);
-      if (!summary.timestamp.empty()) {
-        slotLabel += " | " + summary.timestamp;
-      }
-    } else {
-      slotLabel = "SLOT " + std::to_string(slot) + ": [" + TR("career_slot_empty") + "]";
-    }
-
-    Gui2Caption* slotCap = new Gui2Caption(windowManager, "cap_slot_" + std::to_string(slot), 0, 0,
-                                           52, 4.5f, slotLabel);
+    // Club and role on the first line, progress on the second (a caption
+    // draws one line, so the old "\n" ran them together).
+    auto* slotCard =
+        new Gui2Frame(windowManager, "card_slot_" + std::to_string(slot), 0, 0, 52, 4.5f, false);
+    auto* slotCap = new Gui2Caption(
+        windowManager, "cap_slot_" + std::to_string(slot), 0, 0.2f, 52, 2.4f,
+        hasSave ? TRF("career_slot_label",
+                      {std::to_string(slot), summary.clubName, ModeToString(summary.mode)})
+                : TRF("career_slot_label_empty", {std::to_string(slot), TR("career_slot_empty")}));
     slotCap->SetColor(hasSave ? windowManager->GetStyle()->GetColor(e_DecorationType_Bright1)
                               : windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
-    slotsGrid->AddView(slotCap, row, 0);
+    slotCard->AddView(slotCap);
+    slotCap->Show();
+    if (hasSave) {
+      std::string details =
+          TRF("career_slot_details",
+              {std::to_string(summary.season), std::to_string(summary.week),
+               std::to_string(summary.boardConfidence), FormatCareerMoney(summary.transferBudget)});
+      if (!summary.timestamp.empty())
+        details += " | " + summary.timestamp;
+      auto* detailCap = new Gui2Caption(windowManager, "cap_slot_detail_" + std::to_string(slot), 0,
+                                        2.7f, 52, 1.8f, details);
+      detailCap->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
+      slotCard->AddView(detailCap);
+      detailCap->Show();
+    }
+    slotsGrid->AddView(slotCard, row, 0);
 
     Gui2Button* btnSave = new Gui2Button(windowManager, "btn_slot_save_" + std::to_string(slot), 0,
                                          0, 8, 3.5f, TR("career_save_btn"));

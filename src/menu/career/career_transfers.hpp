@@ -61,6 +61,9 @@ bool CompleteTransfer(CareerSave& save, CareerCommon::CareerEvents& events,
 // players. Decisions are reported to the inbox. No-op when the user manages
 // the club.
 constexpr size_t kMinFrontOfficeSquad = 18;
+// The agent's fee on a transfer bid: 5%, at least EUR 25,000.
+long long AgentFeeFor(long long bidAmount);
+
 void FrontOfficeBeforeRollover(CareerSave& save);
 // `released` are the players the rollover just let go: never signed back.
 void FrontOfficeAfterRollover(CareerSave& save, CareerCommon::CareerEvents& events,

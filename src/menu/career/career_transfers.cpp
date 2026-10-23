@@ -224,7 +224,7 @@ TransferBid PlaceBid(CareerSave& save, CareerCommon::CareerEvents& events,
   bid.bidAmount = bidAmount;
   bid.offeredWage = offeredWage;
   bid.contractYears = contractYears;
-  bid.agentFee = std::max(25000LL, bidAmount / 20);
+  bid.agentFee = AgentFeeFor(bidAmount);
   bid.status = BidStatus::REJECTED;
 
   auto targetIt = std::find_if(
@@ -261,7 +261,7 @@ bool ImprovePendingBid(TransferBid& bid, long long transferBudget) {
 
   const long long increase = std::max(50000LL, bid.bidAmount / 10);
   const long long proposedBid = bid.bidAmount + increase;
-  const long long proposedAgentFee = std::max(25000LL, proposedBid / 20);
+  const long long proposedAgentFee = AgentFeeFor(proposedBid);
   if (proposedBid + proposedAgentFee > transferBudget)
     return false;
 
@@ -370,6 +370,10 @@ bool CompleteTransfer(CareerSave& save, CareerCommon::CareerEvents& events,
   events.AddEvent("transfer", "Completed transfer for " + playerName, 2, true);
   events.ModifyBoardConfidence(1);
   return true;
+}
+
+long long AgentFeeFor(long long bidAmount) {
+  return std::max(25000LL, bidAmount / 20);
 }
 
 void FrontOfficeBeforeRollover(CareerSave& save) {

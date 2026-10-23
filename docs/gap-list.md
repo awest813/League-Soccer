@@ -84,6 +84,23 @@ name is the stable anchor.
   after a simulation only the scorers, shots and possession, all translated.
   Its footer counted only the current visit ("Matches: 0" beside a form guide);
   it shows the season so far.
+- The transfer bid page was English and promised what the logic does not do:
+  "Guaranteed Acceptance", an 85% "Negotiated Offer" and a 70% offer that are in
+  fact always rejected unless raised from My Bids, a flat 5% agent fee (it has a
+  EUR 25,000 minimum), and an invented "Agent Patience 80%" and "Interest:
+  HIGH". It now uses the existing translated keys, labels the lower offers as
+  rejected unless raised, and computes the fee with the same
+  `CareerTransfers::AgentFeeFor` the bid uses.
+- League standings: the table was a space-padded string, so its columns did not
+  line up in the proportional font; it is a grid with a translated header now.
+  The subtitle was English with a fixed "of 38". The Golden Boot listed ten
+  world stars from other leagues on a formula ("Saka, Arsenal" in an Eredivisie
+  career); its rivals now come from the clubs in the user's own league table and
+  their goals, and it says "1 goal". Emoji the font cannot draw were removed.
+- Save slots were labelled "SLOT 1: ... Trust ... Budget" in English, on one
+  line; they are translated, with the details on a second line, and Back is no
+  longer a full-width bar.
+- New layout-audit routes `career_bid_detail` and `career_standings`.
 
 ### Verification
 
@@ -189,7 +206,7 @@ multipliers for the CPU.
 
 | Pri | Gap |
 | --- | --- |
-| P2 | Hardcoded English text: the career bid detail page (and its placeholder figures: "Agent Patience 80%", fixed price tiers), standings ("of 38"), save-slot labels, form guide/news/opponent preview helpers, and every career event and board-objective string. Event and objective text is also stored in saves, so translating it needs a key-plus-arguments format. |
+| P2 | Hardcoded English text: form guide/news/opponent preview helpers, and every career event and board-objective string. Event and objective text is also stored in saves, so translating it needs a key-plus-arguments format. |
 
 ---
 

@@ -320,7 +320,8 @@ void MainMenuPage::Process() {
         auditRoute == "career_training" || auditRoute == "career_owner_gm" ||
         auditRoute == "career_coach" || auditRoute == "career_player" ||
         auditRoute == "career_season" || auditRoute == "career_matchday" ||
-        auditRoute == "career_match") {
+        auditRoute == "career_match" || auditRoute == "career_bid_detail" ||
+        auditRoute == "career_standings") {
       const std::string directory = GetConfiguration()->Get("menu_smoke_career_save_directory", "");
       if (directory.empty() || !CareerDatabase::GetInstance().Initialize(directory) ||
           !CareerDatabase::GetInstance().LoadCareerSave("Training Audit")) {
@@ -329,9 +330,21 @@ void MainMenuPage::Process() {
         return;
       }
     }
+    // The save page lists the slots in a fixture directory when one is given.
+    if (auditRoute == "career_save") {
+      const std::string directory = GetConfiguration()->Get("menu_smoke_career_save_directory", "");
+      if (!directory.empty())
+        CareerDatabase::GetInstance().Initialize(directory);
+    }
     Properties properties;
     properties.Set("careerSection", GetConfiguration()->Get("menu_smoke_career_section", "0"));
     properties.Set("focusCareerTab", "true");
+    // The bid page negotiates for one market target: the fixture's first.
+    if (auditRoute == "career_bid_detail") {
+      const auto targets = CareerDatabase::GetInstance().GetTransferTargets();
+      if (!targets.empty())
+        properties.Set("playerName", targets.front().name);
+    }
     // Exercise the missing-device fallback safely, or the virtual smoke gamepad
     // (controller 1, after the keyboard) when one was attached.
     properties.Set("controllerID",

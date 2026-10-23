@@ -842,25 +842,26 @@ std::vector<CareerTopScorer> GetTopScorers(const CareerSave& save) {
     }
   }
 
-  // Add simulated stars based on league games played
-  const int userPlayed = save.seasonWins + save.seasonDraws + save.seasonLosses;
-  const int played = std::min(38, std::max(userPlayed, save.season.currentWeek - 1));
-
-  static const std::vector<std::pair<std::string, std::string>> starPlayers = {
-      {"Erling Haaland", "Manchester City"}, {"Kylian Mbappe", "Real Madrid"},
-      {"Harry Kane", "Bayern Munich"},       {"Vinicius Junior", "Real Madrid"},
-      {"Mohamed Salah", "Liverpool"},        {"Robert Lewandowski", "FC Barcelona"},
-      {"Lautaro Martinez", "Inter Milan"},   {"Bukayo Saka", "Arsenal"},
-      {"Phil Foden", "Manchester City"},     {"Jude Bellingham", "Real Madrid"}};
-
-  for (size_t i = 0; i < starPlayers.size(); ++i) {
-    uint32_t seed = static_cast<uint32_t>(i * 101 + save.season.currentSeason * 37);
-    int goals = 0;
-    if (played > 0) {
-      float goalRate = 0.55f - static_cast<float>(i) * 0.035f;
-      goals = std::max(0, static_cast<int>(goalRate * played + (static_cast<int>(seed % 5) - 2)));
-    }
-    scorers.push_back({starPlayers[i].first, starPlayers[i].second, goals, false});
+  // Each rival club's leading scorer, from that club's goals in the user's
+  // own league table: about two in five of its goals. Rival squads are not
+  // simulated, so the name is generated, stable for a club within a season.
+  // (This used to be ten world stars from other leagues on a formula.)
+  static const char* const kFirstNames[] = {
+      "Luca",  "Mateo", "Noah",   "Elias", "Tomas",  "Ruben", "Jonas", "Milan", "Sami", "Andre",
+      "Kenji", "Dario", "Victor", "Oskar", "Rafael", "Ivan",  "Malik", "Hugo",  "Emil", "Nico"};
+  static const char* const kLastNames[] = {"Varga",   "Okafor", "Lindgren", "Moreau", "Costa",
+                                           "Nowak",   "Berger", "Santos",   "Kovac",  "Haddad",
+                                           "Jansen",  "Rossi",  "Petrov",   "Duarte", "Kimura",
+                                           "Fischer", "Ibarra", "Larsen",   "Mensah", "Dubois"};
+  for (const auto& row : GenerateLeagueStandings(save)) {
+    const int goals = (row.goalsFor * 2 + 2) / 5;
+    if (row.isUserTeam || goals <= 0)
+      continue;
+    const uint32_t seed =
+        NameSeed(row.name) ^ (static_cast<uint32_t>(save.season.currentSeason) * 2654435761u);
+    const std::string name =
+        std::string(kFirstNames[seed % 20]) + " " + kLastNames[(seed / 20) % 20];
+    scorers.push_back({name, row.name, goals, false});
   }
 
   std::sort(scorers.begin(), scorers.end(), [](const CareerTopScorer& a, const CareerTopScorer& b) {
