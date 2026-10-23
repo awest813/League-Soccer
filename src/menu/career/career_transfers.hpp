@@ -62,7 +62,9 @@ bool CompleteTransfer(CareerSave& save, CareerCommon::CareerEvents& events,
 // the club.
 constexpr size_t kMinFrontOfficeSquad = 18;
 void FrontOfficeBeforeRollover(CareerSave& save);
-void FrontOfficeAfterRollover(CareerSave& save, CareerCommon::CareerEvents& events);
+// `released` are the players the rollover just let go: never signed back.
+void FrontOfficeAfterRollover(CareerSave& save, CareerCommon::CareerEvents& events,
+                              const std::vector<std::string>& released = {});
 
 }  // namespace CareerTransfers
 }  // namespace blunted

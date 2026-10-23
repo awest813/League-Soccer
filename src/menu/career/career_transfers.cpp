@@ -404,13 +404,17 @@ void FrontOfficeBeforeRollover(CareerSave& save) {
                       report);
 }
 
-void FrontOfficeAfterRollover(CareerSave& save, CareerCommon::CareerEvents& events) {
+void FrontOfficeAfterRollover(CareerSave& save, CareerCommon::CareerEvents& events,
+                              const std::vector<std::string>& released) {
   if (CanManageClub(save))
     return;
   std::string report;
   while (save.roster.size() < kMinFrontOfficeSquad) {
     const PlayerCareerState* best = nullptr;
     for (const auto& agent : save.freeAgents) {
+      // Re-signing a player who just left would get round the renewal rules.
+      if (std::find(released.begin(), released.end(), agent.name) != released.end())
+        continue;
       if (agent.wage <= save.wageBudget && (!best || agent.ovr > best->ovr))
         best = &agent;
     }

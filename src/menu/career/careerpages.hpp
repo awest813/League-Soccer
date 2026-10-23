@@ -234,12 +234,6 @@ protected:
   std::vector<SimulatedMatch> m_results;
   int m_week;
   int m_season = 0;
-  int m_matchesPlayed;
-  int m_wins;
-  int m_draws;
-  int m_losses;
-  int m_goalsFor;
-  int m_goalsAgainst;
   unsigned long smokeMatchAt_ms = 0;  // career_match smoke route: when to kick off
 };
 

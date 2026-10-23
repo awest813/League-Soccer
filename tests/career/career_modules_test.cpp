@@ -1,4 +1,7 @@
 #include <algorithm>
+#include <fstream>
+#include <map>
+#include <set>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -201,7 +204,52 @@ TEST(LocalizationTest, FormatsMultilineCareerTextAndFallsBackToEnglish) {
   ASSERT_TRUE(Localization::GetInstance().Load("es"));
   EXPECT_EQ(TR("menu_match"), "Partido");
   EXPECT_EQ(TR("career_hub_title"), "Centro de carrera");
-  EXPECT_EQ(TR("career_hub_club_snapshot"), "Club Snapshot");
+  EXPECT_EQ(TR("career_hub_club_snapshot"), "Resumen del club");
+  // Every shipped key is translated now; an unknown key reads as itself.
+  EXPECT_EQ(TR("no_such_locale_key"), "no_such_locale_key");
+}
+
+// Each language has every English key, with the same {n} placeholders. Career
+// mode was about 290 strings short in German, Spanish, French and Portuguese
+// and silently fell back to English.
+TEST(LocalizationTest, EveryLanguageHasEveryEnglishKey) {
+  auto read = [](const std::string& language) {
+    std::map<std::string, std::string> strings;
+    std::ifstream file("data/locale/" + language + ".ini");
+    std::string line;
+    while (std::getline(file, line)) {
+      if (!line.empty() && line.back() == '\r')
+        line.pop_back();
+      const size_t separator = line.find('=');
+      if (line.empty() || line[0] == '#' || line[0] == ';' || separator == std::string::npos)
+        continue;
+      strings[line.substr(0, separator)] = line.substr(separator + 1);
+    }
+    return strings;
+  };
+  auto placeholders = [](const std::string& value) {
+    std::multiset<std::string> found;
+    for (size_t open = value.find('{'); open != std::string::npos;
+         open = value.find('{', open + 1)) {
+      const size_t close = value.find('}', open);
+      if (close != std::string::npos)
+        found.insert(value.substr(open, close - open + 1));
+    }
+    return found;
+  };
+  const auto english = read("en");
+  ASSERT_GT(english.size(), 800u);
+  for (const std::string language : {"de", "es", "fr", "pt"}) {
+    const auto strings = read(language);
+    for (const auto& [key, value] : english) {
+      const auto it = strings.find(key);
+      if (it == strings.end()) {
+        ADD_FAILURE() << language << " is missing " << key;
+        continue;
+      }
+      EXPECT_EQ(placeholders(it->second), placeholders(value)) << language << ": " << key;
+    }
+  }
 }
 
 TEST(CareerFinanceModuleTest, SetTicketPriceClamps) {

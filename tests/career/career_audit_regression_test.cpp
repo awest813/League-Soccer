@@ -464,6 +464,30 @@ TEST(CareerAuditRegression, FrontOfficeRenewsAndSignsForCoachCareers) {
   EXPECT_EQ(owner.roster.front().contract.yearsRemaining, 1);
 }
 
+// A player the rollover lets go lands in the free-agent pool; the front office
+// must not sign him straight back (that dodged the renewal's wage check).
+TEST(CareerAuditRegression, FrontOfficeDoesNotResignReleasedPlayers) {
+  NullEvents events;
+  CareerSave save;
+  save.mode = CareerMode::COACH;
+  save.wageBudget = 10000000;
+  for (int i = 0; i < 15; ++i)
+    save.roster.push_back(MakePlayer("Squad " + std::to_string(i), 26, 3));
+  save.roster.push_back(MakePlayer("Released Veteran", 33, 1));
+  save.roster.back().ovr = 40;
+
+  blunted::CareerTransfers::FrontOfficeBeforeRollover(save);
+  std::vector<TransferBid> bids;
+  std::vector<TransferTarget> targets;
+  blunted::CareerSim::AdvanceSeason(save, events, bids, targets);
+  ASSERT_TRUE(std::any_of(save.freeAgents.begin(), save.freeAgents.end(),
+                          [](const PlayerCareerState& p) { return p.name == "Released Veteran"; }));
+  blunted::CareerTransfers::FrontOfficeAfterRollover(save, events, {"Released Veteran"});
+  EXPECT_TRUE(std::none_of(save.roster.begin(), save.roster.end(), [](const PlayerCareerState& p) {
+    return p.name == "Released Veteran";
+  }));
+}
+
 TEST(CareerAuditRegression, InboxKeepsTheNewestMessages) {
   CareerSave save;
   for (int i = 0; i < 50; ++i)

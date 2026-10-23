@@ -49,11 +49,6 @@ static bool IsDelegatingClubMode() {
   return save && CanManageClub(*save) && !save->handsOnManagement;
 }
 
-static bool IsCoachMode() {
-  CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
-  return save && save->mode == CareerMode::COACH;
-}
-
 static bool IsPlayerMode() {
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
   return save && save->mode == CareerMode::PLAYER;
@@ -2268,13 +2263,7 @@ CareerMatchdayPage::CareerMatchdayPage(Gui2WindowManager* windowManager,
       frame(nullptr),
       fixtureGrid(nullptr),
       summaryCaption(nullptr),
-      m_week(1),
-      m_matchesPlayed(0),
-      m_wins(0),
-      m_draws(0),
-      m_losses(0),
-      m_goalsFor(0),
-      m_goalsAgainst(0) {
+      m_week(1) {
   CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
   if (save) {
     m_week = save->season.currentWeek;
@@ -2403,7 +2392,7 @@ void CareerMatchdayPage::PopulateGrid() {
 
   // Top action row: everything reachable by arrow keys / d-pad.
   Gui2Button* btnPlayTop =
-      new Gui2Button(windowManager, "btn_md_playtop", 0, 0, 42, 2.8f, "PLAY 3D MATCH");
+      new Gui2Button(windowManager, "btn_md_playtop", 0, 0, 42, 2.8f, TR("career_md_play"));
   btnPlayTop->sig_OnClick.connect([this](...) { PlayMatch(); });
   if (IsDelegatingClubMode()) {
     btnPlayTop->SetActive(false);
@@ -2411,7 +2400,7 @@ void CareerMatchdayPage::PopulateGrid() {
   fixtureGrid->AddView(btnPlayTop, row++, 0);
 
   Gui2Button* btnSimAllTop =
-      new Gui2Button(windowManager, "btn_md_simalltop", 0, 0, 42, 2.8f, "QUICK SIMULATE MATCH");
+      new Gui2Button(windowManager, "btn_md_simalltop", 0, 0, 42, 2.8f, TR("career_md_simulate"));
   btnSimAllTop->sig_OnClick.connect([this](...) { SimulateAll(); });
   fixtureGrid->AddView(btnSimAllTop, row++, 0);
 
@@ -2419,34 +2408,28 @@ void CareerMatchdayPage::PopulateGrid() {
   for (int i = 0; i < numFixtures; i++) {
     const auto& res = m_results[i];
     const bool isHome = (i < static_cast<int>(m_isHome.size())) ? m_isHome[i] : true;
-    const std::string venue =
-        isHome ? ("HOME (" + save->name + " Stadium)") : ("AWAY (" + m_opponents[i] + " Ground)");
+    const std::string& homeName = isHome ? save->name : m_opponents[i];
+    const std::string& awayName = isHome ? m_opponents[i] : save->name;
 
-    // Atmosphere & Matchday Header
-    std::string atmosphere =
-        "Atmosphere: Weather 19 deg C (Clear) | Pitch: Pristine | Attendance: 96% Capacity";
     Gui2Caption* header = new Gui2Caption(
         windowManager, "cap_md_hdr_" + std::to_string(i), 0, 0, 84, 2.2f,
-        "FIXTURE | " + venue + " | " + save->name + " vs " + m_opponents[i] + "\n" + atmosphere);
+        TRF("career_md_fixture",
+            {TR(isHome ? "career_md_home" : "career_md_away"), homeName, awayName}));
     header->SetColor(windowManager->GetStyle()->GetColor(e_DecorationType_Bright2));
     fixtureGrid->AddView(header, row++, 0);
 
-    std::string scoreLabel = "STATUS: Ready for Kick-off | Tactics: Balanced Press | Form: " +
-                             CareerDatabase::GetInstance().GetFormGuideString(5);
+    // In SimulatedMatch "home" means the user's side and "away" the opponent.
+    std::string scoreLabel =
+        TRF("career_md_status", {CareerStrategyLabel(save->activeStrategy),
+                                 CareerDatabase::GetInstance().GetFormGuideString(5)});
     if (res.played) {
-      if (isHome) {
-        scoreLabel = "FINAL SCORE: " + save->name + " " + std::to_string(res.homeGoals) + " - " +
-                     std::to_string(res.awayGoals) + " " + m_opponents[i] +
-                     (res.homeGoals > res.awayGoals
-                          ? " [VICTORY!]"
-                          : (res.homeGoals == res.awayGoals ? " [DRAW]" : " [DEFEAT]"));
-      } else {
-        scoreLabel = "FINAL SCORE: " + m_opponents[i] + " " + std::to_string(res.awayGoals) +
-                     " - " + std::to_string(res.homeGoals) + " " + save->name +
-                     (res.homeGoals > res.awayGoals
-                          ? " [VICTORY!]"
-                          : (res.homeGoals == res.awayGoals ? " [DRAW]" : " [DEFEAT]"));
-      }
+      const int homeGoals = isHome ? res.homeGoals : res.awayGoals;
+      const int awayGoals = isHome ? res.awayGoals : res.homeGoals;
+      const char* outcome = res.homeGoals > res.awayGoals    ? "career_md_win"
+                            : res.homeGoals == res.awayGoals ? "career_md_draw"
+                                                             : "career_md_loss";
+      scoreLabel = TRF("career_md_final", {homeName, std::to_string(homeGoals),
+                                           std::to_string(awayGoals), awayName, TR(outcome)});
     }
     Gui2Caption* scoreCap = new Gui2Caption(windowManager, "cap_md_score_" + std::to_string(i), 0,
                                             0, 84, 2.2f, scoreLabel);
@@ -2456,59 +2439,23 @@ void CareerMatchdayPage::PopulateGrid() {
     fixtureScoreCaps[i] = scoreCap;
 
     if (res.played) {
-      std::string scorersStr;
-      if (!res.scorers.empty()) {
-        scorersStr = "Goals: " + res.scorers[0];
-        for (int s = 1; s < static_cast<int>(res.scorers.size()); s++) {
-          scorersStr += ", " + res.scorers[s];
-        }
-      } else {
-        scorersStr = "Goals: No goals scored (Scoreless Draw / Defensive Battle)";
-      }
+      // Only what the simulation produced: scorers, shots and possession.
+      std::string scorers;
+      for (const auto& scorer : res.scorers)
+        scorers += (scorers.empty() ? "" : ", ") + scorer;
+      Gui2Caption* scorersCap = new Gui2Caption(
+          windowManager, "cap_md_scorers_" + std::to_string(i), 0, 0, 84, 2.2f,
+          TRF("career_md_scorers", {scorers.empty() ? TR("career_inbox_no_scorers") : scorers}));
+      fixtureGrid->AddView(scorersCap, row++, 0);
 
-      int userShots = isHome ? res.homeShots : res.awayShots;
-      int oppShots = isHome ? res.awayShots : res.homeShots;
-      int userPoss = isHome ? res.homePossession : (100 - res.homePossession);
-      int oppPoss = 100 - userPoss;
-      int corners = 3 + (userShots % 5);
-      int fouls = 6 + (oppShots % 7);
-      float motmRating = 7.5f + static_cast<float>(std::max(res.homeGoals, res.awayGoals)) * 0.5f;
-      if (motmRating > 9.8f)
-        motmRating = 9.8f;
-
-      std::string motmPlayer = !res.scorers.empty()
-                                   ? res.scorers[0]
-                                   : (!save->roster.empty() ? save->roster[0].name : "Goalkeeper");
-
-      char statsBuf[512];
-      snprintf(statsBuf, sizeof(statsBuf),
-               "MATCH SUMMARY & PERFORMANCE:\n"
-               "%s\n"
-               "Shots (On Target): %d (%d) vs %d (%d) | Possession: %d%% vs %d%%\n"
-               "Corner Kicks: %d - %d | Fouls Committed: %d - %d | Pass Accuracy: 86%%\n"
-               "Man of the Match: %s (Rating: %.1f / 10.0)",
-               scorersStr.c_str(), userShots, std::max(1, userShots * 6 / 10), oppShots,
-               std::max(1, oppShots * 6 / 10), userPoss, oppPoss, corners, 4, fouls, 8,
-               motmPlayer.c_str(), motmRating);
-
-      Gui2Caption* statsCap = new Gui2Caption(windowManager, "cap_md_stats_" + std::to_string(i), 0,
-                                              0, 84, 10, std::string(statsBuf));
+      const int userPoss = res.homePossession;
+      Gui2Caption* statsCap = new Gui2Caption(
+          windowManager, "cap_md_stats_" + std::to_string(i), 0, 0, 84, 2.2f,
+          TRF("career_md_stats", {std::to_string(isHome ? res.homeShots : res.awayShots),
+                                  std::to_string(isHome ? res.awayShots : res.homeShots),
+                                  std::to_string(isHome ? userPoss : 100 - userPoss),
+                                  std::to_string(isHome ? 100 - userPoss : userPoss)}));
       fixtureGrid->AddView(statsCap, row++, 0);
-    }
-
-    if (!res.played) {
-      Gui2Button* btnSim = new Gui2Button(windowManager, "btn_md_sim_" + std::to_string(i), 0, 0,
-                                          42, 2.5f, "Quick Sim Match");
-      btnSim->sig_OnClick.connect([this, i](...) { SimulateMatch(i); });
-      fixtureGrid->AddView(btnSim, row++, 0);
-
-      Gui2Button* btnPlay = new Gui2Button(windowManager, "btn_md_play_" + std::to_string(i), 0, 0,
-                                           42, 2.5f, "Play 3D Match");
-      btnPlay->sig_OnClick.connect([this, i](...) { PlayMatchFixture(i); });
-      if (IsDelegatingClubMode()) {
-        btnPlay->SetActive(false);
-      }
-      fixtureGrid->AddView(btnPlay, row++, 0);
     }
   }
 
@@ -2548,16 +2495,6 @@ void CareerMatchdayPage::SimulateMatch(int fixtureIndex) {
           m_opponents[fixtureIndex], res.homeGoals, res.awayGoals, res.scorers, res.assisters))
     return;
   m_results[fixtureIndex] = res;
-
-  m_matchesPlayed++;
-  if (res.homeGoals > res.awayGoals)
-    m_wins++;
-  else if (res.homeGoals == res.awayGoals)
-    m_draws++;
-  else
-    m_losses++;
-  m_goalsFor += res.homeGoals;
-  m_goalsAgainst += res.awayGoals;
 
   PopulateGrid();
 }
@@ -2665,11 +2602,16 @@ void CareerMatchdayPage::PlayMatchFixture(int fixtureIndex) {
 }
 
 void CareerMatchdayPage::UpdateSummary() {
-  if (summaryCaption) {
-    summaryCaption->SetCaption(TRF(
-        "career_matchday_summary",
-        {std::to_string(m_matchesPlayed), std::to_string(m_wins), std::to_string(m_draws),
-         std::to_string(m_losses), std::to_string(m_goalsFor), std::to_string(m_goalsAgainst)}));
+  // The season so far, from the save: counting only this visit's matches
+  // showed "Matches: 0" next to a form guide full of results.
+  const CareerSave* save = CareerDatabase::GetInstance().GetActiveSave();
+  if (summaryCaption && save) {
+    const int played = save->seasonWins + save->seasonDraws + save->seasonLosses;
+    summaryCaption->SetCaption(
+        TRF("career_matchday_summary",
+            {std::to_string(played), std::to_string(save->seasonWins),
+             std::to_string(save->seasonDraws), std::to_string(save->seasonLosses),
+             std::to_string(save->seasonGoalsFor), std::to_string(save->seasonGoalsAgainst)}));
   }
 }
 

@@ -157,13 +157,15 @@ bool CareerDatabase::CompleteFixture(int season, int week, bool isHome, int user
     std::string scorerList;
     for (const auto& scorer : scorers)
       scorerList += (scorerList.empty() ? "" : ", ") + scorer;
-    CareerInbox::Post(save, InboxItemType::PRESS_SNIPPET,
-                      TRF("career_inbox_result_subject",
-                          {std::to_string(week), save.name, std::to_string(userGoals),
-                           std::to_string(opponentGoals), opponentName}),
-                      TRF("career_inbox_result_body",
-                          {scorerList.empty() ? TR("career_inbox_no_scorers") : scorerList,
-                           std::to_string(CareerSim::LeaguePosition(save))}));
+    CareerInbox::Post(
+        save, InboxItemType::PRESS_SNIPPET,
+        TRF("career_inbox_result_subject", {std::to_string(week), isHome ? save.name : opponentName,
+                                            std::to_string(isHome ? userGoals : opponentGoals),
+                                            std::to_string(isHome ? opponentGoals : userGoals),
+                                            isHome ? opponentName : save.name}),
+        TRF("career_inbox_result_body",
+            {scorerList.empty() ? TR("career_inbox_no_scorers") : scorerList,
+             std::to_string(CareerSim::LeaguePosition(save))}));
     ++save.season.currentWeek;
     save.season.inPreseason = false;
   });
@@ -686,8 +688,13 @@ bool CareerDatabase::AdvanceSeason(int expectedSeason) {
     const int clubs = static_cast<int>(CareerSim::GenerateLeagueStandings(save).size());
     const int wins = save.seasonWins, draws = save.seasonDraws, losses = save.seasonLosses;
     CareerTransfers::FrontOfficeBeforeRollover(save);
+    std::vector<std::string> released;
+    for (const auto& player : save.roster)
+      released.push_back(player.name);
     CareerSim::AdvanceSeason(save, *this, m_activeBids, m_transferTargets);
-    CareerTransfers::FrontOfficeAfterRollover(save, *this);
+    for (const auto& player : save.roster)
+      released.erase(std::remove(released.begin(), released.end(), player.name), released.end());
+    CareerTransfers::FrontOfficeAfterRollover(save, *this, released);
     if (!boardReport.empty())
       CareerInbox::Post(save, InboxItemType::BOARD_OBJECTIVE,
                         TRF("career_inbox_board_subject", {std::to_string(season)}), boardReport);

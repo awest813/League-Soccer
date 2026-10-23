@@ -62,13 +62,15 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
   header->Show();
 
   // Goal scorers under each side of the score: "Kagawa 23', 67'".
-  std::map<int, int> goalsByPlayer;  // database ID -> goals, for the ratings below
+  // (team, database ID) -> goals, for the ratings below. Keyed by team too:
+  // both sides can field the same database IDs (a club against itself).
+  std::map<std::pair<int, int>, int> goalsByPlayer;
   for (int t = 0; t < 2; t++) {
     const auto& scorerIDs = match->GetMatchData()->GetGoalScorers(t);
     const auto& minutes = match->GetMatchData()->GetGoalMinutes(t);
     std::vector<std::pair<int, std::string>> scorers;  // database ID, minutes
     for (size_t g = 0; g < scorerIDs.size(); g++) {
-      goalsByPlayer[scorerIDs[g]]++;
+      goalsByPlayer[{t, scorerIDs[g]}]++;
       const std::string minute = g < minutes.size() ? minutes[g] : "";
       auto existing = std::find_if(scorers.begin(), scorers.end(),
                                    [&](const auto& entry) { return entry.first == scorerIDs[g]; });
@@ -215,7 +217,7 @@ GameOverPage::GameOverPage(Gui2WindowManager* windowManager, const Gui2PageData&
       rating += (cond - 3) * 0.2f;
 
       // Goals decide matches; before this the award ignored them.
-      auto scored = goalsByPlayer.find(pd->GetDatabaseID());
+      auto scored = goalsByPlayer.find({t, pd->GetDatabaseID()});
       if (scored != goalsByPlayer.end())
         rating += 1.2f * scored->second;
 
@@ -309,9 +311,11 @@ GameOverPage::~GameOverPage() {}
 void GameOverPage::Process() {
   Gui2Page::Process();
 
+  // menu_smoke_quit_delay_ms keeps the page up longer for frame captures.
+  const unsigned long quitDelay_ms = static_cast<unsigned long>(
+      GetConfiguration()->GetInt("menu_smoke_quit_delay_ms", kMenuSmokeQuitDelay_ms));
   if (!autoQuitTriggered && MenuSmokeFullMatchEnabled() &&
-      EnvironmentManager::GetInstance().GetTime_ms() >=
-          pageCreatedTime_ms + kMenuSmokeQuitDelay_ms) {
+      EnvironmentManager::GetInstance().GetTime_ms() >= pageCreatedTime_ms + quitDelay_ms) {
     autoQuitTriggered = true;
     // A career fixture: record it as Continue would, then report what the
     // career kept from the 3D match.

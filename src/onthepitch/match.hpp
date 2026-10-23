@@ -1,6 +1,7 @@
 #ifndef _HPP_MATCH
 #define _HPP_MATCH
 
+#include <atomic>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -379,7 +380,8 @@ protected:
   // added minutes once announced (-1 until the period reaches its end).
   int periodGoals = 0;
   int periodStartCards = 0;
-  int addedMinutes = -1;
+  // Atomic: Put reads it on the graphics thread for the scoreboard.
+  std::atomic<int> addedMinutes{-1};
   int TotalCards() const;
   bool gameOverSignalled = false;
 

@@ -703,6 +703,10 @@ void Match::SetHUDVisible(bool visible) {
     visible ? radar->Show() : radar->Hide();
   if (playerHUD)
     visible ? playerHUD->Show() : playerHUD->Hide();
+  // A message up when an overlay opens would otherwise stay behind it: it
+  // only expires while the match runs.
+  if (!visible && messageCaption)
+    messageCaption->Hide();
 }
 
 void Match::RumblePlayingPads(float lowFrequency, float highFrequency, unsigned int duration_ms) {
@@ -824,7 +828,7 @@ int Match::TotalCards() const {
 }
 
 unsigned long Match::GetPeriodEndTime_ms() const {
-  return static_cast<unsigned long>(PeriodEndMinute() + std::max(0, addedMinutes)) * 60000UL;
+  return static_cast<unsigned long>(PeriodEndMinute() + std::max(0, addedMinutes.load())) * 60000UL;
 }
 
 void Match::SetMatchPhase(e_MatchPhase newMatchPhase) {
@@ -1183,9 +1187,10 @@ void Match::Process() {
           matchPhase == e_MatchPhase_1stExtraTime || matchPhase == e_MatchPhase_2ndExtraTime;
       if (timedPeriod && addedMinutes < 0 &&
           matchTime_ms >= static_cast<unsigned long>(PeriodEndMinute()) * 60000UL) {
-        addedMinutes =
+        const int added =
             StoppageMinutes(periodGoals, TotalCards() - periodStartCards, PeriodEndMinute());
-        SpamMessage(TRF("ingame_added_time", {std::to_string(addedMinutes)}), 3000);
+        addedMinutes = added;
+        SpamMessage(TRF("ingame_added_time", {std::to_string(added)}), 3000);
       }
     }
     actualTime_ms += 10;

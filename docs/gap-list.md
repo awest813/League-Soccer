@@ -71,6 +71,19 @@ name is the stable anchor.
   dead and has been removed.
 - Each locale defined `ingame_goal` twice with different punctuation. The value
   already in effect is kept; `match.cpp` appends the "!".
+- `de`, `es`, `fr` and `pt` each lacked about 300 of the English keys (mostly
+  career, plus gameplay settings and match options), so those screens fell back
+  to English. All four are complete now, matching each file's existing terms;
+  `LocalizationTest.EveryLanguageHasEveryEnglishKey` checks every key and its
+  `{n}` placeholders. Older lines written without accents were corrected
+  ("Schuesse", "Posesion", "Precisao", "Periode").
+- The career matchday page was hard-coded English with invented figures
+  (weather, "Attendance 96%", corners and fouls derived from the shot count,
+  "Pass Accuracy 86%", the first scorer as Man of the Match) and duplicate Play
+  and Simulate buttons. It now shows the fixture, the real tactic and form, and
+  after a simulation only the scorers, shots and possession, all translated.
+  Its footer counted only the current visit ("Matches: 0" beside a form guide);
+  it shows the season so far.
 
 ### Verification
 
@@ -176,8 +189,7 @@ multipliers for the CPU.
 
 | Pri | Gap |
 | --- | --- |
-| P1 | `de`, `es`, `fr` and `pt` each lack 292 of the 775 English keys: 264 career, 21 gameplay settings, 6 match options, 1 settings. Career screens fall back to English in those languages. |
-| P2 | Hardcoded English text: the career bid detail and matchday pages ("PLAY 3D MATCH", "FINAL SCORE", "[VICTORY!]"), standings ("of 38"), save-slot labels, form guide/news/opponent preview helpers, and every career event and board-objective string. Event and objective text is also stored in saves, so it cannot be re-translated on load. |
+| P2 | Hardcoded English text: the career bid detail page (and its placeholder figures: "Agent Patience 80%", fixed price tiers), standings ("of 38"), save-slot labels, form guide/news/opponent preview helpers, and every career event and board-objective string. Event and objective text is also stored in saves, so translating it needs a key-plus-arguments format. |
 
 ---
 
